@@ -66,5 +66,7 @@ class Session:
             request = ListVpcsRequest()
         elif service == 'evs':
             request = ListVolumesRequest()
+        elif service == 'ecs':
+            request = ListServersDetailsRequest()
 
         return request
