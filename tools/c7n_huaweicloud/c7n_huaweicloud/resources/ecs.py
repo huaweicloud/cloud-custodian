@@ -10,6 +10,7 @@ from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
+from c7n_huaweicloud.filters.ecsfilter import *
 
 log = logging.getLogger("custodian.huaweicloud.resources.ecs")
 
@@ -55,7 +56,6 @@ class EcsStart(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
-        # TODO 异常处理、结果处理
         return response
 
 @Ecs.action_registry.register("stop")
@@ -91,7 +91,6 @@ class EcsStop(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
-        # TODO 异常处理、结果处理
         return response
       
 @Ecs.action_registry.register("reboot")
@@ -127,7 +126,6 @@ class EcsReboot(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
-        # TODO 异常处理、结果处理
         return response
       
 @Ecs.action_registry.register("terminate")
@@ -159,7 +157,6 @@ class EcsTerminate(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
-        # TODO 异常处理、结果处理
         return response
       
 @Ecs.action_registry.register("add-security-groups")
@@ -197,7 +194,6 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
-        # TODO 异常处理、结果处理
         return response
       
 @Ecs.action_registry.register("delete-security-groups")
@@ -236,5 +232,34 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
-        # TODO 异常处理、结果处理
         return response
+
+
+#---------------------------ECS Filter-------------------------------------#
+
+@Ecs.filter_registry.register('instance-age')
+class EcsAgeFilter(AgeFilter):
+    """ECS Instance Age Filter
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: ecs-instances-age
+            resource: huaweicloud.ecs
+            filters:
+              - type: instance-age
+                op: greater-than
+                days: 1
+    """
+    date_attribute = "created"  # 指定时间字段
+
+    # 定义 Schema（可扩展更多参数）
+    schema = type_schema(
+        'instance-age',
+        op={'enum': ['greater-than', 'less-than']},
+        days={'type': 'number', 'minimum': 0},
+        hours={'type': 'number', 'minimum': 0},
+        minutes={'type': 'number', 'minimum': 0}
+    )
