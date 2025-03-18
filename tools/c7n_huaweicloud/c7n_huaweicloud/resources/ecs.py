@@ -50,13 +50,17 @@ class EcsStart(HuaweiCloudBaseAction):
         options = {"servers":serverIds}
         requestBody = BatchStartServersRequestBody(os_start=options)
         request = BatchStartServersRequest(body=requestBody)
-        response = client.batch_start_servers(request)
+        try:
+          response = client.batch_start_servers(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
         # TODO 异常处理、结果处理
         return response
 
 @Ecs.action_registry.register("stop")
-class EcsStart(HuaweiCloudBaseAction):
-    """Deletes EVS Volumes.
+class EcsStop(HuaweiCloudBaseAction):
+    """Stop Ecs Server.
 
     :Example:
 
@@ -82,13 +86,17 @@ class EcsStart(HuaweiCloudBaseAction):
         options = {"servers":serverIds,"type": self.data.get('mode', 'SOFT')}
         requestBody = BatchStopServersRequestBody(os_stop=options)
         request = BatchStopServersRequest(body=requestBody)
-        response = client.batch_stop_servers(request)
+        try:
+          response = client.batch_stop_servers(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
         # TODO 异常处理、结果处理
         return response
       
 @Ecs.action_registry.register("reboot")
-class EcsStart(HuaweiCloudBaseAction):
-    """Deletes EVS Volumes.
+class EcsReboot(HuaweiCloudBaseAction):
+    """Reboot Ecs Server.
 
     :Example:
 
@@ -114,6 +122,119 @@ class EcsStart(HuaweiCloudBaseAction):
         options = {"servers":serverIds,"type": self.data.get('mode', 'SOFT')}
         requestBody = BatchRebootServersRequestBody(reboot=options)
         request = BatchRebootServersRequest(body=requestBody)
-        response = client.batch_stop_servers(request)
+        try:
+          response = client.batch_stop_servers(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        # TODO 异常处理、结果处理
+        return response
+      
+@Ecs.action_registry.register("terminate")
+class EcsTerminate(HuaweiCloudBaseAction):
+    """Terminate Ecs Server.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: terminate-ecs-server
+            resource: huaweicloud.ecs
+            filters:
+              - type: value
+                key: id
+                value: "your server id"
+            actions:
+              - terminate
+    """
+
+    schema = type_schema("terminate", mode={'type': 'string'})
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        request = NovaDeleteServerRequest(server_id=resource["id"])
+        try:
+          response = client.nova_delete_server(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        # TODO 异常处理、结果处理
+        return response
+      
+@Ecs.action_registry.register("add-security-groups")
+class AddSecurityGroup(HuaweiCloudBaseAction):
+    """Add Security Groups For Ecs Server.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: add-security-groups
+            resource: huaweicloud.ecs
+            filters:
+              - type: value
+                key: id
+                value: "your server id"
+            actions:
+              - add-security-groups
+    """
+
+    schema = type_schema("add-security-groups", name={'type': 'string'})
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        name=self.data.get('name', None)
+        if name == None:
+          log.error("security group name is None")
+          return None
+        option = NovaAddSecurityGroupOption(name=name)
+        requestBody = NovaAssociateSecurityGroupRequestBody(add_security_group=option)
+        request = NovaAssociateSecurityGroupRequest(server_id=resource["id"], body=requestBody)
+        try:
+          response = client.nova_associate_security_group(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        # TODO 异常处理、结果处理
+        return response
+      
+@Ecs.action_registry.register("delete-security-groups")
+class AddSecurityGroup(HuaweiCloudBaseAction):
+    """Deletes Security Groups For Ecs Server.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-security-groups
+            resource: huaweicloud.ecs
+            filters:
+              - type: value
+                key: id
+                value: "your server id"
+            actions:
+              - type: delete-security-groups
+                name: "test_group"
+    """
+
+    schema = type_schema("delete-security-groups", name={'type': 'string'})
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        name=self.data.get('name', None)
+        if name == None:
+          log.error("security group name is None")
+          return None
+        option = NovaAddSecurityGroupOption(name=name)
+        requestBody = NovaAssociateSecurityGroupRequestBody(add_security_group=option)
+        request = NovaAssociateSecurityGroupRequest(server_id=resource["id"], body=requestBody)
+        try:
+          response = client.nova_disassociate_security_group(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
         # TODO 异常处理、结果处理
         return response
