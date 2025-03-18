@@ -23,7 +23,11 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
 
     log = logging.getLogger("custodian.huaweicloud.actions.CreateResourceTagAction")
 
-    schema = type_schema("tag")
+    schema = type_schema("tag", aliases=('mark',),
+                         tags={'type': 'object'},
+                         key={'type': 'string'},
+                         value={'type': 'string'},
+                         tag={'type': 'object'})
     resource_max_size = 50
     tags_max_size = 10
 
