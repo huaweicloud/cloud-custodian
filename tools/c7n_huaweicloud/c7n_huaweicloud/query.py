@@ -10,6 +10,7 @@ from c7n.filters import FilterRegistry
 from c7n.manager import ResourceManager
 from c7n.query import sources, MaxResourceLimit
 from c7n.utils import local_session
+from c7n_huaweicloud.actions.tms import register_tags_actions
 
 log = logging.getLogger('custodian.huaweicloud.query')
 
@@ -90,6 +91,7 @@ class QueryMeta(type):
             attrs['action_registry'] = ActionRegistry(
                 '%s.actions' % name.lower())
 
+        register_tags_actions(attrs['action_registry'])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
 

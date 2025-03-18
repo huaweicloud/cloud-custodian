@@ -5,10 +5,12 @@ import logging
 import os
 import sys
 
-from huaweicloudsdkcore.auth.credentials import BasicCredentials
+from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
 from huaweicloudsdkecs.v2 import *
 from huaweicloudsdkevs.v2 import *
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
+from huaweicloudsdkiam.v3 import IamClient
+from huaweicloudsdkiam.v3.region.iam_region import IamRegion
 from huaweicloudsdkvpc.v2 import *
 from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
@@ -57,6 +59,12 @@ class Session:
             client = TmsClient.new_builder() \
                 .with_credentials(globalCredentials) \
                 .with_region(TmsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'iam':
+            globalCredentials = GlobalCredentials(self.ak, self.sk)
+            client = IamClient.new_builder() \
+                .with_credentials(globalCredentials) \
+                .with_region(IamRegion.value_of(self.region)) \
                 .build()
 
         return client
