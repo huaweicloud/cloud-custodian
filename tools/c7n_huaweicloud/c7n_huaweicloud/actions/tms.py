@@ -27,7 +27,7 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
                          tags={'type': 'object'},
                          key={'type': 'string'},
                          value={'type': 'string'},
-                         tag={'type': 'object'})
+                         tag={'type': 'string'})
     resource_max_size = 50
     tags_max_size = 10
 
