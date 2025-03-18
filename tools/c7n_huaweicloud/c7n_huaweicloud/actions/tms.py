@@ -53,6 +53,7 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
             raise PolicyValidationError("Can not tag more than %s tags at once", self.tags_max_size)
 
         tms_client = self.get_tag_client()
+        resources = [{"resource_id": resource["id"], "resource_type": resource["tag_type"]} for resource in resources]
         for resource_batch in chunks(resources, self.resource_max_size):
                 self.process_resource_set(tms_client, resource_batch, tags, project_id)
 
