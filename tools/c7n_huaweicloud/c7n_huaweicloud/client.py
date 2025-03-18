@@ -17,6 +17,8 @@ from huaweicloudsdkiam.v3.region.iam_region import IamRegion
 from huaweicloudsdkvpc.v2 import *
 from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
+from huaweicloudsdkims.v2.region.ims_region import ImsRegion
+from huaweicloudsdkims.v2 import *
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -75,6 +77,11 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(ConfigRegion.value_of(self.region)) \
                 .build()
+        elif service == 'ims':
+            client = ImsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(ImsRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -85,5 +92,7 @@ class Session:
             request = ListVolumesRequest()
         elif service == 'config':
             request = ShowTrackerConfigRequest()
+        elif service == 'ims':
+            request = ListImagesRequest()
 
         return request
