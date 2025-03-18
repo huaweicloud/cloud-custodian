@@ -5,10 +5,10 @@ import abc
 import logging
 from abc import ABC
 
-huaweicloudsdkevs
-
 from c7n.actions import BaseAction
 from huaweicloudsdkcore.exceptions import exceptions
+
+from c7n.utils import local_session
 
 log = logging.getLogger("custodian.huaweicloud.actions.base")
 
