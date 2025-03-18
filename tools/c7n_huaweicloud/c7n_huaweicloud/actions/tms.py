@@ -61,6 +61,9 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
         for resource_batch in chunks(resources, self.resource_max_size):
                 self.process_resource_set(tms_client, resource_batch, tags, project_id)
 
+    def perform_action(self, resource):
+        pass
+
 
     def process_resource_set(self, client, resource_batch, tag_batch, project_id):
         request_body = ReqCreateTag(project_id=project_id, resources=resource_batch, tags=tag_batch)
