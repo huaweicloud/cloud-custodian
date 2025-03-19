@@ -19,12 +19,12 @@ log = logging.getLogger("custodian.huaweicloud.resources.ecs")
 class Ecs(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'ecs'
-        enum_spec = ("nova_list_servers_details", "servers", "NovaListServersDetailsRequest")
+        enum_spec = ("list_servers_details", "servers", "offset")
         id = 'id'
         tag = True
 
 
-@Ecs.action_registry.register("start")
+@Ecs.action_registry.register("instance-start")
 class EcsStart(HuaweiCloudBaseAction):
     """Start ECS server.
 
@@ -40,10 +40,10 @@ class EcsStart(HuaweiCloudBaseAction):
                 key: id
                 value: "your server id"
             actions:
-              - start
+              - instance-start
     """
 
-    schema = type_schema("start")
+    schema = type_schema("instance-start")
 
     def perform_action(self, resource):
         client = self.manager.get_client()
@@ -58,7 +58,7 @@ class EcsStart(HuaweiCloudBaseAction):
           raise
         return response
 
-@Ecs.action_registry.register("stop")
+@Ecs.action_registry.register("instance-stop")
 class EcsStop(HuaweiCloudBaseAction):
     """Stop Ecs Server.
 
@@ -74,11 +74,11 @@ class EcsStop(HuaweiCloudBaseAction):
                 key: id
                 value: "your server id"
             actions:
-              - type: stop
+              - type: instance-stop
                 mode: "SOFT"
     """
 
-    schema = type_schema("stop", mode={'type': 'string'})
+    schema = type_schema("instance-stop", mode={'type': 'string'})
 
     def perform_action(self, resource):
         client = self.manager.get_client()
@@ -93,7 +93,7 @@ class EcsStop(HuaweiCloudBaseAction):
           raise
         return response
       
-@Ecs.action_registry.register("reboot")
+@Ecs.action_registry.register("instance-reboot")
 class EcsReboot(HuaweiCloudBaseAction):
     """Reboot Ecs Server.
 
@@ -109,11 +109,11 @@ class EcsReboot(HuaweiCloudBaseAction):
                 key: id
                 value: "your server id"
             actions:
-              - type: reboot
+              - type: instance-reboot
                 mode: "SOFT"
     """
 
-    schema = type_schema("reboot", mode={'type': 'string'})
+    schema = type_schema("instance-reboot", mode={'type': 'string'})
 
     def perform_action(self, resource):
         client = self.manager.get_client()
@@ -128,7 +128,7 @@ class EcsReboot(HuaweiCloudBaseAction):
           raise
         return response
       
-@Ecs.action_registry.register("terminate")
+@Ecs.action_registry.register("instance-terminate")
 class EcsTerminate(HuaweiCloudBaseAction):
     """Terminate Ecs Server.
 
@@ -144,10 +144,10 @@ class EcsTerminate(HuaweiCloudBaseAction):
                 key: id
                 value: "your server id"
             actions:
-              - terminate
+              - instance-terminate
     """
 
-    schema = type_schema("terminate", mode={'type': 'string'})
+    schema = type_schema("instance-terminate", mode={'type': 'string'})
 
     def perform_action(self, resource):
         client = self.manager.get_client()
@@ -159,9 +159,9 @@ class EcsTerminate(HuaweiCloudBaseAction):
           raise
         return response
       
-@Ecs.action_registry.register("add-security-groups")
+@Ecs.action_registry.register("instance-add-security-groups")
 class AddSecurityGroup(HuaweiCloudBaseAction):
-    """Add Security Groups For Ecs Server.
+    """Add Security Groups For An Ecs Server.
 
     :Example:
 
@@ -175,10 +175,10 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
                 key: id
                 value: "your server id"
             actions:
-              - add-security-groups
+              - instance-add-security-groups
     """
 
-    schema = type_schema("add-security-groups", name={'type': 'string'})
+    schema = type_schema("instance-add-security-groups", name={'type': 'string'})
 
     def perform_action(self, resource):
         client = self.manager.get_client()
@@ -196,9 +196,9 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
           raise
         return response
       
-@Ecs.action_registry.register("delete-security-groups")
+@Ecs.action_registry.register("instance-delete-security-groups")
 class AddSecurityGroup(HuaweiCloudBaseAction):
-    """Deletes Security Groups For Ecs Server.
+    """Deletes Security Groups For An Ecs Server.
 
     :Example:
 
@@ -212,11 +212,11 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
                 key: id
                 value: "your server id"
             actions:
-              - type: delete-security-groups
+              - type: instance-delete-security-groups
                 name: "test_group"
     """
 
-    schema = type_schema("delete-security-groups", name={'type': 'string'})
+    schema = type_schema("instance-delete-security-groups", name={'type': 'string'})
 
     def perform_action(self, resource):
         client = self.manager.get_client()
@@ -233,6 +233,68 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
         return response
+      
+@Ecs.action_registry.register("instance-resize")
+class Resize(HuaweiCloudBaseAction):
+    """Resize An Ecs Server Flavor.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: resize
+            resource: huaweicloud.ecs
+            filters:
+              - type: instance-resize
+                flavor_ref: "x1.1u.4g"
+                mode: "withStopServer"
+    """
+    
+    schema = type_schema("instance-resize", flavor_ref={'type': 'string'},
+                         dedicated_host_id={'type': 'string'},
+                         is_auto_pay={'type': 'string'},
+                         mode={'type': 'string'},
+                         hwcpu_threads={'type': 'int'},
+                         dry_run={'type' : 'boolean'})
+  
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        extendParam = ResizeServerExtendParam(is_auto_pay=self.data.get('is_auto_pay', None))
+        cpuOptions = CpuOptions(hwcpu_threads=self.data.get('hwcpu_threads', None))
+        flavorRef=self.data.get('flavor_ref', None)
+        dedicatedHostId = self.data.get('dedicated_host_id', None)
+        mode = self.data.get('mode', None)
+        if flavorRef == None:
+          log.error("flavor_ref con not be None")
+          return None
+        option = ResizePrePaidServerOption(flavor_ref=flavorRef, dedicated_host_id=dedicatedHostId, 
+                                           extendparam=extendParam, mode=mode, cpu_options=cpuOptions)
+        requestBody = ResizeServerRequestBody(resize=option, dry_run=self.data.get('dry_run', None))
+        request = ResizeServerRequest(server_id=resource['id'], body=requestBody)
+        try:
+          response = client.resize_server(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+      
+@Ecs.action_registry.register("set-instance-profile")
+class SetInstanceProfile(HuaweiCloudBaseAction):
+  
+  schema = type_schema("set-instance-profile", metadata={'type': 'object'})
+  
+  def perform_action(self, resource):
+      client = self.manager.get_client()
+      metadata = self.data.get('metadata', None)
+      requestBody = UpdateServerMetadataRequestBody(metadata=metadata)
+      request = UpdateServerMetadataRequest(server_id=resource['id'], body=requestBody)
+      try:
+        response = client.update_server_metadata(request)
+      except exceptions.ClientRequestException as e:
+        log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+        raise
+      return response
 
 
 #---------------------------ECS Filter-------------------------------------#
@@ -253,7 +315,7 @@ class EcsAgeFilter(AgeFilter):
                 op: greater-than
                 days: 1
     """
-    date_attribute = "created"
+    date_attribute = "OS-SRV-USG:launched_at"
 
     schema = type_schema(
         'instance-age',
@@ -261,4 +323,28 @@ class EcsAgeFilter(AgeFilter):
         days={'type': 'number', 'minimum': 0},
         hours={'type': 'number', 'minimum': 0},
         minutes={'type': 'number', 'minimum': 0}
+    )
+    
+@Ecs.filter_registry.register('instance-uptime')
+class EcsAgeFilter(AgeFilter):
+    """Automatically filter resources older or younger than a given date.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: ecs-instances-age
+            resource: huaweicloud.ecs
+            filters:
+              - type: instance-uptime
+                op: greater-than
+                days: 1
+    """
+    date_attribute = "OS-SRV-USG:launched_at"
+
+    schema = type_schema(
+        'instance-uptime',
+        op={'enum': ['greater-than', 'less-than']},
+        days={'type': 'number', 'minimum': 0}
     )
