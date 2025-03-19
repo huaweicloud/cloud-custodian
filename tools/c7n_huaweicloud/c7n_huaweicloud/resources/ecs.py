@@ -178,14 +178,11 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
               - instance-add-security-groups
     """
 
-    schema = type_schema("instance-add-security-groups", name={'type': 'string'})
+    schema = type_schema("instance-add-security-groups", name={'type': 'string'}, required=('name',))
 
     def perform_action(self, resource):
         client = self.manager.get_client()
         name=self.data.get('name', None)
-        if name == None:
-          log.error("security group name is None")
-          return None
         option = NovaAddSecurityGroupOption(name=name)
         requestBody = NovaAssociateSecurityGroupRequestBody(add_security_group=option)
         request = NovaAssociateSecurityGroupRequest(server_id=resource["id"], body=requestBody)
