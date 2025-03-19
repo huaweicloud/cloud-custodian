@@ -239,7 +239,7 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
 
 @Ecs.filter_registry.register('instance-age')
 class EcsAgeFilter(AgeFilter):
-    """ECS Instance Age Filter
+    """ECS Instance Age Filter: greater-than or less-than threshold date
 
     :Example:
 
@@ -253,9 +253,8 @@ class EcsAgeFilter(AgeFilter):
                 op: greater-than
                 days: 1
     """
-    date_attribute = "created"  # 指定时间字段
+    date_attribute = "created"
 
-    # 定义 Schema（可扩展更多参数）
     schema = type_schema(
         'instance-age',
         op={'enum': ['greater-than', 'less-than']},
