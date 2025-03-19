@@ -239,8 +239,8 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
 
     schema = type_schema("rename-tag",
                          value={'type': 'string'},
-                         old_key={'type', 'string'},
-                         new_key={'type', 'string'})
+                         old_key={'type': 'string'},
+                         new_key={'type': 'string'})
     resource_max_size = 50
 
     def validate(self):
