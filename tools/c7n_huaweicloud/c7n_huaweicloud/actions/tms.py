@@ -22,6 +22,7 @@ def register_tms_actions(actions):
     actions.register('unmark', DeleteResourceTagAction)
     actions.register('untag', DeleteResourceTagAction)
     actions.register('remove-tag', DeleteResourceTagAction)
+    actions.register('rename-tag', RenameResourceTagAction)
 
 
 class CreateResourceTagAction(HuaweiCloudBaseAction):
