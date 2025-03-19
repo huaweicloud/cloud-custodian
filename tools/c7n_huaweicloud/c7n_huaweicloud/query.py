@@ -11,6 +11,7 @@ from c7n.manager import ResourceManager
 from c7n.query import sources, MaxResourceLimit
 from c7n.utils import local_session
 from c7n_huaweicloud.actions.tms import register_tms_actions
+from c7n_huaweicloud.filters.tms import register_tms_filters
 
 log = logging.getLogger('custodian.huaweicloud.query')
 
@@ -93,6 +94,7 @@ class QueryMeta(type):
                 '%s.actions' % name.lower())
 
         register_tms_actions(attrs['action_registry'])
+        register_tms_filters(attrs['filter_registry'])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
 
