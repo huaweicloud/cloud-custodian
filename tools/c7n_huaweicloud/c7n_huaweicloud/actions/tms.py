@@ -14,7 +14,7 @@ from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 DEFAULT_TAG = "default_tag"
 
 
-def register_tags_actions(actions):
+def register_tms_actions(actions):
     actions.register('mark', CreateResourceTagAction)
     actions.register('tag', CreateResourceTagAction)
 
@@ -57,20 +57,21 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
             raise PolicyValidationError("Can not tag more than %s tags at once", self.tags_max_size)
 
         tms_client = self.get_tag_client()
-        resources = [{"resource_id": resource["id"], "resource_type": "disk"} for resource in resources]
+        self.log.info(resources)
+        resources = [{"resource_id": resource["id"], "resource_type": resource["tag_type"]}
+                     for resource in resources
+                     if "tag_type" in resource.keys()]
         for resource_batch in chunks(resources, self.resource_max_size):
                 self.process_resource_set(tms_client, resource_batch, tags, project_id)
 
     def perform_action(self, resource):
         pass
 
-
     def process_resource_set(self, client, resource_batch, tag_batch, project_id):
         request_body = ReqCreateTag(project_id=project_id, resources=resource_batch, tags=tag_batch)
         request = CreateResourceTagRequest(body=request_body)
         client.create_resource_tag(request=request)
         self.log.info("Successfully tagged %s resources with %s tags", len(resource_batch), len(tag_batch))
-
 
     def get_project_id(self):
         iam_client = local_session(self.manager.session_factory).client("iam")
