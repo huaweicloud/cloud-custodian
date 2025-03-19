@@ -18,7 +18,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.volume")
 class Volume(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'evs'
-        enum_spec = ("list_volumes", 'volumes', 'ListVolumesRequest')
+        enum_spec = ("list_volumes", 'volumes', 'offset')
         id = 'id'
         tag = True
 

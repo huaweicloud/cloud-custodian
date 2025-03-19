@@ -3,6 +3,7 @@
 
 import logging
 import jmespath
+import sys
 
 from c7n.actions import ActionRegistry
 from c7n.filters import FilterRegistry
@@ -12,6 +13,8 @@ from c7n.utils import local_session
 
 log = logging.getLogger('custodian.huaweicloud.query')
 
+DEFAULT_LIMIT_SIZE = 100
+
 
 class ResourceQuery:
     def __init__(self, session_factory):
@@ -19,14 +22,40 @@ class ResourceQuery:
 
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
+        enum_op, path, pagination = m.enum_spec
+
+        if pagination == 'offset':
+            resources = self._pagination_limit_offset(m, enum_op, path)
+        else:
+            log.exception(f"Unsupported pagination type: {pagination}")
+            sys.exit(1)
+        return resources
+
+    def _pagination_limit_offset(self, m, enum_op, path):
         session = local_session(self.session_factory)
         client = session.client(m.service)
-        request = session.request(m.service)
 
-        enum_op, path, extra_args = m.enum_spec
-        response = self._invoke_client_enum(client, enum_op, request)
-        resources = jmespath.search(path, eval(
-            str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+        offset = 0
+        limit = DEFAULT_LIMIT_SIZE
+        resources = []
+        while 1:
+            request = session.request(m.service)
+            request.limit = limit
+            request.offset = offset
+            response = self._invoke_client_enum(client, enum_op, request)
+            res = jmespath.search(path, eval(
+                str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+
+            # replace id with the specified one
+            if res is not None:
+                for data in res:
+                    data['id'] = data[m.id]
+
+            resources = resources + res
+            if len(res) == limit:
+                offset += limit
+            else:
+                return resources
         return resources
 
     def _invoke_client_enum(self, client, enum_op, request):
