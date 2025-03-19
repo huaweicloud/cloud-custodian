@@ -1,7 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import logging
+from logging import exception
 
+from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkiam.v3 import KeystoneListProjectsRequest
 from huaweicloudsdktms.v1 import CreateResourceTagRequest, ReqCreateTag
 
@@ -20,6 +22,25 @@ def register_tms_actions(actions):
 
 
 class CreateResourceTagAction(HuaweiCloudBaseAction):
+    """Applies one or more tags to the specified resources.
+
+    :example:
+
+        .. code-block :: yaml
+
+            policies:
+            - name: multiple-tags-example
+              resource: huaweicloud.volume
+              filters:
+                - type: value
+                  key: metadata.__system__encrypted
+                  value: "0"
+              actions:
+                - type: tag
+                  tags:
+                    owner: 123
+                    owner2: 456
+    """
 
     log = logging.getLogger("custodian.huaweicloud.actions.CreateResourceTagAction")
 
@@ -61,11 +82,23 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
         resources = [{"resource_id": resource["id"], "resource_type": resource["tag_type"]}
                      for resource in resources
                      if "tag_type" in resource.keys()]
+
         for resource_batch in chunks(resources, self.resource_max_size):
+            try:
                 self.process_resource_set(tms_client, resource_batch, tags, project_id)
+            except exceptions.ClientRequestException as ex:
+                self.log.exception(
+                    f"Unable to tagged {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                self.handle_exception(failed_resources=resource_batch)
+        return self.process_result(resources=resources)
 
     def perform_action(self, resource):
         pass
+
+    def handle_exception(self, failed_resources, resources):
+        self.failed_resources.extend(failed_resources)
+        for failed_resource in failed_resources:
+            resources.remove(failed_resource)
 
     def process_resource_set(self, client, resource_batch, tag_batch, project_id):
         request_body = ReqCreateTag(project_id=project_id, resources=resource_batch, tags=tag_batch)
