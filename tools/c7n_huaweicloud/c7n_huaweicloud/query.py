@@ -48,6 +48,11 @@ class ResourceQuery:
             res = jmespath.search(path, eval(
                 str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
 
+            if path == '*':
+                res['id'] = res[m.id]
+                resources.append(res)
+                return resources
+
             # replace id with the specified one
             if res is not None:
                 for data in res:
