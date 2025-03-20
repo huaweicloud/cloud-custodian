@@ -7,11 +7,15 @@ import sys
 
 from huaweicloudsdkcore.auth.credentials import BasicCredentials
 from huaweicloudsdkecs.v2 import *
+from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
 from huaweicloudsdkevs.v2 import *
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkvpc.v2 import *
+from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
 from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
+from huaweicloudsdkces.v1 import *
+from huaweicloudsdkces.v1.region.ces_region import CesRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -53,10 +57,14 @@ class Session:
                 .with_region(EvsRegion.value_of(self.region)) \
                 .build()
         elif service == 'tms':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = TmsClient.new_builder() \
-                .with_credentials(globalCredentials) \
+                .with_credentials(credentials) \
                 .with_region(TmsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'ces':
+            client = CesClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CesRegion.value_of(self.region)) \
                 .build()
 
         return client
@@ -66,5 +74,7 @@ class Session:
             request = ListVpcsRequest()
         elif service == 'evs':
             request = ListVolumesRequest()
+        elif service == 'ces':
+            request = ListAlarmsRequest()
 
         return request
