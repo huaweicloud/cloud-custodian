@@ -92,11 +92,11 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
         for resource_batch in chunks(resources, self.resource_max_size):
             try:
                 failed_resources = self.process_resource_set(tms_client, resource_batch, tags, project_id)
-                self.handle_exception(failed_resources=failed_resources)
+                self.handle_exception(failed_resources=failed_resources, resources=resources)
             except exceptions.ClientRequestException as ex:
                 self.log.exception(
                     f"Unable to tagged {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
-                self.handle_exception(failed_resources=resource_batch)
+                self.handle_exception(failed_resources=resource_batch, resources=resources)
         return self.process_result(resources=resources)
 
     def perform_action(self, resource):
@@ -200,11 +200,11 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
         for resource_batch in chunks(resources, self.resource_max_size):
             try:
                 failed_resources = self.process_resource_set(tms_client, resource_batch, key_values, project_id)
-                self.handle_exception(failed_resources=failed_resources)
+                self.handle_exception(failed_resources=failed_resources, resources=resources)
             except exceptions.ClientRequestException as ex:
                 self.log.exception(
                     f"Unable to remove tag {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
-                self.handle_exception(failed_resources=resource_batch)
+                self.handle_exception(failed_resources=resource_batch, resources=resources)
         return self.process_result(resources=resources)
 
     def perform_action(self, resource):
@@ -275,6 +275,7 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
         return self
 
     def process(self, resources):
+        self.resources = resources
         self.project_id = self.get_project_id()
         self.tms_client = self.get_tag_client()
 
@@ -282,7 +283,7 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
         old_key = self.data.get('old_key')
         new_key = self.data.get('new_key')
         self.process_resources_concurrently(resources, old_key, new_key, value)
-        return self.process_result(resources=resources)
+        return self.process_result(resources=self.resources)
 
     def process_resource(self, resource, old_key, new_key, value):
         try:
@@ -307,7 +308,7 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as ex:
             self.log.exception(
                 f"Unable to rename tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
-            self.handle_exception(failed_resources=[resource])
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
 
     def process_resources_concurrently(self, resources, old_key, new_key, value):
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -430,6 +431,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         return self
 
     def process(self, resources):
+        self.resources = resources
         self.project_id = self.get_project_id()
         self.tms_client = self.get_tag_client()
 
@@ -440,7 +442,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         self.new_sub_str = self.data.get('new_sub_str', "")
 
         self.process_resources_concurrently(resources)
-        return self.process_result(resources=resources)
+        return self.process_result(resources=self.resources)
 
     def process_resource(self, resource):
         try:
@@ -471,7 +473,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as ex:
             self.log.exception(
                 f"Unable to rename tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
-            self.handle_exception(failed_resources=[resource])
+            self.handle_exception(failed_resources=[resource], resources = self.resources)
 
     def process_resources_concurrently(self, resources):
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
