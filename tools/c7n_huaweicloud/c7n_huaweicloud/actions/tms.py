@@ -633,7 +633,7 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
             return []
         else:
             delete_keys_count = len(tags) - (MAX_TAGS_SIZE - space)
-            delete_keys = [key for key in tags.keys if key not in preserve]
+            delete_keys = [key for key in tags.keys() if key not in preserve]
             if delete_keys_count > len(delete_keys):
                 self.log.error("Can not remove tags with policy")
                 raise PolicyValidationError("Can not remove tags with policy")
