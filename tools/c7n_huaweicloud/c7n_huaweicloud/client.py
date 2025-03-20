@@ -17,6 +17,10 @@ from huaweicloudsdkiam.v3.region.iam_region import IamRegion
 from huaweicloudsdkvpc.v2 import *
 from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
+from huaweicloudsdksfsturbo.v1 import *
+from huaweicloudsdksfsturbo.v1.region.sfsturbo_region import SFSTurboRegion
+from huaweicloudsdkcbr.v1.region.cbr_region import CbrRegion
+from huaweicloudsdkcbr.v1 import *
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -75,7 +79,16 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(ConfigRegion.value_of(self.region)) \
                 .build()
-
+        elif service == "sfsturbo":
+            client = SFSTurboClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(SFSTurboRegion.value_of(self.region)) \
+                .build()
+        elif service == 'cbr':
+            client = CbrClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CbrRegion.value_of(self.region)) \
+                .build()
         return client
 
     def request(self, service):
@@ -85,5 +98,7 @@ class Session:
             request = ListVolumesRequest()
         elif service == 'config':
             request = ShowTrackerConfigRequest()
+        elif service == 'sfsturbo':
+            request = ListSharesRequest()
 
         return request
