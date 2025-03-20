@@ -188,7 +188,7 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
         if tag_values:
             key_values = [{"key": k, "value": v} for k, v in tag_values.items()]
         else:
-            key_values = [{"key": k, "value": ""} for k in tags]
+            key_values = [{"key": k} for k in tags]
 
         if len(key_values) > self.tags_max_size:
             self.log.error("Can not remove tag more than %s tags at once", self.tags_max_size)
