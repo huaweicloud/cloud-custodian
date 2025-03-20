@@ -1,6 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-
+import json
 import logging
 import jmespath
 import sys
@@ -49,9 +49,7 @@ class ResourceQuery:
                 str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
 
             if path == '*':
-                print("res:{}", res)
-                res['id'] = res[m.id]
-                resources.append(res)
+                resources.append(json.loads(str(response)))
                 return resources
 
             # replace id with the specified one
