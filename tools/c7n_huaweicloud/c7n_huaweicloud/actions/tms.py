@@ -639,11 +639,11 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
                 raise PolicyValidationError("Can not remove tags with policy")
             index_to_delete = random.sample(range(len(delete_keys)), delete_keys_count)
             index_to_delete.sort()
-
+            res = []
             for index in index_to_delete:
-                del delete_keys[index]
+                res.append(delete_keys[index])
 
-            return delete_keys
+            return res
 
 
     def get_tags_from_resource(self, resource):
