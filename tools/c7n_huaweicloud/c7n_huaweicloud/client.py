@@ -40,6 +40,9 @@ from huaweicloudsdkcbr.v1.region.cbr_region import CbrRegion
 from huaweicloudsdkcbr.v1 import CbrClient
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
 from huaweicloudsdksmn.v2 import SmnClient, ListTopicsRequest
+from huaweicloudsdknat.v2.region.nat_region import NatRegion
+from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
+    ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -170,6 +173,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(SmnRegion.value_of(self.region)) \
                 .build()
+        elif service in ['nat_gateway', 'nat_snat_rule', 'nat_dnat_rule']:
+            client = NatClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(NatRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -196,5 +204,11 @@ class Session:
             request = ListImagesRequest()
         elif service == 'smn':
             request = ListTopicsRequest()
+        elif service == 'nat_gateway':
+            request = ListNatGatewaysRequest()
+        elif service == 'nat_snat_rule':
+            request = ListNatGatewaySnatRulesRequest()
+        elif service == 'nat_dnat_rule':
+            request = ListNatGatewayDnatRulesRequest()
 
         return request
