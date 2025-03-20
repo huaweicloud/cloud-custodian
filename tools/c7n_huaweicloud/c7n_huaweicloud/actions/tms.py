@@ -175,9 +175,9 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
         """validate"""
         if self.data.get('tags') and self.data.get('tag_values'):
             raise PolicyValidationError("Can not both use tags and tag_values at once")
-        if not self.data.get('tag_values') or len(self.data.get('tag_values')) == 0:
+        if self.data.get('tag_values') or len(self.data.get('tag_values')) == 0:
             raise PolicyValidationError("Can not perform remove tag when tag_values is empty")
-        if not self.data.get('tags') or len(self.data.get('tags')) == 0:
+        if self.data.get('tags') or len(self.data.get('tags')) == 0:
             raise PolicyValidationError("Can not perform remove tag when tags is empty")
         return self
 
