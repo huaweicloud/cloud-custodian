@@ -496,6 +496,13 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
             return value.upper()
         elif action == 'title' and not value.istitle():
             return value.title()
+        elif action == 'strip' and old_sub_str and old_sub_str in value:
+            return value.strip(old_sub_str)
+        elif action == 'replace' and old_sub_str and new_sub_str and old_sub_str in value:
+            return value.replace(old_sub_str, new_sub_str)
+        else:
+            return None
+
 
     def get_value_by_key(self, resource, key):
         if isinstance(resource, dict) and 'tags' in resource:
