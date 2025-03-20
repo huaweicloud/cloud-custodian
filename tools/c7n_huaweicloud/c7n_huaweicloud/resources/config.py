@@ -15,7 +15,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 class ConfigTracker(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'config'
-        enum_spec = ("show_tracker_config")
+        enum_spec = ("show_tracker_config", None, None)
         id = 'domain_id'
 
 @ConfigTracker.action_registry.register("delete-tracker")
