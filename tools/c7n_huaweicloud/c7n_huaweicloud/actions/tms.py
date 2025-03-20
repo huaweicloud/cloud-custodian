@@ -1,5 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import concurrent.futures
 import logging
 from logging import exception
 from pydoc import render_doc
@@ -278,31 +279,48 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
         return self
 
     def process(self, resources):
-        project_id = self.get_project_id()
+        self.project_id = self.get_project_id()
+        self.tms_client = self.get_tag_client()
 
         value = self.data.get('value', None)
         old_key = self.data.get('old_key')
         new_key = self.data.get('new_key')
-
-        tms_client = self.get_tag_client()
-
-        for resource in resources:
-            try:
-                if not value:
-                    value = self.get_value_by_key(resource, old_key)
-
-                if not value:
-                    self.log.exception("No value of key %s in resource %s", old_key, resource["id"])
-
-                old_tags = [{"key": old_key, "value": value}]
-                new_tags = [{"key": new_key, "value": value}]
-                resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}]
-                self.process_resource_set(tms_client, resources, old_tags, new_tags, project_id)
-            except exceptions.ClientRequestException as ex:
-                self.log.exception(
-                    f"Unable to rename tag resource {resource["id"]}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
-                self.handle_exception(failed_resources=resource)
+        self.process_resources_concurrently(resources, old_key, new_key, value)
         return self.process_result(resources=resources)
+
+    def process_resource(self, resource, old_key, new_key, value):
+        try:
+            if not value:
+                value = self.get_value_by_key(resource, old_key)
+            if not value:
+                self.log.exception("No value of key %s in resource %s", old_key, resource["id"])
+                return
+            old_tags = [{"key": old_key, "value": value}]
+            new_tags = [{"key": new_key, "value": value}]
+            resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}]
+
+            request_body = ReqDeleteTag(project_id=self.project_id, resources=resources, tags=old_tags)
+            request = DeleteResourceTagRequest(body=request_body)
+            self.tms_client.delete_resource_tag(request=request)
+            self.log.info("Successfully remove tag %s resources with %s tags", len(resources), len(old_tags))
+
+            request_body = ReqCreateTag(project_id=self.project_id, resources=resources, tags=new_tags)
+            request = CreateResourceTagRequest(body=request_body)
+            self.tms_client.create_resource_tag(request=request)
+            self.log.info("Successfully tagged %s resources with %s tags", len(resources), len(new_tags))
+        except exceptions.ClientRequestException as ex:
+            self.log.exception(
+                f"Unable to rename tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+            self.handle_exception(failed_resources=[resource])
+
+    def process_resources_concurrently(self, resources, old_key, new_key, value):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [executor.submit(self.process_resource, resource, old_key, new_key, value) for resource in resources]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    self.log.exception(f"process_resources_concurrently unexpected error occurred: {e}")
 
     def perform_action(self, resource):
         pass
@@ -326,17 +344,6 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
         self.failed_resources.extend(failed_resources)
         for failed_resource in failed_resources:
             resources.remove(failed_resource)
-
-    def process_resource_set(self, client, resource_batch, old_tags, new_tags, project_id):
-        request_body = ReqDeleteTag(project_id=project_id, resources=resource_batch, tags=old_tags)
-        request = DeleteResourceTagRequest(body=request_body)
-        client.delete_resource_tag(request=request)
-        self.log.info("Successfully remove tag %s resources with %s tags", len(resource_batch), len(old_tags))
-
-        request_body = ReqCreateTag(project_id=project_id, resources=resource_batch, tags=new_tags)
-        request = CreateResourceTagRequest(body=request_body)
-        client.create_resource_tag(request=request)
-        self.log.info("Successfully tagged %s resources with %s tags", len(resource_batch), len(new_tags))
 
     def get_project_id(self):
         iam_client = local_session(self.manager.session_factory).client("iam")
@@ -417,41 +424,67 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         if not self.data.get('action') and self.data.get('action') not in self.action_list:
             raise PolicyValidationError("Can not perform normalize tag when action not in [uppper, lower, title, strip, replace]")
         action = self.data.get('action')
-        if action == 'upper':
-
+        if action == 'strip' and not self.data.get('old_sub_str'):
+            raise PolicyValidationError(
+                "Can not perform normalize tag when action is strip without old_sub_str")
+        if action == 'replace' and not (self.data.get('old_sub_str') and self.data.get('new_sub_str')):
+            raise PolicyValidationError(
+                "Can not perform normalize tag when action is strip without old_sub_str or new_sub_str")
 
         return self
 
     def process(self, resources):
-        project_id = self.get_project_id()
+        self.project_id = self.get_project_id()
+        self.tms_client = self.get_tag_client()
 
-        key = self.data.get('key')
-        action = self.data.get('action')
-        old_value = self.data.get('value')
-        old_sub_str = self.data.get('old_sub_str', "")
-        new_sub_str = self.data.get('new_sub_str', "")
-        new_value = self.get_new_value(old_value, action, old_sub_str, new_sub_str)
+        self.key = self.data.get('key')
+        self.action = self.data.get('action')
+        self.old_value = self.data.get('value', None)
+        self.old_sub_str = self.data.get('old_sub_str', "")
+        self.new_sub_str = self.data.get('new_sub_str', "")
 
-        old_tags = [{"key": key, "value": old_value}]
-        new_tags = [{"key": key, "value": new_value}]
-
-        tms_client = self.get_tag_client()
-
-        count = len(resources)
-        resources = self.filter_resources(resources)
-        self.log.info("Filtered %s resources from %s resources", len(resources), count)
-        resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}
-                     for resource in resources
-                     if "tag_resource_type" in resource.keys() and len(resource['tag_resource_type']) > 0]
-
-        for resource_batch in chunks(resources, self.resource_max_size):
-            try:
-                self.process_resource_set(tms_client, resource_batch, old_tags, new_tags, project_id)
-            except exceptions.ClientRequestException as ex:
-                self.log.exception(
-                    f"Unable to rename tag {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
-                self.handle_exception(failed_resources=resource_batch)
+        self.process_resources_concurrently(resources)
         return self.process_result(resources=resources)
+
+    def process_resource(self, resource):
+        try:
+            if not self.old_value:
+                self.old_value = self.get_value_by_key(resource, self.key)
+            if not self.old_value:
+                self.log.exception("No value of key %s in resource %s", self.key, resource["id"])
+                return
+
+            self.new_value = self.get_new_value(self.old_value, self.action, self.old_sub_str, self.new_sub_str)
+            if not self.new_value:
+                self.log.exception("Can not get new value of key %s in resource %s", self.key, resource["id"])
+                return
+
+            old_tags = [{"key": self.key, "value": self.old_value}]
+            new_tags = [{"key": self.key, "value": self.new_value}]
+            resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}]
+
+            request_body = ReqDeleteTag(project_id=self.project_id, resources=resources, tags=old_tags)
+            request = DeleteResourceTagRequest(body=request_body)
+            self.tms_client.delete_resource_tag(request=request)
+            self.log.info("Successfully remove tag %s resources with %s tags", len(resources), len(old_tags))
+
+            request_body = ReqCreateTag(project_id=self.project_id, resources=resources, tags=new_tags)
+            request = CreateResourceTagRequest(body=request_body)
+            self.tms_client.create_resource_tag(request=request)
+            self.log.info("Successfully tagged %s resources with %s tags", len(resources), len(new_tags))
+        except exceptions.ClientRequestException as ex:
+            self.log.exception(
+                f"Unable to rename tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+            self.handle_exception(failed_resources=[resource])
+
+    def process_resources_concurrently(self, resources):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [executor.submit(self.process_resource, resource) for resource in resources]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    self.log.exception(f"process_resources_concurrently unexpected error occurred: {e}")
 
     def perform_action(self, resource):
         pass
@@ -464,6 +497,20 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         elif action == 'title' and not value.istitle():
             return value.title()
 
+    def get_value_by_key(self, resource, key):
+        if isinstance(resource, dict) and 'tags' in resource:
+            tags = resource['tags']
+            if isinstance(tags, dict):
+                return tags.get(key)
+            elif isinstance(tags, list):
+                for tag in tags:
+                    if isinstance(tag, dict) and key in tag:
+                        return tag[key]
+                    elif isinstance(tag, str) and f"{key}=" in tag:
+                        parts = tag.split('=')
+                        if parts[0] == key and len(parts) > 1:
+                            return parts[1]
+        return None
 
     def filter_resources(self, resources):
         key = self.data.get('key', None)
@@ -473,17 +520,6 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         self.failed_resources.extend(failed_resources)
         for failed_resource in failed_resources:
             resources.remove(failed_resource)
-
-    def process_resource_set(self, client, resource_batch, old_tags, new_tags, project_id):
-        request_body = ReqDeleteTag(project_id=project_id, resources=resource_batch, tags=old_tags)
-        request = DeleteResourceTagRequest(body=request_body)
-        client.delete_resource_tag(request=request)
-        self.log.info("Successfully remove tag %s resources with %s tags", len(resource_batch), len(old_tags))
-
-        request_body = ReqCreateTag(project_id=project_id, resources=resource_batch, tags=new_tags)
-        request = CreateResourceTagRequest(body=request_body)
-        client.create_resource_tag(request=request)
-        self.log.info("Successfully tagged %s resources with %s tags", len(resource_batch), len(new_tags))
 
     def get_project_id(self):
         iam_client = local_session(self.manager.session_factory).client("iam")
