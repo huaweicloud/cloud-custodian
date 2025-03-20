@@ -49,6 +49,7 @@ class ResourceQuery:
                 str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
 
             if path == '*':
+                log.info("res:{}", res)
                 res['id'] = res[m.id]
                 resources.append(res)
                 return resources
