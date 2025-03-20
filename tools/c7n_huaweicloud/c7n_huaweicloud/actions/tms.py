@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import concurrent.futures
 import logging
-from logging import exception
-from pydoc import render_doc
+import random
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkiam.v3 import KeystoneListProjectsRequest
@@ -15,6 +14,8 @@ from c7n.utils import type_schema, chunks, local_session
 
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 
+MAX_WORKERS = 5
+MAX_TAGS_SIZE = 10
 
 def register_tms_actions(actions):
     actions.register('mark', CreateResourceTagAction)
@@ -23,8 +24,11 @@ def register_tms_actions(actions):
     actions.register('unmark', DeleteResourceTagAction)
     actions.register('untag', DeleteResourceTagAction)
     actions.register('remove-tag', DeleteResourceTagAction)
+
     actions.register('rename-tag', RenameResourceTagAction)
     actions.register('normalize-tag', NormalizeResourceTagAction)
+
+    actions.register('tag-trim', TrimResourceTagAction)
 
 
 
@@ -99,7 +103,7 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
                 self.log.exception(
                     f"Unable to tagged {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
                 self.handle_exception(failed_resources=resource_batch, resources=resources)
-        return self.process_result(resources=resources)
+        return self.process_result(resources=[resource["resource_id"] for resource in resources])
 
     def perform_action(self, resource):
         pass
@@ -207,7 +211,7 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
                 self.log.exception(
                     f"Unable to remove tag {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
                 self.handle_exception(failed_resources=resource_batch, resources=resources)
-        return self.process_result(resources=resources)
+        return self.process_result(resources=[resource["resource_id"] for resource in resources])
 
     def perform_action(self, resource):
         pass
@@ -285,7 +289,7 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
         old_key = self.data.get('old_key')
         new_key = self.data.get('new_key')
         self.process_resources_concurrently(resources, old_key, new_key, value)
-        return self.process_result(resources=self.resources)
+        return self.process_result(resources=[resource["id"] for resource in self.resources])
 
     def process_resource(self, resource, old_key, new_key, value):
         try:
@@ -313,7 +317,7 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
             self.handle_exception(failed_resources=[resource], resources=self.resources)
 
     def process_resources_concurrently(self, resources, old_key, new_key, value):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = [executor.submit(self.process_resource, resource, old_key, new_key, value) for resource in resources]
             for future in concurrent.futures.as_completed(futures):
                 try:
@@ -325,19 +329,23 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
         pass
 
     def get_value_by_key(self, resource, key):
-        if isinstance(resource, dict) and 'tags' in resource:
-            tags = resource['tags']
-            if isinstance(tags, dict):
-                return tags.get(key)
-            elif isinstance(tags, list):
-                for tag in tags:
-                    if isinstance(tag, dict) and key in tag:
-                        return tag[key]
-                    elif isinstance(tag, str) and f"{key}=" in tag:
-                        parts = tag.split('=')
-                        if parts[0] == key and len(parts) > 1:
-                            return parts[1]
-        return None
+        try:
+            if isinstance(resource, dict) and 'tags' in resource:
+                tags = resource['tags']
+                if isinstance(tags, dict):
+                    return tags.get(key)
+                elif isinstance(tags, list):
+                    for tag in tags:
+                        if isinstance(tag, dict) and key in tag:
+                            return tag[key]
+                        elif isinstance(tag, str) and f"{key}=" in tag:
+                            parts = tag.split('=')
+                            if parts[0] == key and len(parts) > 1:
+                                return parts[1]
+            return None
+        except Exception as ex:
+            self.log.error("Parse Tags in resource %s failed", resource["id"])
+            return None
 
     def handle_exception(self, failed_resources, resources):
         self.failed_resources.extend(failed_resources)
@@ -444,7 +452,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         self.new_sub_str = self.data.get('new_sub_str', "")
 
         self.process_resources_concurrently(resources)
-        return self.process_result(resources=self.resources)
+        return self.process_result(resources=[resource["id"] for resource in self.resources])
 
     def process_resource(self, resource):
         try:
@@ -478,7 +486,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
             self.handle_exception(failed_resources=[resource], resources = self.resources)
 
     def process_resources_concurrently(self, resources):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = [executor.submit(self.process_resource, resource) for resource in resources]
             for future in concurrent.futures.as_completed(futures):
                 try:
@@ -505,19 +513,23 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
 
     def get_value_by_key(self, resource, key):
-        if isinstance(resource, dict) and 'tags' in resource:
-            tags = resource['tags']
-            if isinstance(tags, dict):
-                return tags.get(key)
-            elif isinstance(tags, list):
-                for tag in tags:
-                    if isinstance(tag, dict) and key in tag:
-                        return tag[key]
-                    elif isinstance(tag, str) and f"{key}=" in tag:
-                        parts = tag.split('=')
-                        if parts[0] == key and len(parts) > 1:
-                            return parts[1]
-        return None
+        try:
+            if isinstance(resource, dict) and 'tags' in resource:
+                tags = resource['tags']
+                if isinstance(tags, dict):
+                    return tags.get(key)
+                elif isinstance(tags, list):
+                    for tag in tags:
+                        if isinstance(tag, dict) and key in tag:
+                            return tag[key]
+                        elif isinstance(tag, str) and f"{key}=" in tag:
+                            parts = tag.split('=')
+                            if parts[0] == key and len(parts) > 1:
+                                return parts[1]
+            return None
+        except Exception as ex:
+            self.log.error("Parse Tags in resource %s failed", resource["id"])
+            return None
 
     def filter_resources(self, resources):
         key = self.data.get('key', None)
@@ -541,3 +553,134 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         self.log.error("Can not get project_id for %s", region)
         raise PolicyExecutionError("Can not get project_id for %s", region)
 
+
+class TrimResourceTagAction(HuaweiCloudBaseAction):
+    """Rename the specified tags from the specified resources.
+
+    :example:
+
+        .. code-block :: yaml
+
+            policies:
+            - name: multiple-tag-trim-example
+              resource: huaweicloud.volume
+              filters:
+                - type: value
+                  key: "length(tags)"
+                  op: ge
+                  value: 8
+              actions:
+                - type: tag-trim
+                  space: 3
+                  preserve:
+                    - owner1
+                    - owner2
+    """
+
+    log = logging.getLogger("custodian.huaweicloud.actions.tms.TrimResourceTagAction")
+
+    schema = type_schema("tag-trim",
+                         space={'type': 'integer'},
+                         preserve={'type': 'array', 'items': {'type': 'string'}})
+
+    def validate(self):
+        """validate"""
+        if not self.data.get('space'):
+            raise PolicyValidationError("Can not perform tag-trim without space")
+        return self
+
+    def process(self, resources):
+        self.resources = resources
+        self.project_id = self.get_project_id()
+        self.tms_client = self.get_tag_client()
+
+        space = self.data.get('space', 0)
+        preserve = self.data.get('preserve', [])
+        self.process_resources_concurrently(resources, space, preserve)
+        return self.process_result(resources=[resource["id"] for resource in self.resources])
+
+    def process_resource(self, resource, space, preserve):
+        try:
+            tags = self.get_tags_from_resource(resource)
+            delete_keys = self.get_delete_keys(tags, space, preserve)
+
+            old_tags = [{"key": key, "value": tags[key]} for key in delete_keys]
+            resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}]
+
+            request_body = ReqDeleteTag(project_id=self.project_id, resources=resources, tags=old_tags)
+            request = DeleteResourceTagRequest(body=request_body)
+            self.tms_client.delete_resource_tag(request=request)
+            self.log.info("Successfully remove tag %s resources with %s tags", len(resources), len(old_tags))
+        except exceptions.ClientRequestException as ex:
+            self.log.exception(
+                f"Unable to trim tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+
+    def process_resources_concurrently(self, resources, space, preserve):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = [executor.submit(self.process_resource, resource, space, preserve) for resource in resources]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    self.log.exception(f"process_resources_concurrently unexpected error occurred: {e}")
+
+    def perform_action(self, resource):
+        pass
+
+    def get_delete_keys(self, tags, space, preserve):
+        if MAX_TAGS_SIZE - len(tags) >= space:
+            return []
+        else:
+            delete_keys_count = len(tags) - (MAX_TAGS_SIZE - space)
+            delete_keys = [key for key in tags.keys if key not in preserve]
+            if delete_keys_count > len(delete_keys):
+                self.log.error("Can not remove tags with policy")
+                raise PolicyValidationError("Can not remove tags with policy")
+            index_to_delete = random.sample(range(len(delete_keys)), delete_keys_count)
+            index_to_delete.sort()
+
+            for index in index_to_delete:
+                del delete_keys[index]
+
+            return delete_keys
+
+
+    def get_tags_from_resource(self, resource):
+        try:
+            if isinstance(resource, dict) and 'tags' in resource:
+                tags = resource['tags']
+                if isinstance(tags, dict):
+                    return tags
+                elif isinstance(tags, list):
+                    res_tags = {}
+                    for tag in tags:
+                        if isinstance(tag, dict):
+                            return res_tags.update(tag)
+                        elif isinstance(tag, str):
+                            parts = tag.split('=')
+                            if len(parts) == 2:
+                                res_tags[parts[0]] = parts[1]
+                    return res_tags
+            return None
+        except Exception as ex:
+            self.log.error("Parse Tags in resource %s failed", resource["id"])
+            return None
+
+    def handle_exception(self, failed_resources, resources):
+        self.failed_resources.extend(failed_resources)
+        for failed_resource in failed_resources:
+            resources.remove(failed_resource)
+
+    def get_project_id(self):
+        iam_client = local_session(self.manager.session_factory).client("iam")
+
+        region = local_session(self.manager.session_factory).region
+        request = KeystoneListProjectsRequest(name=region)
+        response = iam_client.keystone_list_projects(request=request)
+        for project in response.projects:
+            if (region == project.name):
+                return project.id
+
+        self.log.error("Can not get project_id for %s", region)
+        raise PolicyExecutionError("Can not get project_id for %s", region)
