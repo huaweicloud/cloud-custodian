@@ -777,6 +777,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
 
         tags = [{'key': cfg['tag'], 'value': msg}]
 
+        print(tags)
         tms_client = self.get_tag_client()
         resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}
                      for resource in resources
