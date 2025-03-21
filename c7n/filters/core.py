@@ -581,7 +581,6 @@ class ValueFilter(BaseValueFilter):
         return self
 
     def __call__(self, i):
-        print(self.data.get('value_type'))
         if self.data.get('value_type') == 'resource_count':
             return self.process(i)
 

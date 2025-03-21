@@ -4,8 +4,8 @@ import logging
 
 from huaweicloudsdkconfig.v1 import DeleteTrackerConfigRequest, ShowTrackerConfigRequest
 
-from c7n.filters import ValueFilter
-from c7n.utils import type_schema, local_session
+from c7n.filters import ValueFilter, ANNOTATION_KEY
+from c7n.utils import type_schema, set_annotation
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -115,4 +115,15 @@ class ConfigRetentionConfigurations(ValueFilter):
         return super().process(resources, event)
 
     def __call__(self, resource):
-        return super().__call__(resource[self.annotation_key])
+        return self.__call_config__(resource[self.annotation_key])
+
+    def __call_config__(self, i):
+        print(self.data.get('value_type'))
+        if self.data.get('value_type') == 'resource_count':
+            return self.process(i)
+
+        matched = self.match(i)
+        print(matched)
+        if matched and self.annotate:
+            set_annotation(i, ANNOTATION_KEY, self.k)
+        return matched
