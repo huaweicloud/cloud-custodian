@@ -1,8 +1,6 @@
 import re
 from datetime import datetime, timedelta
 
-from more_itertools.more import nth_or_last
-
 from c7n import utils
 from c7n.exceptions import PolicyValidationError
 from c7n.filters import OPERATORS, Filter
