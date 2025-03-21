@@ -115,5 +115,4 @@ class ConfigRetentionConfigurations(ValueFilter):
         return super().process(resources, event)
 
     def __call__(self, resource):
-
         return super().__call__(resource[self.annotation_key])
