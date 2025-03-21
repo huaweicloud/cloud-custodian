@@ -135,8 +135,8 @@ class TagActionFilter(Filter):
 
         try:
             action_date_str = self.replace_nth_regex(action_date_str, "-", " ", 3)
-            action_date_str = self.replace_nth_regex(action_date_str, "-", ":", 4)
-            action_date_str = self.replace_nth_regex(action_date_str, "-", " ", 5)
+            action_date_str = self.replace_nth_regex(action_date_str, "-", ":", 3)
+            action_date_str = self.replace_nth_regex(action_date_str, "-", " ", 3)
             action_date = parse(action_date_str)
         except Exception:
             self.log.warning("could not parse tag:%s value:%s on %s" % (
