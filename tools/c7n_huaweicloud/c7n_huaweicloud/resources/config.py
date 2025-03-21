@@ -4,6 +4,8 @@ import logging
 
 from huaweicloudsdkconfig.v1 import DeleteTrackerConfigRequest
 
+from c7n.filters import ValueFilter
+from c7n.utils import type_schema
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -73,7 +75,7 @@ class ConfigRetentionConfigurations(ValueFilter):
 
     Huawei Config supports only one retention configuration in a particular account.
 
-    RetentionPeriodInDays value should be an integer ranging from 30 to 2557
+    retention_period_in_days value should be an integer ranging from 30 to 2557
 
     :example:
 
@@ -84,20 +86,9 @@ class ConfigRetentionConfigurations(ValueFilter):
           resource: config-recorder
           filters:
             - type: retention
-              key: RetentionPeriodInDays
+              key: retention_period_in_days
               value: 30
 
-    Also retrieves the retention configuration if no key/value is provided:
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-        - name: config-recorder
-          resource: config-recorder
-          filters:
-            - type: retention
     """
 
     schema = type_schema(
