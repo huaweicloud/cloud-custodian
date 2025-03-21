@@ -34,6 +34,8 @@ def register_tms_actions(actions):
 
     actions.register('tag-trim', TrimResourceTagAction)
 
+    actions.register('mark-for-op', CreateResourceTagDelayedAction)
+
 
 class CreateResourceTagAction(HuaweiCloudBaseAction):
     """Applies one or more tags to the specified resources.
