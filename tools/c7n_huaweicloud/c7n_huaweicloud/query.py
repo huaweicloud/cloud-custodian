@@ -96,6 +96,9 @@ class DescribeSource:
 class QueryMeta(type):
     """metaclass to have consistent action/filter registry for new resources."""
     def __new__(cls, name, parents, attrs):
+        if 'resource_type' not in attrs:
+            return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
+
         if 'filter_registry' not in attrs:
             attrs['filter_registry'] = FilterRegistry(
                 '%s.filters' % name.lower())
