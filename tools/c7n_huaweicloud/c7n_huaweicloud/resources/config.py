@@ -110,6 +110,7 @@ class ConfigRetentionConfigurations(ValueFilter):
     annotation_key = "huawei:ConfigRetentionConfigs"
 
     def process(self, resources, event=None):
+        print(resources)
         for resource in resources:
             resource[self.annotation_key] = {"retention_period_in_days": resource.get("retention_period_in_days", None)}
         return super().process(resources, event)
