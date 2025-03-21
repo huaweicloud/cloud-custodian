@@ -110,13 +110,8 @@ class ConfigRetentionConfigurations(ValueFilter):
     annotation_key = "huawei:ConfigRetentionConfigs"
 
     def process(self, resources, event=None):
-        client = local_session(self.manager.session_factory).client("config")
-
-        request = ShowTrackerConfigRequest()
-        response = client.show_tracker_config(request)
-        retention_config = str(response.retention_period_in_days)
         for resource in resources:
-            resource[self.annotation_key] = retention_config
+            resource[self.annotation_key] = {"retention_period_in_days": resource.get("retention_period_in_days", None)}
         return super().process(resources, event)
 
     def __call__(self, resource):
