@@ -46,6 +46,7 @@ huaweicloudsdksecmaster = "^3.1.140"
 huaweicloudsdksfsturbo = "^3.1.138"
 huaweicloudsdkorganizations ="^3.1.138"
 huaweicloudsdkram = "^3.1.138"
+huaweicloudsdkantiddos = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"

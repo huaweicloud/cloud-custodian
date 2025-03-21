@@ -79,6 +79,8 @@ from huaweicloudsdkcoc.v1.region.coc_region import CocRegion
 from huaweicloudsdkorganizations.v1 import OrganizationsClient, ListAccountsRequest, \
     ListOrganizationalUnitsRequest, ListPoliciesRequest
 from huaweicloudsdkorganizations.v1.region.organizations_region import OrganizationsRegion
+from huaweicloudsdkantiddos.v1 import AntiDDoSClient, ListDDosStatusRequest
+from huaweicloudsdkantiddos.v1.region.antiddos_region import AntiDDoSRegion
 from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
 from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
 from huaweicloudsdkram.v1 import RamClient, SearchResourceShareAssociationsRequest, \
@@ -358,6 +360,11 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(RamRegion.CN_NORTH_4) \
                 .build()
+        elif service == 'antiddos':
+            client = AntiDDoSClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(AntiDDoSRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -440,5 +447,7 @@ class Session:
             request.body = SearchResourceShareAssociationsReqBody(
                 association_type="principal",
                 association_status="associated")
+        elif service == 'antiddos':
+            request = ListDDosStatusRequest()
 
         return request
