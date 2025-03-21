@@ -716,7 +716,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
         tz={'type': 'string'},
         op={'type': 'string'})
 
-    default_template = '{op}@{action_date}'
+    default_template = '{op}_{action_date}'
     
     def validate(self):
         op = self.data.get('op')
@@ -756,7 +756,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
             days = 4
         action_date = (n + timedelta(days=days, hours=hours))
         if hours > 0:
-            action_date_string = action_date.strftime('%Y/%m/%d %H%M %Z')
+            action_date_string = action_date.strftime('%Y/%m/%d-%H%M-%Z')
         else:
             action_date_string = action_date.strftime('%Y/%m/%d')
 
