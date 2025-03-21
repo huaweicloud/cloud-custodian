@@ -15,6 +15,7 @@ from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
+from c7n_huaweicloud import query
 from c7n.filters import *
 from c7n.filters.offhours import OffHour, OnHour
 from dateutil.parser import parse
@@ -30,6 +31,24 @@ class Ecs(QueryResourceManager):
         id = 'id'
         tag = True
 
+@Ecs.action_registry.register("fetch-job-status")
+class FetchJobStatus(HuaweiCloudBaseAction):
+    
+  schema = type_schema("fetch-job-status", jobId={'type': 'string'}, required=('jobId',))
+
+  def process(self, resources):
+      jobId = self.data.get('jobId')
+      client = self.manager.get_client()
+      request = ShowJobRequest(job_id=jobId)
+      try:
+        response = client.show_job(request)
+      except exceptions.ClientRequestException as e:
+        log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+        raise
+      return json.dumps(response.to_dict())
+  
+  def perform_action(self, resource):
+      return super().perform_action(resource)
 
 @Ecs.action_registry.register("instance-start")
 class EcsStart(HuaweiCloudBaseAction):
@@ -49,23 +68,31 @@ class EcsStart(HuaweiCloudBaseAction):
             actions:
               - instance-start
     """
-
+    valid_origin_states = ('SHUTOFF',)
     schema = type_schema("instance-start")
 
     def process(self, resources):
         client = self.manager.get_client()
-        serverIds : List[ServerId] = []
-        for r in resources:
-            serverIds.append(ServerId(id=r['id']))
-        options = {"servers":serverIds}
-        requestBody = BatchStartServersRequestBody(os_start=options)
-        request = BatchStartServersRequest(body=requestBody)
+        instances = self.filter_resources(resources, 'status', self.valid_origin_states)
+        if not instances:
+            log.warning("No instance need start")
+            return None
+        request = self.init_request(instances)
         try:
           response = client.batch_start_servers(request)
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
         return json.dumps(response.to_dict())
+
+    def init_request(self, instances):
+        serverIds : List[ServerId] = []
+        for r in instances:
+            serverIds.append(ServerId(id=r['id']))
+        options = {"servers":serverIds}
+        requestBody = BatchStartServersRequestBody(os_start=options)
+        request = BatchStartServersRequest(body=requestBody)
+        return request
     
     def perform_action(self, resource):
        return super().perform_action(resource)
@@ -89,23 +116,30 @@ class EcsStop(HuaweiCloudBaseAction):
               - type: instance-stop
                 mode: "SOFT"
     """
-
+    valid_origin_states = ('ACTIVE',)
     schema = type_schema("instance-stop", mode={'type': 'string'})
 
     def process(self, resources):
         client = self.manager.get_client()
-        serverIds : List[ServerId] = []
-        for r in resources:
-            serverIds.append(ServerId(id=r['id']))
-        options = {"servers":serverIds,"type": self.data.get('mode', 'SOFT')}
-        requestBody = BatchStopServersRequestBody(os_stop=options)
-        request = BatchStopServersRequest(body=requestBody)
+        instances = self.filter_resources(resources, 'status', self.valid_origin_states)
+        if not instances:
+            log.warning("No instance need stop")
+        request = self.init_request(resources)
         try:
           response = client.batch_stop_servers(request)
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
         return json.dumps(response.to_dict())
+
+    def init_request(self, resources):
+        serverIds : List[ServerId] = []
+        for r in resources:
+            serverIds.append(ServerId(id=r['id']))
+        options = {"servers":serverIds,"type": self.data.get('mode', 'SOFT')}
+        requestBody = BatchStopServersRequestBody(os_stop=options)
+        request = BatchStopServersRequest(body=requestBody)
+        return request
     
     def perform_action(self, resource):
        return super().perform_action(resource)
@@ -369,7 +403,7 @@ class EcsAgeFilter(AgeFilter):
     
 @Ecs.filter_registry.register('instance-attribute')
 class InstanceAttributeFilter(ValueFilter):
-    """Automatically filter resources older or younger than a given date.
+    """ECS Instance Value Filter on a given instance attribute.
 
     :Example:
 
@@ -386,8 +420,7 @@ class InstanceAttributeFilter(ValueFilter):
     """
 
     valid_attrs = (
-        'id',
-        'flavor.id',
+        'flavorId',
         'OS-EXT-SRV-ATTR:user_data',
         'OS-EXT-SRV-ATTR:root_device_name')
 
@@ -406,16 +439,14 @@ class InstanceAttributeFilter(ValueFilter):
 
     def get_instance_attribute(self, resources, attribute):
         for resource in resources:
-            id = resource.get('id')
-            userData = resource.get('OS-EXT-SRV-ATTR:user_data', None)
+            userData = resource.get('OS-EXT-SRV-ATTR:user_data', '')
             flavorId = resource['flavor']['id']
             rootDeviceName = ['OS-EXT-SRV-ATTR:root_device_name']
-            attributes = {'id': id,
-                          'OS-EXT-SRV-ATTR:user_data': userData,
-                          'flavor.id': flavorId,
-                          'OS-EXT-SRV-ATTR:root_device_name': rootDeviceName}
+            attributes = {'OS-EXT-SRV-ATTR:user_data': {'Value':deserialize_user_data(userData)},
+                          'flavorId': {'Value':flavorId},
+                          'OS-EXT-SRV-ATTR:root_device_name': {'Value':rootDeviceName}}
             resource['c7n:attribute-%s' % attribute] = attributes[attribute]
-
+  
 class InstanceImageBase:
 
     def prefetch_instance_images(self, instances):
@@ -615,3 +646,170 @@ class InstanceUserData(ValueFilter):
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
         return response.server.os_ext_srv_att_ruser_data
+    
+
+@Ecs.filter_registry.register('offhour')
+class InstanceOffHour(OffHour):
+    """Custodian OffHour filter
+
+    Filters running EC2 instances with the intent to stop at a given hour of
+    the day. A list of days to excluded can be included as a list of strings
+    with the format YYYY-MM-DD. Alternatively, the list (using the same syntax)
+    can be taken from a specified url.
+
+    Note: You can disable filtering of only running instances by setting
+    `state-filter: false`
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: offhour-evening-stop
+            resource: ec2
+            filters:
+              - type: offhour
+                tag: custodian_downtime
+                default_tz: et
+                offhour: 20
+            actions:
+              - stop
+
+          - name: offhour-evening-stop-skip-holidays
+            resource: ec2
+            filters:
+              - type: offhour
+                tag: custodian_downtime
+                default_tz: et
+                offhour: 20
+                skip-days: ['2017-12-25']
+            actions:
+              - stop
+
+          - name: offhour-evening-stop-skip-holidays-from
+            resource: ec2
+            filters:
+              - type: offhour
+                tag: custodian_downtime
+                default_tz: et
+                offhour: 20
+                skip-days-from:
+                  expr: 0
+                  format: csv
+                  url: 's3://location/holidays.csv'
+            actions:
+              - stop
+    """
+
+    schema = type_schema(
+        'offhour', rinherit=OffHour.schema,
+        **{'state-filter': {'type': 'boolean'}})
+    schema_alias = False
+
+    valid_origin_states = ('ACTIVE',)
+
+    def process(self, resources, event=None):
+        if self.data.get('state-filter', True):
+            return super(InstanceOffHour, self).process(
+                self.filter_resources(resources, 'status', self.valid_origin_states))
+        else:
+            return super(InstanceOffHour, self).process(resources)
+
+@Ecs.filter_registry.register('onhour')
+class InstanceOnHour(OnHour):
+    """Custodian OnHour filter
+
+    Filters stopped EC2 instances with the intent to start at a given hour of
+    the day. A list of days to excluded can be included as a list of strings
+    with the format YYYY-MM-DD. Alternatively, the list (using the same syntax)
+    can be taken from a specified url.
+
+    Note: You can disable filtering of only stopped instances by setting
+    `state-filter: false`
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: onhour-morning-start
+            resource: ec2
+            filters:
+              - type: onhour
+                tag: custodian_downtime
+                default_tz: et
+                onhour: 6
+            actions:
+              - start
+
+          - name: onhour-morning-start-skip-holidays
+            resource: ec2
+            filters:
+              - type: onhour
+                tag: custodian_downtime
+                default_tz: et
+                onhour: 6
+                skip-days: ['2017-12-25']
+            actions:
+              - start
+
+          - name: onhour-morning-start-skip-holidays-from
+            resource: ec2
+            filters:
+              - type: onhour
+                tag: custodian_downtime
+                default_tz: et
+                onhour: 6
+                skip-days-from:
+                  expr: 0
+                  format: csv
+                  url: 's3://location/holidays.csv'
+            actions:
+              - start
+    """
+
+    schema = type_schema(
+        'onhour', rinherit=OnHour.schema,
+        **{'state-filter': {'type': 'boolean'}})
+    schema_alias = False
+
+    valid_origin_states = ('SHUTOFF',)
+
+    def process(self, resources, event=None):
+        if self.data.get('state-filter', True):
+            return super(InstanceOnHour, self).process(
+                self.filter_resources(resources, 'status', self.valid_origin_states))
+        else:
+            return super(InstanceOnHour, self).process(resources)
+        
+@Ecs.filter_registry.register('instance-evs')
+class InstanceEvs():
+    
+    schema = type_schema('instance-evs')
+    schema_alias = False
+
+    def process(self, resources, event=None):
+        return self.get_volume_mapping_ecs_instance(resources)
+    
+    def get_volume_mapping_ecs_instance(self, resources):
+        result = []
+        serverIds = list(resources['id'])
+        evsResources = self.manager.get_resource_manager('huaweicloud.evs').get_resources(serverIds)
+        for resource in resources:
+            for evs in evsResources:
+                evsServerIds = list(evs.attachments['server_id'])
+                if resource['id'] in evsServerIds:
+                    result.append[resource]
+                    break
+        return result
+
+@Ecs.filter_registry.register('instance-vpc')
+class InstanceVpc():
+
+    schema = type_schema('instance-vpc')
+    schema_alias = False
+    # TODO
+
+    def process(self, resources, event=None):
+        vpcIds = list(resources.metadata['vpc_id'])
+        
