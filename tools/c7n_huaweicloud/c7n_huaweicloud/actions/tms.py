@@ -20,6 +20,7 @@ from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 MAX_WORKERS = 5
 MAX_TAGS_SIZE = 10
 RSOURCE_MAX_SIZE = 50
+DEFAULT_TAG = "mark-for-op-tag"
 
 def register_tms_actions(actions):
     actions.register('mark', CreateResourceTagAction)
@@ -727,10 +728,6 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
                 "mark-for-op specifies invalid op:%s in %s" % (
                     op, self.manager.data))
         
-        if self.data.get('tags'):
-            raise PolicyValidationError(
-                "Can not perform mark-for-op without tag")
-        
         self.tz = tzutil.gettz(
             Time.TZ_ALIASES.get(self.data.get('tz', 'utc')))
         if not self.tz:
@@ -741,8 +738,8 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
     
     def get_config_values(self):
         cfg = {
-            'op': self.data.get('op'),
-            'tag': self.data.get('tag'),
+            'op': self.data.get('op', 'stop'),
+            'tag': self.data.get('tag', DEFAULT_TAG),
             'msg': self.data.get('msg', self.default_template),
             'tz': self.data.get('tz', 'utc'),
             'days': self.data.get('days', 0),
@@ -758,7 +755,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
             days = 4
         action_date = (n + timedelta(days=days, hours=hours))
         if hours > 0:
-            action_date_string = action_date.strftime('%Y-%m-%d-%H%-M-%Z')
+            action_date_string = action_date.strftime('%Y-%m-%d-%H-%M-%Z')
         else:
             action_date_string = action_date.strftime('%Y-%m-%d')
 
