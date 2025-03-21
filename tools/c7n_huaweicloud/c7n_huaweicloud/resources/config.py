@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 
-from huaweicloudsdkconfig.v1 import DeleteTrackerConfigRequest
+from huaweicloudsdkconfig.v1 import DeleteTrackerConfigRequest, ShowTrackerConfigRequest
 
 from c7n.filters import ValueFilter
-from c7n.utils import type_schema
+from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -68,59 +68,57 @@ class DeleteTrackerAction(HuaweiCloudBaseAction):
 #         self.log.info("Successfully delete config-tracker of %s", resource.get("id", resource.get("name")))
 
 
-# @ConfigTracker.filter_registry.register("retention")
-# class ConfigRetentionConfigurations(ValueFilter):
-#     """
-#     Filter to look for config retention configurations
-#
-#     AWS Config supports only one retention configuration per region in a particular account.
-#
-#     RetentionPeriodInDays value should be an integer ranging from 30 to 2557
-#
-#     :example:
-#
-#     .. code-block:: yaml
-#
-#         policies:
-#         - name: config-recorder-verify-retention
-#           resource: config-recorder
-#           filters:
-#             - type: retention
-#               key: RetentionPeriodInDays
-#               value: 30
-#
-#     Also retrieves the retention configuration if no key/value is provided:
-#
-#     :example:
-#
-#     .. code-block:: yaml
-#
-#         policies:
-#         - name: config-recorder
-#           resource: config-recorder
-#           filters:
-#             - type: retention
-#     """
-#
-#     schema = type_schema(
-#         "retention",
-#         rinherit=ValueFilter.schema,
-#
-#     )
-#     schema_alias = False
-#     permissions = ("config:DescribeRetentionConfigurations",)
-#     annotation_key = "c7n:ConfigRetentionConfigs"
-#
-#     def process(self, resources, event=None):
-#         client = local_session(self.manager.session_factory).client("config")
-#
-#         retention_configs = client.describe_retention_configurations().get(
-#             "RetentionConfigurations", []
-#         )
-#         retention_config = retention_configs and retention_configs[0] or {}
-#         for resource in resources:
-#             resource[self.annotation_key] = retention_config
-#         return super().process(resources, event)
-#
-#     def __call__(self, resource):
-#         return super().__call__(resource[self.annotation_key])
+@ConfigTracker.filter_registry.register("retention")
+class ConfigRetentionConfigurations(ValueFilter):
+    """
+    Filter to look for config retention configurations
+
+    Huawei Config supports only one retention configuration in a particular account.
+
+    RetentionPeriodInDays value should be an integer ranging from 30 to 2557
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+        - name: config-recorder-verify-retention
+          resource: config-recorder
+          filters:
+            - type: retention
+              key: RetentionPeriodInDays
+              value: 30
+
+    Also retrieves the retention configuration if no key/value is provided:
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+        - name: config-recorder
+          resource: config-recorder
+          filters:
+            - type: retention
+    """
+
+    schema = type_schema(
+        "retention",
+        rinherit=ValueFilter.schema,
+
+    )
+    annotation_key = "huawei:ConfigRetentionConfigs"
+
+    def process(self, resources, event=None):
+        client = local_session(self.manager.session_factory).client("config")
+
+        request = ShowTrackerConfigRequest()
+        retention_config = client.show_tracker_config(request).get(
+            "retention_period_in_days", None
+        )
+        for resource in resources:
+            resource[self.annotation_key] = retention_config
+        return super().process(resources, event)
+
+    def __call__(self, resource):
+        return super().__call__(resource[self.annotation_key])
