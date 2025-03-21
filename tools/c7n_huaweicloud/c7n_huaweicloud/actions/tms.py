@@ -3,12 +3,15 @@
 import concurrent.futures
 import logging
 import random
+from datetime import datetime, timedelta
 
+from dateutil import tz as tzutil
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkiam.v3 import KeystoneListProjectsRequest
 from huaweicloudsdktms.v1 import CreateResourceTagRequest, ReqCreateTag, ReqDeleteTag, DeleteResourceTagRequest
 
 from c7n.exceptions import PolicyValidationError, PolicyExecutionError
+from c7n.filters.offhours import Time
 
 from c7n.utils import type_schema, chunks, local_session
 
@@ -16,6 +19,7 @@ from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 
 MAX_WORKERS = 5
 MAX_TAGS_SIZE = 10
+RSOURCE_MAX_SIZE = 50
 
 def register_tms_actions(actions):
     actions.register('mark', CreateResourceTagAction)
@@ -29,7 +33,6 @@ def register_tms_actions(actions):
     actions.register('normalize-tag', NormalizeResourceTagAction)
 
     actions.register('tag-trim', TrimResourceTagAction)
-
 
 
 class CreateResourceTagAction(HuaweiCloudBaseAction):
@@ -60,8 +63,6 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
                          key={'type': 'string'},
                          value={'type': 'string'},
                          tag={'type': 'string'})
-    resource_max_size = 50
-    tags_max_size = 10
 
     def validate(self):
         """validate"""
@@ -86,16 +87,16 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
         if value:
             tags.append({"key": key, "value": value})
 
-        if len(tags) > self.tags_max_size:
-            self.log.error("Can not tag more than %s tags at once", self.tags_max_size)
-            raise PolicyValidationError("Can not tag more than %s tags at once", self.tags_max_size)
+        if len(tags) > MAX_TAGS_SIZE:
+            self.log.error("Can not tag more than %s tags at once", MAX_TAGS_SIZE)
+            raise PolicyValidationError("Can not tag more than %s tags at once", MAX_TAGS_SIZE)
 
         tms_client = self.get_tag_client()
         resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}
                      for resource in resources
                      if "tag_resource_type" in resource.keys() and len(resource['tag_resource_type']) > 0]
 
-        for resource_batch in chunks(resources, self.resource_max_size):
+        for resource_batch in chunks(resources, RSOURCE_MAX_SIZE):
             try:
                 failed_resources = self.process_resource_set(tms_client, resource_batch, tags, project_id)
                 self.handle_exception(failed_resources=failed_resources, resources=resources)
@@ -136,6 +137,7 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
         self.log.error("Can not get project_id for %s", region)
         raise PolicyExecutionError("Can not get project_id for %s", region)
 
+
 class DeleteResourceTagAction(HuaweiCloudBaseAction):
     """Removes the specified tags from the specified resources.
 
@@ -174,8 +176,6 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
 
     schema = type_schema("remove-tag", aliases=('unmark', 'untag', 'remove-tag'),
                          tags={'type': 'array'}, tag_values={'type': 'object'})
-    resource_max_size = 50
-    tags_max_size = 10
 
     def validate(self):
         """validate"""
@@ -194,16 +194,16 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
         else:
             key_values = [{"key": k} for k in tags]
 
-        if len(key_values) > self.tags_max_size:
-            self.log.error("Can not remove tag more than %s tags at once", self.tags_max_size)
-            raise PolicyValidationError("Can not remove tag more than %s tags at once", self.tags_max_size)
+        if len(key_values) > MAX_TAGS_SIZE:
+            self.log.error("Can not remove tag more than %s tags at once", MAX_TAGS_SIZE)
+            raise PolicyValidationError("Can not remove tag more than %s tags at once", MAX_TAGS_SIZE)
 
         tms_client = self.get_tag_client()
         resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}
                      for resource in resources
                      if "tag_resource_type" in resource.keys() and len(resource['tag_resource_type']) > 0]
 
-        for resource_batch in chunks(resources, self.resource_max_size):
+        for resource_batch in chunks(resources, RSOURCE_MAX_SIZE):
             try:
                 failed_resources = self.process_resource_set(tms_client, resource_batch, key_values, project_id)
                 self.handle_exception(failed_resources=failed_resources, resources=resources)
@@ -270,7 +270,6 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
                          value={'type': 'string'},
                          old_key={'type': 'string'},
                          new_key={'type': 'string'})
-    resource_max_size = 50
 
     def validate(self):
         """validate"""
@@ -422,7 +421,6 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
                                  }},
                          old_sub_str={'type': 'string'},
                          new_sub_str={'type': 'string'})
-    resource_max_size = 50
 
     def validate(self):
         """validate"""
@@ -671,6 +669,144 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
         self.failed_resources.extend(failed_resources)
         for failed_resource in failed_resources:
             resources.remove(failed_resource)
+
+    def get_project_id(self):
+        iam_client = local_session(self.manager.session_factory).client("iam")
+
+        region = local_session(self.manager.session_factory).region
+        request = KeystoneListProjectsRequest(name=region)
+        response = iam_client.keystone_list_projects(request=request)
+        for project in response.projects:
+            if (region == project.name):
+                return project.id
+
+        self.log.error("Can not get project_id for %s", region)
+        raise PolicyExecutionError("Can not get project_id for %s", region)
+
+
+class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
+    """Tag resources for future action.
+
+        The optional 'tz' parameter can be used to adjust the clock to align
+        with a given timezone. The default value is 'utc'.
+
+        If neither 'days' nor 'hours' is specified, Cloud Custodian will default
+        to marking the resource for action 4 days in the future.
+
+        .. code-block :: yaml
+
+          policies:
+            - name: multiple-tags-example
+              resource: huaweicloud.volume
+              filters:
+                - type: value
+                  key: metadata.__system__encrypted
+                  value: "0"
+              actions:
+                - type: mark-for-op
+                  tag: test-key
+                  op: stop
+                  days: 4
+    """
+    schema = type_schema('mark-for-op',
+        tag={'type': 'string'},
+        msg={'type': 'string'},
+        days={'type': 'number', 'minimum': 0},
+        hours={'type': 'number', 'minimum': 0},
+        tz={'type': 'string'},
+        op={'type': 'string'})
+
+    default_template = '{op}@{action_date}'
+    
+    def validate(self):
+        op = self.data.get('op')
+        if self.manager and op not in self.manager.action_registry.keys():
+            raise PolicyValidationError(
+                "mark-for-op specifies invalid op:%s in %s" % (
+                    op, self.manager.data))
+        
+        if self.data.get('tags'):
+            raise PolicyValidationError(
+                "Can not perform mark-for-op without tag")
+        
+        self.tz = tzutil.gettz(
+            Time.TZ_ALIASES.get(self.data.get('tz', 'utc')))
+        if not self.tz:
+            raise PolicyValidationError(
+                "Invalid timezone specified %s in %s" % (
+                    self.tz, self.manager.data))
+        return self
+    
+    def get_config_values(self):
+        cfg = {
+            'op': self.data.get('op'),
+            'tag': self.data.get('tag'),
+            'msg': self.data.get('msg', self.default_template),
+            'tz': self.data.get('tz', 'utc'),
+            'days': self.data.get('days', 0),
+            'hours': self.data.get('hours', 0)}
+        cfg['action_date'] = self.generate_timestamp(
+            cfg['days'], cfg['hours'])
+        return cfg
+    
+    def generate_timestamp(self, days, hours):
+        n = datetime.now(tz=self.tz)
+        if days is None or hours is None:
+            # maintains default value of days being 4 if nothing is provided
+            days = 4
+        action_date = (n + timedelta(days=days, hours=hours))
+        if hours > 0:
+            action_date_string = action_date.strftime('%Y/%m/%d %H%M %Z')
+        else:
+            action_date_string = action_date.strftime('%Y/%m/%d')
+
+        return action_date_string
+    
+    def process(self, resources):
+        project_id = self.get_project_id()
+        cfg = self.get_config_values()
+        self.tz = tzutil.gettz(Time.TZ_ALIASES.get(cfg['tz']))
+
+        msg = cfg['msg'].format(
+            op=cfg['op'], action_date=cfg['action_date'])
+
+        self.log.info("Tagging %d resources for %s on %s" % (
+            len(resources), cfg['op'], cfg['action_date']))
+
+        tags = [{'key': cfg['tag'], 'value': msg}]
+
+        tms_client = self.get_tag_client()
+        resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}
+                     for resource in resources
+                     if "tag_resource_type" in resource.keys() and len(resource['tag_resource_type']) > 0]
+        
+        for resource_batch in chunks(resources, RSOURCE_MAX_SIZE):
+            try:
+                failed_resources = self.process_resource_set(tms_client, resource_batch, tags, project_id)
+                self.handle_exception(failed_resources=failed_resources, resources=resources)
+            except exceptions.ClientRequestException as ex:
+                self.log.exception(
+                    f"Unable to mark-for-op {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                self.handle_exception(failed_resources=resource_batch, resources=resources)
+        return self.process_result(resources=[resource["resource_id"] for resource in resources])
+
+    def perform_action(self, resource):
+        pass
+
+    def handle_exception(self, failed_resources, resources):
+        self.failed_resources.extend(failed_resources)
+        for failed_resource in failed_resources:
+            resources.remove(failed_resource)
+
+    def process_resource_set(self, client, resource_batch, tags, project_id):
+        request_body = ReqCreateTag(project_id=project_id, resources=resource_batch, tags=tags)
+        request = CreateResourceTagRequest(body=request_body)
+        response = client.create_resource_tag(request=request)
+        failed_resource_ids = [failed_resource.get("resource_id", "") for failed_resource in
+                               response.failed_resources]
+        self.log.info("Successfully mark-for-op %s resources with %s tags",
+                      len(resource_batch) -len(failed_resource_ids), len(tags))
+        return [resource for resource in resource_batch if resource["resource_id"] in failed_resource_ids]
 
     def get_project_id(self):
         iam_client = local_session(self.manager.session_factory).client("iam")
