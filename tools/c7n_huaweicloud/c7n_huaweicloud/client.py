@@ -36,7 +36,7 @@ class Session:
             sys.exit(1)
 
     def client(self, service):
-        credentials = BasicCredentials(self.ak, self.sk)
+        credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID'))
         if service == 'vpc':
             client = VpcClient.new_builder() \
                 .with_credentials(credentials) \
