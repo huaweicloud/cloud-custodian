@@ -113,9 +113,8 @@ class ConfigRetentionConfigurations(ValueFilter):
         client = local_session(self.manager.session_factory).client("config")
 
         request = ShowTrackerConfigRequest()
-        retention_config = client.show_tracker_config(request).get(
-            "retention_period_in_days", None
-        )
+        response = client.show_tracker_config(request)
+        retention_config = response.retention_period_in_days
         for resource in resources:
             resource[self.annotation_key] = retention_config
         return super().process(resources, event)
