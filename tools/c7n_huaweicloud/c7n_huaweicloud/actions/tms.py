@@ -758,7 +758,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
             days = 4
         action_date = (n + timedelta(days=days, hours=hours))
         if hours > 0:
-            action_date_string = action_date.strftime('%Y/%m/%d-%H%M-%Z')
+            action_date_string = action_date.strftime('%Y/%m/%d%H%M%Z')
         else:
             action_date_string = action_date.strftime('%Y/%m/%d')
 
