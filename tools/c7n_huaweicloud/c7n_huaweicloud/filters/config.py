@@ -76,7 +76,7 @@ class ConfigCompliance(Filter):
 
             resource_map = {}
             for state in states:
-                state_map = {'evaluation_time': int(state['evaluation_time'])}
+                state_map = {'evaluation_time': int(state.evaluation_time)}
                 if not filters:
                     resource_map.setdefault(
                         state['resource_id'], []).append(state)
