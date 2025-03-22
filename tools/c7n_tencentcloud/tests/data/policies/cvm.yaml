@@ -1,8 +1,0 @@
-policies:
-- name: cvm-invalid-img
-  resource: tencentcloud.cvm
-  comment: |
-    Find all running cvm instances that are using invalid IMGs and stop them
-  filters:
-    - "InstanceState": RUNNING
-

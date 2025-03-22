@@ -1,5 +1,0 @@
-bottle
-c7n
-ipaddress
-raven
-contextlib2
