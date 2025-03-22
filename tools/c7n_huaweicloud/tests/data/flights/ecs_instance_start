@@ -1,0 +1,55 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ecs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250322T064422Z
+    method: GET
+    uri: https://ecs.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/cloudservers/detail?limit=100&offset=0
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 22 Mar 2025 06:44:22 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=72aea76121f8ea1be3; path=/
+      - HWWAFSESTIME=1742625862062; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a734ecfa509d2b404c1a4adb8a3ba6bb
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

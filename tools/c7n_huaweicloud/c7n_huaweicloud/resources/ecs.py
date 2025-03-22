@@ -783,7 +783,7 @@ class InstanceOnHour(OnHour):
             return super(InstanceOnHour, self).process(resources)
         
 @Ecs.filter_registry.register('instance-evs')
-class InstanceEvs():
+class InstanceEvs(ValueFilter):
     
     schema = type_schema('instance-evs')
     schema_alias = False
@@ -793,11 +793,13 @@ class InstanceEvs():
     
     def get_volume_mapping_ecs_instance(self, resources):
         result = []
-        serverIds = list(resources['id'])
-        evsResources = self.manager.get_resource_manager('huaweicloud.evs').get_resources(serverIds)
+        serverIds = list(item['id'] for item in resources)
+        evsResources = self.manager.get_resource_manager('huaweicloud.volume').resources()
         for resource in resources:
             for evs in evsResources:
-                evsServerIds = list(evs.attachments['server_id'])
+                log.info(evs['attachments'])
+                evsServerIds = list(item.attachments['server_id'] for item in evs)
+                log.info(evsServerIds)
                 if resource['id'] in evsServerIds:
                     result.append[resource]
                     break
