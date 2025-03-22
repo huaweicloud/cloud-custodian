@@ -79,12 +79,11 @@ class ConfigCompliance(Filter):
                 state_map = {'evaluation_time': int(state.evaluation_time)}
                 if not filters:
                     resource_map.setdefault(
-                        state['resource_id'], []).append(state)
+                        state.resource_id, []).append(state)
                     continue
-                print(state_map)
                 if op([f.match(state) for f in filters]):
                     resource_map.setdefault(
-                        state['resource_id'], []).append(state)
+                        state.resource_id, []).append(state)
 
         return resource_map
 
