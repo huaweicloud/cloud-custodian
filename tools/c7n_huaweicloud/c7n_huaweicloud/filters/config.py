@@ -112,9 +112,6 @@ class ConfigCompliance(Filter):
         supported by aws config, automatically, register the
         config-compliance filter.
         """
-        if (resource_class.resource_type.cfn_type is None and
-                resource_class.resource_type.config_type is None):
-            return
         resource_class.filter_registry.register('config-compliance', klass)
 
 
