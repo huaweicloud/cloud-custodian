@@ -14,11 +14,14 @@ from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v3 import IamClient
 from huaweicloudsdkiam.v3.region.iam_region import IamRegion
-from huaweicloudsdktms.v1 import TmsClient
-from huaweicloudsdkvpc.v2 import ListSecurityGroupsRequest
 from huaweicloudsdkvpc.v2.vpc_client import VpcClient as VpcClientV2
 from huaweicloudsdkvpc.v3.region.vpc_region import VpcRegion
 from huaweicloudsdkvpc.v3.vpc_client import VpcClient as VpcClientV3
+from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
+from huaweicloudsdkfunctiongraph.v2 import FunctionGraphClient, ListFunctionsRequest
+from huaweicloudsdkfunctiongraph.v2.region.functiongraph_region import FunctionGraphRegion
+from huaweicloudsdkvpc.v2 import *
+from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
@@ -108,6 +111,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(SmnRegion.value_of(self.region)) \
                 .build()
+        elif service == 'functiongraph':
+            client = FunctionGraphClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(FunctionGraphRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -122,4 +130,7 @@ class Session:
             request = ListDedicatedHostsRequest()
         elif service == 'ces':
             request = ListAlarmRulesRequest()
+        elif service == 'functiongraph':
+            request = ListFunctionsRequest()
+
         return request

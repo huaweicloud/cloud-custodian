@@ -10,5 +10,6 @@ ResourceMap = {
     "huaweicloud.vpc-flow-log": "c7n_huaweicloud.resources.vpc.FlowLog",
     "huaweicloud.vpc-port": "c7n_huaweicloud.resources.vpc.Port",
     "huaweicloud.vpc-security-group": "c7n_huaweicloud.resources.vpc.SecurityGroup",
-    "huaweicloud.vpc-security-group-rule": "c7n_huaweicloud.resources.vpc.SecurityGroupRule"
+    "huaweicloud.vpc-security-group-rule": "c7n_huaweicloud.resources.vpc.SecurityGroupRule",
+    "huaweicloud.functiongraph": "c7n_huaweicloud.resources.functiongraph.function",
 }
