@@ -72,7 +72,7 @@ class ConfigCompliance(Filter):
             state_request = ListPolicyStatesByAssignmentIdRequest(policy_assignment_id=policy_id,
                                                                   compliance_state=states)
             state_response = client.list_policy_states_by_assignment_id(request=state_request)
-            states = state_response.value or None
+            states = state_response.value
 
             resource_map = {}
             for state in states:
