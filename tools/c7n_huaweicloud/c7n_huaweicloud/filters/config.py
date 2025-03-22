@@ -80,7 +80,7 @@ class ConfigCompliance(Filter):
                     resource_map.setdefault(
                         state['resource_id'], []).append(state)
                     continue
-
+                print(state)
                 if op([f.match(state) for f in filters]):
                     resource_map.setdefault(
                         state['resource_id'], []).append(state)
