@@ -5,18 +5,24 @@ import logging
 import os
 import sys
 
-from huaweicloudsdkcore.auth.credentials import BasicCredentials
+from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
 from huaweicloudsdkconfig.v1.region.config_region import ConfigRegion
 from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
 from huaweicloudsdkecs.v2 import *
+from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
 from huaweicloudsdkevs.v2 import *
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v3 import IamClient
 from huaweicloudsdkiam.v3.region.iam_region import IamRegion
 from huaweicloudsdkvpc.v2 import *
+from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
 from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
+from huaweicloudsdksmn.v2 import *
+from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
+from huaweicloudsdkcoc.v1 import *
+from huaweicloudsdkcoc.v1.region.coc_region import CocRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -58,9 +64,9 @@ class Session:
                 .with_region(EvsRegion.value_of(self.region)) \
                 .build()
         elif service == 'tms':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
+            global_credentials = GlobalCredentials(self.ak, self.sk)
             client = TmsClient.new_builder() \
-                .with_credentials(globalCredentials) \
+                .with_credentials(global_credentials) \
                 .with_region(TmsRegion.value_of(self.region)) \
                 .build()
         elif service == 'iam':
@@ -75,6 +81,17 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(ConfigRegion.value_of(self.region)) \
                 .build()
+        elif service == 'coc':
+            global_credentials = GlobalCredentials(self.ak, self.sk)
+            client = CocClient.new_builder() \
+                .with_credentials(global_credentials) \
+                .with_region(CocRegion.value_of(self.region)) \
+                .build()
+        elif service == 'smn':
+            client = SmnClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(SmnRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -85,5 +102,7 @@ class Session:
             request = ListVolumesRequest()
         elif service == 'config':
             request = ShowTrackerConfigRequest()
+        elif service == 'coc':
+            request = ListInstanceCompliantRequest()
 
         return request
