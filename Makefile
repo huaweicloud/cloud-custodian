@@ -38,6 +38,9 @@ install:
 test:
 	. $(PWD)/test.env && poetry run pytest -n auto $(ARGS) tests tools
 
+test-huaweicloud:
+	. $(PWD)/test.env && poetry run pytest -n auto $(ARGS) tools/c7n_huaweicloud
+
 test-coverage:
 	. $(PWD)/test.env && poetry run pytest -n auto \
             --cov-config .coveragerc \
