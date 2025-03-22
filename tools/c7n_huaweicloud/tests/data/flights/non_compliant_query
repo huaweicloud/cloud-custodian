@@ -1,0 +1,50 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - coc-intl.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://coc-intl.myhuaweicloud.com/v1/patch/instance/compliant?offset=1&limit=10&compliant_status=non_compliant
+  response:
+    body:
+      string: '{"count" : 1,"instance_compliant" : [ {"baseline_id" : "JX-f2d85e2554f7385cbbf2c23a01f41","baseline_name" : "COC-EulerOSDefaultPatchBaseline","cce_info_id" : null,"compliant_summary" : {"compliant_count" : 264,"severity_summary" : {"critical_count" : 0,"high_count" : 0,"informational_count" : 0,"low_count" : 0,"medium_count" : 0,"unspecified_count" : 264}},"eip" : null,"enterprise_project_id" : "string","execution_summary" : {"job_id" : "string","order_id" : "string","report_time" : 1715308575000},"group" : null,"id" : "string","instance_id" : "string","ip" : "string","name" : "string","node_id" : "","non_compliant_summary" : {non_compliant_count" : 204,"severity_summary" : {"critical_count" : 0,"high_count" : 0,"informational_count" : 0,"low_count" : 0,"medium_count" : 0,"unspecified_count" : 0}},"operating_system" : "EulerOS","region" : "string","report_scene" : "ECS","rule_type" : "standard","status" : "non_compliant"} ]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1

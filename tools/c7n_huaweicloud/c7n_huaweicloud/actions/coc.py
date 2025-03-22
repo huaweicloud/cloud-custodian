@@ -20,7 +20,7 @@ class Coc(QueryResourceManager):
         id = 'id'
         tag = True
 
-@Coc.action_registry.register("non-compliant-patch")
+@Coc.action_registry.register("non_compliant_alarm")
 class NonCompliantAlarm(HuaweiCloudBaseAction):
     """Alarm non compliant patch.
 
@@ -44,7 +44,7 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
                  key: compliant_status
                  value: non_compliant
              actions:
-               - type: alarm
+               - type: non_compliant_alarm
                  smn: true
                  region_id: cn-north-4
                  topic_urn: ********
@@ -52,7 +52,7 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
                  message: ********
     """
 
-    schema = type_schema("alarm",
+    schema = type_schema("non_compliant_alarm",
                          smn={'type': 'boolean'},
                          region_id={'type': 'string'},
                          topic_urn={'type': 'string'},

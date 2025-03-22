@@ -1,0 +1,50 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - smn.af-south-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://smn.af-south-1.myhuaweicloud.com/v2/{project_id}/notifications/topics/urn:smn:regionId:f96188c7ccaf4ffba0c9aa149ab2bd57:test_create_topic_v2/publish
+  response:
+    body:
+      string: '{"subject" : "test message v2","message_structure" : "{   \"default\": \"Message structure test message v2\",   \"sms\": \"Message structure test message v2\",   \"email\": \"Message structure test message v2\",   \"wechat\": \"{\\\"msgtype\\\":\\\"text\\\",\\\"text\\\":{\\\"content\\\":\\\"Message structure test message v2\\\"}}\",   \"dingding\": \"{\\\"msgtype\\\":\\\"markdown\\\",\\\"at\\\":{\\\"atMobiles\\\": [\\\"15XXXXXX\\\"],\\\"atUserIds\\\": [\\\"1234567XXX\\\"],\\\"isAtAll\\\": true},\\\"markdown\\\":{\\\"content\\\":\\\"Message structure test message v2 @15XXXXXX @1234567XXX\\\",\\\"title\\\":\\\"Message structure title\\\"}}\",   \"feishu\": \"{\\\"msgtype\\\":\\\"text\\\",\\\"text\\\":{\\\"content\\\":\\\"Message structure test message v2\\\"}}\",   \"welinkRed\": \"{\\\"msgtype\\\":\\\"text\\\",\\\"text\\\":{\\\"content\\\":\\\"Message structure test message v2\\\"}}\",   \"http\": \"Message structure test message v2\",   \"https\": \"Message structure test message v2\",   \"dingTalkBot\": \"{\\\"msgtype\\\":\\\"markdown\\\",\\\"markdown\\\":{\\\"content\\\":\\\"Message structure test message v2 dingTalkBot markdown\\\",\\\"title\\\":\\\"Message structure title\\\"}}\",   \"functionstage\": \"Message structure test message v2\" }","time_to_live" : "3600","message_attributes" : [ {"name" : "smn_protocol","type" : "PROTOCOL","value" : [ "email", "sms" ]} ]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1
