@@ -42,8 +42,8 @@ class Session:
 
         self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
         if not self.region:
-            log.error('No default region set. Specify a default via HUAWEI_DEFHUAWEI_DEFAULT_TMS_REGIONAULT_REGION')
-            self.tms_region = 'sn-north-4'
+            log.error('No default region set. Specify a default via HUAWEI_DEFAULT_TMS_REGION')
+            self.tms_region = 'cn-north-4'
 
     def client(self, service):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID'))
@@ -66,7 +66,7 @@ class Session:
             globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = TmsClient.new_builder() \
                 .with_credentials(globalCredentials) \
-                .with_region(TmsRegion.value_of(self.region)) \
+                .with_region(TmsRegion.value_of(self.tms_region)) \
                 .build()
         elif service == 'iam':
             globalCredentials = GlobalCredentials(self.ak, self.sk)
