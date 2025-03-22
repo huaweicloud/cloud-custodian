@@ -70,8 +70,8 @@ class TagActionFilter(Filter):
     .. code-block :: yaml
 
       policies:
-        - name: ec2-stop-marked
-          resource: ec2
+        - name: marked-for-op-volume
+          resource: huaweicloud.volume
           filters:
             - type: marked-for-op
               # The default tag used is mark-for-op-custodian

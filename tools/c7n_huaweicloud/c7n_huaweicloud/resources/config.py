@@ -11,7 +11,6 @@ from c7n.utils import type_schema
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from tools.ops.mugc import region_gc
 
 
 @resources.register('config-tracker')

@@ -158,8 +158,8 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
               actions:
                 - type: untag
                   tags:
-                    owner
-                    owner2
+                    - owner
+                    - owner2
 
             policies:
             - name: multiple-untags-example
@@ -406,7 +406,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
               actions:
               - type: normalize-tag
                 key: strip_key
-                action: strip
+                action: replace
                 old_sub_str: a
                 new_sub_str: b
 
