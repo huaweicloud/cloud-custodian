@@ -42,7 +42,7 @@ class Session:
 
         self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
         if not self.tms_region:
-            log.exception('No default region set. Specify a default via HUAWEI_DEFAULT_TMS_REGION')
+            log.info('No default tms region set. Use cn-north-4')
             self.tms_region = 'cn-north-4'
 
     def client(self, service):
