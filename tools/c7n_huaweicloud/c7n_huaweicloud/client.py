@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 
+from huaweicloudsdkcore.auth.credentials import BasicCredentials
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
 from huaweicloudsdkconfig.v1.region.config_region import ConfigRegion
 from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
