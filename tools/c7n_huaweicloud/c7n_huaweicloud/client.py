@@ -41,7 +41,7 @@ class Session:
             sys.exit(1)
 
         self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
-        if not self.region:
+        if not self.tms_region:
             log.exception('No default region set. Specify a default via HUAWEI_DEFAULT_TMS_REGION')
             self.tms_region = 'cn-north-4'
 
