@@ -40,6 +40,11 @@ class Session:
             log.error('No secret access key set. Specify a default via HUAWEI_SECRET_ACCESS_KEY')
             sys.exit(1)
 
+        self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
+        if not self.region:
+            log.error('No default region set. Specify a default via HUAWEI_DEFHUAWEI_DEFAULT_TMS_REGIONAULT_REGION')
+            self.tms_region = 'sn-north-4'
+
     def client(self, service):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID'))
         if service == 'vpc':

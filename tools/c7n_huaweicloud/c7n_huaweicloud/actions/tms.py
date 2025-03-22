@@ -121,7 +121,7 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
         request_body = ReqCreateTag(project_id=project_id, resources=resource_batch, tags=tags)
         request = CreateResourceTagRequest(body=request_body)
         response = client.create_resource_tag(request=request)
-        failed_resource_ids = [failed_resource.get("resource_id", "") for failed_resource in
+        failed_resource_ids = [failed_resource.resource_id for failed_resource in
                                response.failed_resources]
         self.log.info("Successfully tagged %s resources with %s tags", 
                       len(resource_batch) -len(failed_resource_ids), len(tags))
@@ -228,7 +228,7 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
         request_body = ReqDeleteTag(project_id=project_id, resources=resource_batch, tags=tags)
         request = DeleteResourceTagRequest(body=request_body)
         response = client.delete_resource_tag(request=request)
-        failed_resource_ids = [failed_resource.get("resource_id", "") for failed_resource in response.failed_resources]
+        failed_resource_ids = [failed_resource.resource_id for failed_resource in response.failed_resources]
         self.log.info("Successfully remove tag %s resources with %s tags",
                       len(resource_batch) - len(failed_resource_ids), len(tags))
         return [resource for resource in resource_batch if resource["resource_id"] in failed_resource_ids]
@@ -801,7 +801,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
         request_body = ReqCreateTag(project_id=project_id, resources=resource_batch, tags=tags)
         request = CreateResourceTagRequest(body=request_body)
         response = client.create_resource_tag(request=request)
-        failed_resource_ids = [failed_resource.get("resource_id", "") for failed_resource in
+        failed_resource_ids = [failed_resource.resource_id for failed_resource in
                                response.failed_resources]
         self.log.info("Successfully mark-for-op %s resources with %s tags",
                       len(resource_batch) -len(failed_resource_ids), len(tags))
