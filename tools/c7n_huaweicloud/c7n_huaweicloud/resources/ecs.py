@@ -3,21 +3,22 @@ import logging
 import base64
 import json
 import zlib
+import time
 from typing import List
 from concurrent.futures import as_completed
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkevs.v2 import *
 from huaweicloudsdkecs.v2 import *
+from huaweicloudsdkims.v2 import *
+from huaweicloudsdkcbr.v1 import *
 
 from c7n import utils
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from c7n_huaweicloud import query
 from c7n.filters import *
-from c7n.filters.offhours import OffHour, OnHour
 from dateutil.parser import parse
 
 log = logging.getLogger("custodian.huaweicloud.resources.ecs")
@@ -29,17 +30,17 @@ class Ecs(QueryResourceManager):
         service = 'ecs'
         enum_spec = ("list_servers_details", "servers", "offset")
         id = 'id'
-        tag = True
+        tag_resource_type = 'ecs'
 
 @Ecs.action_registry.register("fetch-job-status")
 class FetchJobStatus(HuaweiCloudBaseAction):
     
-  schema = type_schema("fetch-job-status", jobId={'type': 'string'}, required=('jobId',))
+  schema = type_schema("fetch-job-status", job_id={'type': 'string'}, required=('job_id',))
 
   def process(self, resources):
-      jobId = self.data.get('jobId')
+      job_id = self.data.get('job_id')
       client = self.manager.get_client()
-      request = ShowJobRequest(job_id=jobId)
+      request = ShowJobRequest(job_id=job_id)
       try:
         response = client.show_job(request)
       except exceptions.ClientRequestException as e:
@@ -124,7 +125,8 @@ class EcsStop(HuaweiCloudBaseAction):
         instances = self.filter_resources(resources, 'status', self.valid_origin_states)
         if not instances:
             log.warning("No instance need stop")
-        request = self.init_request(resources)
+            return None
+        request = self.init_request(instances)
         try:
           response = client.batch_stop_servers(request)
         except exceptions.ClientRequestException as e:
@@ -164,22 +166,31 @@ class EcsReboot(HuaweiCloudBaseAction):
                 mode: "SOFT"
     """
 
+    valid_origin_states = ('ACTIVE',)
     schema = type_schema("instance-reboot", mode={'type': 'string'})
 
     def process(self, resources):
         client = self.manager.get_client()
-        serverIds : List[ServerId] = []
-        for r in resources:
-            serverIds.append(ServerId(id=r['id']))
-        options = {"servers":serverIds,"type": self.data.get('mode', 'SOFT')}
-        requestBody = BatchRebootServersRequestBody(reboot=options)
-        request = BatchRebootServersRequest(body=requestBody)
+        instances = self.filter_resources(resources, 'status', self.valid_origin_states)
+        if not instances:
+            log.warning("No instance need stop")
+            return None
+        request = self.init_request(instances)
         try:
           response = client.batch_reboot_servers(request)
         except exceptions.ClientRequestException as e:
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
         return json.dumps(response.to_dict())
+
+    def init_request(self, resources):
+        serverIds : List[ServerId] = []
+        for r in resources:
+            serverIds.append(ServerId(id=r['id']))
+        options = {"servers":serverIds,"type": self.data.get('mode', 'SOFT')}
+        requestBody = BatchRebootServersRequestBody(reboot=options)
+        request = BatchRebootServersRequest(body=requestBody)
+        return request
     
     def perform_action(self, resource):
        return super().perform_action(resource)
@@ -204,7 +215,7 @@ class EcsTerminate(HuaweiCloudBaseAction):
               - instance-terminate
     """
 
-    schema = type_schema("instance-terminate", mode={'type': 'string'})
+    schema = type_schema("instance-terminate")
 
     def perform_action(self, resource):
         client = self.manager.get_client()
@@ -215,7 +226,7 @@ class EcsTerminate(HuaweiCloudBaseAction):
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
         return response
-      
+    
 @Ecs.action_registry.register("instance-add-security-groups")
 class AddSecurityGroup(HuaweiCloudBaseAction):
     """Add Security Groups For An Ecs Server.
@@ -240,6 +251,9 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         client = self.manager.get_client()
         name=self.data.get('name', None)
+        if name == None:
+          log.error("security group name is None")
+          return None
         option = NovaAddSecurityGroupOption(name=name)
         requestBody = NovaAssociateSecurityGroupRequestBody(add_security_group=option)
         request = NovaAssociateSecurityGroupRequest(server_id=resource["id"], body=requestBody)
@@ -251,7 +265,7 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
         return response
       
 @Ecs.action_registry.register("instance-delete-security-groups")
-class AddSecurityGroup(HuaweiCloudBaseAction):
+class DeleteSecurityGroup(HuaweiCloudBaseAction):
     """Deletes Security Groups For An Ecs Server.
 
     :Example:
@@ -278,9 +292,9 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
         if name == None:
           log.error("security group name is None")
           return None
-        option = NovaAddSecurityGroupOption(name=name)
-        requestBody = NovaAssociateSecurityGroupRequestBody(add_security_group=option)
-        request = NovaAssociateSecurityGroupRequest(server_id=resource["id"], body=requestBody)
+        option = NovaRemoveSecurityGroupOption(name=name)
+        requestBody = NovaDisassociateSecurityGroupRequestBody(remove_security_group=option)
+        request = NovaDisassociateSecurityGroupRequest(server_id=resource["id"], body=requestBody)
         try:
           response = client.nova_disassociate_security_group(request)
         except exceptions.ClientRequestException as e:
@@ -300,6 +314,10 @@ class Resize(HuaweiCloudBaseAction):
           - name: resize
             resource: huaweicloud.ecs
             filters:
+              - type: value
+                key: id
+                value: "bac642b0-a9ca-4a13-b6b9-9e41b35905b6"
+            actions:
               - type: instance-resize
                 flavor_ref: "x1.1u.4g"
                 mode: "withStopServer"
@@ -335,21 +353,257 @@ class Resize(HuaweiCloudBaseAction):
       
 @Ecs.action_registry.register("set-instance-profile")
 class SetInstanceProfile(HuaweiCloudBaseAction):
-  
-  schema = type_schema("set-instance-profile", metadata={'type': 'object'})
-  
-  def perform_action(self, resource):
-      client = self.manager.get_client()
-      metadata = self.data.get('metadata', None)
-      requestBody = UpdateServerMetadataRequestBody(metadata=metadata)
-      request = UpdateServerMetadataRequest(server_id=resource['id'], body=requestBody)
-      try:
-        response = client.update_server_metadata(request)
-      except exceptions.ClientRequestException as e:
-        log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-        raise
-      return response
+    """Set Profile For An Ecs Server Flavor.
 
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: set-instance-profile
+            resource: huaweicloud.ecs
+            filters:
+              - type: value
+                key: id
+                value: "bac642b0-a9ca-4a13-b6b9-9e41b35905b6"
+            actions:
+              - type: set-instance-profile
+                metadata:
+                  key: value
+    """
+
+    schema = type_schema("set-instance-profile", metadata={'type': 'object'})
+    
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        metadata = self.data.get('metadata', None)
+        requestBody = UpdateServerMetadataRequestBody(metadata=metadata)
+        request = UpdateServerMetadataRequest(server_id=resource['id'], body=requestBody)
+        try:
+          response = client.update_server_metadata(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+
+@Ecs.action_registry.register("instance-whole-image")
+class InstanceWholeImage(HuaweiCloudBaseAction):
+    """Create whole image backup for an ECS instance.
+
+    - `vault_id` CBR vault_id the instance was associated
+    - `name` whole image name
+
+    :Example:
+
+    .. code-block:: yaml
+       
+       policies:
+         - name: instance-whole-image
+           resource: huaweicloud.ecs
+           actions:
+             - type: instance-whole-image
+               name: "wholeImage"
+               vault_id: "your CBR vault id"
+               instance_id: "your instance id"       
+    """
+
+    schema = type_schema('instance-snapshot',
+                         instance_id = {'type': 'string'},
+                         name = {'type': 'string'},
+                         vault_id = {'type': 'string'},
+                         required=('instance_id','name', 'vault_id'))
+    
+    def perform_action(self, resource):
+        return super().perform_action(resource)
+    
+    def process(self, resources):
+        ims_client = self.manager.get_resource_manager('huaweicloud.ims')
+        requestBody = CreateWholeImageRequestBody(name=self.data.get('name'), 
+                                                  instance_id=self.data.get('instance_id'),
+                                                  vault_id=self.data.get('vault_id'))
+        request = CreateWholeImageRequest(body=requestBody)
+        try:
+          response = ims_client.create_whole_image(request)
+          if response.status_code != 200:
+              log.error("create whole image for instance %s fail" % self.data.get('instance_id'))
+              return False
+          return self.wait_backup(response['job_id'], ims_client)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+    
+    def wait_backup(self, job_id, ims_client):
+        while(True):
+            status = self.fetch_ims_job_status(job_id, ims_client)
+            if status is "SUCCESS":
+                return True
+            time.sleep(5)
+
+    def fetch_ims_job_status(self, job_id, ims_client):
+        request = ShowJobProgressRequest(job_id=job_id)
+        try:
+          response = ims_client.show_job_progress(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response['status']
+
+@Ecs.action_registry.register("instance-snapshot")
+class InstanceSnapshot(HuaweiCloudBaseAction):
+    """CBR backup the volumes attached to an ECS instance.
+
+    - `vault_id` CBR vault_id the instance was associated
+    - `incremental` false : full server volumes backup
+                    true : incremental of server volumes backup
+
+    :Example:
+
+    .. code-block:: yaml
+       
+       policies:
+         - name: instance-snapshot
+           resource: huaweicloud.ecs
+           actions:
+             - type: instance-snapshot
+               incremental: false               
+    """
+
+    schema = type_schema('instance-snapshot',
+                         vault_id = {'type': 'string'},
+                         incremental = {'type': 'boolean'})
+
+    def perform_action(self, resource):
+        return super().perform_action(resource)
+    
+    def process(self, resources):
+        cbr_client = self.manager.get_resource_manager('huaweicloud.cbr')
+        vaults = self.list_vault(cbr_client)
+        vaults_resource_ids = self.fetch_vaults_resource_ids(vaults)
+        response = self.back_up(resources, vaults_resource_ids, cbr_client)
+        return response
+    
+    def back_up(self, resources, vaults_resource_ids, cbr_client):
+        for r in resources:
+            server_id = r['id']
+            vault_id = vaults_resource_ids[server_id]
+            if self.data.get('vault_id', None) is not None:
+              if vault_id is not None:
+                  return self.checkpoint_and_wait(r, vault_id, server_id, cbr_client)
+              else:
+                add_resource_response = self.add_vault_resource(vault_id, server_id, cbr_client)
+                if add_resource_response.status_code != 200:
+                    log.error("add instance %s to vault error" % server_id)
+                    return False
+                return self.checkpoint_and_wait(r, vault_id, server_id, cbr_client)
+            else:
+                add_resource_response = self.add_vault_resource(vault_id, server_id, cbr_client)
+                if add_resource_response.status_code != 200:
+                    log.error("add instance %s to vault error" % server_id)
+                    return False
+                return self.checkpoint_and_wait(r, vault_id, server_id, cbr_client)
+          
+    def wait_backup(self, vault_id, resource_id, cbr_client):
+        while(True):
+            response = self.list_op_log(resource_id, vault_id, cbr_client)
+            op_logs = response['operation_logs']
+            if not op_logs:
+                time.slepp(3)
+                continue
+            return True
+
+    def checkpoint_and_wait(self, r, vault_id, server_id, cbr_client):
+        checkpoint_response = self.create_checkpoint_for_instance(r, vault_id, cbr_client)
+        if checkpoint_response.status_code != 200:
+            log.error("instance %s backup error" % server_id)
+            return False
+        return self.wait_backup(vault_id, server_id, cbr_client)
+
+    def create_checkpoint_for_instance(self, r, vault_id, cbr_client):
+        resource_details = list[Resource(id=r['id'], type="OS::Nova::Server")]
+        params = CheckpointParam(resource_details=resource_details, incremental=self.data.get('incremental', True))
+        backup = VaultBackup(vault_id=vault_id,parameters=params)
+        try:
+            response = self.create_checkpoint(cbr_client, backup)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+
+    def fetch_vaults_resource_ids(self, vaults):
+        vaults_resource_ids = {}
+        for vault in vaults:
+            resources = vault['resources']
+            for r in resources:
+                if r['protect_status'] == 'available':
+                    vaults_resource_ids.setdefault(vault['id'], r['id'])
+        return vaults_resource_ids
+
+    def list_vault(self, cbr_client):
+        request = ListVaultRequest()
+        try:
+            response = cbr_client.list_vault(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+    
+    def show_vault(self, cbr_client, vault_id):
+        request = ShowVaultRequest(vault_id=vault_id)
+        try:
+            response = cbr_client.show_vault(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+    
+    def add_vault_resource(self, cbr_client, vault_id, resources:ResourceCreate):
+        requestBody = VaultAddResourceReq(resources=resources)
+        request = AddVaultResourceRequest(vault_id=vault_id, body=requestBody)
+        try:
+            response = cbr_client.add_vault_resource(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+    
+    def show_op_log_by_op_log_id(self, cbr_client, op_log_id):
+        request = ShowOpLogRequest(operation_log_id=op_log_id)
+        try:
+            response = cbr_client.show_op_log(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+    
+    def list_op_log(self, resource_id, vault_id, cbr_client):
+        request = ListOpLogsRequest(status="running",vault_id=vault_id,resource_id=resource_id)
+        try:
+            response = cbr_client.list_op_logs(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+    
+    def create_checkpoint(self, cbr_client, backup:VaultBackup):
+        requestBody = VaultBackupReq(checkpoint=backup)
+        request = CreateCheckpointRequest(body=requestBody)
+        try:
+            response = cbr_client.show_op_log(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
+        
+    def vault_add_resource(self, vault_id, server_id, cbr_client):
+        resource = ResourceCreate(id=server_id, type="OS::Nova::Server")
+        requestBody = VaultAddResourceReq(resources=resource)
+        request = AddVaultResourceRequest(vault_id=vault_id, body=requestBody)
+        try:
+            response = cbr_client.add_vault_resource(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return response
 
 #---------------------------ECS Filter-------------------------------------#
 
@@ -394,7 +648,7 @@ class EcsAgeFilter(AgeFilter):
                 op: ge
                 days: 1
     """
-    date_attribute = "OS-SRV-USG:launched_at"
+    date_attribute = "created"
 
     schema = type_schema(
         'instance-uptime',
@@ -414,9 +668,10 @@ class InstanceAttributeFilter(ValueFilter):
             resource: ec2
             filters:
               - type: instance-attribute
-                attribute: ebsOptimized
+                attribute: OS-EXT-SRV-ATTR:user_data
                 key: "Value"
-                value: false
+                op: regex
+                value: (?smi).*user=
     """
 
     valid_attrs = (
@@ -646,172 +901,91 @@ class InstanceUserData(ValueFilter):
           log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
           raise
         return response.server.os_ext_srv_att_ruser_data
-    
-
-@Ecs.filter_registry.register('offhour')
-class InstanceOffHour(OffHour):
-    """Custodian OffHour filter
-
-    Filters running EC2 instances with the intent to stop at a given hour of
-    the day. A list of days to excluded can be included as a list of strings
-    with the format YYYY-MM-DD. Alternatively, the list (using the same syntax)
-    can be taken from a specified url.
-
-    Note: You can disable filtering of only running instances by setting
-    `state-filter: false`
-
-    :Example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: offhour-evening-stop
-            resource: ec2
-            filters:
-              - type: offhour
-                tag: custodian_downtime
-                default_tz: et
-                offhour: 20
-            actions:
-              - stop
-
-          - name: offhour-evening-stop-skip-holidays
-            resource: ec2
-            filters:
-              - type: offhour
-                tag: custodian_downtime
-                default_tz: et
-                offhour: 20
-                skip-days: ['2017-12-25']
-            actions:
-              - stop
-
-          - name: offhour-evening-stop-skip-holidays-from
-            resource: ec2
-            filters:
-              - type: offhour
-                tag: custodian_downtime
-                default_tz: et
-                offhour: 20
-                skip-days-from:
-                  expr: 0
-                  format: csv
-                  url: 's3://location/holidays.csv'
-            actions:
-              - stop
-    """
-
-    schema = type_schema(
-        'offhour', rinherit=OffHour.schema,
-        **{'state-filter': {'type': 'boolean'}})
-    schema_alias = False
-
-    valid_origin_states = ('ACTIVE',)
-
-    def process(self, resources, event=None):
-        if self.data.get('state-filter', True):
-            return super(InstanceOffHour, self).process(
-                self.filter_resources(resources, 'status', self.valid_origin_states))
-        else:
-            return super(InstanceOffHour, self).process(resources)
-
-@Ecs.filter_registry.register('onhour')
-class InstanceOnHour(OnHour):
-    """Custodian OnHour filter
-
-    Filters stopped EC2 instances with the intent to start at a given hour of
-    the day. A list of days to excluded can be included as a list of strings
-    with the format YYYY-MM-DD. Alternatively, the list (using the same syntax)
-    can be taken from a specified url.
-
-    Note: You can disable filtering of only stopped instances by setting
-    `state-filter: false`
-
-    :Example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: onhour-morning-start
-            resource: ec2
-            filters:
-              - type: onhour
-                tag: custodian_downtime
-                default_tz: et
-                onhour: 6
-            actions:
-              - start
-
-          - name: onhour-morning-start-skip-holidays
-            resource: ec2
-            filters:
-              - type: onhour
-                tag: custodian_downtime
-                default_tz: et
-                onhour: 6
-                skip-days: ['2017-12-25']
-            actions:
-              - start
-
-          - name: onhour-morning-start-skip-holidays-from
-            resource: ec2
-            filters:
-              - type: onhour
-                tag: custodian_downtime
-                default_tz: et
-                onhour: 6
-                skip-days-from:
-                  expr: 0
-                  format: csv
-                  url: 's3://location/holidays.csv'
-            actions:
-              - start
-    """
-
-    schema = type_schema(
-        'onhour', rinherit=OnHour.schema,
-        **{'state-filter': {'type': 'boolean'}})
-    schema_alias = False
-
-    valid_origin_states = ('SHUTOFF',)
-
-    def process(self, resources, event=None):
-        if self.data.get('state-filter', True):
-            return super(InstanceOnHour, self).process(
-                self.filter_resources(resources, 'status', self.valid_origin_states))
-        else:
-            return super(InstanceOnHour, self).process(resources)
         
 @Ecs.filter_registry.register('instance-evs')
 class InstanceEvs(ValueFilter):
-    
-    schema = type_schema('instance-evs')
+    """ECS instance with EVS volume.
+
+    Filter ECS instances with EVS storage devices, not ephemeral 
+
+    :Example:
+
+    .. code-block:: yaml
+       
+       policies:
+         - name: instance-evs
+           resource: huaweicloud.ecs
+           filters:
+             - type: instance-evs
+               key: encrypted
+               op: eq
+               value: false               
+    """
+
+    schema = type_schema('instance-evs', rinherit=ValueFilter.schema,
+                         **{'skip-devices': {'type': 'array', 'items': {'type': 'string'}}})
     schema_alias = False
 
     def process(self, resources, event=None):
-        return self.get_volume_mapping_ecs_instance(resources)
+        self.volume_map = self.get_volume_mapping(resources)
+        self.skip = self.data.get('skip-devices', [])
+        self.operator = self.data.get(
+          'operator', 'or') == 'or' and any or all
+        return list(filter(self, resources))
     
-    def get_volume_mapping_ecs_instance(self, resources):
-        result = []
-        serverIds = list(item['id'] for item in resources)
+    def get_volume_mapping(self, resources):
+        volume_map = {}
         evsResources = self.manager.get_resource_manager('huaweicloud.volume').resources()
         for resource in resources:
             for evs in evsResources:
-                log.info(evs['attachments'])
-                evsServerIds = list(item.attachments['server_id'] for item in evs)
-                log.info(evsServerIds)
+                evsServerIds = list(item['server_id'] for item in evs['attachments'])
                 if resource['id'] in evsServerIds:
-                    result.append[resource]
+                    volume_map.setdefault(resource['id'], evs)
                     break
-        return result
+        return volume_map
+    
+    def __call__(self, i):
+        volumes = self.volume_map.get(i['id'])
+        if not volumes:
+            return False
+        if self.skip:
+            for v in list(volumes):
+                for a in v.get('id', []):
+                    if a['id'] in self.skip:
+                        volumes.remove(v)
+        return self.match(volumes)
 
 @Ecs.filter_registry.register('instance-vpc')
 class InstanceVpc():
+    """ECS instance with VPC.
+
+    Filter ECS instances with VPC id
+
+    :Example:
+
+    .. code-block:: yaml
+       
+       policies:
+         - name: instance-vpc
+           resource: huaweicloud.ecs
+           filters:
+             - type: instance-vpc           
+    """
 
     schema = type_schema('instance-vpc')
     schema_alias = False
-    # TODO
 
     def process(self, resources, event=None):
-        vpcIds = list(resources.metadata['vpc_id'])
-        
+        return self.get_vpcs(resources)
+
+    def get_vpcs(self, resources):
+        result = []
+        vpcIds = list(item.metadata['vpc_id'] for item in resources)
+        vpcs = self.manager.get_resource_manager('huaweicloud.vpc').resources()
+        for resource in resources:
+            for vpc in vpcs:
+                vpcId = vpc['id']
+                if vpcId in vpcIds:
+                    result.append(resource)
+                    break
+        return result

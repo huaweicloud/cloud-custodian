@@ -38,8 +38,6 @@ interactions:
       - api-gateway
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       Vary:
       - Accept-Charset, Accept-Encoding, Accept-Language, Accept
       X-Content-Type-Options:
@@ -50,6 +48,59 @@ interactions:
       - SAMEORIGIN
       X-Request-Id:
       - 12a7b47d6950e22018303dadd5cce663
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ecs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250323T095217Z
+    method: GET
+    uri: https://ecs.ap-southeast-1.myhuaweicloud.com/v2.1/ap-southeat-1/flavors/x1.1u.1g/os-extra_specs
+  response:
+    body:
+      string: '{"extra_specs":{"ecs:performancetype": ""}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 23 Mar 2025 09:52:17 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=e7eb47f21668ad1bc5; path=/
+      - HWWAFSESTIME=1742723535684; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7d829c802baf25418fcaac2380c4fa97
       X-XSS-Protection:
       - 1; mode=block;
     status:
