@@ -3,5 +3,5 @@
 
 ResourceMap = {
     "huaweicloud.volume": "c7n_huaweicloud.resources.volume.Volume",
-    "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker"
+    "huaweicloud.er": "c7n_huaweicloud.resources.er.ERInstance"
 }
