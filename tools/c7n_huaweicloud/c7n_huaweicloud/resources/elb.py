@@ -19,6 +19,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 log = logging.getLogger("custodian.huaweicloud.resources.elb")
 
 
+@resources.register('elb.loadbalancer')
 @resources.register('elb_loadbalancer')
 class Loadbalancer(QueryResourceManager):
     class resource_type(TypeInfo):
@@ -27,10 +28,11 @@ class Loadbalancer(QueryResourceManager):
         enum_spec = ("list_load_balancers", 'loadbalancers', 'marker')
         id = 'id'
         tag = True
+        tag_resource_type = 'elb'
 
 
 @Loadbalancer.action_registry.register("delete")
-class LoadbalancerDelete(HuaweiCloudBaseAction):
+class LoadbalancerDeleteAction(HuaweiCloudBaseAction):
     """Deletes ELB Loadbalancers.
 
     :Example:
@@ -38,14 +40,13 @@ class LoadbalancerDelete(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-          - name: delete-loadbalancer
-            resource: huaweicloud.elb_loadbalancer
-            flters:
-              - type: value
-                key: protocol
-                value: "http"
+          - name: delete-has-publicip-loadbalancers
+            filters:
+              - type: publicip-count
+                count: 0
+                op: gt
             actions:
-              - delete
+              - type: delete
     """
 
     schema = type_schema("delete")
@@ -58,32 +59,22 @@ class LoadbalancerDelete(HuaweiCloudBaseAction):
 
 
 @Loadbalancer.action_registry.register("enable-logging")
-class LoadbalancerEnableLogging(HuaweiCloudBaseAction):
-    """Enable ELB logging for loadbalancers.
+class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
+    """Enable logging for loadbalancers.
 
     :Example:
 
     .. code-block:: yaml
 
         policies:
-          - name: enable-loadbalancers-logging
-            resource: huaweicloud.elb_loadbalancer
-            flters:
-              - or:
-                  - type: attribute
-                    key: log_topic_id
-                    value: 0
-                    value_type: size
-                    op: le
-                  - type: attribute
-                    key: log_group_id
-                    value: 0
-                    value_type: size
-                    op: le
+          - name: enable-logging-for-loadbalancer
+            filters:
+              - type: is-logging-enable
+                enable: false
             actions:
               - type: enable-logging
-                log_group_id: xxx
-                log_topic_id: xxxx
+                log_group_id: "c5c89263-cfce-45cf-ac08-78cf537ba6c5"
+                log_topic_id: "328abfed-ab1a-4484-b2c1-031c0d06ea66"
     """
 
     schema = type_schema(type_name="enable-logging",
@@ -103,27 +94,27 @@ class LoadbalancerEnableLogging(HuaweiCloudBaseAction):
         logtank.log_topic_id = log_topic_id
         body =  CreateLogtankRequestBody(logtank)
         request = CreateLogtankRequest(body)
-        log.info(f"enable logging request: {str(request)}")
         response = client.create_logtank(request)
-        log.info(f"enable logging for loadbalancer: {response}")
         return response
 
 
 @Loadbalancer.filter_registry.register('backend-server-count')
-class ELBBackendServerCountFilter(Filter):
-    """Backends Filter that allows filtering on ELB backends count.
+class LoadbalancerBackendServerCountFilter(Filter):
+    """Allows filtering on ELB backend servers count.
 
     :example:
 
     .. code-block:: yaml
+
         policies:
-          - name: no-backends-loadbalancer
+          - name: delete-no-backend-loadbalancer
             resource: huaweicloud.elb_loadbalancer
             filters:
               - type: backend-server-count
                 count: 0
                 op: le
-
+            actions:
+              - type: delete
     """
     schema = type_schema(
         'backend-server-count',
@@ -137,7 +128,7 @@ class ELBBackendServerCountFilter(Filter):
 
         client = self.manager.get_client()
         backend_count = 0
-        request = ListAllMembersRequest(loadbalancer_id=resource["id"])
+        request = ListAllMembersRequest(loadbalancer_id=[resource["id"]])
         members_response = client.list_all_members(request)
         if members_response.members:
             backend_count = len(members_response.members)
@@ -145,20 +136,21 @@ class ELBBackendServerCountFilter(Filter):
 
 
 @Loadbalancer.filter_registry.register('publicip-count')
-class ELBBackendsFilter(Filter):
-    """Publicip Filter that allows filtering on ELB.
+class LoadbalancerPublicipCountFilter(Filter):
+    """Allows filtering on ELB public IP counts.
 
     :example:
 
     .. code-block:: yaml
         policies:
-          - name: no-backends-loadbalancer
+          - name: delete-loadbalancer-has-eip
             resource: huaweicloud.elb_loadbalancer
             filters:
               - type: publicip-count
                 count: 0
-                op: le
-
+                op: gt
+            actions:
+              - type: delete
     """
     schema = type_schema(
         'publicip-count',
@@ -170,27 +162,33 @@ class ELBBackendsFilter(Filter):
         op_name = self.data.get('op', 'gte')
         op = OPERATORS.get(op_name)
 
-        eip_count = len(resource.eips) if resource.eips else 0
-        ipv6bandwidth_count = len(resource.ipv6_bandwidth) if resource.ipv6_bandwidth else 0
-        geip_count = len(resource.global_eips) if resource.global_eips else 0
+        log.info(f"resource: {resource}")
+        eip_count = len(resource['eips']) if resource['eips'] else 0
+        ipv6bandwidth_count = len(resource['ipv6_bandwidth']) \
+            if 'ipv6_bandwidth' in resource and resource['ipv6_bandwidth'] else 0
+        geip_count = len(resource['global_eips']) \
+            if 'global_eips' in resource and resource['global_eips'] else 0
 
         return op(eip_count+ipv6bandwidth_count+geip_count, count)
 
 
 @Loadbalancer.filter_registry.register('is-logging-enable')
-class ELBBackendsFilter(Filter):
-    """Publicip Filter that allows filtering on ELB.
+class LoadbalancerIsLoggingEnableFilter(Filter):
+    """Check if logging enable on ELB.
 
     :example:
 
     .. code-block:: yaml
-        policies:
-          - name: elb-enable-logging
-            resource: huaweicloud.elb_loadbalancer
-            filters:
-              - type: is-logginng-enable
-                enable: false
 
+        policies:
+          - name: enable-logging-for-loadbalancer
+            filters:
+              - type: is-logging-enable
+                enable: false
+            actions:
+              - type: enable-logging
+                log_group_id: "c5c89263-cfce-45cf-ac08-78cf537ba6c5"
+                log_topic_id: "328abfed-ab1a-4484-b2c1-031c0d06ea66"
     """
     schema = type_schema(
         'is-logging-enable',
@@ -206,6 +204,7 @@ class ELBBackendsFilter(Filter):
         return True == logging_enable
 
 
+@resources.register('elb.listener')
 @resources.register('elb_listener')
 class Listener(QueryResourceManager):
     class resource_type(TypeInfo):
@@ -214,10 +213,11 @@ class Listener(QueryResourceManager):
         enum_spec = ("list_listeners", 'listeners', 'marker')
         id = 'id'
         tag = True
+        tag_resource_type = 'elb'
 
 
 @Listener.action_registry.register("delete")
-class ListenerDelete(HuaweiCloudBaseAction):
+class ListenerDeleteAction(HuaweiCloudBaseAction):
     """Deletes ELB Listeners.
 
     :Example:
@@ -228,15 +228,10 @@ class ListenerDelete(HuaweiCloudBaseAction):
           - name: ensure-elb-https-only
             resource: huaweicloud.elb_listener
             filters:
-              - or:
-                - type: value
-                  key: protocol
-                  value: "HTTPS"
-                  op: ne
-                - type: value
-                  key: port
-                  value: 443
-                  op: ne
+              - type: value
+                key: protocol
+                value: "HTTPS"
+                op: ne
             actions:
               - type: delete
                 loadbalancers: ['94c11c75-e3de-48b7-a5a2-28202ada60b1']
@@ -259,46 +254,73 @@ class ListenerDelete(HuaweiCloudBaseAction):
         return response
 
 
-@Listener.filter_registry.register('ipgroup-id')
-class ELBBackendsFilter(Filter):
-    """Publicip Filter that allows filtering on ELB.
 
-    :example:
+@Listener.action_registry.register("set-ipgroup")
+class ListenerSetIpgroupAction(HuaweiCloudBaseAction):
+    """Set Ipgroup for ELB Listeners.
+
+    :Example:
 
     .. code-block:: yaml
+
         policies:
-          - name: elb-enable-logging
-            resource: huaweicloud.elb_loadbalancer
+          - name: set-ipgroup-for-listeners
+            resource: huaweicloud.elb_listener
             filters:
-              - type: is-logginng-enable
-                enable: false
-
+              - type: attributes
+                key: loadbalancers[0].id
+                value: "4cce9bb7-57b1-43be-b156-108d41c69b2b"
+              - not:
+                - type: attributes
+                  key: ipgroup.ipgroup_id
+                  value: "a5fe56db-4894-416d-a9a7-684c78f5897c"
+                  op: eq
+                - type: attributes
+                  key: ipgroup.enable_ipgroup
+                  value: true
+                - type: attributes
+                  key: ipgroup.type
+                  value: "white"
+            actions:
+              - type: set-ipgroup
+                ipgroup_id: ["a5fe56db-4894-416d-a9a7-684c78f5897c"]
+                enable: true
+                ipgroup_type: white
     """
-    schema = type_schema(
-        'is-logging-enable',
-        enable={'type': 'boolean'})
 
-    def __call__(self, resource):
-        logging_enable = self.data.get('enable', False)
-        log_group_id = resource['log_group_id'] if 'log_group_id' in resource else None
-        log_topic_id = resource['log_topic_id'] if 'log_topic_id' in resource else None
-        if (log_group_id is None or log_group_id.strip() == ""
-                or log_topic_id is None or log_topic_id.strip() == ""):
-            return False == logging_enable
-        return True == logging_enable
+    schema = type_schema(type_name="set-ipgroup",
+                         ipgroup_id={'type': 'array'},
+                         enable={'type': 'boolean'},
+                         ipgroup_type={'type': 'string', 'enum': ['white', 'black']})
+
+    def perform_action(self, resource):
+        ipgroup_id = ",".join(self.data.get("ipgroup_id"))
+        enable = self.data.get("enable")
+        ipgroup_type = self.data.get("ipgroup_type")
+
+        client = self.manager.get_client()
+        request = UpdateListenerRequest(listener_id=resource["id"])
+        request.body = UpdateListenerRequestBody()
+        request.body.listener = UpdateListenerOption()
+        request.body.listener.ipgroup = UpdateListenerIpGroupOption(ipgroup_id=ipgroup_id, enable_ipgroup=enable, type=ipgroup_type)
+        log.info(f"set ipgroup: {resource['id']}")
+
+        response = client.update_listener(request)
+        log.info(f"update listener ipgroup: {response}")
+        return response
 
 
 @Loadbalancer.filter_registry.register('attributes')
 @Listener.filter_registry.register('attributes')
 class ELBAttributesFilter(ValueFilter):
-    """Value Filter that allows filtering on ELB attributes
+    """Filter by ELB resources attributes
 
     :example:
 
     .. code-block:: yaml
         policies:
           - name: list-autoscaling-loadbalancer
-            resource: huaweicloud.elb_loadbalancer
+            resource: huaweicloud.elb_loadbalancer or huaweicloud.elb_listener
             filters:
               - type: attributes
                 key: autoscaling.enable
@@ -316,23 +338,22 @@ class ELBAttributesFilter(ValueFilter):
         return super().__call__(r)
 
 
-
 @Loadbalancer.filter_registry.register('age')
 @Listener.filter_registry.register('age')
 class ELBAgeFilter(AgeFilter):
-    """Filter elb by age.
+    """Filter elb resources by age.
 
     :example:
 
     .. code-block:: yaml
 
-            policies:
-              - name: list-older-loadbalancer
-                resource: huaweicloud.elb_loadbalancer
-                filters:
-                  - type: age
-                    days: 90
-                    op: ge
+        policies:
+          - name: list-latest-loadbalancer
+            resource: huaweicloud.elb_loadbalancer
+            filters:
+              - type: age
+                days: 7
+                op: le
     """
 
     date_attribute = "created_at"
@@ -346,51 +367,3 @@ class ELBAgeFilter(AgeFilter):
     def get_resource_date(self, resource):
         return parse(resource.get(
             self.date_attribute, "2000-01-01T01:01:01.000Z"))
-
-
-# @Loadbalancer.filter_registry.register('attributes')
-# @Listener.filter_registry.register('attributes')
-# class ELBAttributesFilter(ValueFilter):
-#     """Value Filter that allows filtering on ELB attributes
-#
-#     :example:
-#
-#     .. code-block:: yaml
-#         policies:
-#           - name: list-autoscaling-loadbalancer
-#             resource: huaweicloud.elb_loadbalancer
-#             filters:
-#               - type: attributes
-#                 key: autoscaling.enable
-#                 value: true
-#
-#     """
-#     annotate = False  # no annotation from value filter
-#     schema = type_schema('attributes', rinherit=ValueFilter.schema,
-#                          len={'type': 'integer', 'minimum': -1})
-#     schema_alias = False
-#
-#     def __call__(self, r):
-#         exists = self.data.get('exists', 0)
-#         if exists != None:
-#             response = eval(str(r).replace('null', 'None').
-#                             replace('false', 'False').replace('true', 'True'))
-#             key = self.data.get('key')
-#             attr = jmespath.search(key, response)
-#             if exists == True:
-#
-#             elif exists == False:
-#
-#         return super().__call__(r)
-#
-#         count = self.data.get('count', 0)
-#         op_name = self.data.get('op', 'gte')
-#         op = OPERATORS.get(op_name)
-#
-#         client = self.manager.get_client()
-#         backend_count = 0
-#         request = ListAllMembersRequest(loadbalancer_id=resource["id"])
-#         members_response = client.list_all_members(request)
-#         if members_response.members:
-#             backend_count = len(members_response.members)
-#         return op(backend_count, count)
