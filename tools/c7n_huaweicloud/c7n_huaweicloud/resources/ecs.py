@@ -34,26 +34,38 @@ class Ecs(QueryResourceManager):
 
 @Ecs.action_registry.register("fetch-job-status")
 class FetchJobStatus(HuaweiCloudBaseAction):
-    
-  schema = type_schema("fetch-job-status", job_id={'type': 'string'}, required=('job_id',))
+    """Fetch An Asyn Job Status.
 
-  def process(self, resources):
-      job_id = self.data.get('job_id')
-      client = self.manager.get_client()
-      request = ShowJobRequest(job_id=job_id)
-      try:
-        response = client.show_job(request)
-      except exceptions.ClientRequestException as e:
-        log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-        raise
-      return json.dumps(response.to_dict())
-  
-  def perform_action(self, resource):
-      return super().perform_action(resource)
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: fetch-job-status
+            resource: huaweicloud.ecs
+            actions:
+              - type: fetch-job-status
+                job_id: "asyn job id"
+    """
+    schema = type_schema("fetch-job-status", job_id={'type': 'string'}, required=('job_id',))
+
+    def process(self, resources):
+        job_id = self.data.get('job_id')
+        client = self.manager.get_client()
+        request = ShowJobRequest(job_id=job_id)
+        try:
+          response = client.show_job(request)
+        except exceptions.ClientRequestException as e:
+          log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+          raise
+        return json.dumps(response.to_dict())
+    
+    def perform_action(self, resource):
+        return super().perform_action(resource)
 
 @Ecs.action_registry.register("instance-start")
 class EcsStart(HuaweiCloudBaseAction):
-    """Start ECS server.
+    """Start ECS Instances.
 
     :Example:
 
@@ -100,7 +112,7 @@ class EcsStart(HuaweiCloudBaseAction):
 
 @Ecs.action_registry.register("instance-stop")
 class EcsStop(HuaweiCloudBaseAction):
-    """Stop Ecs Server.
+    """Stop Ecs Instances.
 
     :Example:
 
@@ -148,7 +160,7 @@ class EcsStop(HuaweiCloudBaseAction):
 
 @Ecs.action_registry.register("instance-reboot")
 class EcsReboot(HuaweiCloudBaseAction):
-    """Reboot Ecs Server.
+    """Reboot Ecs Instances.
 
     :Example:
 
@@ -198,7 +210,7 @@ class EcsReboot(HuaweiCloudBaseAction):
       
 @Ecs.action_registry.register("instance-terminate")
 class EcsTerminate(HuaweiCloudBaseAction):
-    """Terminate Ecs Server.
+    """Terminate Ecs Instances.
 
     :Example:
 
@@ -210,7 +222,7 @@ class EcsTerminate(HuaweiCloudBaseAction):
             filters:
               - type: value
                 key: id
-                value: "your server id"
+                value: "your instance id"
             actions:
               - instance-terminate
     """
@@ -229,7 +241,7 @@ class EcsTerminate(HuaweiCloudBaseAction):
     
 @Ecs.action_registry.register("instance-add-security-groups")
 class AddSecurityGroup(HuaweiCloudBaseAction):
-    """Add Security Groups For An Ecs Server.
+    """Add Security Groups For An Ecs Instance.
 
     :Example:
 
@@ -266,7 +278,7 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
       
 @Ecs.action_registry.register("instance-delete-security-groups")
 class DeleteSecurityGroup(HuaweiCloudBaseAction):
-    """Deletes Security Groups For An Ecs Server.
+    """Deletes Security Groups For An Ecs Instance.
 
     :Example:
 
@@ -304,7 +316,7 @@ class DeleteSecurityGroup(HuaweiCloudBaseAction):
       
 @Ecs.action_registry.register("instance-resize")
 class Resize(HuaweiCloudBaseAction):
-    """Resize An Ecs Server Flavor.
+    """Resize An Ecs Instance Flavor.
 
     :Example:
 
@@ -353,7 +365,7 @@ class Resize(HuaweiCloudBaseAction):
       
 @Ecs.action_registry.register("set-instance-profile")
 class SetInstanceProfile(HuaweiCloudBaseAction):
-    """Set Profile For An Ecs Server Flavor.
+    """Set Profile(metadata) For An Ecs Instance Flavor.
 
     :Example:
 
@@ -388,7 +400,7 @@ class SetInstanceProfile(HuaweiCloudBaseAction):
 
 @Ecs.action_registry.register("instance-whole-image")
 class InstanceWholeImage(HuaweiCloudBaseAction):
-    """Create whole image backup for an ECS instance.
+    """Create Whole Image Backup For An ECS Instance.
 
     - `vault_id` CBR vault_id the instance was associated
     - `name` whole image name
@@ -450,7 +462,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
 
 @Ecs.action_registry.register("instance-snapshot")
 class InstanceSnapshot(HuaweiCloudBaseAction):
-    """CBR backup the volumes attached to an ECS instance.
+    """CBR Backup The Volumes Attached To An ECS Instance.
 
     - `vault_id` CBR vault_id the instance was associated
     - `incremental` false : full server volumes backup
@@ -730,21 +742,21 @@ class InstanceImageBase:
 
 @Ecs.filter_registry.register('image-age')
 class ImageAgeFilter(AgeFilter, InstanceImageBase):
-    """EC2 AMI age filter
+    """ECS Image Age Filter
 
-    Filters EC2 instances based on the age of their AMI image (in days)
+    Filters ECS instances based on the age of their image (in days)
 
     :Example:
 
     .. code-block:: yaml
 
         policies:
-          - name: ec2-ancient-ami
-            resource: ec2
+          - name: instance-image-age
+            resource: huaweicloud.ecs
             filters:
               - type: image-age
                 op: ge
-                days: 90
+                days: 14400
     """
 
     date_attribute = "created_at"
@@ -769,6 +781,18 @@ class ImageAgeFilter(AgeFilter, InstanceImageBase):
 
 @Ecs.filter_registry.register('instance-image')
 class InstanceImageFilter(ValueFilter, InstanceImageBase):
+    """ECS Image filter
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: instance-image
+            resource: huaweicloud.ecs
+            filters:
+              - type: instance-image
+    """
 
     schema = type_schema('instance-image', rinherit=ValueFilter.schema)
     schema_alias = False
@@ -787,10 +811,9 @@ class InstanceImageFilter(ValueFilter, InstanceImageBase):
 @Ecs.filter_registry.register("ephemeral")
 class InstanceEphemeralFilter(Filter):
 
-    """EC2 instances with ephemeral storage
+    """ECS instances with ephemeral storage
 
-    Filters EC2 instances that have ephemeral storage (an instance-store backed
-    root device)
+    Filters ECS instances that have ephemeral storage 
 
     :Example:
 
