@@ -122,11 +122,11 @@ class Diff(Filter):
     def select_revision(self, revisions):
         for rev in revisions:
             # convert unix timestamp to utc to be normalized with other dates
-            if rev.capturn_time.tzinfo and \
-                    isinstance(rev.capturn_time.tzinfo, tzlocal):
-                rev.capturn_time = rev.capturn_time.astimezone(UTC)
+            if rev.capture_time.tzinfo and \
+                    isinstance(rev.capture_time.tzinfo, tzlocal):
+                rev.capture_time = rev.capture_time.astimezone(UTC)
             return {
-                'date': rev.capturn_time,
+                'date': rev.capture_time,
                 'resource': rev.resource}
 
     def diff(self, source, target):
