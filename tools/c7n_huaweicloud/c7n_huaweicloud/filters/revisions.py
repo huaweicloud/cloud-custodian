@@ -95,7 +95,7 @@ class Diff(Filter):
              revisions = response.items
         except exceptions.ClientRequestException as ex:
             self.log.exception(
-                f"Cannot show resource history of resource {resource["id"]}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                f"Cannot show resource history of resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
             revisions = []
         return revisions
 
