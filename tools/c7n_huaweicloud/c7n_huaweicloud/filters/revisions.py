@@ -4,10 +4,8 @@
 Custodian support for diffing and patching across multiple versions
 of a resource.
 """
-from datetime import datetime, UTC
 
 from dateutil.parser import parse as parse_date
-from dateutil.tz import tzlocal, tzutc
 from huaweicloudsdkconfig.v1 import ShowResourceHistoryRequest
 from huaweicloudsdkcore.exceptions import exceptions
 from c7n_huaweicloud.provider import resources
@@ -120,9 +118,8 @@ class Diff(Filter):
 
     def select_revision(self, revisions):
         for rev in revisions:
-            utc_time = datetime.fromtimestamp(int(rev.capture_time), UTC)
             return {
-                'date': utc_time,
+                'date': parse_date(rev.capture_time),
                 'resource': rev.resource}
 
     def diff(self, source, target):
