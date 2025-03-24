@@ -1,0 +1,22 @@
+policies:
+  - name: non-compliant-patch
+    resource: huaweicloud.coc
+    filters:
+      - type: value
+        key: operating_system
+        value: CentOS
+        op: eq
+      - type: value
+        key: region
+        value: ap-southeast-3
+        op: eq
+      - type: value
+        key: compliant_status
+        value: non_compliant
+    actions:
+      - type: non_compliant_alarm
+        smn: true
+        region_id: ap-southeast-3
+        topic_urn: *
+        subject: non compliant alarm
+        message: non compliant alarm
