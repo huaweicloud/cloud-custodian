@@ -23,6 +23,7 @@ huaweicloudsdkvpc = "^3.1.138"
 huaweicloudsdktms = "^3.1.138"
 huaweicloudsdkiam = "^3.1.138"
 huaweicloudsdkconfig = "^3.1.138"
+huaweicloudsdkdeh = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"

@@ -1,0 +1,108 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - deh.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250324T011245Z
+    method: GET
+    uri: https://deh.ap-southeast-1.myhuaweicloud.com/v1.0/ap-southeat-1/dedicated-hosts?limit=100
+  response:
+    body:
+      string: '{"dedicated_hosts":[{"dedicated_host_id":"d465d0ae-f859-4a83-a508-8db654c05e7e","name":"DEH001","auto_placement":"off","availability_zone":"cn-east-3a","host_properties":{"vcpus":74,"cores":22,"sockets":2,"memory":151552,"host_type":"c6","host_type_name":"dedicated_general_purpose","available_instance_capacities":[{"flavor":"c6.large.2"},{"flavor":"c6.xlarge.2"},{"flavor":"c6.2xlarge.2"},{"flavor":"c6.3xlarge.2"},{"flavor":"c6.6xlarge.2"},{"flavor":"c6.16xlarge.2"}]},"state":"available","project_id":"9c53a566cb3443ab910cf0daebca90c4","available_vcpus":20,"available_memory":40960,"instance_total":5,"allocated_at":"2016-10-10T14:35:47Z","released_at":""}],"total":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 24 Mar 2025 01:12:45 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1742778765914; path=/
+      - HWWAFSESID=a7bfc73b895a29aa07; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 677bb32ff071cc624ea0011acd4e5dcb
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"dedicated_host": {"auto_placement": "off", "name": "update"}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '63'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - deh.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250324T020300Z
+    method: PUT
+    uri: https://deh.ap-southeast-1.myhuaweicloud.com/v1.0/ap-southeat-1/dedicated-hosts/d465d0ae-f859-4a83-a508-8db654c05e7e
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 24 Mar 2025 02:03:00 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=c6fe47359ba7f9e561; path=/
+      - HWWAFSESTIME=1742781780694; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 11128f5f3c92b5aa1f5e34028f157481
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: OK
+version: 1
