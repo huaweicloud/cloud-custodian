@@ -73,6 +73,7 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
             return
         message_data = ''
         for instance_compliant in resource.get('instance_compliant'):
+            if
             ecs_name = instance_compliant.get('name')
             ecs_instance_id = instance_compliant.get('instance_id')
             non_compliant_count = instance_compliant.get('non_compliant_summary').get('non_compliant_count')

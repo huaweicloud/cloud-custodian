@@ -5,11 +5,11 @@ policies:
       - type: value
         key: count
         value: 1
-        op: eq
+        op: gte
     actions:
       - type: non_compliant_alarm
         smn: true
         region_id: 'ap-southeast-1'
         topic_urn: 'urn:smn:cn-north-4:ce8476c174f94c6991ea7885e3380d99:custodian_test'
-        subject: 'non compliant alarm'
-        message: 'non compliant alarm'
+        subject: '不合规补丁告警'
+        message: '您账号下存在安装了不合规的补丁版本的机器：'
