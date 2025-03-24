@@ -3,20 +3,13 @@ policies:
     resource: huaweicloud.coc
     filters:
       - type: value
-        key: operating_system
-        value: CentOS
+        key: count
+        value: 1
         op: eq
-      - type: value
-        key: region
-        value: ap-southeast-3
-        op: eq
-      - type: value
-        key: compliant_status
-        value: non_compliant
     actions:
       - type: non_compliant_alarm
         smn: true
-        region_id: ap-southeast-3
-        topic_urn: urn:smn:ap-southeast-1:6bd69b78b15b46c79814ba748415e643:custodian-test
-        subject: non compliant alarm
-        message: non compliant alarm
+        region_id: 'ap-southeast-1'
+        topic_urn: 'urn:smn:ap-southeast-1:6bd69b78b15b46c79814ba748415e643:custodian-test'
+        subject: 'non compliant alarm'
+        message: 'non compliant alarm'
