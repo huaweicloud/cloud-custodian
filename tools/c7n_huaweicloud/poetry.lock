@@ -158,13 +158,26 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "huaweicloudsdkconfig"
+version = "3.1.140"
+description = "Config"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkconfig-3.1.140-py2.py3-none-any.whl", hash = "sha256:45cde56fd1396aa765a39668fd6467a5531736c643138ae2f904274e9672ab6b"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdkcore"
-version = "3.1.139"
+version = "3.1.140"
 description = "HuaweiCloud SDK Python Core"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkcore-3.1.139-py2.py3-none-any.whl", hash = "sha256:817ab1676915ccf3a8fd8ef3d515fd2c014fed6092eda485c17aa6089d5054ee"},
+    {file = "huaweicloudsdkcore-3.1.140-py2.py3-none-any.whl", hash = "sha256:46dd5430ec598f04981cc156f90ff4bc994e5651a38438c3fd2632dbfbb48a38"},
 ]
 
 [package.dependencies]
@@ -177,56 +190,82 @@ six = ">=1.16.0"
 typing-extensions = "*"
 
 [[package]]
+name = "huaweicloudsdkdeh"
+version = "3.1.140"
+description = "DeH"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkdeh-3.1.140-py2.py3-none-any.whl", hash = "sha256:b1a73dc67d8dc1f802192f73c03831a9ece04270c695cc81d0bed40ee3dea4a9"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdkecs"
-version = "3.1.139"
+version = "3.1.140"
 description = "ECS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkecs-3.1.139-py2.py3-none-any.whl", hash = "sha256:a4e3f0203a2785834890fca248e152f6c1fbff41f311b8a3b9a3f6ab6b2fc5fa"},
+    {file = "huaweicloudsdkecs-3.1.140-py2.py3-none-any.whl", hash = "sha256:c5a78783d80ef81dcb1aec1645663a158d39bf5cfd8625925c4ec0e5b237db64"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.139"
+huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
 name = "huaweicloudsdkevs"
-version = "3.1.139"
+version = "3.1.140"
 description = "EVS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkevs-3.1.139-py2.py3-none-any.whl", hash = "sha256:e4e7debf3602869a95867f0241d5ac6245cadf8f50a8f842a7e0238a218da889"},
+    {file = "huaweicloudsdkevs-3.1.140-py2.py3-none-any.whl", hash = "sha256:04c6a62839e99a1433439cf9b4cb0925cc331aae89193d7422163662a17b92bd"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.139"
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
+name = "huaweicloudsdkiam"
+version = "3.1.140"
+description = "IAM"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkiam-3.1.140-py2.py3-none-any.whl", hash = "sha256:8a028671ad1167e6aada136e12c293998868ad6fd1b725644c62ca61a53a20dd"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
 name = "huaweicloudsdktms"
-version = "3.1.139"
+version = "3.1.140"
 description = "TMS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdktms-3.1.139-py2.py3-none-any.whl", hash = "sha256:4a54c5aa6cbf582a3eba58efcdd1df8315542e108e5fd5db2363d4df6f086f3c"},
+    {file = "huaweicloudsdktms-3.1.140-py2.py3-none-any.whl", hash = "sha256:57138bcf31c06592da1c6c1876e3d74764ac6b83423738e0a9a762ba00730596"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.139"
+huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
 name = "huaweicloudsdkvpc"
-version = "3.1.139"
+version = "3.1.140"
 description = "VPC"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkvpc-3.1.139-py2.py3-none-any.whl", hash = "sha256:df02914a143cc5705558e0acb0454f2c923b486503c13d05488ef908dec5db69"},
+    {file = "huaweicloudsdkvpc-3.1.140-py2.py3-none-any.whl", hash = "sha256:74ec6818a06ea83fb85275c65fedf34a7fcfe11b416a0bfbc813a64832225972"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.139"
+huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
 name = "idna"
@@ -244,13 +283,38 @@ all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2
 
 [[package]]
 name = "iniconfig"
-version = "2.0.0"
+version = "2.1.0"
 description = "brain-dead simple config-ini parsing"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760"},
+    {file = "iniconfig-2.1.0.tar.gz", hash = "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7"},
+]
+
+[[package]]
+name = "jsonpatch"
+version = "1.33"
+description = "Apply JSON-Patches (RFC 6902)"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*"
+files = [
+    {file = "jsonpatch-1.33-py2.py3-none-any.whl", hash = "sha256:0ae28c0cd062bbd8b8ecc26d7d164fbbea9652a1a3693f3b956c1eae5145dade"},
+    {file = "jsonpatch-1.33.tar.gz", hash = "sha256:9fcd4009c41e6d12348b4a0ff2563ba56a2923a7dfee731d004e212e1ee5030c"},
+]
+
+[package.dependencies]
+jsonpointer = ">=1.9"
+
+[[package]]
+name = "jsonpointer"
+version = "3.0.0"
+description = "Identify specific nodes in a JSON document (RFC 6901)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
-    {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
+    {file = "jsonpointer-3.0.0-py2.py3-none-any.whl", hash = "sha256:13e088adc14fca8b6aa8177c044e12701e6ad4b28ff10e65f2267a90109c9942"},
+    {file = "jsonpointer-3.0.0.tar.gz", hash = "sha256:2b2d729f2091522d61c3b31f82e11870f60b68f43fbc705cb76bf4b832af59ef"},
 ]
 
 [[package]]
@@ -392,6 +456,20 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+
+[[package]]
+name = "python-dateutil"
+version = "2.9.0.post0"
+description = "Extensions to the standard Python datetime module"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"},
+    {file = "python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"},
+]
+
+[package.dependencies]
+six = ">=1.5"
 
 [[package]]
 name = "pyyaml"
@@ -692,4 +770,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "042c78396de5a2fb1b7bd9e06f4460d2500fa0a096d8932607e1b2f3db168b50"
+content-hash = "93170a42e245b3d4e9c26197c975506ae48eb84d754526e648fedf03b3de0b3f"
