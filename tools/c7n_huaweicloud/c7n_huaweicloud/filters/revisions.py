@@ -120,7 +120,7 @@ class Diff(Filter):
         for rev in revisions:
             return {
                 'date': parse_date(rev.capture_time),
-                'resource': rev.resource}
+                'resource': rev.resource.to_dict()}
 
     def diff(self, source, target):
         raise NotImplementedError("Subclass responsibility")
@@ -140,7 +140,7 @@ class JsonDiff(Diff):
         return list(patch)
 
     def sanitize_revision(self, rev):
-        sanitized = rev.to_dict()
+        sanitized = dict(rev)
         for k in [k for k in sanitized if 'huaweicloud' in k]:
             sanitized.pop(k)
         return sanitized
