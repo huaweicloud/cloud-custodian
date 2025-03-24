@@ -110,14 +110,34 @@ class FunctionGraphManager:
 
         return response
 
+    def list_function_triggers(self, func_urn):
+        request = ListFunctionTriggersRequest(function_urn=func_urn)
+        try:
+            response = self.client.list_function_triggers(request)
+        except exceptions.ClientRequestException as e:
+            log.error(f'List function triggers failed, request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            return []
+
+        return response.body
+
     def publish(self, func, role=None):
         result, changed, existing = self._create_or_update(func, role)
         func.func_urn = result.func_urn
 
-        for e in func.get_events(self.session_factory):
-            create_trigger = e.add(func.func_urn)
-            if create_trigger:
-                log.info(f'Created trigger[{create_trigger.id}] for function[{func.func_name}].')
+        triggers = self.list_function_triggers(func.func_urn)
+        eg_not_exist = True
+        for trigger in triggers:
+            if trigger.trigger_type_code == "EVENTGRID" and trigger.trigger_status == "ACTIVE":
+                eg_not_exist = False
+                break
+        if eg_not_exist:
+            for e in func.get_events(self.session_factory):
+                create_trigger = e.add(func.func_urn)
+                if create_trigger:
+                    log.info(f'Created trigger[{create_trigger.id}] for function[{func.func_name}].')
 
         return result
 
