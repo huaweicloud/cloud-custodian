@@ -68,7 +68,12 @@ class ResourceQuery:
             request.offset = offset
             response = self._invoke_client_enum(client, enum_op, request)
             res = jmespath.search(path, eval(
-                str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+                str(response).replace('null', 'None').replace('false', 'False').
+                replace('true', 'True')))
+
+            if path == '*':
+                resources.append(json.loads(str(response)))
+                return resources
 
             if path == '*':
                 resources.append(json.loads(str(response)))
@@ -102,12 +107,15 @@ class ResourceQuery:
                 response = self._invoke_client_enum(client, enum_op, request)
             except exceptions.ClientRequestException as e:
                 log.error(
-                    f'request[{e.request_id}] failed[{e.status_code}], error_code[{e.error_code}], error_msg[{e.error_msg}]')
+                    f"request[{e.request_id}] failed[{e.status_code}], error_code[{e.error_code}],"
+                    f" error_msg[{e.error_msg}]")
                 return resources
             count = response.count
             next_marker = response.next_marker
             res = jmespath.search(path, eval(
-                str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+                str(response)
+                .replace('null', 'None').replace('false', 'False').
+                replace('true', 'True')))
 
             # replace id with the specified one
             if res is not None:
@@ -120,7 +128,8 @@ class ResourceQuery:
                 break
         return resources
 
-    def _pagination_limit_marker(self, m, enum_op, path, marker_pagination: MarkerPagination=None):
+    def _pagination_limit_marker(self, m, enum_op, path,
+                                 marker_pagination: MarkerPagination = None):
         session = local_session(self.session_factory)
         client = session.client(m.service)
 
@@ -195,6 +204,7 @@ class DescribeSource:
 
 class QueryMeta(type):
     """metaclass to have consistent action/filter registry for new resources."""
+
     def __new__(cls, name, parents, attrs):
         if 'resource_type' not in attrs:
             return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
@@ -214,7 +224,6 @@ class QueryMeta(type):
 
 
 class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
-
     source_mapping = sources
 
     def __init__(self, ctx, data):
