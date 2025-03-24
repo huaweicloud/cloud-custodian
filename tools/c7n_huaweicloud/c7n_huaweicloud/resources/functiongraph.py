@@ -26,9 +26,20 @@ class FunctionGraph(QueryResourceManager):
         tag = True
 
     def get_resources(self, resource_ids):
-        # super(FunctionGraph, self).get_resources(resource_ids)
-        log.info(f'test ---{self.resources()}')
-        return []
+        result = []
+        for resource_id in resource_ids:
+            request = ShowFunctionConfigRequest(function_urn=resource_id)
+            try:
+                response = self.get_client().show_function_config(request)
+            except exceptions.ClientRequestException as e:
+                log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
+                          f'error_code[{e.error_code}], '
+                          f'error_msg[{e.error_msg}]')
+                return result
+
+            result += eval(str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True'))
+
+        return result
 
 
 @FunctionGraph.filter_registry.register('reserved-concurrency')
