@@ -100,5 +100,4 @@ class Session:
         elif service == 'deh':
             request = ListDedicatedHostsRequest()
 
-
         return request
