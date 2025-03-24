@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 # abstract method for pagination
 class MarkerPagination(ABC):
     @abstractmethod
