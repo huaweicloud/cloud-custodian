@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 
-from huaweicloudsdkconfig.v1 import ListPolicyAssignmentsRequest, ListPolicyStatesByAssignmentIdRequest
+from huaweicloudsdkconfig.v1 import ListPolicyAssignmentsRequest, \
+    ListPolicyStatesByAssignmentIdRequest
 
 from c7n.filters import ValueFilter
 from c7n.utils import local_session, type_schema

@@ -3,15 +3,15 @@ name = "c7n_huaweicloud"
 version = "0.1.0"
 description = "Cloud Custodian - Huawei Cloud Support"
 readme = "readme.md"
-homepage="https://cloudcustodian.io"
-repository="https://github.com/cloud-custodian/cloud-custodian"
-documentation="https://cloudcustodian.io/docs/"
+homepage = "https://cloudcustodian.io"
+repository = "https://github.com/cloud-custodian/cloud-custodian"
+documentation = "https://cloudcustodian.io/docs/"
 authors = ["Cloud Custodian Project"]
 license = "Apache-2.0"
-classifiers=[
-   "License :: Huawei Cloud Approved :: Apache Software License",
-   "Topic :: System :: Systems Administration",
-   "Topic :: System :: Distributed Computing"
+classifiers = [
+    "License :: Huawei Cloud Approved :: Apache Software License",
+    "Topic :: System :: Systems Administration",
+    "Topic :: System :: Distributed Computing"
 ]
 
 [tool.poetry.dependencies]

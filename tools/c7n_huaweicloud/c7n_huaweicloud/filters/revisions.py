@@ -95,7 +95,8 @@ class Diff(Filter):
             revisions = response.items
         except exceptions.ClientRequestException as ex:
             self.log.exception(
-                f"Cannot show resource history of resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                f"Cannot show resource history of resource {resource['id']}, "
+                f"RequestId: {ex.request_id}, Reason: {ex.error_msg}")
             revisions = []
         return revisions
 
@@ -115,7 +116,8 @@ class Diff(Filter):
         elif selector == 'locked':
             later_time = resource.get('locked_date')
             limit = 2
-        request = ShowResourceHistoryRequest(resource_id=resource_id, later_time=later_time, limit=limit)
+        request = ShowResourceHistoryRequest(resource_id=resource_id, later_time=later_time,
+                                             limit=limit)
         return request
 
     def select_revision(self, revisions):

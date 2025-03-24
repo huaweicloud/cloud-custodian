@@ -6,8 +6,8 @@ from c7n import utils
 
 from c7n_huaweicloud.provider import resources
 
-
 DEFAULT_TAG = "auto-tag-user-tag"
+
 
 class AutoTagUser(EventAction):
     """Tag a resource with the user who created/modified it.
@@ -42,7 +42,7 @@ class AutoTagUser(EventAction):
     we fetch the resource and evaluate the presence of the tag before
     attempting to tag it.
 
-    """ # NOQA
+    """  # NOQA
 
     schema = utils.type_schema(
         'auto-tag-user',
@@ -55,16 +55,16 @@ class AutoTagUser(EventAction):
                           'AssumedRole',
                           'FederatedUser'
                       ]}},
-           'update': {'type': 'boolean'},
-           'tag': {'type': 'string'},
-           'principal_id_tag': {'type': 'string'},
-           'value': {'type': 'string',
-                     'enum': [
-                         'userName',
-                         'sourceIPAddress',
-                         'principalId'
-                     ]},
-           }
+            'update': {'type': 'boolean'},
+            'tag': {'type': 'string'},
+            'principal_id_tag': {'type': 'string'},
+            'value': {'type': 'string',
+                      'enum': [
+                          'userName',
+                          'sourceIPAddress',
+                          'principalId'
+                      ]},
+        }
     )
 
     def validate(self):
