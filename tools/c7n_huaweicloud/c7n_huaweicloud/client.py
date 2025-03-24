@@ -5,19 +5,16 @@ import logging
 import os
 import sys
 
-from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
-from huaweicloudsdkconfig.v1.region.config_region import ConfigRegion
-from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
-from huaweicloudsdkecs.v2 import EcsClient
-from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
-from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
+from huaweicloudsdkcore.auth.credentials import BasicCredentials
+from huaweicloudsdkcore.auth.credentials import GlobalCredentials
+from huaweicloudsdkecs.v2 import *
+from huaweicloudsdkevs.v2 import *
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
-from huaweicloudsdkiam.v3 import IamClient
-from huaweicloudsdkiam.v3.region.iam_region import IamRegion
-from huaweicloudsdkvpc.v2 import VpcClient, ListVpcsRequest
-from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
-from huaweicloudsdktms.v1 import TmsClient
+from huaweicloudsdkvpc.v2 import *
+from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
+from huaweicloudsdkram.v1 import *
+from huaweicloudsdkram.v1.region.ram_region import RamRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -64,17 +61,11 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(TmsRegion.value_of(self.region)) \
                 .build()
-        elif service == 'iam':
+        elif service == 'ram':
             globalCredentials = GlobalCredentials(self.ak, self.sk)
-            client = IamClient.new_builder() \
+            client = RamClient.new_builder() \
                 .with_credentials(globalCredentials) \
-                .with_region(IamRegion.value_of(self.region)) \
-                .build()
-        elif service == 'config':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
-            client = ConfigClient.new_builder() \
-                .with_credentials(globalCredentials) \
-                .with_region(ConfigRegion.value_of(self.region)) \
+                .with_region(RamRegion.value_of(self.region)) \
                 .build()
 
         return client
@@ -84,7 +75,10 @@ class Session:
             request = ListVpcsRequest()
         elif service == 'evs':
             request = ListVolumesRequest()
-        elif service == 'config':
-            request = ShowTrackerConfigRequest()
-
+        elif service == 'ram':
+            request = SearchResourceShareAssociationsRequest()
+            request.body = SearchResourceShareAssociationsReqBody(
+                association_type="principal",
+                association_status="associated"
+            )
         return request
