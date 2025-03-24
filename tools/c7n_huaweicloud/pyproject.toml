@@ -20,6 +20,7 @@ huaweicloudsdkecs = "^3.1.138"
 huaweicloudsdkevs = "^3.1.138"
 huaweicloudsdkvpc = "^3.1.138"
 huaweicloudsdktms = "^3.1.138"
+huaweicloudsdkelb = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"

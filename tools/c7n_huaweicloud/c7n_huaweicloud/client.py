@@ -12,6 +12,8 @@ from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkvpc.v2 import *
 from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
+from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
+from huaweicloudsdkelb.v3 import *
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -58,13 +60,24 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(TmsRegion.value_of(self.region)) \
                 .build()
+        elif service == 'elb':
+            credentials = BasicCredentials(self.ak, self.sk)
+            client = ElbClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(ElbRegion.value_of(self.region)) \
+                .build()
 
         return client
 
-    def request(self, service):
+    def request(self, service, resource=None):
         if service == 'vpc':
             request = ListVpcsRequest()
         elif service == 'evs':
             request = ListVolumesRequest()
+        elif service == 'elb':
+            if resource == 'loadbalancer':
+                request = ListLoadBalancersRequest()
+            elif resource == 'listener':
+                request = ListListenersRequest()
 
         return request

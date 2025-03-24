@@ -76,7 +76,7 @@ class ResourceQuery:
         if not marker_pagination:
             marker_pagination = DefaultMarkerPagination(DEFAULT_LIMIT_SIZE)
         page_params = marker_pagination.get_first_page_params()
-        request = session.request(m.service)
+        request = session.request(m.service, m.resource)
         _dict_map(request, page_params)
         resources = []
         while 1:
