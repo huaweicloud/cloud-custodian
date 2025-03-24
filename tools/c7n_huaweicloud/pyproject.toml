@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "c7n_huaweicloud"
+version = "0.1.0"
+description = "Cloud Custodian - Huawei Cloud Support"
+readme = "readme.md"
+homepage="https://cloudcustodian.io"
+repository="https://github.com/cloud-custodian/cloud-custodian"
+documentation="https://cloudcustodian.io/docs/"
+authors = ["Cloud Custodian Project"]
+license = "Apache-2.0"
+classifiers=[
+   "License :: Huawei Cloud Approved :: Apache Software License",
+   "Topic :: System :: Systems Administration",
+   "Topic :: System :: Distributed Computing"
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+python-dateutil = "^2.8.2"
+huaweicloudsdkecs = "^3.1.138"
+huaweicloudsdkevs = "^3.1.138"
+huaweicloudsdkvpc = "^3.1.138"
+huaweicloudsdktms = "^3.1.138"
+huaweicloudsdkiam = "^3.1.138"
+huaweicloudsdksmn = "^3.1.138"
+huaweicloudsdkcoc = "^3.1.138"
+huaweicloudsdkconfig = "^3.1.138"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "<8.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
