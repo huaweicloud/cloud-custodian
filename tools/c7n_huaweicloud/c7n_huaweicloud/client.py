@@ -5,17 +5,18 @@ import logging
 import os
 import sys
 
-from huaweicloudsdkcore.auth.credentials import BasicCredentials
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
 from huaweicloudsdkconfig.v1.region.config_region import ConfigRegion
 from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
-from huaweicloudsdkecs.v2 import *
-from huaweicloudsdkevs.v2 import *
+from huaweicloudsdkecs.v2 import EcsClient
+from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
+from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v3 import IamClient
 from huaweicloudsdkiam.v3.region.iam_region import IamRegion
-from huaweicloudsdkvpc.v2 import *
-from huaweicloudsdktms.v1 import *
+from huaweicloudsdkvpc.v2 import VpcClient, ListVpcsRequest
+from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
+from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
@@ -42,7 +43,6 @@ class Session:
 
         self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
         if not self.tms_region:
-            log.info('No default tms region set. Use cn-north-4')
             self.tms_region = 'cn-north-4'
 
     def client(self, service):
