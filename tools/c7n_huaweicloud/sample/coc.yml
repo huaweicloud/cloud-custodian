@@ -1,0 +1,22 @@
+policies:
+  - name: non-compliant-patch
+    resource: huaweicloud.coc
+    filters:
+    - type: value
+      key: operating_system
+      value: CentOS
+      op: eq
+    - type: value
+      key: region
+      value: cn-north-4
+      op: eq
+    - type: value
+      key: compliant_status
+      value: non_compliant
+    actions:
+      - type: alarm
+        smn: true
+        region_id: cn-north-4
+        topic_urn: *
+        subject: ECS机器补丁不合规告警
+        message: 您的名义下的ECS机器存在补丁不合规场景
