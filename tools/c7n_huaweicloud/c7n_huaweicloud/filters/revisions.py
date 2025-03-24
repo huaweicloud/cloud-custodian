@@ -21,8 +21,7 @@ try:
 except ImportError:
     HAVE_JSONPATH = False
 
-
-ErrNotFound = "ResourceNotDiscoveredException"
+UTC = tzutc()
 
 
 class Diff(Filter):
