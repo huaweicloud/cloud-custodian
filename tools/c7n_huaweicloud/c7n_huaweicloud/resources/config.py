@@ -45,7 +45,6 @@ class DeleteTrackerAction(HuaweiCloudBaseAction):
         self.log.info("Successfully delete config-tracker of %s", resource.get("id", resource.get("name")))
 
 
-@ConfigTracker.action_registry.register("create-tracker")
 class CreateTrackerAction(HuaweiCloudBaseAction):
     """Create Config Tracker.
 

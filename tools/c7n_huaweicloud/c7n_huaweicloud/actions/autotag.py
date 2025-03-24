@@ -1,7 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-
-from .core import EventAction
+from c7n.actions import EventAction
 from c7n.exceptions import PolicyValidationError
 from c7n import utils
 
