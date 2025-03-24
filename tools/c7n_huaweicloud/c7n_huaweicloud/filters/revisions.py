@@ -140,7 +140,7 @@ class JsonDiff(Diff):
         return list(patch)
 
     def sanitize_revision(self, rev):
-        sanitized = dict(rev)
+        sanitized = rev.to_dict()
         for k in [k for k in sanitized if 'huaweicloud' in k]:
             sanitized.pop(k)
         return sanitized
