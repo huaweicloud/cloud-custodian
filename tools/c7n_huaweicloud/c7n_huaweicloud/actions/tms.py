@@ -109,7 +109,8 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
                 self.handle_exception(failed_resources=failed_resources, resources=resources)
             except exceptions.ClientRequestException as ex:
                 self.log.exception(
-                    f"Unable to tagged {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                    f"Unable to tagged {len(resource_batch)} resources "
+                    f"RequestId: {ex.request_id}, Reason: {ex.error_msg}")
                 self.handle_exception(failed_resources=resource_batch, resources=resources)
         return self.process_result(resources=[resource["resource_id"] for resource in resources])
 
@@ -220,7 +221,8 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
                 self.handle_exception(failed_resources=failed_resources, resources=resources)
             except exceptions.ClientRequestException as ex:
                 self.log.exception(
-                    f"Unable to remove tag {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                    f"Unable to remove tag {len(resource_batch)} "
+                    f"resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
                 self.handle_exception(failed_resources=resource_batch, resources=resources)
         return self.process_result(resources=[resource["resource_id"] for resource in resources])
 
@@ -330,7 +332,8 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
                           len(new_tags))
         except exceptions.ClientRequestException as ex:
             self.log.exception(
-                f"Unable to rename tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                f"Unable to rename tag resource {resource['id']}, "
+                f"RequestId: {ex.request_id}, Reason: {ex.error_msg}")
             self.handle_exception(failed_resources=[resource], resources=self.resources)
 
     def process_resources_concurrently(self, resources, old_key, new_key, value):
@@ -363,7 +366,7 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
                             if parts[0] == key and len(parts) > 1:
                                 return parts[1]
             return None
-        except Exception as ex:
+        except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
             return None
 
@@ -449,7 +452,8 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
             raise PolicyValidationError("Can not perform normalize tag without key")
         if not self.data.get('action') and self.data.get('action') not in self.action_list:
             raise PolicyValidationError(
-                "Can not perform normalize tag when action not in [uppper, lower, title, strip, replace]")
+                "Can not perform normalize tag when "
+                "action not in [uppper, lower, title, strip, replace]")
         action = self.data.get('action')
         if action == 'strip' and not self.data.get('old_sub_str'):
             raise PolicyValidationError(
@@ -457,7 +461,8 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         if action == 'replace' and not (
                 self.data.get('old_sub_str') and self.data.get('new_sub_str')):
             raise PolicyValidationError(
-                "Can not perform normalize tag when action is strip without old_sub_str or new_sub_str")
+                "Can not perform normalize tag when "
+                "action is strip without old_sub_str or new_sub_str")
 
         return self
 
@@ -510,7 +515,8 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
                           len(new_tags))
         except exceptions.ClientRequestException as ex:
             self.log.exception(
-                f"Unable to rename tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                f"Unable to rename tag resource {resource['id']}, "
+                f"RequestId: {ex.request_id}, Reason: {ex.error_msg}")
             self.handle_exception(failed_resources=[resource], resources=self.resources)
 
     def process_resources_concurrently(self, resources):
@@ -555,7 +561,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
                             if parts[0] == key and len(parts) > 1:
                                 return parts[1]
             return None
-        except Exception as ex:
+        except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
             return None
 
@@ -644,7 +650,8 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
                           len(old_tags))
         except exceptions.ClientRequestException as ex:
             self.log.exception(
-                f"Unable to trim tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                f"Unable to trim tag resource {resource['id']}, "
+                f"RequestId: {ex.request_id}, Reason: {ex.error_msg}")
             self.handle_exception(failed_resources=[resource], resources=self.resources)
 
     def process_resources_concurrently(self, resources, space, preserve):
@@ -695,7 +702,7 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
                                 res_tags[parts[0]] = parts[1]
                     return res_tags
             return None
-        except Exception as ex:
+        except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
             return None
 
@@ -818,7 +825,8 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
                 self.handle_exception(failed_resources=failed_resources, resources=resources)
             except exceptions.ClientRequestException as ex:
                 self.log.exception(
-                    f"Unable to mark-for-op {len(resource_batch)} resources RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                    f"Unable to mark-for-op {len(resource_batch)} resources,"
+                    f" RequestId: {ex.request_id}, Reason: {ex.error_msg}")
                 self.handle_exception(failed_resources=resource_batch, resources=resources)
         return self.process_result(resources=[resource["resource_id"] for resource in resources])
 

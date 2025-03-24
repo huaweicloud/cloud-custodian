@@ -177,6 +177,6 @@ class TagActionFilter(Filter):
                                 res_tags[parts[0]] = parts[1]
                     return res_tags
             return None
-        except Exception as ex:
+        except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
             return None
