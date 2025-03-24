@@ -6,6 +6,25 @@ policies:
         key: count
         value: 1
         op: gte
+      - type: missing
+        instance_compliant:
+          filters:
+            - type: value
+              key: "equal(instance_compliant[].status. 'non_compliant')"
+              value: true
+              op: eq
+            - type: value
+              key: "equal(instance_compliant[].report_scene. 'ECS')"
+              value: true
+              op: eq
+            - type: value
+              key: "equal(instance_compliant[].operating_system. 'CentOS')"
+              value: true
+              op: eq
+            - type: value
+              key: "equal(instance_compliant[].region. 'ap-southeast-1')"
+              value: true
+              op: eq
     actions:
       - type: non_compliant_alarm
         smn: true
