@@ -20,6 +20,8 @@ from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
+from huaweicloudsdkcbr.v1 import *
+from huaweicloudsdkcbr.v1.region.cbr_region import CbrRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -69,6 +71,11 @@ class Session:
             client = TmsClient.new_builder() \
                 .with_credentials(globalCredentials) \
                 .with_region(TmsRegion.value_of(self.tms_region)) \
+                .build()
+        elif service == 'cbr':
+            client = CbrClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CbrRegion.value_of(self.region)) \
                 .build()
         elif service == 'iam':
             globalCredentials = GlobalCredentials(self.ak, self.sk)

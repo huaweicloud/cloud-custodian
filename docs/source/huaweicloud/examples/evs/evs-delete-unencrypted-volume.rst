@@ -9,8 +9,12 @@ EVS - Delete Unencrypted
          Terminate all unencrypted EVS volumes upon creation
        resource: huaweicloud.volume
        filters:
-         - type: value
-           key: metadata.__system__encrypted
-           value: "0"
+         - or:
+            - type: value
+              key: metadata.__system__encrypted
+              value: "0"
+            - type: value
+              key: metadata.__system__encrypted
+              value: "empty"
        actions:
          - delete
