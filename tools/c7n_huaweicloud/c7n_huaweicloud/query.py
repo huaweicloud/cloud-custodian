@@ -68,7 +68,12 @@ class ResourceQuery:
             request.offset = offset
             response = self._invoke_client_enum(client, enum_op, request)
             res = jmespath.search(path, eval(
-                str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+                str(response).replace('null', 'None').replace('false', 'False').
+                replace('true', 'True')))
+
+            if path == '*':
+                resources.append(json.loads(str(response)))
+                return resources
 
             if path == '*':
                 response = '{"count" : 1, "instance_compliant" : [ {"baseline_id" : "JX-f2d85e2554f7385cbbf2c23a01f41","baseline_name" : "COC-EulerOSDefaultPatchBaseline","cce_info_id" : null,"compliant_summary" : {"compliant_count" : 264,"severity_summary" : {"critical_count" : 0,"high_count" : 0,"informational_count" : 0,"low_count" : 0,"medium_count" : 0,"unspecified_count" : 264}},"eip" : null,"enterprise_project_id" : "string","execution_summary" : {"job_id" : "string","order_id" : "string","report_time" : 1715308575000},"group" : null,"id" : "string","instance_id" : "string","ip" : "string","name" : "string","node_id" : "","non_compliant_summary" : {"non_compliant_count" : 204,"severity_summary" : {"critical_count" : 0,"high_count" : 0,"informational_count" : 0,"low_count" : 0,"medium_count" : 0,"unspecified_count" : 0}},"operating_system" : "CentOS","region" : "ap-southeast-1","report_scene" : "ECS","rule_type" : "standard","status" : "non_compliant"} ]}'
@@ -104,12 +109,15 @@ class ResourceQuery:
                 response = self._invoke_client_enum(client, enum_op, request)
             except exceptions.ClientRequestException as e:
                 log.error(
-                    f'request[{e.request_id}] failed[{e.status_code}], error_code[{e.error_code}], error_msg[{e.error_msg}]')
+                    f"request[{e.request_id}] failed[{e.status_code}], error_code[{e.error_code}],"
+                    f" error_msg[{e.error_msg}]")
                 return resources
             count = response.count
             next_marker = response.next_marker
             res = jmespath.search(path, eval(
-                str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+                str(response)
+                .replace('null', 'None').replace('false', 'False').
+                replace('true', 'True')))
 
             # replace id with the specified one
             if res is not None:
@@ -122,7 +130,8 @@ class ResourceQuery:
                 break
         return resources
 
-    def _pagination_limit_marker(self, m, enum_op, path, marker_pagination: MarkerPagination=None):
+    def _pagination_limit_marker(self, m, enum_op, path,
+                                 marker_pagination: MarkerPagination = None):
         session = local_session(self.session_factory)
         client = session.client(m.service)
 
@@ -197,6 +206,7 @@ class DescribeSource:
 
 class QueryMeta(type):
     """metaclass to have consistent action/filter registry for new resources."""
+
     def __new__(cls, name, parents, attrs):
         if 'resource_type' not in attrs:
             return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
@@ -216,7 +226,6 @@ class QueryMeta(type):
 
 
 class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
-
     source_mapping = sources
 
     def __init__(self, ctx, data):
