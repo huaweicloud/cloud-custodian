@@ -4,7 +4,7 @@
 import logging
 
 from huaweicloudsdksmn.v2 import *
-from c7n.utils import type_schema
+from c7n.utils import type_schema, local_session
 from c7n.exceptions import PolicyValidationError
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -16,7 +16,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.coc")
 class Coc(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'coc'
-        enum_spec = ("list_non_compliant", 'compliant', 'offset')
+        enum_spec = ('list_instance_compliant', '*', 'offset')
         id = 'id'
         tag = True
 
@@ -66,6 +66,7 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
 
 
     def perform_action(self, resource):
+
         count = resource.get('count')
         if count < 1:
             log.info("non compliant patch count is 0")
@@ -84,7 +85,7 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
         subject = self.data.get('subject')
         message = self.data.get('message')
 
-        client = self.manager.get_client()
+        client = local_session(self.manager.session_factory).client('smn')
         message_body = PublishMessageRequestBody(
             subject = subject,
             message = message + '\n' + message_data

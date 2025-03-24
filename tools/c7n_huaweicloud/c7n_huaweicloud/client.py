@@ -31,17 +31,20 @@ class Session:
     """Session"""
 
     def __init__(self, options=None):
-        self.region = os.getenv('HUAWEI_DEFAULT_REGION')
+        #self.region = os.getenv('HUAWEI_DEFAULT_REGION')
+        self.region = 'cn-north-4'
         if not self.region:
             log.error('No default region set. Specify a default via HUAWEI_DEFAULT_REGION')
             sys.exit(1)
 
-        self.ak = os.getenv('HUAWEI_ACCESS_KEY_ID')
+        #self.ak = os.getenv('HUAWEI_ACCESS_KEY_ID')
+        self.ak = 'FCOOCA0SWYBRGQ7AZDDX'
         if self.ak is None:
             log.error('No access key id set. Specify a default via HUAWEI_ACCESS_KEY_ID')
             sys.exit(1)
 
-        self.sk = os.getenv('HUAWEI_SECRET_ACCESS_KEY')
+        #self.sk = os.getenv('HUAWEI_SECRET_ACCESS_KEY')
+        self.sk = 'VS9Rb94TrV0RQExi0Yix7bAOyxfOxVUPVDjbsALD'
         if self.sk is None:
             log.error('No secret access key set. Specify a default via HUAWEI_SECRET_ACCESS_KEY')
             sys.exit(1)
