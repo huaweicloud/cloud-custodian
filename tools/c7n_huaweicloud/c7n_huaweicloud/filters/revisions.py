@@ -15,11 +15,6 @@ from c7n.filters import Filter
 from c7n.manager import resources
 from c7n.utils import local_session, type_schema
 
-try:
-    import jsonpatch
-    HAVE_JSONPATH = True
-except ImportError:
-    HAVE_JSONPATH = False
 
 UTC = tzutc()
 
@@ -161,5 +156,4 @@ class JsonDiff(Diff):
         resource_class.filter_registry.register('json-diff', klass)
 
 
-if HAVE_JSONPATH:
-    resources.subscribe(JsonDiff.register_resources)
+resources.subscribe(JsonDiff.register_resources)
