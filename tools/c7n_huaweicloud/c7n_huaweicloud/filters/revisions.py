@@ -17,7 +17,7 @@ from c7n.utils import local_session, type_schema
 
 try:
     import jsonpatch
-
+    print("123456")
     HAVE_JSONPATH = True
 except ImportError:
     HAVE_JSONPATH = False

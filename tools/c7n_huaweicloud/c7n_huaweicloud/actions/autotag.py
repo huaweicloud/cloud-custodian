@@ -51,9 +51,9 @@ class AutoTagUser(EventAction):
             'type': 'array',
             'items': {'type': 'string',
                       'enum': [
-                          'IAMUser',
-                          'AssumedRole',
-                          'FederatedUser'
+                          'User',
+                          'AssumedAgency',
+                          'ExternalUser'
                       ]}},
             'update': {'type': 'boolean'},
             'tag': {'type': 'string'},
@@ -87,9 +87,9 @@ class AutoTagUser(EventAction):
             return
 
         if vtype == "userName":
-            if utype == "IAMUser":
+            if utype == "User":
                 value = user_info.get('userName', '')
-            elif utype == "AssumedRole" or utype == "FederatedUser":
+            elif utype == "AssumedAgency" or utype == "ExternalUser":
                 value = user_info.get('userName', '')
         elif vtype == "sourceIPAddress":
             value = event.get('source_ip', '')
@@ -101,15 +101,15 @@ class AutoTagUser(EventAction):
     def get_tag_value(self, event):
         user_info = event['user']
         utype = user_info['type']
-        if utype not in self.data.get('user-type', ['AssumedRole', 'IAMUser', 'FederatedUser']):
+        if utype not in self.data.get('user-type', ['AssumedAgency', 'User', 'ExternalUser']):
             return
 
         user = None
         principal_id_value = None
-        if utype == "IAMUser":
+        if utype == "User":
             user = user_info['name']
             principal_id_value = user_info.get('principal_id', '')
-        elif utype == "AssumedRole" or utype == "FederatedUser":
+        elif utype == "AssumedAgency" or utype == "ExternalUser":
             user = user_info['name']
             principal_id_value = user_info.get('principal_id', '')
 
