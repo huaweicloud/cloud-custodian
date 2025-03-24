@@ -17,6 +17,6 @@ policies:
       - type: non_compliant_alarm
         smn: true
         region_id: ap-southeast-3
-        topic_urn: *
+        topic_urn: urn:smn:ap-southeast-1:6bd69b78b15b46c79814ba748415e643:custodian-test
         subject: non compliant alarm
         message: non compliant alarm
