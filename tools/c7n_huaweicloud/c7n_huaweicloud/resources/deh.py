@@ -19,7 +19,6 @@ class Deh(QueryResourceManager):
         service = 'deh'
         enum_spec = ("list_dedicated_hosts", 'dedicated_hosts', 'offset')
         id = 'dedicated_host_id'
-        tag = True
         tag_resource_type = 'dedicated-host-tags'
 
 
