@@ -17,7 +17,7 @@ from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from c7n.filters import *
+from c7n.filters import AgeFilter, ValueFilter, Filter
 from dateutil.parser import parse
 
 log = logging.getLogger("custodian.huaweicloud.resources.ecs")
@@ -272,7 +272,7 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         client = self.manager.get_client()
         name = self.data.get('name', None)
-        if name == None:
+        if name is None:
             log.error("security group name is None")
             return None
         option = NovaAddSecurityGroupOption(name=name)
@@ -311,7 +311,7 @@ class DeleteSecurityGroup(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         client = self.manager.get_client()
         name = self.data.get('name', None)
-        if name == None:
+        if name is None:
             log.error("security group name is None")
             return None
         option = NovaRemoveSecurityGroupOption(name=name)
@@ -363,7 +363,7 @@ class Resize(HuaweiCloudBaseAction):
         flavorRef = self.data.get('flavor_ref', None)
         dedicatedHostId = self.data.get('dedicated_host_id', None)
         mode = self.data.get('mode', None)
-        if flavorRef == None:
+        if flavorRef is None:
             log.error("flavor_ref con not be None")
             return None
         option = ResizePrePaidServerOption(
@@ -472,7 +472,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
     def wait_backup(self, job_id, ims_client):
         while True:
             status = self.fetch_ims_job_status(job_id, ims_client)
-            if status is "SUCCESS":
+            if status == "SUCCESS":
                 return True
             time.sleep(5)
 
@@ -949,6 +949,7 @@ class InstanceUserData(ValueFilter):
             try:
                 result = self.get_instance_info_detail(r['id'])
             except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
                 raise
             if result is None:
                 r[self.annotation] = None
@@ -1026,7 +1027,7 @@ class InstanceEvs(ValueFilter):
 
 
 @Ecs.filter_registry.register('instance-vpc')
-class InstanceVpc:
+class InstanceVpc(Filter):
     """ECS instance with VPC.
 
     Filter ECS instances with VPC id
@@ -1050,7 +1051,7 @@ class InstanceVpc:
 
     def get_vpcs(self, resources):
         result = []
-        vpcIds = list(item.metadata['vpc_id'] for item in resources)
+        vpcIds = list(item['metadata']['vpc_id'] for item in resources)
         vpcs = self.manager.get_resource_manager('huaweicloud.vpc').resources()
         for resource in resources:
             for vpc in vpcs:

@@ -1,10 +1,4 @@
-import logging
 from huaweicloud_common import *
-from unittest.mock import patch, MagicMock
-from huaweicloudsdkcore.exceptions import exceptions
-from pytest_terraform import terraform
-import pytest
-
 
 class InstanceStartTest(BaseTest):
 
@@ -220,7 +214,7 @@ class InstanceStartTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['id'], 'bac642b0-a9ca-4a13-b6b9-9e41b35905b6')
 
-    # ----------------------------------------Filter Test------------------------------------------------#
+    # -------------------------------Filter Test---------------------------------#
 
     def test_instance_age(self):
         factory = self.replay_flight_data('ecs_instance_age')
@@ -283,3 +277,61 @@ class InstanceStartTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 0)
+        
+    def test_instance_user_data(self):
+        factory = self.replay_flight_data('ecs_instance_user_data')
+        p = self.load_policy(
+            {
+                'name': 'ecs_instance_user_data',
+                'resource': 'huaweicloud.ecs',
+                'filters': [
+                    {
+                        "type": "instance-user-data", 
+                        "op": "regex",
+                        "value": "(?smi).*user=",
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 0)
+
+    def test_instance_evs(self):
+        factory = self.replay_flight_data('ecs_instance_evs')
+        p = self.load_policy(
+            {
+                'name': 'ecs_instance_evs',
+                'resource': 'huaweicloud.ecs',
+                'filters': [
+                    {
+                        "type": "instance-evs",
+                        "key": "encrypted",
+                        "op": "eq",
+                        "value": "false",
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 0)
+        
+    # ims、vpc、cbr的UT由于现在还未合入对应服务代码，故目前不能实现
+    
+    # def test_instance_vpc(self):
+    #     factory = self.replay_flight_data('ecs_instance_vpc')
+    #     p = self.load_policy(
+    #         {
+    #             'name': 'ecs_instance_vpc',
+    #             'resource': 'huaweicloud.ecs',
+    #             'filters': [
+    #                 {
+    #                     "type": "instance-vpc",
+    #                 }
+    #             ],
+    #         },
+    #         session_factory=factory,
+    #     )
+    #     resources = p.run()
+    #     self.assertEqual(len(resources), 0)
