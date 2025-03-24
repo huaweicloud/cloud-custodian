@@ -4,6 +4,7 @@
 Custodian support for diffing and patching across multiple versions
 of a resource.
 """
+from datetime import datetime, UTC
 
 from dateutil.parser import parse as parse_date
 from dateutil.tz import tzlocal, tzutc
@@ -20,8 +21,6 @@ try:
     HAVE_JSONPATH = True
 except ImportError:
     HAVE_JSONPATH = False
-
-UTC = tzutc()
 
 
 class Diff(Filter):
@@ -121,12 +120,9 @@ class Diff(Filter):
 
     def select_revision(self, revisions):
         for rev in revisions:
-            # convert unix timestamp to utc to be normalized with other dates
-            if rev.capture_time.tzinfo and \
-                    isinstance(rev.capture_time.tzinfo, tzlocal):
-                rev.capture_time = rev.capture_time.astimezone(UTC)
+            utc_time = datetime.fromtimestamp(int(rev.capture_time), UTC)
             return {
-                'date': rev.capture_time,
+                'date': utc_time,
                 'resource': rev.resource}
 
     def diff(self, source, target):
