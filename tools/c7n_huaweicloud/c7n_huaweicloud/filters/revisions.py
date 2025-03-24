@@ -9,15 +9,14 @@ from dateutil.parser import parse as parse_date
 from dateutil.tz import tzlocal, tzutc
 from huaweicloudsdkconfig.v1 import ShowResourceHistoryRequest
 from huaweicloudsdkcore.exceptions import exceptions
+from c7n_huaweicloud.provider import resources
 
 from c7n.exceptions import PolicyValidationError
 from c7n.filters import Filter
-from c7n.manager import resources
 from c7n.utils import local_session, type_schema
 
 try:
     import jsonpatch
-    print("123456")
     HAVE_JSONPATH = True
 except ImportError:
     HAVE_JSONPATH = False
