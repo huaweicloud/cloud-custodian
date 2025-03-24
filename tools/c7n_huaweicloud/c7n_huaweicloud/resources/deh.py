@@ -3,7 +3,7 @@
 
 import logging
 
-from huaweicloudsdkdeh.v1 import *
+from huaweicloudsdkdeh.v1 import UpdateDedicatedHostRequest, ReqUpdateDeh, ReqUpdateDehMessage
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
