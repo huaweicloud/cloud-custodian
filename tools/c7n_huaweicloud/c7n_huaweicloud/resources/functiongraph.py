@@ -25,6 +25,11 @@ class FunctionGraph(QueryResourceManager):
         id = 'func_urn'
         tag = True
 
+    def get_resources(self, resource_ids):
+        # super(FunctionGraph, self).get_resources(resource_ids)
+        log.info(f'test ---{self.resources()}')
+        return []
+
 
 @FunctionGraph.filter_registry.register('reserved-concurrency')
 class ReservedConcurrency(ValueFilter):
@@ -503,7 +508,8 @@ class TrimVersions(HuaweiCloudBaseAction):
             version_names_list.append(f'{resource["func_name"]}.{version.version}')
         log.info(f'Deleted versions: {version_names_list}')
 
-    def delete_version(self, client, func_urn):
+    @staticmethod
+    def delete_version(client, func_urn):
         request = DeleteFunctionRequest(function_urn=func_urn)
         try:
             log.warning(f'Deleting {func_urn}')

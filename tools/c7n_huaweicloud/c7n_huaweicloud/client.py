@@ -29,6 +29,8 @@ from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
 from huaweicloudsdksmn.v2 import SmnClient
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
+from huaweicloudsdkeg.v1 import *
+from huaweicloudsdkeg.v1.region.eg_region import EgRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -115,6 +117,11 @@ class Session:
             client = FunctionGraphClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(FunctionGraphRegion.value_of(self.region)) \
+                .build()
+        elif service == 'eg':
+            client = EgClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(EgRegion.value_of(self.region)) \
                 .build()
 
         return client
