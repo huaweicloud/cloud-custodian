@@ -10,7 +10,7 @@ from dateutil.tz import tzlocal, tzutc
 from huaweicloudsdkconfig.v1 import ShowResourceHistoryRequest
 from huaweicloudsdkcore.exceptions import exceptions
 
-from c7n.exceptions import PolicyValidationError, ClientError
+from c7n.exceptions import PolicyValidationError
 from c7n.filters import Filter
 from c7n.manager import resources
 from c7n.utils import local_session, type_schema
@@ -23,8 +23,6 @@ except ImportError:
 
 
 ErrNotFound = "ResourceNotDiscoveredException"
-
-UTC = tzutc()
 
 
 class Diff(Filter):
@@ -44,8 +42,6 @@ class Diff(Filter):
         selector={'enum': ['previous', 'date', 'locked']},
         # For date selectors allow value specification
         selector_value={'type': 'string'})
-
-    permissions = ('config:GetResourceConfigHistory',)
 
     selector_value = mode = parser = resource_shape = None
 
