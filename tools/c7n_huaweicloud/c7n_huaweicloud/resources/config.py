@@ -20,6 +20,7 @@ class ConfigTracker(QueryResourceManager):
         enum_spec = ("show_tracker_config", '*', 'offset')
         id = 'domain_id'
 
+
 @ConfigTracker.action_registry.register("delete-tracker")
 class DeleteTrackerAction(HuaweiCloudBaseAction):
     """Delete Config Tracker.
@@ -96,7 +97,6 @@ class CreateTrackerAction(HuaweiCloudBaseAction):
             raise PolicyValidationError("Can not create or update tracke when parameter is error")
 
         return self
-
 
     def perform_action(self, resource):
         smn = self.data.get('smn', False)

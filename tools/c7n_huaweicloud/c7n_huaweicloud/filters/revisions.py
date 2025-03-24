@@ -15,6 +15,12 @@ from c7n.filters import Filter
 from c7n.manager import resources
 from c7n.utils import local_session, type_schema
 
+try:
+    import jsonpatch
+
+    HAVE_JSONPATH = True
+except ImportError:
+    HAVE_JSONPATH = False
 
 UTC = tzutc()
 
@@ -85,8 +91,8 @@ class Diff(Filter):
     def get_revisions(self, config, resource):
         request = self.get_selector_params(resource)
         try:
-             response = config.show_resource_history(request=request)
-             revisions = response.items
+            response = config.show_resource_history(request=request)
+            revisions = response.items
         except exceptions.ClientRequestException as ex:
             self.log.exception(
                 f"Cannot show resource history of resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
@@ -116,7 +122,7 @@ class Diff(Filter):
         for rev in revisions:
             # convert unix timestamp to utc to be normalized with other dates
             if rev.capturn_time.tzinfo and \
-               isinstance(rev.capturn_time.tzinfo, tzlocal):
+                    isinstance(rev.capturn_time.tzinfo, tzlocal):
                 rev.capturn_time = rev.capturn_time.astimezone(UTC)
             return {
                 'date': rev.capturn_time,
@@ -127,7 +133,6 @@ class Diff(Filter):
 
 
 class JsonDiff(Diff):
-
     schema = type_schema(
         'json-diff',
         selector={'enum': ['previous', 'date', 'locked']},
@@ -156,4 +161,5 @@ class JsonDiff(Diff):
         resource_class.filter_registry.register('json-diff', klass)
 
 
-resources.subscribe(JsonDiff.register_resources)
+if HAVE_JSONPATH:
+    resources.subscribe(JsonDiff.register_resources)

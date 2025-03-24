@@ -22,6 +22,7 @@ MAX_TAGS_SIZE = 10
 RSOURCE_MAX_SIZE = 50
 DEFAULT_TAG = "mark-for-op-tag"
 
+
 def register_tms_actions(actions):
     actions.register('mark', CreateResourceTagAction)
     actions.register('tag', CreateResourceTagAction)
@@ -123,8 +124,8 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
         response = client.create_resource_tag(request=request)
         failed_resource_ids = [failed_resource.resource_id for failed_resource in
                                response.failed_resources]
-        self.log.info("Successfully tagged %s resources with %s tags", 
-                      len(resource_batch) -len(failed_resource_ids), len(tags))
+        self.log.info("Successfully tagged %s resources with %s tags",
+                      len(resource_batch) - len(failed_resource_ids), len(tags))
         return [resource for resource in resource_batch if resource["resource_id"] in failed_resource_ids]
 
     def get_project_id(self):
@@ -320,7 +321,8 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
 
     def process_resources_concurrently(self, resources, old_key, new_key, value):
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = [executor.submit(self.process_resource, resource, old_key, new_key, value) for resource in resources]
+            futures = [executor.submit(self.process_resource, resource, old_key, new_key, value) for resource in
+                       resources]
             for future in concurrent.futures.as_completed(futures):
                 try:
                     future.result()
@@ -430,7 +432,8 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         if not self.data.get('key'):
             raise PolicyValidationError("Can not perform normalize tag without key")
         if not self.data.get('action') and self.data.get('action') not in self.action_list:
-            raise PolicyValidationError("Can not perform normalize tag when action not in [uppper, lower, title, strip, replace]")
+            raise PolicyValidationError(
+                "Can not perform normalize tag when action not in [uppper, lower, title, strip, replace]")
         action = self.data.get('action')
         if action == 'strip' and not self.data.get('old_sub_str'):
             raise PolicyValidationError(
@@ -484,7 +487,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as ex:
             self.log.exception(
                 f"Unable to rename tag resource {resource['id']}, RequestId: {ex.request_id}, Reason: {ex.error_msg}")
-            self.handle_exception(failed_resources=[resource], resources = self.resources)
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
 
     def process_resources_concurrently(self, resources):
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -511,7 +514,6 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
             return value.replace(old_sub_str, new_sub_str)
         else:
             return None
-
 
     def get_value_by_key(self, resource, key):
         try:
@@ -646,7 +648,6 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
 
             return res
 
-
     def get_tags_from_resource(self, resource):
         try:
             if isinstance(resource, dict) and 'tags' in resource:
@@ -712,22 +713,22 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
                   days: 4
     """
     schema = type_schema('mark-for-op',
-        tag={'type': 'string'},
-        msg={'type': 'string'},
-        days={'type': 'number', 'minimum': 0},
-        hours={'type': 'number', 'minimum': 0},
-        tz={'type': 'string'},
-        op={'type': 'string'})
+                         tag={'type': 'string'},
+                         msg={'type': 'string'},
+                         days={'type': 'number', 'minimum': 0},
+                         hours={'type': 'number', 'minimum': 0},
+                         tz={'type': 'string'},
+                         op={'type': 'string'})
 
     default_template = '{op}_{action_date}'
-    
+
     def validate(self):
         op = self.data.get('op')
         if self.manager and op not in self.manager.action_registry.keys():
             raise PolicyValidationError(
                 "mark-for-op specifies invalid op:%s in %s" % (
                     op, self.manager.data))
-        
+
         self.tz = tzutil.gettz(
             Time.TZ_ALIASES.get(self.data.get('tz', 'utc')))
         if not self.tz:
@@ -735,7 +736,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
                 "Invalid timezone specified %s in %s" % (
                     self.tz, self.manager.data))
         return self
-    
+
     def get_config_values(self):
         cfg = {
             'op': self.data.get('op', 'stop'),
@@ -747,7 +748,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
         cfg['action_date'] = self.generate_timestamp(
             cfg['days'], cfg['hours'])
         return cfg
-    
+
     def generate_timestamp(self, days, hours):
         n = datetime.now(tz=self.tz)
         if days is None or hours is None:
@@ -760,7 +761,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
             action_date_string = action_date.strftime('%Y-%m-%d')
 
         return action_date_string
-    
+
     def process(self, resources):
         project_id = self.get_project_id()
         cfg = self.get_config_values()
@@ -778,7 +779,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
         resources = [{"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}
                      for resource in resources
                      if "tag_resource_type" in resource.keys() and len(resource['tag_resource_type']) > 0]
-        
+
         for resource_batch in chunks(resources, RSOURCE_MAX_SIZE):
             try:
                 failed_resources = self.process_resource_set(tms_client, resource_batch, tags, project_id)
@@ -804,7 +805,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
         failed_resource_ids = [failed_resource.resource_id for failed_resource in
                                response.failed_resources]
         self.log.info("Successfully mark-for-op %s resources with %s tags",
-                      len(resource_batch) -len(failed_resource_ids), len(tags))
+                      len(resource_batch) - len(failed_resource_ids), len(tags))
         return [resource for resource in resource_batch if resource["resource_id"] in failed_resource_ids]
 
     def get_project_id(self):

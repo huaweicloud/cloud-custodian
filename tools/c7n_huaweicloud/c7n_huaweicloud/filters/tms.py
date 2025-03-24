@@ -9,12 +9,13 @@ from dateutil.parser import parse
 
 from c7n.filters.offhours import Time
 
-
 DEFAULT_TAG = "mark-for-op-custodian"
+
 
 def register_tms_filters(filters):
     filters.register('tag-count', TagCountFilter)
     filters.register('marked-for-op', TagActionFilter)
+
 
 class TagCountFilter(Filter):
     """Simplify tag counting..
@@ -149,14 +150,14 @@ class TagActionFilter(Filter):
             current_date = datetime.now()
 
         return current_date >= (
-            action_date - timedelta(days=skew, hours=skew_hours))
+                action_date - timedelta(days=skew, hours=skew_hours))
 
     def replace_nth_regex(self, s, old, new, n):
         pattern = re.compile(re.escape(old))
         matches = list(pattern.finditer(s))
         if len(matches) < n:
             return s
-        match = matches[n-1]
+        match = matches[n - 1]
         return s[:match.start()] + new + s[match.end():]
 
     def get_tags_from_resource(self, resource):
