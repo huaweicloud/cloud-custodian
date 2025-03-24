@@ -20,7 +20,7 @@ log = logging.getLogger('c7n_huaweicloud.mu')
 def custodian_archive(packages=None):
     if not packages:
         packages = []
-    packages.append('c7n_gcp')
+    packages.append('c7n_huaweicloud')
     archive = base_archive(packages)
 
     return archive
@@ -30,7 +30,8 @@ class FunctionGraphManager:
 
     def __init__(self, session_factory):
         self.session_factory = session_factory
-        self.client = self.session_factory.client('functiongraph')
+        self.session = local_session(session_factory)
+        self.client = self.session.client('functiongraph')
 
     def list_functions(self, prefix=None):
         market, maxitems, count = 0, 400, 0
@@ -64,7 +65,7 @@ class FunctionGraphManager:
         try:
             response = self.client.create_function(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'List functions failed, request id:[{e.request_id}], '
+            log.error(f'Create function failed, request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
@@ -77,7 +78,7 @@ class FunctionGraphManager:
         try:
             response = self.client.show_function_config(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'List functions failed, request id:[{e.request_id}], '
+            log.error(f'Show function config failed, request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
@@ -98,7 +99,7 @@ class FunctionGraphManager:
         try:
             response = self.client.update_function_code(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'List functions failed, request id:[{e.request_id}], '
+            log.error(f'Update function code failed, request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
@@ -110,7 +111,7 @@ class FunctionGraphManager:
         result, changed, existing = self._create_or_update(func, role)
         func.func_urn = result.func_urn
 
-        for e in func.get_event(self.session_factory):
+        for e in func.get_events(self.session_factory):
             create_trigger = e.add(func.func_urn)
             if create_trigger:
                 log.info(f'Created trigger[{create_trigger.id}] for function[{func.func_name}].')
@@ -125,7 +126,7 @@ class FunctionGraphManager:
 
         changed = False
         if existing:
-            result = old_config = existing
+            result = old_config = existing.to_dict()
             if archive.get_checksum() != old_config['digest']:
                 log.info(f'Updating function[{func.func_name}] code...')
                 result = self.update_function_code(func.func_name, archive)
@@ -152,7 +153,7 @@ class FunctionGraphManager:
             log.warning(f'Removing function[{func_urn}]...')
             _ = self.client.delete_function(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'List functions failed, request id:[{e.request_id}], '
+            log.error(f'Delete function failed, request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
@@ -311,10 +312,10 @@ class FunctionGraph(AbstractFunctionGraph):
 
 
 FunctionGraphHandlerTemplate = """\
-from c7n import handler
+from c7n_huaweicloud import handler
 
 def run(event, context):
-    return handler.dispatch_event(event, context)
+    return handler.run(event, context)
 
 """
 
@@ -367,6 +368,9 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     @property
     def description(self):
         return self.policy.data['mode'].get('description', 'cloud-custodian FunctionGraph policy')
+
+    def eg_agency(self):
+        return self.policy.data['mode'].get('eg_agency')
 
     @property
     def packages(self):
@@ -461,7 +465,7 @@ class CloudTraceServiceSource:
                         'op': 'StringEndsWith',
                         'values': ['ConsoleAction', 'ApiCall']
                     }],
-                    'data': [{
+                    'data': {
                         'service_type': [{
                             'op': 'StringIn',
                             'values': [e.get('source')]
@@ -470,7 +474,7 @@ class CloudTraceServiceSource:
                             'op': 'StringIn',
                             'values': [e.get('event')]
                         }]
-                    }]
+                    }
                 }
             ))
 
@@ -480,7 +484,7 @@ class CloudTraceServiceSource:
                 provider_type='OFFICIAL',
                 detail={
                     'urn': func_urn,
-                    'agency': self.data.get('eg_agency'),
+                    'agency_name': self.data.get('eg_agency'),
                     'invoke_type': self.data.get('invoke_type', 'SYNC')
                 },
                 retry_times=self.data.get('retry_times', 16),

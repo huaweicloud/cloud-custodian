@@ -31,7 +31,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'xrole': {'type': 'string'},
             'func_vpc': {'type': 'object', 'required': ['vpc_id', 'subnet_id']},
             'user_data': {'type': 'string'},
-            'description': {'type': 'string'}
+            'description': {'type': 'string'},
+            'eg_agency': {'type': 'string'}
         }
     )
 
