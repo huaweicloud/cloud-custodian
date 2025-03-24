@@ -61,6 +61,8 @@ class FunctionGraphManager:
         request_body = CreateFunctionRequestBody()
         for key, value in params.items():
             setattr(request_body, key, value)
+        request_body.depend_version_list = ["8b9db9aa-274f-4aa3-b95b-0f6cf2a1bca8"]
+        log.info(request_body.user_data)
         request.body = request_body
         try:
             response = self.client.create_function(request)
@@ -94,7 +96,8 @@ class FunctionGraphManager:
             code_filename='custodian-code.zip',
             func_code=FuncCode(
                 file=base64_str
-            )
+            ),
+            depend_version_list=["8b9db9aa-274f-4aa3-b95b-0f6cf2a1bca8"]
         )
         try:
             response = self.client.update_function_code(request)
@@ -363,7 +366,12 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     @property
     def user_data(self):
-        return self.policy.data['mode'].get('user_data', '')
+        user_data = {
+            "HUAWEI_ACCESS_KEY_ID": self.policy.data['mode'].get('access_key_id', ""),
+            "HUAWEI_SECRET_ACCESS_KEY": self.policy.data['mode'].get('secret_access_key', ""),
+            "HUAWEI_DEFAULT_REGION": self.policy.data['mode'].get('default_region', "")
+        }
+        return json.dumps(user_data)
 
     @property
     def description(self):

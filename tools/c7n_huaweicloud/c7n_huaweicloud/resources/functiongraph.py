@@ -37,7 +37,7 @@ class FunctionGraph(QueryResourceManager):
                           f'error_msg[{e.error_msg}]')
                 return result
 
-            result += eval(str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True'))
+            result.append(eval(str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
 
         return result
 
@@ -230,7 +230,10 @@ class DeleteFunction(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        request = DeleteFunctionRequest(function_urn=resource["func_urn"])
+        func_urn = resource["func_urn"]
+        if resource["version"] == 'latest':
+            func_urn = ":".join(func_urn.split(":")[:-1])
+        request = DeleteFunctionRequest(function_urn=func_urn)
         try:
             _ = client.delete_function(request)
             log.info(f'Function[{resource["func_name"]}] delete success.')

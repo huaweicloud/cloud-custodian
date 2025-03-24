@@ -18,6 +18,9 @@ log = logging.getLogger('c7n_huaweicloud.policy')
 class FunctionGraphMode(ServerlessExecutionMode):
     schema = type_schema(
         'huaweicloud',
+        access_key_id={'type': 'string'},
+        secret_access_key={'type': 'string'},
+        default_region={'type': 'string'},
         **{
             'execution-options': {'type': 'object'},
             'function-prefix': {'type': 'string'},
@@ -59,7 +62,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         if not resource_ids:
             log.warning("Could not find resource ids")
             return []
-        resources = self.policy.resource_manager.get_resources()
+        resources = self.policy.resource_manager.get_resources(resource_ids)
         if 'debug' in event:
             log.info("Resources %s", resources)
         return resources
