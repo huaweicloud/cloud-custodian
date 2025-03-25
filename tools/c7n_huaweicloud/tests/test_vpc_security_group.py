@@ -44,7 +44,7 @@ class SecurityGroupTest(BaseTest):
         p = self.load_policy({
              'name': 'security-group-rule-ingress',
              'resource': 'huaweicloud.vpc-security-group-rule',
-             'filters': [{'type': 'ingress', 'RemoteIpPrefix': '192.168.21.0/24', 
+             'filters': [{'type': 'ingress', 'RemoteIpPrefix': '192.168.21.0/24',
                           'Protocols': ['tcp'], 'InPorts': [8080]}]},
             session_factory=factory)
         resources = p.run()
@@ -59,7 +59,7 @@ class SecurityGroupTest(BaseTest):
         p = self.load_policy({
              'name': 'security-group-rule-egress',
              'resource': 'huaweicloud.vpc-security-group-rule',
-             'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24', 
+             'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24',
                           'Protocols': ['tcp'], 'InPorts': [8080]}]},
             session_factory=factory)
         resources = p.run()
@@ -74,7 +74,7 @@ class SecurityGroupTest(BaseTest):
         p = self.load_policy({
              'name': 'security-group-remove-rules',
              'resource': 'huaweicloud.vpc-security-group-rule',
-             'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24', 
+             'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24',
                           'Protocols': ['tcp'], 'InPorts': [8080]}],
              'actions': [{'type': 'remove-rules', 'egress': 'matched'}]},
             session_factory=factory)
@@ -90,16 +90,16 @@ class SecurityGroupTest(BaseTest):
         p = self.load_policy({
              'name': 'security-group-set-rules',
              'resource': 'huaweicloud.vpc-security-group-rule',
-             'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24', 
+             'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24',
                           'Protocols': ['tcp'], 'InPorts': [8080]}],
-             'actions': [{'type': 'set-rules', 'remove-egress': 'matched', 
-                          'remove-ingress': [{'protocol': ['tcp'], 
+             'actions': [{'type': 'set-rules', 'remove-egress': 'matched',
+                          'remove-ingress': [{'protocol': ['tcp'],
                                               'remote_ip_prefix': '192.168.22.0/24'}],
-                          'add-ingress': [{'ethertype': 'ipv4', 'protocol': 'tcp', 
-                                           'multiport': '3389', 
+                          'add-ingress': [{'ethertype': 'ipv4', 'protocol': 'tcp',
+                                           'multiport': '3389',
                                            'remote_ip_prefix': '192.168.33.25/32'}],
-                          'add-egress': [{'ethertype': 'ipv4', 'protocol': 'tcp', 
-                                          'multiport': '22,3389', 
+                          'add-egress': [{'ethertype': 'ipv4', 'protocol': 'tcp',
+                                          'multiport': '22,3389',
                                           'remote_ip_prefix': '192.168.33.0/24'}]}]},
             session_factory=factory)
         resources = p.run()
