@@ -135,6 +135,7 @@ class Session:
             client = EgClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(EgRegion.value_of(self.region)) \
+                .build()
         elif service == 'elb':
             client = ElbClient.new_builder() \
                 .with_credentials(credentials) \
