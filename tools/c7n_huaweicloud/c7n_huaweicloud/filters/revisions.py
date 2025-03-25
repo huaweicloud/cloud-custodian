@@ -4,25 +4,22 @@
 Custodian support for diffing and patching across multiple versions
 of a resource.
 """
+import datetime
 
 from dateutil.parser import parse as parse_date
-from dateutil.tz import tzlocal, tzutc
 from huaweicloudsdkconfig.v1 import ShowResourceHistoryRequest
 from huaweicloudsdkcore.exceptions import exceptions
+from c7n_huaweicloud.provider import resources
 
 from c7n.exceptions import PolicyValidationError
 from c7n.filters import Filter
-from c7n.manager import resources
 from c7n.utils import local_session, type_schema
 
 try:
     import jsonpatch
-
     HAVE_JSONPATH = True
 except ImportError:
     HAVE_JSONPATH = False
-
-UTC = tzutc()
 
 
 class Diff(Filter):
@@ -106,9 +103,14 @@ class Diff(Filter):
         later_time = None
         limit = None
         if selector == 'date':
-            if not self.selector_value:
-                self.selector_value = parse_date(
-                    self.data.get('selector_value'))
+            parsed_time = parse_date(
+                self.data.get('selector_value'))
+            if parsed_time.tzinfo is None:
+                local_time = parsed_time
+            else:
+                utc_time = parsed_time.astimezone(datetime.timezone.utc)
+                local_time = utc_time
+            self.selector_value = int(local_time.timestamp() * 1000)
             later_time = self.selector_value
             limit = 3
         elif selector == 'previous':
@@ -122,13 +124,9 @@ class Diff(Filter):
 
     def select_revision(self, revisions):
         for rev in revisions:
-            # convert unix timestamp to utc to be normalized with other dates
-            if rev.capturn_time.tzinfo and \
-                    isinstance(rev.capturn_time.tzinfo, tzlocal):
-                rev.capturn_time = rev.capturn_time.astimezone(UTC)
             return {
-                'date': rev.capturn_time,
-                'resource': rev.resource}
+                'date': parse_date(rev.capture_time),
+                'resource': rev.resource.to_dict()}
 
     def diff(self, source, target):
         raise NotImplementedError("Subclass responsibility")
@@ -137,7 +135,7 @@ class Diff(Filter):
 class JsonDiff(Diff):
     schema = type_schema(
         'json-diff',
-        selector={'enum': ['previous', 'date', 'locked']},
+        selector={'enum': ['previous', 'date']},
         # For date selectors allow value specification
         selector_value={'type': 'string'})
 

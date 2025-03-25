@@ -3,4 +3,4 @@
 
 
 from .config import ConfigCompliance
-from .revisions import JsonDiff
+from .revisions import Diff, JsonDiff

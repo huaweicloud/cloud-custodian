@@ -3,6 +3,8 @@
 
 ResourceMap = {
     "huaweicloud.volume": "c7n_huaweicloud.resources.volume.Volume",
+    "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
     "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker",
-    "huaweicloud.coc": "c7n_huaweicloud.resources.coc.Coc"
+    "huaweicloud.alarm": "c7n_huaweicloud.resources.ces.Alarm",
+    "huaweicloud.coc": "c7n_huaweicloud.resources.coc.Coc",
 }
