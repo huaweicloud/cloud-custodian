@@ -17,6 +17,12 @@ from huaweicloudsdkiam.v3.region.iam_region import IamRegion
 from huaweicloudsdkvpc.v2 import VpcClient, ListVpcsRequest
 from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
 from huaweicloudsdktms.v1 import TmsClient
+from huaweicloudsdkvpc.v2 import *
+from huaweicloudsdkvpc.v3.region.vpc_region import VpcRegion
+from huaweicloudsdkvpc.v3 import *
+from huaweicloudsdkvpc.v2.vpc_client import VpcClient as VpcClientV2
+from huaweicloudsdkvpc.v3.vpc_client import VpcClient as VpcClientV3
+from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
@@ -47,10 +53,11 @@ class Session:
         if not self.tms_region:
             self.tms_region = 'cn-north-4'
 
-    def client(self, service):
+    def client(self, service, client_version=None):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID'))
         if service == 'vpc':
-            client = VpcClient.new_builder() \
+            vpc_client = VpcClientV2() if client_version == 'v2' else VpcClientV3()
+            client = vpc_client.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(VpcRegion.value_of(self.region)) \
                 .build()
@@ -92,7 +99,7 @@ class Session:
 
     def request(self, service):
         if service == 'vpc':
-            request = ListVpcsRequest()
+            request = ListSecurityGroupsRequest()
         elif service == 'evs':
             request = ListVolumesRequest()
         elif service == 'config':
