@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import abc
+import hashlib
 from datetime import datetime
 from collections import namedtuple
 import json
@@ -126,18 +127,20 @@ class FunctionGraphManager:
     def publish(self, func, role=None):
         result, changed, existing = self._create_or_update(func, role)
         func.func_urn = result.func_urn
-
-        triggers = self.list_function_triggers(func.func_urn)
         eg_not_exist = True
-        for trigger in triggers:
-            if trigger.trigger_type_code == "EVENTGRID" and trigger.trigger_status == "ACTIVE":
-                eg_not_exist = False
-                break
+        triggers = self.list_function_triggers(func.func_urn)
+        if triggers is not None:
+            for trigger in triggers:
+                if trigger.trigger_type_code == "EVENTGRID" and trigger.trigger_status == "ACTIVE":
+                    eg_not_exist = False
+                    break
         if eg_not_exist:
             for e in func.get_events(self.session_factory):
                 create_trigger = e.add(func.func_urn)
                 if create_trigger:
                     log.info(f'Created trigger[{create_trigger.id}] for function[{func.func_name}].')
+        else:
+            log.info(f'Trigger existed, skip create.')
 
         return result
 
@@ -149,8 +152,8 @@ class FunctionGraphManager:
 
         changed = False
         if existing:
-            result = old_config = existing.to_dict()
-            if archive.get_checksum() != old_config['digest']:
+            result = old_config = existing
+            if self.calculate_sha512(archive) != old_config.digest:
                 log.info(f'Updating function[{func.func_name}] code...')
                 result = self.update_function_code(func.func_name, archive)
                 if result:
@@ -169,6 +172,20 @@ class FunctionGraphManager:
             changed = True
 
         return result, changed, existing
+
+    @staticmethod
+    def calculate_sha512(archive, buffer_size=65536) -> str:
+        """计算文件的 SHA512 哈希值"""
+        sha512 = hashlib.sha512()
+
+        with archive.get_stream() as f:
+            while True:
+                data = f.read(buffer_size)
+                if not data:
+                    break
+                sha512.update(data)
+
+        return sha512.hexdigest()
 
     def remove(self, func_urn):
         request = DeleteFunctionRequest(function_urn=func_urn)
