@@ -22,6 +22,10 @@ from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
 from huaweicloudsdkelb.v3 import *
+from huaweicloudsdkeip.v3.region.eip_region import EipRegion
+from huaweicloudsdkeip.v3 import *
+from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
+from huaweicloudsdkgeip.v3 import *
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -90,12 +94,20 @@ class Session:
                 .with_region(DeHRegion.value_of(self.region)) \
                 .build()
         elif service == 'elb':
-            credentials = BasicCredentials(self.ak, self.sk)
             client = ElbClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(ElbRegion.value_of(self.region)) \
                 .build()
-
+        elif service == 'eip':
+            client = EipClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(EipRegion.value_of(self.region)) \
+                .build()
+        elif service == 'geip':
+            client = GeipClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(GeipRegion.value_of(self.region)) \
+                .build()
         return client
 
     def request(self, service, resource=None):

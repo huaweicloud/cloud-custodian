@@ -8,9 +8,11 @@ from dateutil.parser import parse
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkelb.v3 import *
+from huaweicloudsdkeip.v3 import *
+from huaweicloudsdkgeip.v3 import *
 
 from c7n.filters import ValueFilter, AgeFilter, OPERATORS, Filter
-from c7n.utils import type_schema
+from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -20,7 +22,6 @@ log = logging.getLogger("custodian.huaweicloud.resources.elb")
 
 
 @resources.register('elb.loadbalancer')
-@resources.register('elb_loadbalancer')
 class Loadbalancer(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'elb'
@@ -98,6 +99,68 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
         return response
 
 
+@Loadbalancer.action_registry.register("unbind-publicips")
+class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
+    """Unbind all public IP of loadbalancers.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: elb-policy-3
+            resource: huaweicloud.elb.loadbalancer
+            filters:
+              - type: publicip-count
+                count: 0
+                op: gt
+            actions:
+              - type: unbind-publicips
+    """
+
+    schema = type_schema(type_name="unbind-publicips",
+                         publicip_types={'type': 'array', 'enum': ['eip', 'ipv6_bandwidth', 'global_eip']},)
+
+    def perform_action(self, resource):
+        loadbalancer_id = resource['id']
+
+        publicip_types = self.data.get("publicip_types")
+        if not publicip_types or len(publicip_types) == 0:
+            publicip_types = ['eip', 'ipv6_bandwidth', 'global_eip']
+
+        eip_count = len(resource['eips']) if resource['eips'] else 0
+        geip_count = len(resource['global_eips']) \
+            if 'global_eips' in resource and resource['global_eips'] else 0
+
+        response = None
+        # 解绑公网ipv6：从eips中获取ip_version为6的eip_id；调用elb更新接口，传入ipv6_bandwidth=null
+        if 'ipv6_bandwidth' in publicip_types and eip_count > 0:
+            elb_client = self.manager.get_client()
+            for eip in resource['eips']:
+                if eip['ip_version'] == 6:
+                    request = UpdateLoadBalancerRequest(loadbalancer_id=loadbalancer_id)
+                    request.body = UpdateLoadBalancerRequestBody()
+                    request.body.loadbalancer = {'ipv6_bandwidth': None}
+                    response = elb_client.update_load_balancer(request)
+
+        # 解绑公网ipv4：从eips中获取ip_version为4的eip_id；调用eip的解绑接口
+        if 'eip' in publicip_types and eip_count > 0:
+            eip_client = local_session(self.manager.session_factory).client('eip')
+            for eip in resource['eips']:
+                if eip['ip_version'] == 4:
+                    request = DisassociatePublicipsRequest(publicip_id=eip['eip_id'])
+                    response = eip_client.disassociate_publicips(request)
+
+        # 解绑global eip：从global_eips中获取global_eip id；调用geip的解绑接口
+        if 'global_eip' in publicip_types and geip_count > 0:
+            geip_client = local_session(self.manager.session_factory).client('geip')
+            for geip in resource['global_eips']:
+                request = DisassociateInstanceRequest(global_eip_id=geip['global_eip_id'])
+                response = geip_client.disassociate_instance(request)
+
+        return response
+
+
 @Loadbalancer.filter_registry.register('backend-server-count')
 class LoadbalancerBackendServerCountFilter(Filter):
     """Allows filtering on ELB backend servers count.
@@ -108,7 +171,7 @@ class LoadbalancerBackendServerCountFilter(Filter):
 
         policies:
           - name: delete-no-backend-loadbalancer
-            resource: huaweicloud.elb_loadbalancer
+            resource: huaweicloud.elb.loadbalancer
             filters:
               - type: backend-server-count
                 count: 0
@@ -144,7 +207,7 @@ class LoadbalancerPublicipCountFilter(Filter):
     .. code-block:: yaml
         policies:
           - name: delete-loadbalancer-has-eip
-            resource: huaweicloud.elb_loadbalancer
+            resource: huaweicloud.elb.loadbalancer
             filters:
               - type: publicip-count
                 count: 0
@@ -205,7 +268,6 @@ class LoadbalancerIsLoggingEnableFilter(Filter):
 
 
 @resources.register('elb.listener')
-@resources.register('elb_listener')
 class Listener(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'elb'
@@ -226,7 +288,7 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
 
         policies:
           - name: ensure-elb-https-only
-            resource: huaweicloud.elb_listener
+            resource: huaweicloud.elb.listener
             filters:
               - type: value
                 key: protocol
@@ -265,7 +327,7 @@ class ListenerSetIpgroupAction(HuaweiCloudBaseAction):
 
         policies:
           - name: set-ipgroup-for-listeners
-            resource: huaweicloud.elb_listener
+            resource: huaweicloud.elb.listener
             filters:
               - type: attributes
                 key: loadbalancers[0].id
@@ -320,7 +382,7 @@ class ELBAttributesFilter(ValueFilter):
     .. code-block:: yaml
         policies:
           - name: list-autoscaling-loadbalancer
-            resource: huaweicloud.elb_loadbalancer or huaweicloud.elb_listener
+            resource: huaweicloud.elb.loadbalancer or huaweicloud.elb.listener
             filters:
               - type: attributes
                 key: autoscaling.enable
@@ -349,7 +411,7 @@ class ELBAgeFilter(AgeFilter):
 
         policies:
           - name: list-latest-loadbalancer
-            resource: huaweicloud.elb_loadbalancer
+            resource: huaweicloud.elb.loadbalancer or huaweicloud.elb.listener
             filters:
               - type: age
                 days: 7
