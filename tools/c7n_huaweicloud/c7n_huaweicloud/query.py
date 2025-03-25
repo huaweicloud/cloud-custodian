@@ -57,8 +57,7 @@ class ResourceQuery:
 
     def _pagination_limit_offset(self, m, enum_op, path):
         session = local_session(self.session_factory)
-        client_version = m.client_version if hasattr(m, 'client_version') else None
-        client = session.client(m.service, client_version)
+        client = session.client(m.service)
 
         offset = 0
         limit = DEFAULT_LIMIT_SIZE
@@ -95,8 +94,7 @@ class ResourceQuery:
 
     def _pagination_maxitems_marker(self, m, enum_op, path):
         session = local_session(self.session_factory)
-        client_version = m.client_version if hasattr(m, 'client_version') else None
-        client = session.client(m.service, client_version)
+        client = session.client(m.service)
 
         marker, count = 0, 0
         maxitems = DEFAULT_MAXITEMS_SIZE
@@ -133,8 +131,7 @@ class ResourceQuery:
     def _pagination_limit_marker(self, m, enum_op, path,
                                  marker_pagination: MarkerPagination = None):
         session = local_session(self.session_factory)
-        client_version = m.client_version if hasattr(m, 'client_version') else None
-        client = session.client(m.service, client_version)
+        client = session.client(m.service)
 
         if not marker_pagination:
             marker_pagination = DefaultMarkerPagination(DEFAULT_LIMIT_SIZE)
@@ -243,9 +240,9 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
             return sources[source_type](self)
         raise KeyError("Invalid Source %s" % source_type)
 
-    def get_client(self, client_version=None):
+    def get_client(self):
         session = local_session(self.session_factory)
-        client = session.client(self.resource_type.service, client_version)
+        client = session.client(self.resource_type.service)
         return client
 
     def get_model(self):

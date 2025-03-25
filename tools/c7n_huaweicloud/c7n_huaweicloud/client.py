@@ -53,11 +53,15 @@ class Session:
         if not self.tms_region:
             self.tms_region = 'cn-north-4'
 
-    def client(self, service, client_version=None):
+    def client(self, service):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID'))
         if service == 'vpc':
-            vpc_client = VpcClientV2() if client_version == 'v2' else VpcClientV3()
-            client = vpc_client.new_builder() \
+            client = VpcClientV3.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(VpcRegion.value_of(self.region)) \
+                .build()
+        elif service == 'vpc_v2':
+            client = VpcClientV2.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(VpcRegion.value_of(self.region)) \
                 .build()
@@ -108,7 +112,7 @@ class Session:
         return client
 
     def request(self, service):
-        if service == 'vpc':
+        if service == 'vpc' or service == 'vpc_v2':
             request = ListSecurityGroupsRequest()
         elif service == 'evs':
             request = ListVolumesRequest()

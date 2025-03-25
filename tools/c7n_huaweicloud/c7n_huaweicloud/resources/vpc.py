@@ -27,20 +27,18 @@ log = logging.getLogger("custodian.huaweicloud.resources.vpc")
 @resources.register('vpc')
 class Vpc(QueryResourceManager):
     class resource_type(TypeInfo):
-        service = 'vpc'
+        service = 'vpc_v2'
         enum_spec = ('list_vpcs', 'vpcs', 'offset')
         id = 'id'
         tag_resource_type = 'vpcs'
-        client_version = 'v2'
 
 
 @resources.register('vpc-port')
 class Port(QueryResourceManager):
     class resource_type(TypeInfo):
-        service = 'vpc'
+        service = 'vpc_v2'
         enum_spec = ('list_ports', 'ports', 'offset')
         id = 'id'
-        client_version = 'v2'
         tag_resource_type = ''
 
 
@@ -105,7 +103,7 @@ class SecurityGroupUnAttached(Filter):
     def process(self, resources, event=None):
         sg_ids = [r['id'] for r in resources]
         sg_ids = list(set(sg_ids))
-        client = self.manager.get_client('v2')
+        client = self.manager.get_resource_manager('vpc-port').get_client()
         try:
             request = ListPortsRequest(security_groups=sg_ids)
             response = client.list_ports(request)
@@ -678,10 +676,9 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
 @resources.register('vpc-flow-log')
 class FlowLog(QueryResourceManager):
     class resource_type(TypeInfo):
-        service = 'vpc'
+        service = 'vpc_v2'
         enum_spec = ('list_flow_logs', 'flow_logs', 'offset')
         id = 'id'
-        client_version = 'v2'
         tag_resource_type = ''
 
 
@@ -731,7 +728,7 @@ class SetFlowLog(HuaweiCloudBaseAction):
 
     def process(self, resources):
         action = self.data['action']
-        client = self.manager.get_client('v2')
+        client = self.manager.get_client()
         ret_fls = []
         if action in ['enable', 'disable']:
             admin_state = True if action == 'enable' else False
