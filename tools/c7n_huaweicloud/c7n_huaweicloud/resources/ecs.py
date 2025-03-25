@@ -801,29 +801,27 @@ class InstanceAttributeFilter(ValueFilter):
 class InstanceImageBase:
 
     def prefetch_instance_images(self, instances):
-        image_ids = [i['id'] for i in instances if 'image:id' not in i]
-        self.image_map = self.get_local_image_mapping(image_ids)
+        self.image_map = self.get_local_image_mapping(instances)
 
-    def get_base_image_mapping(self):
-
+    def get_base_image_mapping(self, image_ids):
+        ims_client = local_session(self.manager.session_factory).client('ims')
+        request = ListImagesRequest(id=image_ids)
         return {
-            i['id']: i for i in self.manager.get_resource_manager('huaweicloud.ims').resources()
+            i.id: i for i in ims_client.list_images(request).images
         }
 
-    def get_instance_image(self, instance):
-        image = instance.get('image:id', None)
-        if not image:
-            image = instance['iamge:id'] = self.image_map.get(instance['id'], None)
-        return image
+    def get_instance_image_created_at(self, instance):
+        return instance['image:created_at']
 
-    def get_local_image_mapping(self, image_ids):
-        base_image_map = self.get_base_image_mapping()
-        resources = {i: base_image_map[i] for i in image_ids if i in base_image_map}
-        missing = list(set(image_ids) - set(resources.keys()))
-        if missing:
-            loaded = self.manager.get_resource_manager('huaweicloud.ims').get_resources(missing)
-            resources.update({image['id']: image for image in loaded})
-        return resources
+    def get_local_image_mapping(self, instances):
+        image_ids = ",".join(list(item['metadata']['metering.image_id'] for item in instances))
+        base_image_map = self.get_base_image_mapping(image_ids)
+        for r in instances:
+            if r['metadata']['metering.image_id'] in base_image_map.keys():
+                r['image:created_at'] = base_image_map[r['metadata']['metering.image_id']].created_at
+            else:
+                r['image:created_at'] = '2000-01-01T01:01:01.000Z'
+        return instances
 
 
 @Ecs.filter_registry.register('instance-image-age')
@@ -858,12 +856,8 @@ class ImageAgeFilter(AgeFilter, InstanceImageBase):
         return super(ImageAgeFilter, self).process(resources, event)
 
     def get_resource_date(self, i):
-        image = self.get_instance_image(i)
-        log.info(str(image))
-        if image:
-            return parse(image['created_at'])
-        else:
-            return parse("2000-01-01T01:01:01.000Z")
+        image = self.get_instance_image_created_at(i)
+        return parse(image)
 
 
 @Ecs.filter_registry.register('instance-image')
@@ -885,14 +879,13 @@ class InstanceImageFilter(ValueFilter, InstanceImageBase):
     schema_alias = False
 
     def process(self, resources, event=None):
-        self.prefetch_instance_images(resources)
-        return super(InstanceImageFilter, self).process(resources, event)
-
-    def __call__(self, i):
-        image = self.get_instance_image(i)
-        if not image:
-            return False
-        return self.match(image)
+        results = []
+        image_ids = ",".join(list(item['metadata']['metering.image_id'] for item in resources))
+        base_image_map = self.get_base_image_mapping(image_ids)
+        for r in resources:
+            if r['metadata']['metering.image_id'] in base_image_map.keys():
+                results.append(r)
+        return results
 
 
 @Ecs.filter_registry.register("ephemeral")
@@ -1105,6 +1098,7 @@ class InstanceVpc(Filter):
                     break
         return result
 
+
 @Ecs.filter_registry.register('instance-volumes-not-compliance')
 class InstanceVolumesNotCompliance(Filter):
     """ECS instance with volumes delete_on_termination is false.
@@ -1130,4 +1124,38 @@ class InstanceVolumesNotCompliance(Filter):
                 if volume['delete_on_termination'] == 'False':
                     results.append(resource)
                     break
+        return results
+
+
+@Ecs.filter_registry.register('instance-image-not-compliance')
+class InstanceImageNotCompliance(Filter):
+    """ECS instance with image is not compliance.
+
+    :Example:
+
+    .. code-block:: yaml
+
+       policies:
+         - name: instance-image-not-compliance
+           resource: huaweicloud.ecs
+           filters:
+             - type: instance-image-not-compliance
+               image_ids: ['your instance id']
+    """    
+    schema = type_schema('instance-image-not-compliance',
+                         image_ids = {'type': 'array'})
+    
+    def process(self, resources, event=None):
+        results = []
+        image_ids = self.data.get('image_ids')
+        if not image_ids:
+            log.error("image_ids is required")
+            return []
+        instance_image_map = {}
+        for r in resources:
+            instance_image_map.setdefault(r['metadata']['metering.image_id'], []).append(r)
+        log.info(instance_image_map.keys())
+        for id in instance_image_map.keys():
+            if id not in image_ids:
+                results.extend(instance_image_map[id])
         return results

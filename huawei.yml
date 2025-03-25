@@ -230,13 +230,13 @@
 #                 op: greater-than
 #                 days: 1
 
-policies:
-      - name: instance-image-age
-        resource: huaweicloud.ecs
-        filters:
-              - type: instance-image-age
-                op: ge
-                days: 1
+# policies:
+#       - name: instance-image-age
+#         resource: huaweicloud.ecs
+#         filters:
+#               - type: instance-image-age
+#                 op: ge
+#                 days: 14400
 
 # policies:
 #       - name: instance-image
