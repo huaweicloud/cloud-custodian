@@ -158,6 +158,19 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "huaweicloudsdkces"
+version = "3.1.140"
+description = "CES"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkces-3.1.140-py2.py3-none-any.whl", hash = "sha256:d5f0e57fd83ec5a49a92f25b11b65d1acc618d430929dbd51bd1ecb7dbb6a688"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdkconfig"
 version = "3.1.140"
 description = "Config"
@@ -236,6 +249,19 @@ optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
     {file = "huaweicloudsdkiam-3.1.140-py2.py3-none-any.whl", hash = "sha256:8a028671ad1167e6aada136e12c293998868ad6fd1b725644c62ca61a53a20dd"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
+name = "huaweicloudsdksmn"
+version = "3.1.140"
+description = "SMN"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdksmn-3.1.140-py2.py3-none-any.whl", hash = "sha256:df7fbd784d73602fda3a00c0c689626867ee6098713020ee31442e14a31cc733"},
 ]
 
 [package.dependencies]
@@ -770,4 +796,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "93170a42e245b3d4e9c26197c975506ae48eb84d754526e648fedf03b3de0b3f"
+content-hash = "f5fb28a0b352f1fa53bdb657372d05a62802b9b3649c88b82dc1e65eda65fd4b"

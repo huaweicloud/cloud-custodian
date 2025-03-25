@@ -51,9 +51,9 @@ class AutoTagUser(EventAction):
             'type': 'array',
             'items': {'type': 'string',
                       'enum': [
-                          'IAMUser',
-                          'AssumedRole',
-                          'FederatedUser'
+                          'User',
+                          'AssumedAgency',
+                          'ExternalUser'
                       ]}},
             'update': {'type': 'boolean'},
             'tag': {'type': 'string'},
@@ -87,9 +87,9 @@ class AutoTagUser(EventAction):
             return
 
         if vtype == "userName":
-            if utype == "IAMUser":
+            if utype == "User":
                 value = user_info.get('userName', '')
-            elif utype == "AssumedRole" or utype == "FederatedUser":
+            elif utype == "AssumedAgency" or utype == "ExternalUser":
                 value = user_info.get('userName', '')
         elif vtype == "sourceIPAddress":
             value = event.get('source_ip', '')
@@ -101,15 +101,15 @@ class AutoTagUser(EventAction):
     def get_tag_value(self, event):
         user_info = event['user']
         utype = user_info['type']
-        if utype not in self.data.get('user-type', ['AssumedRole', 'IAMUser', 'FederatedUser']):
+        if utype not in self.data.get('user-type', ['AssumedAgency', 'User', 'ExternalUser']):
             return
 
         user = None
         principal_id_value = None
-        if utype == "IAMUser":
+        if utype == "User":
             user = user_info['name']
             principal_id_value = user_info.get('principal_id', '')
-        elif utype == "AssumedRole" or utype == "FederatedUser":
+        elif utype == "AssumedAgency" or utype == "ExternalUser":
             user = user_info['name']
             principal_id_value = user_info.get('principal_id', '')
 
@@ -162,20 +162,28 @@ class AutoTagUser(EventAction):
 
     def get_tags_from_resource(self, resource):
         try:
-            if isinstance(resource, dict) and 'tags' in resource:
-                tags = resource['tags']
-                if isinstance(tags, dict):
-                    return tags
-                elif isinstance(tags, list):
-                    res_tags = {}
-                    for tag in tags:
-                        if isinstance(tag, dict):
-                            return res_tags.update(tag)
-                        elif isinstance(tag, str):
-                            parts = tag.split('=')
-                            if len(parts) == 2:
-                                res_tags[parts[0]] = parts[1]
-                    return res_tags
+            tags = resource["tags"]
+            if isinstance(tags, dict):
+                return tags
+            elif isinstance(tags, list):
+                if all(isinstance(item, dict) and len(item) == 1 for item in tags):
+                    # [{k1: v1}, {k2: v2}]
+                    result = {}
+                    for item in tags:
+                        key, value = list(item.items())[0]
+                        result[key] = value
+                    return result
+                elif all(isinstance(item, str) and '=' in item for item in tags):
+                    # ["k1=v1", "k2=v2"]
+                    result = {}
+                    for item in tags:
+                        key, value = item.split('=', 1)
+                        result[key] = value
+                    return result
+                elif all(isinstance(item, dict) and 'key' in item and 'value' in item for item in
+                         tags):
+                    # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
+                    return {item['key']: item['value'] for item in tags}
             return None
         except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
