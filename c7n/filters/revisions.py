@@ -128,7 +128,7 @@ class Diff(Filter):
         elif selector == 'previous':
             params['limit'] = 2
         elif selector == 'locked':
-            params['laterTime'] = resource.get('c7n:locked_date')
+            params['laterTime'] = resource.get('huaweicloud:locked_date')
             params['limit'] = 2
         return params
 
