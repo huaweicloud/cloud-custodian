@@ -5,12 +5,15 @@ import logging
 
 from dateutil.parser import parse
 
-from huaweicloudsdkelb.v3 import (DeleteLoadBalancerCascadeRequest, DeleteLoadBalancerCascadeRequestBody,
-                                  DeleteLoadBalancerCascadeOption, CreateLogtankOption, CreateLogtankRequestBody,
-                                  CreateLogtankRequest, UpdateLoadBalancerRequest, UpdateLoadBalancerRequestBody,
-                                  ListAllMembersRequest, DeleteListenerForceRequest, DeletePoolCascadeRequest,
-                                  UpdateListenerRequest, UpdateListenerRequestBody, UpdateListenerOption,
-                                  UpdateListenerIpGroupOption)
+from huaweicloudsdkelb.v3 import (DeleteLoadBalancerCascadeRequest,
+                                  DeleteLoadBalancerCascadeRequestBody,
+                                  DeleteLoadBalancerCascadeOption, CreateLogtankOption,
+                                  CreateLogtankRequestBody, CreateLogtankRequest,
+                                  UpdateLoadBalancerRequest, UpdateLoadBalancerRequestBody,
+                                  ListAllMembersRequest, DeleteListenerForceRequest,
+                                  DeletePoolCascadeRequest,
+                                  UpdateListenerRequest, UpdateListenerRequestBody,
+                                  UpdateListenerOption, UpdateListenerIpGroupOption)
 from huaweicloudsdkeip.v3 import DisassociatePublicipsRequest
 from huaweicloudsdkgeip.v3 import DisassociateInstanceRequest
 
@@ -59,7 +62,8 @@ class LoadbalancerDeleteAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         request = DeleteLoadBalancerCascadeRequest(loadbalancer_id=resource["id"])
         request.body = DeleteLoadBalancerCascadeRequestBody()
-        request.body.loadbalancer = DeleteLoadBalancerCascadeOption(unbounded_pool=True, public_ip=False)
+        request.body.loadbalancer = (
+            DeleteLoadBalancerCascadeOption(unbounded_pool=True, public_ip=False))
         response = client.delete_load_balancer_cascade(request)
         log.info(f"Delete loadbalancer: {resource['id']}")
         return response
@@ -107,7 +111,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
 
 
 @Loadbalancer.action_registry.register("unbind-publicips")
-class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
+class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
     """Unbind all public IP of loadbalancers.
 
     :Example:
@@ -158,7 +162,8 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                 if eip['ip_version'] == 4:
                     request = DisassociatePublicipsRequest(publicip_id=eip['eip_id'])
                     response = eip_client.disassociate_publicips(request)
-                    log.info(f"Unbind eip: {eip['eip_address']} for loadbalancer: {loadbalancer_id}")
+                    log.info(f"Unbind eip: {eip['eip_address']} for loadbalancer: "
+                             f"{loadbalancer_id}")
 
         # unbind geip
         if 'global_eip' in publicip_types and geip_count > 0:
@@ -166,7 +171,8 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
             for geip in resource['global_eips']:
                 request = DisassociateInstanceRequest(global_eip_id=geip['global_eip_id'])
                 response = geip_client.disassociate_instance(request)
-                log.info(f"Unbind global eip: {geip['eip_address']} for loadbalancer: {loadbalancer_id}")
+                log.info(f"Unbind global eip: {geip['eip_address']} for loadbalancer: "
+                         f"{loadbalancer_id}")
 
         return response
 
@@ -239,7 +245,7 @@ class LoadbalancerPublicipCountFilter(Filter):
         geip_count = len(resource['global_eips']) \
             if 'global_eips' in resource and resource['global_eips'] else 0
 
-        return op(eip_count+ipv6bandwidth_count+geip_count, count)
+        return op(eip_count + ipv6bandwidth_count + geip_count, count)
 
 
 @Loadbalancer.filter_registry.register('is-logging')
@@ -336,7 +342,8 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         lb_from_schema = self.data.get("loadbalancers")
-        if lb_from_schema and len(lb_from_schema) > 0 and resource['loadbalancers'][0]['id'] not in lb_from_schema:
+        if (lb_from_schema and len(lb_from_schema) > 0
+                and resource['loadbalancers'][0]['id'] not in lb_from_schema):
             return
 
         client = self.manager.get_client()

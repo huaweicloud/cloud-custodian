@@ -33,11 +33,11 @@ class DeHTest(BaseTest):
             "filters": [{
                 "type": "age",
                 "hours": "5",
-                "op": "gt",
-            },{
+                "op": "gt"
+            }, {
                 "type": "backend-server-count",
                 "count": "0",
-                "op": "le",
+                "op": "le"
             }],
             "actions": [{
                 "type": "delete"
