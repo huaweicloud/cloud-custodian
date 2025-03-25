@@ -2,14 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import jmespath
 
 from dateutil.parser import parse
 
-from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdkelb.v3 import *
-from huaweicloudsdkeip.v3 import *
-from huaweicloudsdkgeip.v3 import *
+from huaweicloudsdkelb.v3 import (DeleteLoadBalancerCascadeRequest, DeleteLoadBalancerCascadeRequestBody,
+                                  DeleteLoadBalancerCascadeOption, CreateLogtankOption, CreateLogtankRequestBody,
+                                  CreateLogtankRequest, UpdateLoadBalancerRequest, UpdateLoadBalancerRequestBody,
+                                  ListAllMembersRequest, DeleteListenerForceRequest, DeletePoolCascadeRequest,
+                                  UpdateListenerRequest, UpdateListenerRequestBody, UpdateListenerOption,
+                                  UpdateListenerIpGroupOption)
+from huaweicloudsdkeip.v3 import DisassociatePublicipsRequest
+from huaweicloudsdkgeip.v3 import DisassociateInstanceRequest
 
 from c7n.filters import ValueFilter, AgeFilter, OPERATORS, Filter
 from c7n.utils import type_schema, local_session
@@ -54,8 +57,11 @@ class LoadbalancerDeleteAction(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        request = DeleteLoadBalancerForceRequest(loadbalancer_id=resource["id"])
-        response = client.delete_load_balancer_force(request)
+        request = DeleteLoadBalancerCascadeRequest(loadbalancer_id=resource["id"])
+        request.body = DeleteLoadBalancerCascadeRequestBody()
+        request.body.loadbalancer = DeleteLoadBalancerCascadeOption(unbounded_pool=True, public_ip=False)
+        response = client.delete_load_balancer_cascade(request)
+        log.info(f"Delete loadbalancer: {resource['id']}")
         return response
 
 
@@ -93,9 +99,10 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
         logtank.loadbalancer_id = loadbalancer_id
         logtank.log_group_id = log_group_id
         logtank.log_topic_id = log_topic_id
-        body =  CreateLogtankRequestBody(logtank)
+        body = CreateLogtankRequestBody(logtank)
         request = CreateLogtankRequest(body)
         response = client.create_logtank(request)
+        log.info(f"Enable logging for loadbalancer: {loadbalancer_id}")
         return response
 
 
@@ -119,7 +126,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
     """
 
     schema = type_schema(type_name="unbind-publicips",
-                         publicip_types={'type': 'array', 'enum': ['eip', 'ipv6_bandwidth', 'global_eip']},)
+                         publicip_types={'type': 'array'})
 
     def perform_action(self, resource):
         loadbalancer_id = resource['id']
@@ -133,7 +140,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
             if 'global_eips' in resource and resource['global_eips'] else 0
 
         response = None
-        # 解绑公网ipv6：从eips中获取ip_version为6的eip_id；调用elb更新接口，传入ipv6_bandwidth=null
+        # unbind public ipv6
         if 'ipv6_bandwidth' in publicip_types and eip_count > 0:
             elb_client = self.manager.get_client()
             for eip in resource['eips']:
@@ -142,21 +149,24 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     request.body = UpdateLoadBalancerRequestBody()
                     request.body.loadbalancer = {'ipv6_bandwidth': None}
                     response = elb_client.update_load_balancer(request)
+                    log.info(f"Unbind ipv6_bandwidth for loadbalancer: {loadbalancer_id}")
 
-        # 解绑公网ipv4：从eips中获取ip_version为4的eip_id；调用eip的解绑接口
+        # unbind public ipv4
         if 'eip' in publicip_types and eip_count > 0:
             eip_client = local_session(self.manager.session_factory).client('eip')
             for eip in resource['eips']:
                 if eip['ip_version'] == 4:
                     request = DisassociatePublicipsRequest(publicip_id=eip['eip_id'])
                     response = eip_client.disassociate_publicips(request)
+                    log.info(f"Unbind eip: {eip['eip_address']} for loadbalancer: {loadbalancer_id}")
 
-        # 解绑global eip：从global_eips中获取global_eip id；调用geip的解绑接口
+        # unbind geip
         if 'global_eip' in publicip_types and geip_count > 0:
             geip_client = local_session(self.manager.session_factory).client('geip')
             for geip in resource['global_eips']:
                 request = DisassociateInstanceRequest(global_eip_id=geip['global_eip_id'])
                 response = geip_client.disassociate_instance(request)
+                log.info(f"Unbind global eip: {geip['eip_address']} for loadbalancer: {loadbalancer_id}")
 
         return response
 
@@ -223,7 +233,6 @@ class LoadbalancerPublicipCountFilter(Filter):
         op_name = self.data.get('op', 'gte')
         op = OPERATORS.get(op_name)
 
-        log.info(f"resource: {resource}")
         eip_count = len(resource['eips']) if resource['eips'] else 0
         ipv6bandwidth_count = len(resource['ipv6_bandwidth']) \
             if 'ipv6_bandwidth' in resource and resource['ipv6_bandwidth'] else 0
@@ -326,18 +335,21 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
                          loadbalancers={'type': 'array'})
 
     def perform_action(self, resource):
-        # type_schema -> loadbalancers: lbIDs = ['94c11c75-e3de-48b7-a5a2-28202ada60b1']
         lb_from_schema = self.data.get("loadbalancers")
-        # resource['loadbalancers'] = [{'id': '94c11c75-e3de-48b7-a5a2-28202ada60b1'}]
         if lb_from_schema and len(lb_from_schema) > 0 and resource['loadbalancers'][0]['id'] not in lb_from_schema:
             return
 
         client = self.manager.get_client()
         request = DeleteListenerForceRequest(listener_id=resource["id"])
         response = client.delete_listener_force(request)
-        log.info(f"delete listener: {resource['id']}")
-        return response
 
+        if resource['default_pool_id'] and len(resource['default_pool_id']) > 0:
+            pool_request = DeletePoolCascadeRequest(pool_id=resource['default_pool_id'])
+            client.delete_pool_cascade(pool_request)
+            log.info(f"Delete listener default pool: {resource['default_pool_id']}")
+
+        log.info(f"Delete listener: {resource['id']}")
+        return response
 
 
 @Listener.action_registry.register("set-ipgroup")
@@ -387,11 +399,10 @@ class ListenerSetIpgroupAction(HuaweiCloudBaseAction):
         request = UpdateListenerRequest(listener_id=resource["id"])
         request.body = UpdateListenerRequestBody()
         request.body.listener = UpdateListenerOption()
-        request.body.listener.ipgroup = UpdateListenerIpGroupOption(ipgroup_id=ipgroup_id, enable_ipgroup=enable, type=ipgroup_type)
-        log.info(f"set ipgroup: {resource['id']}")
-
+        request.body.listener.ipgroup = UpdateListenerIpGroupOption(
+            ipgroup_id=ipgroup_id, enable_ipgroup=enable, type=ipgroup_type)
         response = client.update_listener(request)
-        log.info(f"update listener ipgroup: {response}")
+        log.info(f"Update ipgroup of listener: {resource['id']}")
         return response
 
 

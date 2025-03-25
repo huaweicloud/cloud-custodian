@@ -21,11 +21,11 @@ from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
-from huaweicloudsdkelb.v3 import *
+from huaweicloudsdkelb.v3 import ElbClient, ListLoadBalancersRequest, ListListenersRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
-from huaweicloudsdkeip.v3 import *
+from huaweicloudsdkeip.v3 import EipClient
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
-from huaweicloudsdkgeip.v3 import *
+from huaweicloudsdkgeip.v3 import GeipClient
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
