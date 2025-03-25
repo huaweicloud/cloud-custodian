@@ -60,7 +60,7 @@ class ResourceQuery:
         client = session.client(m.service)
 
         offset = 0
-        if m.offset_start_num:
+        if hasattr(m, 'offset_start_num'):
             offset = m.offset_start_num
         limit = DEFAULT_LIMIT_SIZE
         resources = []

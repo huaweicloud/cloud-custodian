@@ -5,26 +5,41 @@ from huaweicloud_common import BaseTest
 
 class CocTest(BaseTest):
 
-    def test_non_compliant_query(self):
-        factory = self.replay_flight_data('non_compliant_query')
-        p = self.load_policy({
-             'name': 'non-compliant-patch',
-             'resource': 'huaweicloud.coc'},
-            session_factory=factory)
-        resources = p.run()
-        count = resources.get('count')
-        instance_compliant = resources.get('count')
-        self.assertEqual(count, 1)
-        self.assertEqual(instance_compliant[0]['status'], "non_compliant")
-        self.assertEqual(instance_compliant[0]['report_scene'], "ECS")
 
     def test_non_compliant_alarm(self):
         factory = self.replay_flight_data("non_compliant_alarm")
         p = self.load_policy(
             {
-                "name": "non-compliant-patch",
+                "name": "non_compliant_alarm",
                 "resource": "huaweicloud.coc",
-                "actions": [{"type": "non_compliant_alarm"}],
+                "filters": [{
+                    "type": "value",
+                    "key": "status",
+                    "value": "non_compliant"
+                },
+                {
+                    "type": "value",
+                    "key": "report_scene",
+                    "value": "ECS"
+                },
+                {
+                    "type": "value",
+                    "key": "operating_system",
+                    "value": "EulerOS"
+                },
+                {
+                    "type": "value",
+                    "key": "region",
+                    "value": "cn-north-4"
+                }],
+                "actions": [{
+                    "type": "non_compliant_alarm",
+                    "smn": "true",
+                    "region_id": "cn-north-4",
+                    "topic_urn": "urn:smn:cn-north-4:ce8476c174f94c6991ea7885e3380d99:custodian_test",
+                    "subject": "Machine Non-compliant Patch Version Alert",
+                    "message": "There are machines with non compliant patch versions installed under your account:"
+                }],
             },
             session_factory=factory,
         )
