@@ -135,7 +135,7 @@ class Diff(Filter):
 class JsonDiff(Diff):
     schema = type_schema(
         'json-diff',
-        selector={'enum': ['previous', 'date', 'locked']},
+        selector={'enum': ['previous', 'date']},
         # For date selectors allow value specification
         selector_value={'type': 'string'})
 
