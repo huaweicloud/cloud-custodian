@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 
-from huaweicloudsdkconfig.v1 import DeleteTrackerConfigRequest, CreateTrackerConfigRequest, TrackerConfigBody, \
+from huaweicloudsdkconfig.v1 import DeleteTrackerConfigRequest, CreateTrackerConfigRequest, \
+    TrackerConfigBody, \
     ChannelConfigBody, TrackerSMNChannelConfigBody, TrackerOBSChannelConfigBody, SelectorConfigBody
 
 from c7n.exceptions import PolicyValidationError
@@ -19,6 +20,7 @@ class ConfigTracker(QueryResourceManager):
         service = 'config'
         enum_spec = ("show_tracker_config", '*', 'offset')
         id = 'domain_id'
+
 
 @ConfigTracker.action_registry.register("delete-tracker")
 class DeleteTrackerAction(HuaweiCloudBaseAction):
@@ -42,10 +44,10 @@ class DeleteTrackerAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         request = DeleteTrackerConfigRequest()
         client.delete_tracker_config(request=request)
-        self.log.info("Successfully delete config-tracker of %s", resource.get("id", resource.get("name")))
+        self.log.info("Successfully delete config-tracker of %s",
+                      resource.get("id", resource.get("name")))
 
 
-@ConfigTracker.action_registry.register("create-tracker")
 class CreateTrackerAction(HuaweiCloudBaseAction):
     """Create Config Tracker.
 
@@ -89,7 +91,9 @@ class CreateTrackerAction(HuaweiCloudBaseAction):
 
     def validate(self):
         smn = self.data.get('smn')
-        if smn and not (self.data.get('region_id') and self.data.get('project_id') and self.data.get('topic_urn')):
+        if smn and not (
+                self.data.get('region_id') and self.data.get('project_id') and self.data.get(
+                'topic_urn')):
             raise PolicyValidationError("Can not create or update tracke when parameter is error")
 
         obs = self.data.get('obs')
@@ -98,12 +102,12 @@ class CreateTrackerAction(HuaweiCloudBaseAction):
 
         return self
 
-
     def perform_action(self, resource):
         smn = self.data.get('smn', False)
         obs = self.data.get('obs', False)
         if not (smn or obs):
-            raise PolicyValidationError("Can not create or update tracke when smn and obs both false")
+            raise PolicyValidationError(
+                "Can not create or update tracke when smn and obs both false")
 
         region_id = self.data.get('region_id')
         project_id = self.data.get('project_id')
@@ -179,7 +183,8 @@ class ConfigRetentionConfigurations(ValueFilter):
 
     def process(self, resources, event=None):
         for resource in resources:
-            resource[self.annotation_key] = {"retention_period_in_days": resource.get("retention_period_in_days", None)}
+            resource[self.annotation_key] = {
+                "retention_period_in_days": resource.get("retention_period_in_days", None)}
         return super().process(resources, event)
 
     def __call__(self, resource):
