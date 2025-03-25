@@ -12,6 +12,7 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 
 log = logging.getLogger("custodian.huaweicloud.resources.coc")
 
+
 @resources.register('coc')
 class Coc(QueryResourceManager):
     class resource_type(TypeInfo):
@@ -20,6 +21,7 @@ class Coc(QueryResourceManager):
         id = 'id'
         offset_start_num = 1
         tag_resource_type = 'instance_compliant_tag'
+
 
 @Coc.action_registry.register("non_compliant_alarm")
 class NonCompliantAlarm(HuaweiCloudBaseAction):
@@ -65,11 +67,11 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
                          subject={'type': 'string'},
                          message={'type': 'string'}
                          )
+
     def validate(self):
         smn = self.data.get('smn', False)
         if smn and not (self.data.get('region_id') and self.data.get('topic_urn') and self.data.get('subject')):
             raise PolicyValidationError("Can not create smn message when parameter is error")
-
 
     def perform_action(self, resource):
         if not self.data.get('smn', False):
@@ -80,17 +82,16 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
         ecs_instance_id = resource.get('instance_id')
         non_compliant_count = resource.get('non_compliant_summary').get('non_compliant_count')
         message_data = (f'ecs_name: {ecs_name}, ecs_instance_id: {ecs_instance_id}, region: {region}, '
-                        f'non_compliant_count: {non_compliant_count};\n')
+                        f'non_compliant_count: {non_compliant_count}')
         subject = self.data.get('subject')
         message = self.data.get('message')
         topic_urn = self.data.get('topic_urn')
 
         client = local_session(self.manager.session_factory).client('smn')
         message_body = PublishMessageRequestBody(
-            subject = subject,
-            message = message + '\n' + message_data
+            subject=subject,
+            message=message + '\n' + message_data
         )
         request = PublishMessageRequest(topic_urn=topic_urn, body=message_body)
         response = client.publish_message(request)
-        log.info(f"Successfully create smn message, the smn message id:{response.message_id}")
-        return response
+        log.info(f"Successfully create smn message, the smn message id: {response.message_id}")
