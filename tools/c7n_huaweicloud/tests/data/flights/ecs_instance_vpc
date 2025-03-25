@@ -53,4 +53,57 @@ interactions:
     status:
       code: 200
       message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250324T113858Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/vpcs?limit=100
+  response:
+    body:
+      string: '{"vpcs":[{"name":"aaa","id":"24bbb54c-659f-4141-8db9-a957e12b6ee8"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 24 Mar 2025 11:38:58 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=194da7692724645148; path=/
+      - HWWAFSESTIME=1742816338388; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - d2bde583b527e2b761abb158379b6d18
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
 version: 1

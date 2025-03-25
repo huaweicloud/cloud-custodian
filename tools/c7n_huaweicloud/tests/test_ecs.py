@@ -1,4 +1,5 @@
 from huaweicloud_common import *
+from unittest.mock import patch, MagicMock
 
 class InstanceStartTest(BaseTest):
 
@@ -317,21 +318,20 @@ class InstanceStartTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 0)
         
-    # ims、vpc、cbr的UT由于现在还未合入对应服务代码，故目前不能实现
-    
-    # def test_instance_vpc(self):
-    #     factory = self.replay_flight_data('ecs_instance_vpc')
-    #     p = self.load_policy(
-    #         {
-    #             'name': 'ecs_instance_vpc',
-    #             'resource': 'huaweicloud.ecs',
-    #             'filters': [
-    #                 {
-    #                     "type": "instance-vpc",
-    #                 }
-    #             ],
-    #         },
-    #         session_factory=factory,
-    #     )
-    #     resources = p.run()
-    #     self.assertEqual(len(resources), 0)
+    # TODO ims、vpc、cbr的相关UT
+    def test_instance_vpc(self):
+        factory = self.replay_flight_data('ecs_instance_vpc')
+        p = self.load_policy(
+            {
+                'name': 'ecs_instance_vpc',
+                'resource': 'huaweicloud.ecs',
+                'filters': [
+                    {
+                        "type": "instance-vpc",
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)

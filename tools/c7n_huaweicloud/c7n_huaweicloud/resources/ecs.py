@@ -13,7 +13,7 @@ from huaweicloudsdkims.v2 import *
 from huaweicloudsdkcbr.v1 import *
 
 from c7n import utils
-from c7n.utils import type_schema
+from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -441,7 +441,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
     """
 
     schema = type_schema(
-        'instance-snapshot',
+        'instance-whole-image',
         instance_id={'type': 'string'},
         name={'type': 'string'},
         vault_id={'type': 'string'},
@@ -452,7 +452,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
         return super().perform_action(resource)
 
     def process(self, resources):
-        ims_client = self.manager.get_resource_manager('huaweicloud.ims')
+        ims_client = local_session(self.manager.session_factory).client('ims')
         requestBody = CreateWholeImageRequestBody(
             name=self.data.get('name'),
             instance_id=self.data.get('instance_id'),
@@ -464,7 +464,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
             if response.status_code != 200:
                 log.error("create whole image for instance %s fail" % self.data.get('instance_id'))
                 return False
-            return self.wait_backup(response['job_id'], ims_client)
+            return self.wait_backup(response.job_id, ims_client)
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -473,6 +473,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
         while True:
             status = self.fetch_ims_job_status(job_id, ims_client)
             if status == "SUCCESS":
+                log.info("waitting for create whole image")
                 return True
             time.sleep(5)
 
@@ -483,7 +484,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
-        return response['status']
+        return response.status
 
 
 @Ecs.action_registry.register("instance-snapshot")
@@ -504,6 +505,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
            actions:
              - type: instance-snapshot
                incremental: false
+               vault_id: "c789a0e1-9207-46c7-b539-39dac13bce51"
     """
 
     schema = type_schema(
@@ -514,38 +516,42 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         return super().perform_action(resource)
 
     def process(self, resources):
-        cbr_client = self.manager.get_resource_manager('huaweicloud.cbr')
-        vaults = self.list_vault(cbr_client)
+        cbr_backup_client = local_session(self.manager.session_factory).client('cbr-backup')
+        vaults = self.list_vault()
         vaults_resource_ids = self.fetch_vaults_resource_ids(vaults)
-        response = self.back_up(resources, vaults_resource_ids, cbr_client)
+        response = self.back_up(resources, vaults_resource_ids, cbr_backup_client)
         return response
 
-    def back_up(self, resources, vaults_resource_ids, cbr_client):
+    def back_up(self, resources, vaults_resource_ids, cbr_backup_client):
         for r in resources:
             server_id = r['id']
+            if server_id not in vaults_resource_ids:
+                continue
             vault_id = vaults_resource_ids[server_id]
             if self.data.get('vault_id', None) is not None:
                 if vault_id is not None:
-                    return self.checkpoint_and_wait(r, vault_id, server_id, cbr_client)
+                    return self.checkpoint_and_wait(r, vault_id, server_id, cbr_backup_client)
                 else:
-                    add_resource_response = self.add_vault_resource(vault_id, server_id, cbr_client)
+                    resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
+                    add_resource_response = self.add_vault_resource(vault_id, resource, cbr_backup_client)
                     if add_resource_response.status_code != 200:
                         log.error("add instance %s to vault error" % server_id)
                         return False
-                    return self.checkpoint_and_wait(r, vault_id, server_id, cbr_client)
+                    return self.checkpoint_and_wait(r, vault_id, server_id,cbr_backup_client)
             else:
-                add_resource_response = self.add_vault_resource(vault_id, server_id, cbr_client)
+                resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
+                add_resource_response = self.add_vault_resource(vault_id, resource, cbr_backup_client)
                 if add_resource_response.status_code != 200:
                     log.error("add instance %s to vault error" % server_id)
                     return False
-                return self.checkpoint_and_wait(r, vault_id, server_id, cbr_client)
+                return self.checkpoint_and_wait(r, vault_id, server_id, cbr_backup_client)
 
     def wait_backup(self, vault_id, resource_id, cbr_client):
         while True:
             response = self.list_op_log(resource_id, vault_id, cbr_client)
-            op_logs = response['operation_logs']
-            if not op_logs:
-                time.slepp(3)
+            op_logs = response.operation_logs
+            if len(op_logs) != 0:
+                time.sleep(3)
                 continue
             return True
 
@@ -557,7 +563,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         return self.wait_backup(vault_id, server_id, cbr_client)
 
     def create_checkpoint_for_instance(self, r, vault_id, cbr_client):
-        resource_details = list[Resource(id=r['id'], type="OS::Nova::Server")]
+        resource_details = [Resource(id=r['id'], type="OS::Nova::Server")]
         params = CheckpointParam(
             resource_details=resource_details, incremental=self.data.get('incremental', True)
         )
@@ -575,13 +581,12 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
             resources = vault['resources']
             for r in resources:
                 if r['protect_status'] == 'available':
-                    vaults_resource_ids.setdefault(vault['id'], r['id'])
+                    vaults_resource_ids.setdefault(r['id'], vault['id'])
         return vaults_resource_ids
 
-    def list_vault(self, cbr_client):
-        request = ListVaultRequest()
+    def list_vault(self):
         try:
-            response = cbr_client.list_vault(request)
+            response = self.manager.get_resource_manager('huaweicloud.cbr-vault').resources()
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -596,7 +601,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
             raise
         return response
 
-    def add_vault_resource(self, cbr_client, vault_id, resources: ResourceCreate):
+    def add_vault_resource(self, vault_id, resources: ResourceCreate, cbr_client):
         requestBody = VaultAddResourceReq(resources=resources)
         request = AddVaultResourceRequest(vault_id=vault_id, body=requestBody)
         try:
@@ -628,7 +633,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         requestBody = VaultBackupReq(checkpoint=backup)
         request = CreateCheckpointRequest(body=requestBody)
         try:
-            response = cbr_client.show_op_log(request)
+            response = cbr_client.create_checkpoint(request)
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -643,6 +648,45 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
+        return response
+    
+
+@Ecs.action_registry.register("instance-volumes-corrections")
+class InstanceVolumesCorrections(HuaweiCloudBaseAction):
+    """Correction Instances Volumes delete_on_termination To True.
+
+    :Example:
+
+    .. code-block:: yaml
+
+       policies:
+         - name: instance-volumes-corrections
+           resource: huaweicloud.ecs
+           filters:
+             - type: instance-volumes-not-compliance
+           actions:
+             - type: instance-volumes-corrections
+    """
+    schema = type_schema("instance-volumes-corrections")
+    
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        volumes = list(resource['os-extended-volumes:volumes_attached'])
+        for volume in volumes:
+            if volume['delete_on_termination'] == 'True':
+                continue
+            option = UpdateServerBlockDeviceOption(delete_on_termination=True)
+            requestBody = UpdateServerBlockDeviceReq(block_device=option)
+            request = UpdateServerBlockDeviceRequest(
+                server_id=resource['id'],
+                volume_id=volume['id'],
+                body=requestBody
+            )
+            try:
+                response = client.update_server_block_device(request)
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                raise
         return response
 
 
@@ -782,7 +826,7 @@ class InstanceImageBase:
         return resources
 
 
-@Ecs.filter_registry.register('image-age')
+@Ecs.filter_registry.register('instance-image-age')
 class ImageAgeFilter(AgeFilter, InstanceImageBase):
     """ECS Image Age Filter
 
@@ -796,7 +840,7 @@ class ImageAgeFilter(AgeFilter, InstanceImageBase):
           - name: instance-image-age
             resource: huaweicloud.ecs
             filters:
-              - type: image-age
+              - type: instance-image-age
                 op: ge
                 days: 14400
     """
@@ -804,7 +848,7 @@ class ImageAgeFilter(AgeFilter, InstanceImageBase):
     date_attribute = "created_at"
 
     schema = type_schema(
-        'image-age',
+        'instance-image-age',
         op={'$ref': '#/definitions/filters_common/comparison_operators'},
         days={'type': 'number'},
     )
@@ -1060,3 +1104,30 @@ class InstanceVpc(Filter):
                     result.append(resource)
                     break
         return result
+
+@Ecs.filter_registry.register('instance-volumes-not-compliance')
+class InstanceVolumesNotCompliance(Filter):
+    """ECS instance with volumes delete_on_termination is false.
+
+    :Example:
+
+    .. code-block:: yaml
+
+       policies:
+         - name: instance-volumes-not-compliance
+           resource: huaweicloud.ecs
+           filters:
+             - type: instance-volumes-not-compliance
+    """    
+
+    schema = type_schema('instance-volumes-not-compliance')
+    
+    def process(self, resources, event=None):
+        results = []
+        for resource in resources:
+            volumes = list(resource['os-extended-volumes:volumes_attached'])
+            for volume in volumes:
+                if volume['delete_on_termination'] == 'False':
+                    results.append(resource)
+                    break
+        return results
