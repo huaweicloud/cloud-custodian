@@ -114,15 +114,14 @@ class Diff(Filter):
         params = {}
         selector = self.data.get('selector', 'previous')
         if selector == 'date':
-            if not self.selector_value:
-                parsed_time = parse_date(
-                    self.data.get('selector_value'))
-                if parsed_time.tzinfo is None:
-                    local_time = parsed_time
-                else:
-                    utc_time = parsed_time.astimezone(datetime.timezone.utc)
-                    local_time = utc_time
-                self.selector_value = local_time.timestamp()
+            parsed_time = parse_date(
+                self.data.get('selector_value'))
+            if parsed_time.tzinfo is None:
+                local_time = parsed_time
+            else:
+                utc_time = parsed_time.astimezone(datetime.timezone.utc)
+                local_time = utc_time
+            self.selector_value = local_time.timestamp()
             params['laterTime'] = self.selector_value
             params['limit'] = 3
         elif selector == 'previous':
