@@ -4,8 +4,10 @@
 import logging
 
 from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdkvpc.v2 import *
-from huaweicloudsdkvpc.v3 import *
+from huaweicloudsdkvpc.v2 import ListPortsRequest, UpdateFlowLogRequest, UpdateFlowLogReq, UpdateFlowLogReqBody
+from huaweicloudsdkvpc.v2 import DeleteFlowLogRequest, CreateFlowLogRequest, CreateFlowLogReq, CreateFlowLogReqBody
+from huaweicloudsdkvpc.v3 import DeleteSecurityGroupRequest, DeleteSecurityGroupRuleRequest, ListSecurityGroupRulesRequest
+from huaweicloudsdkvpc.v3 import BatchCreateSecurityGroupRulesRequest, BatchCreateSecurityGroupRulesOption, BatchCreateSecurityGroupRulesRequestBody
 
 from c7n.exceptions import PolicyValidationError
 from c7n.filters import Filter, ValueFilter
@@ -103,7 +105,7 @@ class SecurityGroupUnAttached(Filter):
             request = ListPortsRequest(security_groups=sg_ids)
             response = client.list_ports(request)
         except exceptions.ClientRequestException as ex:
-            log.exception(f"Unable to filter unattached security groups because query ports failed. "
+            log.exception(f"Unable to filter unattached security groups because query ports failed."
                           "RequestId: {ex.request_id}, Reason: {ex.error_msg}.")
         ports_object = response.ports
         ports = [p.to_dict() for p in ports_object]
@@ -302,7 +304,8 @@ class SecurityGroupRuleFilter(Filter):
                 found = True
                 continue
             else:
-                found = any(port >= int(port_range.split('-')[0]) and port <= int(port_range.split('-')[1]) \
+                found = any(port >= int(port_range.split('-')[0]) \
+                            and port <= int(port_range.split('-')[1]) \
                             for port_range in range_ports)
             if found is False:
                 break
@@ -313,7 +316,8 @@ class SecurityGroupRuleFilter(Filter):
                 not_in_found = False
                 break
             else:
-                not_in_found = all(port < int(port_range.split('-')[0]) or port > int(port_range.split('-')[1]) \
+                not_in_found = all(port < int(port_range.split('-')[0]) \
+                                   or port > int(port_range.split('-')[1]) \
                                    for port_range in range_ports)
         return found and not_in_found
 
@@ -325,7 +329,8 @@ class SecurityGroupRuleFilter(Filter):
         if ref_match is True and 'remote_group_id' in rule:
             found = (rule['remote_group_id'] == rule['security_group_id'])
         if ref_match is False:
-            found = ('remote_group_id' not in rule) or ('remote_group_id' in rule and rule['remote_group_id'] != rule['security_group_id'])
+            found = ('remote_group_id' not in rule) or ('remote_group_id' in rule \
+                    and rule['remote_group_id'] != rule['security_group_id'])
         return found
 
     def process_action(self, rule):
@@ -343,12 +348,15 @@ class SecurityGroupRuleFilter(Filter):
         perm_matches['direction'] = self.process_direction(resource)
         perm_matches['ips'] = self.process_ips(resource)
         perm_matches['sg_rule_ids'] = self.process_items(resource, 'SGRuleIds', 'id')
-        perm_matches['sg_ids'] = self.process_items(resource, 'SecurityGroupIds', 'security_group_id')
+        perm_matches['sg_ids'] = self.process_items(resource, 'SecurityGroupIds', 
+                                                    'security_group_id')
         perm_matches['descriptions'] = self.process_items(resource, 'Descriptions', 'description')
         perm_matches['ethertypes'] = self.process_items(resource, 'Ethertypes', 'ethertype')
         perm_matches['priorities'] = self.process_items(resource, 'Priorities', 'priority')
-        perm_matches['sg_reference_ids'] = self.process_items(resource, 'SGReferenceIds', 'remote_group_id')
-        perm_matches['ag_reference_ids'] = self.process_items(resource, 'AGReferenceIds', 'remote_address_group_id')
+        perm_matches['sg_reference_ids'] = self.process_items(resource, 'SGReferenceIds', 
+                                                              'remote_group_id')
+        perm_matches['ag_reference_ids'] = self.process_items(resource, 'AGReferenceIds', 
+                                                              'remote_address_group_id')
         perm_matches['protocols'] = self.process_protocols(resource)
         perm_matches['ports'] = self.process_ports(resource)
         perm_matches['self_reference'] = self.process_self_reference(resource)
@@ -370,7 +378,6 @@ class SecurityGroupRuleFilter(Filter):
             # once. Note: Because we're looking for unique dicts and those aren't hashable,
             # we can't conveniently use set() to de-duplicate rules.
             
-            # matched_annotation.extend(m['security_group_id'] for m in matched if m not in matched_annotation)
             return True
 
 
@@ -387,7 +394,8 @@ SGRuleSchema = {
     'SecurityGroupIds': {'type': 'array', 'items': {'type': 'string'}},
     'SGReferenceIds': {'type': 'array', 'items': {'type': 'string'}},
     'AGReferenceIds': {'type': 'array', 'items': {'type': 'string'}},
-    'Ethertypes': {'type': 'array', 'items': {'type': 'string', 'enum': ['IPv4', 'IPv6', 'ipv4', 'ipv6']}},
+    'Ethertypes': {'type': 'array', 'items': {'type': 'string', 
+                                              'enum': ['IPv4', 'IPv6', 'ipv4', 'ipv6']}},
     'Action': {'type': 'string', 'enum': ['allow', 'deny']},
     'Priorities': {'type': 'array', 'items': {'type': 'integer'}},
     'Protocols': {
@@ -499,11 +507,12 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
             # remove all rules in the security group of the matched rules
             elif mode == 'all':
                 try:
-                    request = ListSecurityGroupRulesRequest(security_group_id=sg_ids, direction=direction)
+                    request = ListSecurityGroupRulesRequest(security_group_id=sg_ids, 
+                                                            direction=direction)
                     response = client.list_security_group_rules(request)
                 except exceptions.ClientRequestException as ex:
-                    log.exception(f"Unable to remove all rules because query {direction} rules failed. "
-                                  "RequestId: {ex.request_id}, Reason: {ex.error_msg}.")
+                    log.exception(f"Unable to remove all rules because query {direction} rules "
+                                  "failed. RequestId: {ex.request_id}, Reason: {ex.error_msg}.")
                     continue
                 
                 all_rules_object = response.security_group_rules
@@ -514,7 +523,8 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
             elif isinstance(mode, list):
                 for f in mode:
                     try:
-                        request = ListSecurityGroupRulesRequest(security_group_id=sg_ids, direction=direction)
+                        request = ListSecurityGroupRulesRequest(security_group_id=sg_ids, 
+                                                                direction=direction)
                         f = dict(f)
                         for key, value in f.items():
                             setattr(request, key, value)
@@ -522,7 +532,8 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
                         to_delete_rules_object = response.security_group_rules
                         to_delete_rules = [r.to_dict() for r in to_delete_rules_object]
                     except exceptions.ClientRequestException as ex:
-                        log.exception(f"Unable to remove specified rules because query {direction} rules failed. "
+                        log.exception(f"Unable to remove specified rules because query "
+                                      "{direction} rules failed. "
                                       "RequestId: {ex.request_id}, Reason: {ex.error_msg}.")
                         continue
                     self.perform_action(to_delete_rules)
@@ -544,8 +555,8 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
                 response = client.delete_security_group_rule(request)
             except exceptions.ClientRequestException as ex:
                 res = r.get("id")
-                log.exception(
-                    f"Unable to submit action against the resource - {res} RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                log.exception(f"Unable to submit action against the resource - {res} "
+                              "RequestId: {ex.request_id}, Reason: {ex.error_msg}")
                 self.handle_exception(r, rules)
 
 
@@ -632,11 +643,12 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
                         create_rules.append(rule_option)
                 if not create_rules:
                     continue
-                request.body = BatchCreateSecurityGroupRulesRequestBody(security_group_rules=create_rules)
+                request.body = \
+                    BatchCreateSecurityGroupRulesRequestBody(security_group_rules=create_rules)
                 response = client.batch_create_security_group_rules(request)
             except exceptions.ClientRequestException as ex:
-                log.exception(
-                    f"Unable to add rules in security group {sg_id}. RequestId: {ex.request_id}, Reason: {ex.error_msg}")
+                log.exception(f"Unable to add rules in security group {sg_id}. "
+                              "RequestId: {ex.request_id}, Reason: {ex.error_msg}")
                 continue
             res_rules_object = response.security_group_rules
             res_rules = [r.to_dict() for r in res_rules_object]
@@ -778,4 +790,3 @@ class SetFlowLog(HuaweiCloudBaseAction):
         self.result.update(action_result)
         print(self.result)
         return self.result
-

@@ -18,4 +18,3 @@ class FlowLogTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['resource_type'], 'vpc')
         self.assertEqual(resources[0]['status'], 'DOWN')
-

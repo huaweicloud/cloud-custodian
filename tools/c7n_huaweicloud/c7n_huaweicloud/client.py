@@ -14,15 +14,11 @@ from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v3 import IamClient
 from huaweicloudsdkiam.v3.region.iam_region import IamRegion
-from huaweicloudsdkvpc.v2 import VpcClient, ListVpcsRequest
-from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
 from huaweicloudsdktms.v1 import TmsClient
-from huaweicloudsdkvpc.v2 import *
-from huaweicloudsdkvpc.v3.region.vpc_region import VpcRegion
-from huaweicloudsdkvpc.v3 import *
+from huaweicloudsdkvpc.v2 import ListSecurityGroupsRequest
 from huaweicloudsdkvpc.v2.vpc_client import VpcClient as VpcClientV2
+from huaweicloudsdkvpc.v3.region.vpc_region import VpcRegion
 from huaweicloudsdkvpc.v3.vpc_client import VpcClient as VpcClientV3
-from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
