@@ -4,7 +4,6 @@
 Custodian support for diffing and patching across multiple versions
 of a resource.
 """
-import datetime
 
 from dateutil.parser import parse as parse_date
 from dateutil.tz import tzlocal, tzutc
@@ -114,20 +113,15 @@ class Diff(Filter):
         params = {}
         selector = self.data.get('selector', 'previous')
         if selector == 'date':
-            parsed_time = parse_date(
-                self.data.get('selector_value'))
-            if parsed_time.tzinfo is None:
-                local_time = parsed_time
-            else:
-                utc_time = parsed_time.astimezone(datetime.timezone.utc)
-                local_time = utc_time
-            self.selector_value = local_time.timestamp()
+            if not self.selector_value:
+                self.selector_value = parse_date(
+                    self.data.get('selector_value'))
             params['laterTime'] = self.selector_value
             params['limit'] = 3
         elif selector == 'previous':
             params['limit'] = 2
         elif selector == 'locked':
-            params['laterTime'] = resource.get('huaweicloud:locked_date')
+            params['laterTime'] = resource.get('c7n:locked_date')
             params['limit'] = 2
         return params
 
