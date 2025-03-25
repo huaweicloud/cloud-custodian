@@ -3,28 +3,21 @@ policies:
     resource: huaweicloud.coc
     filters:
       - type: value
-        key: count
-        value: 1
-        op: gte
-      - type: missing
-        instance_compliant:
-          filters:
-            - type: value
-              key: "equal(instance_compliant[].status. 'non_compliant')"
-              value: true
-              op: eq
-            - type: value
-              key: "equal(instance_compliant[].report_scene. 'ECS')"
-              value: true
-              op: eq
-            - type: value
-              key: "equal(instance_compliant[].operating_system. 'CentOS')"
-              value: true
-              op: eq
-            - type: value
-              key: "equal(instance_compliant[].region. 'ap-southeast-1')"
-              value: true
-              op: eq
+        key: status
+        value: 'non_compliant'
+        op: eq
+      - type: value
+        key: report_scene
+        value: 'ECS'
+        op: eq
+      - type: value
+        key: operating_system
+        value: 'HuaweiCloudEulerOS'
+        op: eq
+      - type: value
+        key: region
+        value: 'cn-north-4'
+        op: eq
     actions:
       - type: non_compliant_alarm
         smn: true

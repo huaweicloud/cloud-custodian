@@ -59,7 +59,9 @@ class ResourceQuery:
         session = local_session(self.session_factory)
         client = session.client(m.service)
 
-        offset = 1
+        offset = 0
+        if m.offset_start_num:
+            offset = m.offset_start_num
         limit = DEFAULT_LIMIT_SIZE
         resources = []
         while 1:
@@ -73,12 +75,6 @@ class ResourceQuery:
 
             if path == '*':
                 resources.append(json.loads(str(response)))
-                return resources
-
-            if path == '*':
-                response = '{"count" : 1, "instance_compliant" : [ {"baseline_id" : "JX-f2d85e2554f7385cbbf2c23a01f41","baseline_name" : "COC-EulerOSDefaultPatchBaseline","cce_info_id" : null,"compliant_summary" : {"compliant_count" : 264,"severity_summary" : {"critical_count" : 0,"high_count" : 0,"informational_count" : 0,"low_count" : 0,"medium_count" : 0,"unspecified_count" : 264}},"eip" : null,"enterprise_project_id" : "string","execution_summary" : {"job_id" : "string","order_id" : "string","report_time" : 1715308575000},"group" : null,"id" : "string","instance_id" : "string","ip" : "string","name" : "string","node_id" : "","non_compliant_summary" : {"non_compliant_count" : 204,"severity_summary" : {"critical_count" : 0,"high_count" : 0,"informational_count" : 0,"low_count" : 0,"medium_count" : 0,"unspecified_count" : 0}},"operating_system" : "CentOS","region" : "ap-southeast-1","report_scene" : "ECS","rule_type" : "standard","status" : "non_compliant"} ]}'
-                resources.append(json.loads(str(response)))
-                log.info(f'response: {response}')
                 return resources
 
             # replace id with the specified one
