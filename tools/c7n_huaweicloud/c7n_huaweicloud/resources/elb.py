@@ -70,7 +70,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
         policies:
           - name: enable-logging-for-loadbalancer
             filters:
-              - type: is-logging-enable
+              - type: is-logging
                 enable: false
             actions:
               - type: enable-logging
@@ -179,8 +179,7 @@ class LoadbalancerBackendServerCountFilter(Filter):
             actions:
               - type: delete
     """
-    schema = type_schema(
-        'backend-server-count',
+    schema = type_schema('backend-server-count',
         op={'enum': list(OPERATORS.keys())},
         count={'type': 'integer', 'minimum': 0})
 
@@ -215,8 +214,7 @@ class LoadbalancerPublicipCountFilter(Filter):
             actions:
               - type: delete
     """
-    schema = type_schema(
-        'publicip-count',
+    schema = type_schema('publicip-count',
         op={'enum': list(OPERATORS.keys())},
         count={'type': 'integer', 'minimum': 0})
 
@@ -235,8 +233,8 @@ class LoadbalancerPublicipCountFilter(Filter):
         return op(eip_count+ipv6bandwidth_count+geip_count, count)
 
 
-@Loadbalancer.filter_registry.register('is-logging-enable')
-class LoadbalancerIsLoggingEnableFilter(Filter):
+@Loadbalancer.filter_registry.register('is-logging')
+class LoadbalancerIsLoggingFilter(Filter):
     """Check if logging enable on ELB.
 
     :example:
@@ -246,25 +244,50 @@ class LoadbalancerIsLoggingEnableFilter(Filter):
         policies:
           - name: enable-logging-for-loadbalancer
             filters:
-              - type: is-logging-enable
-                enable: false
+              - not:
+                - type: is-logging
             actions:
               - type: enable-logging
                 log_group_id: "c5c89263-cfce-45cf-ac08-78cf537ba6c5"
                 log_topic_id: "328abfed-ab1a-4484-b2c1-031c0d06ea66"
     """
-    schema = type_schema(
-        'is-logging-enable',
-        enable={'type': 'boolean'})
+    schema = type_schema('is-logging')
 
     def __call__(self, resource):
-        logging_enable = self.data.get('enable', False)
         log_group_id = resource['log_group_id'] if 'log_group_id' in resource else None
         log_topic_id = resource['log_topic_id'] if 'log_topic_id' in resource else None
         if (log_group_id is None or log_group_id.strip() == ""
                 or log_topic_id is None or log_topic_id.strip() == ""):
-            return False == logging_enable
-        return True == logging_enable
+            return False
+        return True
+
+
+@Loadbalancer.filter_registry.register('is-not-logging')
+class LoadbalancerIsNotLoggingFilter(Filter):
+    """Check if logging not enable on ELB.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: enable-logging-for-loadbalancer
+            filters:
+              - type: is-not-logging
+            actions:
+              - type: enable-logging
+                log_group_id: "c5c89263-cfce-45cf-ac08-78cf537ba6c5"
+                log_topic_id: "328abfed-ab1a-4484-b2c1-031c0d06ea66"
+    """
+    schema = type_schema('is-not-logging')
+
+    def __call__(self, resource):
+        log_group_id = resource['log_group_id'] if 'log_group_id' in resource else None
+        log_topic_id = resource['log_topic_id'] if 'log_topic_id' in resource else None
+        if (log_group_id is None or log_group_id.strip() == ""
+                or log_topic_id is None or log_topic_id.strip() == ""):
+            return True
+        return False
 
 
 @resources.register('elb.listener')
@@ -419,8 +442,7 @@ class ELBAgeFilter(AgeFilter):
     """
 
     date_attribute = "created_at"
-    schema = type_schema(
-        'age',
+    schema = type_schema('age',
         op={'$ref': '#/definitions/filters_common/comparison_operators'},
         days={'type': 'number'},
         hours={'type': 'number'},
