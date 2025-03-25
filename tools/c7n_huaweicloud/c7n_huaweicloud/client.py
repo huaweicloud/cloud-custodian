@@ -18,7 +18,7 @@ from huaweicloudsdkvpc.v2 import VpcClient, ListVpcsRequest
 from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
 from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
-from huaweicloudsdkcoc.v1 import *
+from huaweicloudsdkcoc.v1 import CocClient, ListInstanceCompliantRequest
 from huaweicloudsdkcoc.v1.region.coc_region import CocRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
