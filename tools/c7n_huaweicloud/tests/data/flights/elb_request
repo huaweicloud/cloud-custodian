@@ -62,7 +62,7 @@ interactions:
       Content-Type:
       - application/json;charset=utf-8
       Host:
-      - deh.ap-southeast-1.myhuaweicloud.com
+      - elb.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
@@ -70,7 +70,7 @@ interactions:
       X-Sdk-Date:
       - 20250324T020300Z
     method: DELETE
-    uri: https://deh.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/listeners/f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3/force
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/listeners/f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3/force
     body: ''
   response:
     status:
@@ -117,7 +117,7 @@ interactions:
       Content-Type:
       - application/json;charset=utf-8
       Host:
-      - deh.ap-southeast-1.myhuaweicloud.com
+      - elb.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
@@ -125,7 +125,7 @@ interactions:
       X-Sdk-Date:
       - 20250324T020300Z
     method: DELETE
-    uri: https://deh.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/pools/d59d25ff-43bf-48ec-acff-f13626fc7694/delete-cascade
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/pools/d59d25ff-43bf-48ec-acff-f13626fc7694/delete-cascade
     body: ''
   response:
     status:
@@ -322,7 +322,7 @@ interactions:
       Content-Type:
       - application/json;charset=utf-8
       Host:
-      - deh.ap-southeast-1.myhuaweicloud.com
+      - elb.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
@@ -330,7 +330,7 @@ interactions:
       X-Sdk-Date:
       - 20250324T020300Z
     method: POST
-    uri: https://deh.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/loadbalancers/30689a93-ed0c-4d49-84ac-916d6296d496/delete-cascade
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/loadbalancers/30689a93-ed0c-4d49-84ac-916d6296d496/delete-cascade
     body: '{"loadbalancer": {"unbounded_pool": true, "public_ip": false}}'
   response:
     status:
@@ -377,7 +377,7 @@ interactions:
       Content-Type:
       - application/json;charset=utf-8
       Host:
-      - deh.ap-southeast-1.myhuaweicloud.com
+      - elb.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
@@ -385,7 +385,7 @@ interactions:
       X-Sdk-Date:
       - 20250324T020300Z
     method: PUT
-    uri: https://deh.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/loadbalancers/30689a93-ed0c-4d49-84ac-916d6296d496
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/loadbalancers/30689a93-ed0c-4d49-84ac-916d6296d496
     body: '{  "loadbalancer": {    "ipv6_bandwidth": null }}'
   response:
       status:
@@ -430,7 +430,7 @@ interactions:
       Content-Type:
       - application/json;charset=utf-8
       Host:
-      - deh.ap-southeast-1.myhuaweicloud.com
+      - elb.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
@@ -438,7 +438,7 @@ interactions:
       X-Sdk-Date:
       - 20250324T020300Z
     method: POST
-    uri: https://deh.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/logtanks
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/logtanks
     body: '{  "logtank": {    "loadbalancer_id": "088170a1-2149-47ff-9033-bd8295c6218e", "log_group_id": "c5c89263-cfce-45cf-ac08-78cf537ba6c5", "log_topic_id": "328abfed-ab1a-4484-b2c1-031c0d06ea66" }}'
   response:
     status:

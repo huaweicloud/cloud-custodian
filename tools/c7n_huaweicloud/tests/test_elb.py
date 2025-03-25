@@ -3,7 +3,7 @@
 from huaweicloud_common import BaseTest
 
 
-class DeHTest(BaseTest):
+class ElbTest(BaseTest):
 
     def test_ensure_https_only(self):
         factory = self.replay_flight_data('elb_request')
