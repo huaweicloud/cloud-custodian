@@ -22,6 +22,10 @@ from huaweicloudsdkvpc.v3.vpc_client import VpcClient as VpcClientV3
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
+from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
+from huaweicloudsdkces.v2.region.ces_region import CesRegion
+from huaweicloudsdksmn.v2 import SmnClient
+from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -90,6 +94,16 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(DeHRegion.value_of(self.region)) \
                 .build()
+        elif service == 'ces':
+            client = CesClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CesRegion.value_of(self.region)) \
+                .build()
+        elif service == 'smn':
+            client = SmnClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(SmnRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -102,5 +116,6 @@ class Session:
             request = ShowTrackerConfigRequest()
         elif service == 'deh':
             request = ListDedicatedHostsRequest()
-
+        elif service == 'ces':
+            request = ListAlarmRulesRequest()
         return request
