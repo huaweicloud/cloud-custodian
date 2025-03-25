@@ -24,6 +24,9 @@ from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
 from huaweicloudsdksmn.v2 import SmnClient
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
+from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
+from huaweicloudsdksmn.v2 import *
+from huaweicloudsdkcore.region.region import Region
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -101,6 +104,17 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(SmnRegion.value_of(self.region)) \
                 .build()
+        elif service == 'smn':
+            try:
+                client = SmnClient.new_builder() \
+                    .with_credentials(credentials) \
+                    .with_region(SmnRegion.value_of(self.region)) \
+                    .build()
+            except KeyError as e:
+                client = SmnClient.new_builder() \
+                    .with_credentials(credentials) \
+                    .with_region(Region(self.region, "https://smn.%s.myhuaweicloud.com" % self.region)) \
+                    .build()
 
         return client
 
@@ -115,4 +129,7 @@ class Session:
             request = ListDedicatedHostsRequest()
         elif service == 'ces':
             request = ListAlarmRulesRequest()
+        elif service == 'smn':
+            request = ListTopicsRequest()
+
         return request
