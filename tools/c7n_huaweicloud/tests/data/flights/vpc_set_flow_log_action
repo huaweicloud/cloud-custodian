@@ -1,0 +1,103 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/fl/flow_logs?limit=100
+  response:
+    body:
+      string: '{"flow_logs":[{"id":"d0be0734-ec15-412b-8a65-d5fb770cea9c","name":"flowlog-59c0","description":"","status":"DOWN","tenant_id":"ap-southeat-1","resource_type":"vpc","resource_id":"86f53c84-e218-4ea4-85a4-c46809443696","traffic_type":"reject","log_group_id":"324d2393-7d89-4262-88b1-c5d3497d5f54","log_topic_id":"2fa117ad-3452-4367-b360-88cb89f8a561","created_at":"2025-03-22T12:10:48","updated_at":"2025-03-24T12:52:26","admin_state":false,"log_store_type":"lts","log_version":1}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: 
+      string: '{"flow_log":{"admin_state":true}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: PUT
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/fl/flow_logs/d0be0734-ec15-412b-8a65-d5fb770cea9c
+  response:
+    body: 
+      string: '{"flow_log":{"id":"d0be0734-ec15-412b-8a65-d5fb770cea9c","name":"flowlog-59c0","description":"","status":"ACTIVE","tenant_id":"ap-southeat-1","resource_type":"vpc","resource_id":"86f53c84-e218-4ea4-85a4-c46809443696","traffic_type":"reject","log_group_id":"324d2393-7d89-4262-88b1-c5d3497d5f54","log_topic_id":"2fa117ad-3452-4367-b360-88cb89f8a561","created_at":"2025-03-22T12:10:48","updated_at":"2025-03-25T06:23:56","admin_state":true,"log_store_type":"lts","log_version":1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1
