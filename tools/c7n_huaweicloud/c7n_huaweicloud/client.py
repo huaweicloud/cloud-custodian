@@ -5,7 +5,6 @@ import logging
 import os
 import sys
 
-from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
 from huaweicloudsdkconfig.v1.region.config_region import ConfigRegion
 from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
@@ -46,6 +45,14 @@ class Session:
             log.error('No secret access key set. Specify a default via HUAWEI_SECRET_ACCESS_KEY')
             sys.exit(1)
 
+        self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
+        if not self.tms_region:
+            self.tms_region = 'cn-north-4'
+
+        self.coc_region = os.getenv('HUAWEI_DEFAULT_COC_REGION')
+        if not self.coc_region:
+            self.coc_region = 'cn-north-4'
+
     def client(self, service):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID'))
         if service == 'vpc':
@@ -70,22 +77,22 @@ class Session:
                 .with_region(TmsRegion.value_of(self.region)) \
                 .build()
         elif service == 'iam':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
+            global_credentials = GlobalCredentials(self.ak, self.sk)
             client = IamClient.new_builder() \
-                .with_credentials(globalCredentials) \
+                .with_credentials(global_credentials) \
                 .with_region(IamRegion.value_of(self.region)) \
                 .build()
         elif service == 'config':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
+            global_credentials = GlobalCredentials(self.ak, self.sk)
             client = ConfigClient.new_builder() \
-                .with_credentials(globalCredentials) \
+                .with_credentials(global_credentials) \
                 .with_region(ConfigRegion.value_of(self.region)) \
                 .build()
         elif service == 'coc':
             global_credentials = GlobalCredentials(self.ak, self.sk)
             client = CocClient.new_builder() \
                 .with_credentials(global_credentials) \
-                .with_region(CocRegion.value_of(self.region)) \
+                .with_region(CocRegion.value_of(self.coc_region)) \
                 .build()
         elif service == 'smn':
             client = SmnClient.new_builder() \

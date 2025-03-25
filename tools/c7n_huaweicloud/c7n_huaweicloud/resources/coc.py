@@ -4,7 +4,7 @@
 import logging
 
 from huaweicloudsdksmn.v2 import *
-from c7n.utils import type_schema
+from c7n.utils import type_schema, local_session
 from c7n.exceptions import PolicyValidationError
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -12,13 +12,16 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 
 log = logging.getLogger("custodian.huaweicloud.resources.coc")
 
+
 @resources.register('coc')
 class Coc(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'coc'
-        enum_spec = ("list_non_compliant", 'compliant', 'offset')
+        enum_spec = ('list_instance_compliant', 'instance_compliant', 'offset')
         id = 'id'
-        tag = True
+        offset_start_num = 1
+        tag_resource_type = 'instance_compliant_tag'
+
 
 @Coc.action_registry.register("non_compliant_alarm")
 class NonCompliantAlarm(HuaweiCloudBaseAction):
@@ -33,16 +36,21 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
              resource: huaweicloud.coc
              filters:
                - type: value
+                 key: status
+                 value: 'non_compliant'
+                 op: eq
+               - type: value
+                 key: report_scene
+                 value: 'ECS'
+                 op: eq
+               - type: value
                  key: operating_system
-                 value: CentOS
+                 value: 'CentOS'
                  op: eq
                - type: value
                  key: region
-                 value: cn-north-4
+                 value: 'cn-north-4'
                  op: eq
-               - type: value
-                 key: compliant_status
-                 value: non_compliant
              actions:
                - type: non_compliant_alarm
                  smn: true
@@ -59,37 +67,31 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
                          subject={'type': 'string'},
                          message={'type': 'string'}
                          )
+
     def validate(self):
-        smn = self.data.get('smn')
+        smn = self.data.get('smn', False)
         if smn and not (self.data.get('region_id') and self.data.get('topic_urn') and self.data.get('subject')):
             raise PolicyValidationError("Can not create smn message when parameter is error")
 
-
     def perform_action(self, resource):
-        count = resource.get('count')
-        if count < 1:
-            log.info("non compliant patch count is 0")
+        if not self.data.get('smn', False):
+            log.info(f"The request id")
             return
-        message_data = ''
-        for instance_compliant in resource.get('instance_compliant'):
-            ecs_name = instance_compliant.get('name')
-            ecs_instance_id = instance_compliant.get('instance_id')
-            non_compliant_count = instance_compliant.get('non_compliant_summary').get('non_compliant_count')
-            message_data += f'ecs_name: {ecs_name}, ecs_instance_id: {ecs_instance_id}, non_compliant_count: {non_compliant_count};\n'
-        smn = self.data.get('smn', False)
-        topic_urn = self.data.get('topic_urn')
-        if not (smn or topic_urn):
-            raise PolicyValidationError("Can not create or update tracke when smn and obs both false")
-
+        ecs_name = resource.get('name')
+        region = resource.get('region')
+        ecs_instance_id = resource.get('instance_id')
+        non_compliant_count = resource.get('non_compliant_summary').get('non_compliant_count')
+        message_data = (f'ecs_name: {ecs_name}, ecs_instance_id: {ecs_instance_id}, region: {region}, '
+                        f'non_compliant_count: {non_compliant_count}')
         subject = self.data.get('subject')
         message = self.data.get('message')
+        topic_urn = self.data.get('topic_urn')
 
-        client = self.manager.get_client()
+        client = local_session(self.manager.session_factory).client('smn')
         message_body = PublishMessageRequestBody(
-            subject = subject,
-            message = message + '\n' + message_data
+            subject=subject,
+            message=message + '\n' + message_data
         )
         request = PublishMessageRequest(topic_urn=topic_urn, body=message_body)
         response = client.publish_message(request)
-        log.info(f"The request id: {response.request_id}, message id:{response.message_id}")
-        return response
+        log.info(f"Successfully create smn message, the smn message id: {response.message_id}")
