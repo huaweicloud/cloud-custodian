@@ -110,7 +110,7 @@ class Diff(Filter):
             else:
                 utc_time = parsed_time.astimezone(datetime.timezone.utc)
                 local_time = utc_time
-            self.selector_value = int(local_time.timestamp())
+            self.selector_value = local_time.timestamp() * 1000
             later_time = self.selector_value
             limit = 3
         elif selector == 'previous':
