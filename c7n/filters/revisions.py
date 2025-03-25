@@ -122,7 +122,7 @@ class Diff(Filter):
                 else:
                     utc_time = parsed_time.astimezone(datetime.timezone.utc)
                     local_time = utc_time
-            self.selector_value = local_time.timestamp()
+                self.selector_value = local_time.timestamp()
             params['laterTime'] = self.selector_value
             params['limit'] = 3
         elif selector == 'previous':
