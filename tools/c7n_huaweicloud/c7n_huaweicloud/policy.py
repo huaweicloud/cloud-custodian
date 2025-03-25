@@ -6,8 +6,8 @@ import time
 
 from c7n import utils
 from c7n.exceptions import PolicyValidationError
-from c7n.policy import execution, ServerlessExecutionMode, PullMode
-from c7n.utils import local_session, type_schema
+from c7n.policy import execution, ServerlessExecutionMode
+from c7n.utils import type_schema
 from c7n.version import version
 
 from c7n_huaweicloud.cts import CloudTraceServiceEvents
@@ -152,7 +152,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
 class CloudTraceMode(FunctionGraphMode):
     schema = type_schema(
         'cloudtrace',
-        delay={'type': 'integer', 'description': 'sleep for delay seconds before processing an event'},
+        delay={'type': 'integer', 'description': 'sleep for delay seconds before processing an event'},  # noqa: E501
         events={'type': 'array', 'items': {
             'oneOf': [
                 {'type': 'string'},

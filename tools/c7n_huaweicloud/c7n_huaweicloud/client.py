@@ -20,8 +20,8 @@ from huaweicloudsdkvpc.v3.vpc_client import VpcClient as VpcClientV3
 from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
 from huaweicloudsdkfunctiongraph.v2 import FunctionGraphClient, ListFunctionsRequest
 from huaweicloudsdkfunctiongraph.v2.region.functiongraph_region import FunctionGraphRegion
-from huaweicloudsdkvpc.v2 import *
-from huaweicloudsdktms.v1 import *
+from huaweicloudsdkvpc.v2 import VpcClient, ListVpcsRequest
+from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
@@ -29,7 +29,7 @@ from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
 from huaweicloudsdksmn.v2 import SmnClient
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
-from huaweicloudsdkeg.v1 import *
+from huaweicloudsdkeg.v1 import EgClient
 from huaweicloudsdkeg.v1.region.eg_region import EgRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')

@@ -4,12 +4,25 @@ import json
 from datetime import datetime, timedelta
 import logging
 
-from huaweicloudsdkfunctiongraph.v2 import *
-from huaweicloudsdkcore.exceptions import exceptions
-
 from c7n.resolver import ValuesFrom
 from c7n.utils import type_schema, parse_date, local_session
 from c7n.filters import ValueFilter, OPERATORS
+
+from huaweicloudsdkfunctiongraph.v2 import (
+    ShowFunctionConfigRequest,
+    ListReservedInstanceConfigsRequest,
+    ListFunctionTriggersRequest,
+    DeleteFunctionRequest,
+    UpdateFunctionConfigRequest,
+    UpdateFunctionConfigRequestBody,
+    UpdateFunctionMaxInstanceConfigRequest,
+    UpdateFunctionMaxInstanceConfigRequestBody,
+    ListFunctionVersionsRequest,
+    ListVersionAliasesRequest,
+    AsyncInvokeFunctionRequest,
+    InvokeFunctionRequest
+)
+from huaweicloudsdkcore.exceptions import exceptions
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -37,7 +50,10 @@ class FunctionGraph(QueryResourceManager):
                           f'error_msg[{e.error_msg}]')
                 return result
 
-            result.append(eval(str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+            result.append(eval(str(response).
+                               replace('null', 'None').
+                               replace('false', 'False').
+                               replace('true', 'True')))
 
         return result
 
@@ -88,8 +104,10 @@ class ReservedConcurrency(ValueFilter):
                     if reserved_instance.function_urn == f'{r["func_urn"]}:{r["version"]}':
                         # change result to Python dict
                         r[self.annotation_key] = eval(
-                            str(reserved_instance).replace('null', 'None').replace('false', 'False').replace('true',
-                                                                                                             'True'))
+                            str(reserved_instance).
+                            replace('null', 'None').
+                            replace('false', 'False').
+                            replace('true', 'True'))
             except exceptions.ClientRequestException as e:
                 log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
                           f'error_code[{e.error_code}], '
@@ -125,9 +143,10 @@ class FunctionTrigger(ValueFilter):
     schema = type_schema('trigger-type',
                          rinherit=ValueFilter.schema,
                          **{'trigger_id': {'type': 'string'},
-                            'trigger_type_code': {'type': 'string', 'enum': ['TIMER', 'APIG', 'APIC', 'CTS', 'DDS',
-                                                                             'DIS', 'LTS', 'KAFAKA', 'OBS', 'SMN',
-                                                                             'OPENSOURCEKAFKA', 'RABBITMQ', 'IoTDA']},
+                            'trigger_type_code': {'type': 'string',
+                                                  'enum': ['TIMER', 'APIG', 'APIC', 'CTS', 'DDS',
+                                                           'DIS', 'LTS', 'KAFAKA', 'OBS', 'SMN',
+                                                           'OPENSOURCEKAFKA', 'RABBITMQ', 'IoTDA']},
                             'trigger_status': {'type': 'string', 'enum': ['ACTIVE', 'DISABLED']},
                             }
                          )
@@ -307,20 +326,23 @@ class UpdateFunctionConfig(HuaweiCloudBaseAction):
         properties={'type': 'object', 'required': ["timeout", "handler", "memory_size"]}
     )
 
-    allow_parameters_list = ["timeout", "handler", "memory_size", "gpu_memory", "gpu_type", "user_data",
-                             "encrypted_user_data", "xrole", "app_xrole", "description", "func_vpc", "peering_cidr",
-                             "mount_config", "strategy_config", "custom_image", "extend_config", "initializer_handler",
-                             "initializer_timeout", "pre_stop_handler", "pre_stop_timeout", "ephemeral_storage",
-                             "enterprise_project_id", "log_config", "network_controller", "is_stateful_function",
-                             "enable_dynamic_memory", "enable_auth_in_header", "domain_names", "restore_hook_handler",
-                             "restore_hook_timeout", "heartbeat_handler", "enable_class_isolation", "lts_custom_tag"]
+    allow_parameters_list = ["timeout", "handler", "memory_size", "gpu_memory", "gpu_type",
+                             "user_data", "encrypted_user_data", "xrole", "app_xrole",
+                             "description", "func_vpc", "peering_cidr", "mount_config",
+                             "strategy_config", "custom_image", "extend_config",
+                             "initializer_handler", "initializer_timeout", "pre_stop_handler",
+                             "pre_stop_timeout", "ephemeral_storage", "enterprise_project_id",
+                             "log_config", "network_controller", "is_stateful_function",
+                             "enable_dynamic_memory", "enable_auth_in_header", "domain_names",
+                             "restore_hook_handler", "restore_hook_timeout", "heartbeat_handler",
+                             "enable_class_isolation", "lts_custom_tag"]
 
     def perform_action(self, resource):
         client = self.manager.get_client()
         request = UpdateFunctionConfigRequest(function_urn=resource["func_urn"])
         request.body = self.get_request_body(resource, client)
         if request.body is None:
-            log.error(f'Build request body failed.')
+            log.error("Build request body failed.")
             return
         try:
             response = client.update_function_config(request)
@@ -333,7 +355,8 @@ class UpdateFunctionConfig(HuaweiCloudBaseAction):
 
     def get_request_body(self, resource, client):
         params = self.data.get('properties', {})
-        # FunctionGraph do not support incremental update, we should get the function configuration first.
+        # FunctionGraph do not support incremental update,
+        # we should get the function configuration first.
         show_function_config_request = ShowFunctionConfigRequest(function_urn=resource["func_urn"])
         try:
             response = client.show_function_config(show_function_config_request)
@@ -347,7 +370,8 @@ class UpdateFunctionConfig(HuaweiCloudBaseAction):
             func_name=resource['func_name'],
             runtime=resource['runtime'],
         )
-        # Put the original configuration into the request body, and check whether parameter is valid.
+        # Put the original configuration into the request body,
+        # and check whether parameter is valid.
         for key, value in json.loads(response.to_str()).items():
             if key in self.allow_parameters_list:
                 setattr(request_body, key, value)
@@ -399,9 +423,11 @@ class ModifySecurityGroups(UpdateFunctionConfig):
                       f'error_code[{e.error_code}], '
                       f'error_msg[{e.error_msg}]')
             return None
-        # Check whether the function has VPC configuration, only vpc function can change security groups.
+        # Check whether the function has VPC configuration,
+        # only vpc function can change security groups.
         if response.func_vpc is None:
-            log.error(f'Function[{resource["func_name"]}] has not vpc config, modify security groups failed.')
+            log.error(f'Function[{resource["func_name"]}] has not vpc config, '
+                      f'modify security groups failed.')
             return
 
         func_vpc = json.loads(str(response.func_vpc))
@@ -452,7 +478,8 @@ class UpdateFunctionMaxInstanceConfig(HuaweiCloudBaseAction):
         )
         try:
             response = client.update_function_max_instance_config(request)
-            log.info(f'Function[{resource["func_name"]}] update concurrency success, configs: {response}.')
+            log.info(f'Function[{resource["func_name"]}] update concurrency success, '
+                     f'configs: {response}.')
         except exceptions.ClientRequestException as e:
             log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
                       f'error_code[{e.error_code}], '
@@ -508,7 +535,8 @@ class TrimVersions(HuaweiCloudBaseAction):
                       f'error_msg[{e.error_msg}]')
             return
         if len(versions) == 1 and versions[0].version == "latest":
-            log.warning(f'{resource["func_name"]} only have [latest] version, cannot trim versions.')
+            log.warning(f'{resource["func_name"]} only have [latest] version, '
+                        f'cannot trim versions.')
             return
         versions_binding_aliases = {}
         if aliases is not None:
@@ -541,8 +569,8 @@ class TrimVersions(HuaweiCloudBaseAction):
             return True
         exclude_aliases = self.data.get("exclude-aliases", True)
         if exclude_aliases and (version.version in versions_binding_aliases.keys()):
-            log.info(f'version[{version.version}] is bound by alias[{versions_binding_aliases[version.version].name}], '
-                     f'skip delete.')
+            log.info(f'version[{version.version}] is bound by '
+                     f'alias[{versions_binding_aliases[version.version].name}], skip delete.')
             return True
 
         date_threshold = self.data.get('older-than')
@@ -604,7 +632,8 @@ class InvokeFunction(HuaweiCloudBaseAction):
         if self.data.get('async-invoke'):
             try:
                 response = client.async_invoke_function(request)
-                log.info(f'Function[{resource["func_name"]}] async invoke success, request id[{response.request_id}]')
+                log.info(f'Function[{resource["func_name"]}] async invoke success, '
+                         f'request id[{response.request_id}]')
             except exceptions.ClientRequestException as e:
                 log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
                           f'error_code[{e.error_code}], '

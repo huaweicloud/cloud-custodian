@@ -3,16 +3,32 @@
 import abc
 import hashlib
 from datetime import datetime
-from collections import namedtuple
 import json
 import logging
 import base64
 
-from c7n.mu import generate_requirements, get_exec_options, custodian_archive as base_archive
+from c7n.mu import get_exec_options, custodian_archive as base_archive
 from c7n.utils import local_session
 
-from huaweicloudsdkfunctiongraph.v2 import *
-from huaweicloudsdkeg.v1 import *
+from huaweicloudsdkfunctiongraph.v2 import (
+    ListFunctionsRequest,
+    CreateFunctionRequest,
+    CreateFunctionRequestBody,
+    ShowFunctionConfigRequest,
+    UpdateFunctionCodeRequest,
+    UpdateFunctionCodeRequestBody,
+    FuncCode,
+    ListFunctionTriggersRequest,
+    DeleteFunctionRequest
+)
+from huaweicloudsdkeg.v1 import (
+    ListChannelsRequest,
+    CreateSubscriptionRequest,
+    TransForm,
+    SubscriptionSource,
+    SubscriptionTarget,
+    SubscriptionCreateReq
+)
 from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger('c7n_huaweicloud.mu')
@@ -50,7 +66,10 @@ class FunctionGraphManager:
                 return functions
             count = response.count
             next_marker = response.next_marker
-            functions += eval(str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True'))
+            functions += eval(str(response).
+                              replace('null', 'None').
+                              replace('false', 'False').
+                              replace('true', 'True'))
             market = next_marker
             if next_marker >= count:
                 break
@@ -125,7 +144,7 @@ class FunctionGraphManager:
         return response.body
 
     def publish(self, func, role=None):
-        result, changed, existing = self._create_or_update(func, role)
+        result, _, _ = self._create_or_update(func, role)
         func.func_urn = result.func_urn
         eg_not_exist = True
         triggers = self.list_function_triggers(func.func_urn)
@@ -138,9 +157,9 @@ class FunctionGraphManager:
             for e in func.get_events(self.session_factory):
                 create_trigger = e.add(func.func_urn)
                 if create_trigger:
-                    log.info(f'Created trigger[{create_trigger.id}] for function[{func.func_name}].')
+                    log.info(f'Created trigger[{create_trigger.id}] for function[{func.func_name}].')  # noqa: E501
         else:
-            log.info(f'Trigger existed, skip create.')
+            log.info("Trigger existed, skip create.")
 
         return result
 
@@ -246,7 +265,7 @@ class AbstractFunctionGraph:
     @property
     @abc.abstractmethod
     def xrole(self):
-        """IAM agency for function, this field is mandatory when a function needs to access other services."""
+        """IAM agency for function, this field is mandatory when a function needs to access other services."""  # noqa: E501
 
     @property
     @abc.abstractmethod
@@ -476,9 +495,9 @@ class CloudTraceServiceSource:
         channel_id = list_channels_response.items[0].id
         # Create EG subscription, target is FunctionGraph.
         create_subscription_request = CreateSubscriptionRequest()
-        create_subscription_request.body = self.build_create_subscription_request_body(channel_id, func_urn)
+        create_subscription_request.body = self.build_create_subscription_request_body(channel_id, func_urn)  # noqa: E501
         try:
-            create_subscription_response = self.client.create_subscription(create_subscription_request)
+            create_subscription_response = self.client.create_subscription(create_subscription_request)  # noqa: E501
             log.info(f'Create EG trigger for function[{func_urn}] success, '
                      f'trigger id: [{create_subscription_response.id}, '
                      f'trigger name: [{create_subscription_response.name}], '
