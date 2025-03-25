@@ -423,8 +423,6 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     @property
     def user_data(self):
         user_data = {
-            "HUAWEI_ACCESS_KEY_ID": self.policy.data['mode'].get('access_key_id', ""),
-            "HUAWEI_SECRET_ACCESS_KEY": self.policy.data['mode'].get('secret_access_key', ""),
             "HUAWEI_DEFAULT_REGION": self.policy.data['mode'].get('default_region', "")
         }
         return json.dumps(user_data)

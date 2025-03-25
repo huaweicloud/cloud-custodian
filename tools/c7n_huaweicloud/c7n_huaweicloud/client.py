@@ -14,13 +14,12 @@ from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v3 import IamClient
 from huaweicloudsdkiam.v3.region.iam_region import IamRegion
+from huaweicloudsdkvpc.v2 import ListSecurityGroupsRequest
 from huaweicloudsdkvpc.v2.vpc_client import VpcClient as VpcClientV2
 from huaweicloudsdkvpc.v3.region.vpc_region import VpcRegion
 from huaweicloudsdkvpc.v3.vpc_client import VpcClient as VpcClientV3
-from huaweicloudsdkvpc.v2.region.vpc_region import VpcRegion
 from huaweicloudsdkfunctiongraph.v2 import FunctionGraphClient, ListFunctionsRequest
 from huaweicloudsdkfunctiongraph.v2.region.functiongraph_region import FunctionGraphRegion
-from huaweicloudsdkvpc.v2 import VpcClient, ListVpcsRequest
 from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
@@ -40,18 +39,25 @@ class Session:
 
     def __init__(self, options=None):
         self.region = os.getenv('HUAWEI_DEFAULT_REGION')
+        self.token = None
         if not self.region:
             log.error('No default region set. Specify a default via HUAWEI_DEFAULT_REGION')
             sys.exit(1)
 
-        self.ak = os.getenv('HUAWEI_ACCESS_KEY_ID')
+        if options is not None:
+            self.ak = options.get('SecurityAccessKey')
+            self.sk = options.get('SecuritySecretKey')
+            self.token = options.get('SecurityToken')
+        self.ak = os.getenv('HUAWEI_ACCESS_KEY_ID') or self.ak
         if self.ak is None:
-            log.error('No access key id set. Specify a default via HUAWEI_ACCESS_KEY_ID')
+            log.error('No access key id set. '
+                      'Specify a default via HUAWEI_ACCESS_KEY_ID or context')
             sys.exit(1)
 
-        self.sk = os.getenv('HUAWEI_SECRET_ACCESS_KEY')
+        self.sk = os.getenv('HUAWEI_SECRET_ACCESS_KEY') or self.sk
         if self.sk is None:
-            log.error('No secret access key set. Specify a default via HUAWEI_SECRET_ACCESS_KEY')
+            log.error('No secret access key set. '
+                      'Specify a default via HUAWEI_SECRET_ACCESS_KEY or context')
             sys.exit(1)
 
         self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
@@ -59,7 +65,8 @@ class Session:
             self.tms_region = 'cn-north-4'
 
     def client(self, service):
-        credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID'))
+        credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID')) \
+            .with_security_token(self.token)
         if service == 'vpc':
             client = VpcClientV3.new_builder() \
                 .with_credentials(credentials) \
