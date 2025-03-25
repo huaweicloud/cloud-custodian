@@ -14,7 +14,7 @@ class ElbTest(BaseTest):
                 "type": "attributes",
                 "key": "protocol",
                 "value": "HTTPS",
-                "op": "ne",
+                "op": "ne"
             }],
             "actions": [{
                 "type": "delete"
@@ -55,7 +55,7 @@ class ElbTest(BaseTest):
             "filters": [{
                 "type": "publicip-count",
                 "count": "0",
-                "op": "gt",
+                "op": "gt"
             }],
             "actions": [{
                 "type": "unbind-publicips"
