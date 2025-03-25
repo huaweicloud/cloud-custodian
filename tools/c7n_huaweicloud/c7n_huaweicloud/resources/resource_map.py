@@ -7,4 +7,9 @@ ResourceMap = {
     "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker",
     "huaweicloud.alarm": "c7n_huaweicloud.resources.ces.Alarm",
     "huaweicloud.ecs": "c7n_huaweicloud.resources.ecs.Ecs",
+    "huaweicloud.vpc": "c7n_huaweicloud.resources.vpc.Vpc",
+    "huaweicloud.vpc-flow-log": "c7n_huaweicloud.resources.vpc.FlowLog",
+    "huaweicloud.vpc-port": "c7n_huaweicloud.resources.vpc.Port",
+    "huaweicloud.vpc-security-group": "c7n_huaweicloud.resources.vpc.SecurityGroup",
+    "huaweicloud.vpc-security-group-rule": "c7n_huaweicloud.resources.vpc.SecurityGroupRule"
 }
