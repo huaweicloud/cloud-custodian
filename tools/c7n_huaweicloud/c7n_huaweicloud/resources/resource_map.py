@@ -22,6 +22,9 @@ ResourceMap = {
     "huaweicloud.elb.listener": "c7n_huaweicloud.resources.elb.Listener",
     "huaweicloud.nat-gateway": "c7n_huaweicloud.resources.nat.NatGateway",
     "huaweicloud.nat-snat-rule": "c7n_huaweicloud.resources.nat.NatSnatRule",
+    "huaweicloud.nat-dnat-rule": "c7n_huaweicloud.resources.nat.NatDnatRule"
+    "huaweicloud.cbr-backup": "c7n_huaweicloud.resources.cbr_backup.CbrBackup"
+    "huaweicloud.cbr-vault": "c7n_huaweicloud.resources.cbr_vault.CbrVault"
     "huaweicloud.nat-dnat-rule": "c7n_huaweicloud.resources.nat.NatDnatRule",
     "huaweicloud.cts-tracker": "c7n_huaweicloud.resources.cts-tracker.Tracker",
     "huaweicloud.cts-notification-smn":

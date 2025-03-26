@@ -245,6 +245,10 @@ class Session:
             request = ListNatGatewaySnatRulesRequest()
         elif service == 'nat_dnat_rule':
             request = ListNatGatewayDnatRulesRequest()
+        elif service == 'cbr-backup':
+            request = ListBackupsRequest()
+        elif service == 'cbr-vault':
+            request = ListVaultRequest()
         elif service == 'cts-tracker':
             request = ListTrackersRequest()
         elif service == 'cts-notification-smn':
