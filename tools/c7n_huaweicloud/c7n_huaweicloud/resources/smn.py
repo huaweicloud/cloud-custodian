@@ -258,7 +258,7 @@ class TopicDelete(HuaweiCloudBaseAction):
 
 @Topic.action_registry.register("create-lts")
 class TopicCreateLts(HuaweiCloudBaseAction):
-    """Create lts to SMN Topics.
+    """Create LTS to SMN Topics.
 
     :Example:
 
@@ -297,13 +297,13 @@ class TopicCreateLts(HuaweiCloudBaseAction):
                                                log_stream_id=self.data.get('log_stream_id')))
             response = client.create_logtank(request)
         except exceptions.ClientRequestException as e:
-            log.error(f"Create lts to SMN Topics failed, resource :{resource}, exceptions:{e}")
+            log.error(f"Create LTS to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
 
 
 @Topic.action_registry.register("delete-lts")
 class TopicDeleteLts(HuaweiCloudBaseAction):
-    """Delete lts to SMN Topics.
+    """Delete LTS to SMN Topics.
 
     :Example:
 
@@ -332,12 +332,12 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                                                logtank_id=ltsResponse.logtanks[0].id)
                 response = client.delete_logtank(request)
         except exceptions.ClientRequestException as e:
-            log.error(f"Delete lts to SMN Topics failed, resource :{resource}, exceptions:{e}")
+            log.error(f"Delete LTS to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
 
 
 @Topic.action_registry.register("update-access")
-class TopicUpdateAccess(HuaweiCloudBaseAction):
+class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
     """Update access to SMN Topics.
 
     :Example:
@@ -389,12 +389,12 @@ class TopicUpdateAccess(HuaweiCloudBaseAction):
                                                       value=self.data.get('value')))
             response = client.update_topic_attribute(request)
         except exceptions.ClientRequestException as e:
-            log.error(f"Update lts to SMN Topics failed, resource :{resource}, exceptions:{e}")
+            log.error(f"Update access policy to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
 
 
 @Topic.action_registry.register("delete-access")
-class TopicDeleteAccess(HuaweiCloudBaseAction):
+class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
     """Delete access to SMN Topics.
 
     :Example:
@@ -426,7 +426,7 @@ class TopicDeleteAccess(HuaweiCloudBaseAction):
 
 
 @Topic.action_registry.register("get-access")
-class TopicGetAccess(HuaweiCloudBaseAction):
+class TopicGetAccessPolicy(HuaweiCloudBaseAction):
     """Get access to SMN Topics.
 
     :Example:
@@ -456,5 +456,5 @@ class TopicGetAccess(HuaweiCloudBaseAction):
             access_policy = response.attributes.access_policy
             resource['access_policy'] = access_policy
         except exceptions.ClientRequestException as e:
-            log.error(f"Get access to SMN Topics failed, resource :{resource}, exceptions:{e}")
+            log.error(f"Get topic access failed, resource :{resource}, exceptions:{e}")
         return response
