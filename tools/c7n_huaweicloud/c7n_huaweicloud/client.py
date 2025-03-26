@@ -217,10 +217,9 @@ class Session:
                 .with_region(CtsRegion.value_of(self.region)) \
                 .build()
         elif service == 'coc':
-            global_credentials = GlobalCredentials(self.ak, self.sk)
             client = CocClient.new_builder() \
-                .with_credentials(global_credentials) \
-                .with_region(CocRegion.value_of(self.coc_region)) \
+                .with_credentials(globalCredentials) \
+                .with_region(CocRegion.value_of("cn-north-4")) \
                 .build()
 
         return client
@@ -269,7 +268,6 @@ class Session:
         elif service == 'cts-notification-func':
             request = ListNotificationsRequest()
             request.notification_type = "fun"
-
         elif service == 'coc':
             request = ListInstanceCompliantRequest()
 
