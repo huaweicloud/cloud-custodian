@@ -38,6 +38,8 @@ from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
 from huaweicloudsdkgeip.v3 import GeipClient
 from huaweicloudsdkims.v2.region.ims_region import ImsRegion
 from huaweicloudsdkims.v2 import ImsClient, ListImagesRequest
+from huaweicloudsdkcbr.v1.region.cbr_region import CbrRegion
+from huaweicloudsdkcbr.v1 import CbrClient
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -157,6 +159,11 @@ class Session:
             client = ImsClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(ImsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'cbr-backup' or service == 'cbr-vault' or service == 'cbr-policy':
+            client = CbrClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CbrRegion.value_of(self.region)) \
                 .build()
 
         return client

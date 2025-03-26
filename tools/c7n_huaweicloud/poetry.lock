@@ -158,6 +158,19 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "huaweicloudsdkcbr"
+version = "3.1.140"
+description = "CBR"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkcbr-3.1.140-py2.py3-none-any.whl", hash = "sha256:d7d609b774b267527bbf7e3e7db95ad2edfe4a4965191df2eeb06c8726865ae4"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdkces"
 version = "3.1.140"
 description = "CES"
@@ -874,4 +887,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "a9ffd27b9b2fbda2c44946c07a66d1def6126c323f402f785ecad40854a3902c"
+content-hash = "df1bbaae36d08201d201bcfd181e9197f6041e2f3335152a7ae8011f539b1998"
