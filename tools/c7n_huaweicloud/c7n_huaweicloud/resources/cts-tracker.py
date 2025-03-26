@@ -110,7 +110,8 @@ class CtsToggleTracker(HuaweiCloudBaseAction):
 
 @Tracker.action_registry.register("set-trace-file-validation")
 class CtsSetTraceFileValidation(HuaweiCloudBaseAction):
-    """Set Trace File Validation. this action is used to configure the log file integrity verification and encryption storage settings for the CTS tracker.
+    """Set Trace File Validation. this action is used to configure the log file integrity
+     verification and encryption storage settings for the CTS tracker.
     :Example:
     .. code-block:: yaml
     policies:
@@ -150,7 +151,8 @@ class CtsSetTraceFileValidation(HuaweiCloudBaseAction):
             "tracker_type": self.data.get("tracker_type", ""),
             "is_support_validate": self.data.get("is_support_validate"),
             "kms_id": self.data.get("kms_id"),
-            "is_support_trace_files_encryption": self.data.get("is_support_trace_files_encryption", True),
+            "is_support_trace_files_encryption":
+                self.data.get("is_support_trace_files_encryption", True),
             "obs_info": self.data.get("obs_info", {})
         }
 
@@ -170,9 +172,11 @@ class CtsSetTraceFileValidation(HuaweiCloudBaseAction):
 
         try:
             response = client.update_tracker(request)
-            log.info(f"Successfully updated trace file validation (is_support_validate={properties['is_support_validate']}) "
+            log.info(f"Successfully updated trace file validation ("
+                     f"is_support_validate={properties['is_support_validate']}) "
                      f"for tracker {properties['tracker_name']}.")
         except exceptions.ClientRequestException as e:
-            log.error(f"Error updating trace file validation: {e.status_code}, {e.request_id}, {e.error_code}, {e.error_msg}")
+            log.error(f"Error updating trace file validation: {e.status_code}, {e.request_id},"
+                      f" {e.error_code}, {e.error_msg}")
             raise
         return response
