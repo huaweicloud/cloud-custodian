@@ -13,4 +13,6 @@ ResourceMap = {
     "huaweicloud.vpc-security-group": "c7n_huaweicloud.resources.vpc.SecurityGroup",
     "huaweicloud.vpc-security-group-rule": "c7n_huaweicloud.resources.vpc.SecurityGroupRule",
     "huaweicloud.functiongraph": "c7n_huaweicloud.resources.functiongraph.function",
+    "huaweicloud.elb.loadbalancer": "c7n_huaweicloud.resources.elb.Loadbalancer",
+    "huaweicloud.elb.listener": "c7n_huaweicloud.resources.elb.Listener"
 }

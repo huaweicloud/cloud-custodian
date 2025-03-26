@@ -30,6 +30,12 @@ from huaweicloudsdksmn.v2 import SmnClient
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
 from huaweicloudsdkeg.v1 import EgClient
 from huaweicloudsdkeg.v1.region.eg_region import EgRegion
+from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
+from huaweicloudsdkelb.v3 import ElbClient, ListLoadBalancersRequest, ListListenersRequest
+from huaweicloudsdkeip.v3.region.eip_region import EipRegion
+from huaweicloudsdkeip.v3 import EipClient
+from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
+from huaweicloudsdkgeip.v3 import GeipClient
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -130,6 +136,21 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(EgRegion.value_of(self.region)) \
                 .build()
+        elif service in ['elb_loadbalancer', 'elb_listener']:
+            client = ElbClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(ElbRegion.value_of(self.region)) \
+                .build()
+        elif service == 'eip':
+            client = EipClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(EipRegion.value_of(self.region)) \
+                .build()
+        elif service == 'geip':
+            client = GeipClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(GeipRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -148,5 +169,9 @@ class Session:
             request = ListAlarmRulesRequest()
         elif service == 'functiongraph':
             request = ListFunctionsRequest()
+        elif service == 'elb_loadbalancer':
+            request = ListLoadBalancersRequest()
+        elif service == 'elb_listener':
+            request = ListListenersRequest()
 
         return request
