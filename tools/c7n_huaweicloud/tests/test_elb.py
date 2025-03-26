@@ -22,5 +22,5 @@ class ElbTest(BaseTest):
         }, session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0]['id'], "3e5ed14e-ebd3-4097-9cc3-ffb0bc76c332")
-        self.assertEqual(resources[0]['protocol'], "HTTPS")
+        self.assertEqual(resources[0]['id'], "f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3")
+        self.assertEqual(resources[0]['protocol'], "TCP")
