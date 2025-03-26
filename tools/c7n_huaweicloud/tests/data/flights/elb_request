@@ -72,8 +72,7 @@ interactions:
     uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/listeners/f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3/force
     body: ''
   response:
-    status:
-      code: 204
+    status: {code: 200, message: OK}
     body:
       string: ''
     headers:
@@ -127,8 +126,7 @@ interactions:
     uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/pools/d59d25ff-43bf-48ec-acff-f13626fc7694/delete-cascade
     body: ''
   response:
-    status:
-      code: 204
+    status: {code: 200, message: OK}
     body:
       string: ''
     headers:
@@ -329,8 +327,7 @@ interactions:
     uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/loadbalancers/30689a93-ed0c-4d49-84ac-916d6296d496/delete-cascade
     body: '{"loadbalancer": {"unbounded_pool": true, "public_ip": false}}'
   response:
-    status:
-      code: 204
+    status: {code: 200, message: OK}
     body:
       string: ''
     headers:
