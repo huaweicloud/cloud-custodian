@@ -78,10 +78,6 @@ class ResourceQuery:
                 resources.append(json.loads(str(response)))
                 return resources
 
-            if path == '*':
-                resources.append(json.loads(str(response)))
-                return resources
-
             # replace id with the specified one
             if res is not None:
                 for data in res:
@@ -194,8 +190,9 @@ class ResourceQuery:
                 return resources
             for data in res:
                 data["id"] = data[m.id]
-                data["tag_resource_type"] = m.tag_resource_type
                 marker = data["id"]
+                if getattr(m, 'tag_resource_type', None):
+                    data["tag_resource_type"] = m.tag_resource_type
             resources.extend(res)
         return resources
 
