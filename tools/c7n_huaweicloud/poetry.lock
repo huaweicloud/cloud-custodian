@@ -229,6 +229,19 @@ six = ">=1.16.0"
 typing-extensions = "*"
 
 [[package]]
+name = "huaweicloudsdkcts"
+version = "3.1.140"
+description = "CTS"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkcts-3.1.140-py2.py3-none-any.whl", hash = "sha256:3eed1bebbb0d21de5554a8cb212cc3cc515f9f1fcf0480fdd3911ae82d50432b"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdkdeh"
 version = "3.1.140"
 description = "DeH"
@@ -480,7 +493,7 @@ name = "jsonpointer"
 version = "3.0.0"
 description = "Identify specific nodes in a JSON document (RFC 6901)"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
     {file = "jsonpointer-3.0.0-py2.py3-none-any.whl", hash = "sha256:13e088adc14fca8b6aa8177c044e12701e6ad4b28ff10e65f2267a90109c9942"},
     {file = "jsonpointer-3.0.0.tar.gz", hash = "sha256:2b2d729f2091522d61c3b31f82e11870f60b68f43fbc705cb76bf4b832af59ef"},
