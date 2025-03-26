@@ -26,6 +26,7 @@ class CbrVault(QueryResourceManager):
         service = 'cbr-vault'
         enum_spec = ('list_vault', 'vaults', 'offset')
         id = 'id'
+        tag_resource_type = 'vault'
 
 
 @CbrVault.action_registry.register('add_tags')
