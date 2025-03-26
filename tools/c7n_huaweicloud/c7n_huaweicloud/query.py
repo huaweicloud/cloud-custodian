@@ -44,7 +44,10 @@ class ResourceQuery:
         m = resource_manager.resource_type
         enum_op, path, pagination = m.enum_spec
 
-        if pagination == 'offset':
+        # ims special processing
+        if pagination == 'ims':
+            resources = self._pagination_ims(m, enum_op, path)
+        elif pagination == 'offset':
             resources = self._pagination_limit_offset(m, enum_op, path)
         elif pagination == 'marker':
             resources = self._pagination_limit_marker(m, enum_op, path)
@@ -52,6 +55,8 @@ class ResourceQuery:
             resources = self._pagination_maxitems_marker(m, enum_op, path)
         elif pagination == None:
             resources = self._non_pagination(m, enum_op, path)
+        elif pagination == 'page':
+            resources = self._pagination_limit_page(m, enum_op, path)
         else:
             log.exception(f"Unsupported pagination type: {pagination}")
             sys.exit(1)
@@ -72,10 +77,6 @@ class ResourceQuery:
             res = jmespath.search(path, eval(
                 str(response).replace('null', 'None').replace('false', 'False').
                 replace('true', 'True')))
-
-            if path == '*':
-                resources.append(json.loads(str(response)))
-                return resources
 
             if path == '*':
                 resources.append(json.loads(str(response)))
@@ -175,8 +176,77 @@ class ResourceQuery:
 
         return list(res)
 
+    def _pagination_limit_page(self, m, enum_op, path):
+        session = local_session(self.session_factory)
+        client = session.client(m.service)
+
+        page = 1
+        limit = DEFAULT_LIMIT_SIZE
+        resources = []
+        while 1:
+            request = session.request(m.service)
+            request.limit = limit
+            request.offset = page
+            response = self._invoke_client_enum(client, enum_op, request)
+            res = jmespath.search(path, eval(
+                str(response).replace('null', 'None').replace('false', 'False').
+                replace('true', 'True')))
+
+            if path == '*':
+                resources.append(json.loads(str(response)))
+                return resources
+
+            if path == '*':
+                resources.append(json.loads(str(response)))
+                return resources
+
+            # replace id with the specified one
+            if res is not None:
+                for data in res:
+                    data['id'] = data[m.id]
+                    data['tag_resource_type'] = m.tag_resource_type
+
+            resources = resources + res
+            if len(res) == limit:
+                page += 1
+            else:
+                return resources
+        return resources
+
     def _invoke_client_enum(self, client, enum_op, request):
         return getattr(client, enum_op)(request)
+
+    def _pagination_ims(self, m, enum_op, path):
+        session = local_session(self.session_factory)
+        client = session.client(m.service)
+        project_id = client._credentials.project_id
+        marker = None
+        limit = DEFAULT_LIMIT_SIZE
+        resources = []
+        while 1:
+            request = session.request(m.service)
+            request.limit = limit
+            request.marker = marker
+            request.owner = project_id
+            response = self._invoke_client_enum(client, enum_op, request)
+            res = jmespath.search(
+                path,
+                eval(
+                    str(response)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                ),
+            )
+            if not res:
+                return resources
+            for data in res:
+                data["id"] = data[m.id]
+                marker = data["id"]
+                if getattr(m, 'tag_resource_type', None):
+                    data["tag_resource_type"] = m.tag_resource_type
+            resources.extend(res)
+        return resources
 
 
 # abstract method for pagination
@@ -268,6 +338,14 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
 
     def get_resource(self, resource_info):
         return self.resource_type.get(self.get_client(), resource_info)
+
+    def get_resources(self, resource_ids):
+        resources = self.augment(self.source.get_resources(self.get_resource_query())) or []
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
 
     @property
     def source_type(self):

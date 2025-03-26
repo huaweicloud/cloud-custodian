@@ -356,15 +356,27 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
             if isinstance(resource, dict) and 'tags' in resource:
                 tags = resource['tags']
                 if isinstance(tags, dict):
+                    # 格式为 {k1: v1, k2: v2}
                     return tags.get(key)
                 elif isinstance(tags, list):
-                    for tag in tags:
-                        if isinstance(tag, dict) and key in tag:
-                            return tag[key]
-                        elif isinstance(tag, str) and f"{key}=" in tag:
-                            parts = tag.split('=')
-                            if parts[0] == key and len(parts) > 1:
-                                return parts[1]
+                    if all(isinstance(item, dict) and len(item) == 1 for item in tags):
+                        # 格式为 [{k1: v1}, {k2: v2}]
+                        for item in tags:
+                            if key in item:
+                                return item[key]
+                    elif all(isinstance(item, str) and '=' in item for item in tags):
+                        # 格式为 ["k1=v1", "k2=v2"]
+                        for item in tags:
+                            k, v = item.split('=', 1)
+                            if k == key:
+                                return v
+                    elif all(
+                            isinstance(item, dict) and 'key' in item and 'value' in item for item in
+                            tags):
+                        # 格式为 [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
+                        for item in tags:
+                            if item['key'] == key:
+                                return item['value']
             return None
         except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
@@ -482,21 +494,22 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
     def process_resource(self, resource):
         try:
+            old_value = None
             if not self.old_value:
-                self.old_value = self.get_value_by_key(resource, self.key)
-            if not self.old_value:
+                old_value = self.get_value_by_key(resource, self.key)
+            if not self.old_value and not old_value:
                 self.log.exception("No value of key %s in resource %s", self.key, resource["id"])
                 return
 
-            self.new_value = self.get_new_value(self.old_value, self.action, self.old_sub_str,
+            new_value = self.get_new_value(old_value, self.action, self.old_sub_str,
                                                 self.new_sub_str)
-            if not self.new_value:
+            if not new_value:
                 self.log.exception("Can not get new value of key %s in resource %s", self.key,
                                    resource["id"])
                 return
 
-            old_tags = [{"key": self.key, "value": self.old_value}]
-            new_tags = [{"key": self.key, "value": self.new_value}]
+            old_tags = [{"key": self.key, "value": old_value}]
+            new_tags = [{"key": self.key, "value": new_value}]
             resources = [
                 {"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}]
 
@@ -551,15 +564,27 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
             if isinstance(resource, dict) and 'tags' in resource:
                 tags = resource['tags']
                 if isinstance(tags, dict):
+                    # 格式为 {k1: v1, k2: v2}
                     return tags.get(key)
                 elif isinstance(tags, list):
-                    for tag in tags:
-                        if isinstance(tag, dict) and key in tag:
-                            return tag[key]
-                        elif isinstance(tag, str) and f"{key}=" in tag:
-                            parts = tag.split('=')
-                            if parts[0] == key and len(parts) > 1:
-                                return parts[1]
+                    if all(isinstance(item, dict) and len(item) == 1 for item in tags):
+                        # 格式为 [{k1: v1}, {k2: v2}]
+                        for item in tags:
+                            if key in item:
+                                return item[key]
+                    elif all(isinstance(item, str) and '=' in item for item in tags):
+                        # 格式为 ["k1=v1", "k2=v2"]
+                        for item in tags:
+                            k, v = item.split('=', 1)
+                            if k == key:
+                                return v
+                    elif all(
+                            isinstance(item, dict) and 'key' in item and 'value' in item for item in
+                            tags):
+                        # 格式为 [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
+                        for item in tags:
+                            if item['key'] == key:
+                                return item['value']
             return None
         except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
@@ -637,6 +662,9 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
         try:
             tags = self.get_tags_from_resource(resource)
             delete_keys = self.get_delete_keys(tags, space, preserve)
+            if len(delete_keys) == 0:
+                self.log.info("No need to tag-trim of %s", resource['id'])
+                return
 
             old_tags = [{"key": key, "value": tags[key]} for key in delete_keys]
             resources = [
@@ -687,20 +715,28 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
 
     def get_tags_from_resource(self, resource):
         try:
-            if isinstance(resource, dict) and 'tags' in resource:
-                tags = resource['tags']
-                if isinstance(tags, dict):
-                    return tags
-                elif isinstance(tags, list):
-                    res_tags = {}
-                    for tag in tags:
-                        if isinstance(tag, dict):
-                            return res_tags.update(tag)
-                        elif isinstance(tag, str):
-                            parts = tag.split('=')
-                            if len(parts) == 2:
-                                res_tags[parts[0]] = parts[1]
-                    return res_tags
+            tags = resource["tags"]
+            if isinstance(tags, dict):
+                return tags
+            elif isinstance(tags, list):
+                if all(isinstance(item, dict) and len(item) == 1 for item in tags):
+                    # [{k1: v1}, {k2: v2}]
+                    result = {}
+                    for item in tags:
+                        key, value = list(item.items())[0]
+                        result[key] = value
+                    return result
+                elif all(isinstance(item, str) and '=' in item for item in tags):
+                    # ["k1=v1", "k2=v2"]
+                    result = {}
+                    for item in tags:
+                        key, value = item.split('=', 1)
+                        result[key] = value
+                    return result
+                elif all(isinstance(item, dict) and 'key' in item and 'value' in item for item in
+                         tags):
+                    # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
+                    return {item['key']: item['value'] for item in tags}
             return None
         except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
