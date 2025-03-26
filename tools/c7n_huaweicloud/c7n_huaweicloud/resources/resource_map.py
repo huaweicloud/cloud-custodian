@@ -14,7 +14,7 @@ ResourceMap = {
     "huaweicloud.vpc-port": "c7n_huaweicloud.resources.vpc.Port",
     "huaweicloud.vpc-security-group": "c7n_huaweicloud.resources.vpc.SecurityGroup",
     "huaweicloud.vpc-security-group-rule": "c7n_huaweicloud.resources.vpc.SecurityGroupRule",
-    "huaweicloud.functiongraph": "c7n_huaweicloud.resources.functiongraph.function",
+    "huaweicloud.functiongraph": "c7n_huaweicloud.resources.functiongraph.FunctionGraph",
     "huaweicloud.elb.loadbalancer": "c7n_huaweicloud.resources.elb.Loadbalancer",
     "huaweicloud.ims": "c7n_huaweicloud.resources.ims.Ims",
     "huaweicloud.topic": "c7n_huaweicloud.resources.smn.Topic",
