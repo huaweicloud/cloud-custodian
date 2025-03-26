@@ -50,6 +50,8 @@ class ResourceQuery:
             resources = self._pagination_limit_marker(m, enum_op, path)
         elif pagination == 'maxitems-marker':
             resources = self._pagination_maxitems_marker(m, enum_op, path)
+        elif pagination == None:
+            resources = self._non_pagination(m, enum_op, path)
         else:
             log.exception(f"Unsupported pagination type: {pagination}")
             sys.exit(1)
@@ -161,6 +163,17 @@ class ResourceQuery:
                 _dict_map(request, next_page_params)
             else:
                 return resources
+            
+    def _non_pagination(self, m, enum_op, path):
+        session = local_session(self.session_factory)
+        client = session.client(m.service)
+        request = session.request(m.service)
+
+        response = getattr(client, enum_op)(request)
+        res = jmespath.search(path, eval(
+            str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+
+        return list(res)
 
     def _invoke_client_enum(self, client, enum_op, request):
         return getattr(client, enum_op)(request)

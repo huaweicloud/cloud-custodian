@@ -20,6 +20,8 @@ from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
+from huaweicloudsdkobs.v1.region.obs_region import ObsRegion
+from obs import ObsClient
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -87,6 +89,9 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(DeHRegion.value_of(self.region)) \
                 .build()
+        elif service == "obs":
+            client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
+                                server=ObsRegion.value_of(self.region).endpoint)
 
         return client
 
@@ -99,5 +104,7 @@ class Session:
             request = ShowTrackerConfigRequest()
         elif service == 'deh':
             request = ListDedicatedHostsRequest()
-
+        elif service == 'obs':
+            request = True
+            
         return request
