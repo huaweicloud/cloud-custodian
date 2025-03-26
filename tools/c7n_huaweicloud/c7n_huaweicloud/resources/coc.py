@@ -71,7 +71,8 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
 
     def validate(self):
         smn = self.data.get('smn', False)
-        if smn and not (self.data.get('region_id') and self.data.get('topic_urn') and self.data.get('subject')):
+        if smn and not (self.data.get('region_id') and self.data.get('topic_urn') and self.data.get('subject') and
+            self.data.get('message')):
             raise PolicyValidationError("Can not create smn alarm message when parameter is error.")
 
     def perform_action(self, resource):
