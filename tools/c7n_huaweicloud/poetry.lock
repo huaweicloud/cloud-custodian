@@ -336,6 +336,18 @@ files = [
 huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
+name = "huaweicloudsdkims"
+version = "3.1.140"
+description = "IMS"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkims-3.1.140-py2.py3-none-any.whl", hash = "sha256:a8807a55032a5efea9f6824c3085311594a04973a04fd5b6acb17eb51e6793c9"},
+]
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdksmn"
 version = "3.1.140"
 description = "SMN"
@@ -424,7 +436,7 @@ name = "jsonpointer"
 version = "3.0.0"
 description = "Identify specific nodes in a JSON document (RFC 6901)"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 groups = ["main"]
 files = [
     {file = "jsonpointer-3.0.0-py2.py3-none-any.whl", hash = "sha256:13e088adc14fca8b6aa8177c044e12701e6ad4b28ff10e65f2267a90109c9942"},
@@ -900,3 +912,4 @@ zstd = ["zstandard (>=0.18.0)"]
 lock-version = "2.1"
 python-versions = "^3.8"
 content-hash = "6a388b02d5ecb92b6933b45b24c1a04d250bbc94b5fc30d6dc3f8ab1c149d5a6"
+

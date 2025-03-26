@@ -32,6 +32,7 @@ huaweicloudsdkeg = "^3.1.138"
 huaweicloudsdkelb = "^3.1.138"
 huaweicloudsdkeip = "^3.1.138"
 huaweicloudsdkgeip = "^3.1.138"
+huaweicloudsdkims = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"

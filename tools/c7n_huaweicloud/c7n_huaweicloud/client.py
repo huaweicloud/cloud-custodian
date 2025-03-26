@@ -34,6 +34,8 @@ from huaweicloudsdkeip.v3.region.eip_region import EipRegion
 from huaweicloudsdkeip.v3 import EipClient
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
 from huaweicloudsdkgeip.v3 import GeipClient
+from huaweicloudsdkims.v2.region.ims_region import ImsRegion
+from huaweicloudsdkims.v2 import ImsClient, ListImagesRequest
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
 from huaweicloudsdksmn.v2 import SmnClient, ListTopicsRequest
 
@@ -151,6 +153,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(GeipRegion.value_of(self.region)) \
                 .build()
+        elif service == 'ims':
+            client = ImsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(ImsRegion.value_of(self.region)) \
+                .build()
         elif service == 'smn':
             client = SmnClient.new_builder() \
                 .with_credentials(credentials) \
@@ -176,6 +183,8 @@ class Session:
             request = ListLoadBalancersRequest()
         elif service == 'elb_listener':
             request = ListListenersRequest()
+        elif service == 'ims':
+            request = ListImagesRequest()
         elif service == 'smn':
             request = ListTopicsRequest()
 
