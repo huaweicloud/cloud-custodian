@@ -1,6 +1,0 @@
-2025-03-26 10:35:47,678 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
-2025-03-26 10:35:48,816 - custodian.resources.transfer - DEBUG - Filtered from 2 to 1 transfer
-2025-03-26 10:35:48,817 - custodian.policy - INFO - policy:createTransferForStream resource:huaweicloud.lts-transfer region: count:1 time:1.14
-2025-03-26 10:35:48,818 - custodian.huaweicloud.resources.lts-transfer - WARNING - {"log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1", "log_streams": [{"log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"}], "log_transfer_info": {"log_transfer_type": "OBS", "log_transfer_mode": "cycle", "log_storage_format": "JSON", "log_transfer_status": "ENABLE", "log_transfer_detail": {"obs_period": 2, "obs_period_unit": "min", "obs_bucket_name": "xianggangtest001"}}}
-2025-03-26 10:35:50,297 - custodian.policy - INFO - policy:createTransferForStream action:ltscreatetransferlog resources:1 execution_time:1.48
-2025-03-26 10:35:50,299 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer scope:policy
