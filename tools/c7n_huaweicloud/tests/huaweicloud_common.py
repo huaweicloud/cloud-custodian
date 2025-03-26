@@ -6,12 +6,8 @@ import os
 import vcr
 
 from c7n.testing import TestUtils
-#from c7n.resources import load_resources
-
 from c7n_huaweicloud.client import Session
 
-
-#load_resources()
 
 HUAWEICLOUD_CONFIG = {
     'HUAWEI_DEFAULT_REGION': 'ap-southeast-1',
