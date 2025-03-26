@@ -36,9 +36,10 @@ class CocTest(BaseTest):
                     "type": "non_compliant_alarm",
                     "smn": "true",
                     "region_id": "cn-north-4",
-                    "topic_urn": "urn:smn:cn-north-4:ce8476c174f94c6991ea7885e3380d99:custodian_test",
+                    "topic_urn": "urn:smn:cn-north-4:xxxxx:custodian_test",
                     "subject": "Machine Non-compliant Patch Version Alert",
-                    "message": "There are machines with non compliant patch versions installed under your account:"
+                    "message": "There are machines with non compliant patch "
+                               "versions installed under your account:"
                 }],
             },
             session_factory=factory,
