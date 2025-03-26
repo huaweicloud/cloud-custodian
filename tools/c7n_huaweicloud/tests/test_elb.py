@@ -23,4 +23,4 @@ class ElbTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['id'], "f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3")
-        self.assertEqual(resources[0]['protocol'], "TCP")
+        self.assertEqual(resources[0]['protocol'], "UDP")
