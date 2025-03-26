@@ -1,7 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import os
 from huaweicloud_common import BaseTest
 
+os.environ["HUAWEI_DEFAULT_REGION"] = 'cn-north-4'
 
 class RamTest(BaseTest):
 
@@ -9,7 +11,7 @@ class RamTest(BaseTest):
         factory = self.replay_flight_data('ram_request')
         p = self.load_policy({
             "name": "search-external-shared-principals",
-            "resource": "huaweicloud.RAMSharedPrincipals",
+            "resource": "huaweicloud.ram-shared-principals",
             "filters": [{
                 "type": "value",
                 "key": "external",
@@ -28,7 +30,7 @@ class RamTest(BaseTest):
         factory = self.replay_flight_data('ram_request')
         p = self.load_policy({
             "name": "search-external-shared-principals",
-            "resource": "huaweicloud.RAMSharedPrincipals",
+            "resource": "huaweicloud.ram-shared-principals",
             "filters": [{
                 "type": "value",
                 "key": "external",
