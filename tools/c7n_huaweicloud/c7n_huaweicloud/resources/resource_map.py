@@ -14,5 +14,6 @@ ResourceMap = {
     "huaweicloud.functiongraph": "c7n_huaweicloud.resources.functiongraph.function",
     "huaweicloud.elb.loadbalancer": "c7n_huaweicloud.resources.elb.Loadbalancer",
     "huaweicloud.ims": "c7n_huaweicloud.resources.ims.Ims",
-    "huaweicloud.elb.listener": "c7n_huaweicloud.resources.elb.Listener"
+    "huaweicloud.elb.listener": "c7n_huaweicloud.resources.elb.Listener",
+    "huaweicloud.sfsturbo": "c7n_huaweicloud.resources.sfsturbo.SfsTurbo",
 }
