@@ -22,4 +22,6 @@ ResourceMap = {
     "huaweicloud.nat-gateway": "c7n_huaweicloud.resources.nat.NatGateway",
     "huaweicloud.nat-snat-rule": "c7n_huaweicloud.resources.nat.NatSnatRule",
     "huaweicloud.nat-dnat-rule": "c7n_huaweicloud.resources.nat.NatDnatRule"
+    "huaweicloud.cbr-backup": "c7n_huaweicloud.resources.cbr_backup.CbrBackup"
+    "huaweicloud.cbr-vault": "c7n_huaweicloud.resources.cbr_vault.CbrVault"
 }
