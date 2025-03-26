@@ -6,6 +6,7 @@ ResourceMap = {
     "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
     "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker",
     "huaweicloud.alarm": "c7n_huaweicloud.resources.ces.Alarm",
+    "huaweicloud.ecs": "c7n_huaweicloud.resources.ecs.Ecs",
     "huaweicloud.vpc": "c7n_huaweicloud.resources.vpc.Vpc",
     "huaweicloud.vpc-flow-log": "c7n_huaweicloud.resources.vpc.FlowLog",
     "huaweicloud.vpc-port": "c7n_huaweicloud.resources.vpc.Port",
