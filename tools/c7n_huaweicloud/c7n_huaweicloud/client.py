@@ -258,5 +258,5 @@ class Session:
             request = ListBackupsRequest()
         elif service == 'cbr-vault':
             request = ListVaultRequest()
-        
+
         return request
