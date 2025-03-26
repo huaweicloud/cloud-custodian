@@ -5,7 +5,10 @@ import logging
 import jmespath
 
 from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdksmn.v2 import *
+from huaweicloudsdksmn.v2 import DeleteTopicRequest, \
+    CreateLogtankRequest, CreateLogtankRequestBody, ListLogtankRequest, DeleteLogtankRequest, \
+    UpdateTopicAttributeRequest, UpdateTopicAttributeRequestBody, DeleteTopicAttributesRequest, \
+    ListTopicAttributesRequest
 
 from c7n.filters import Filter
 from c7n.utils import type_schema
