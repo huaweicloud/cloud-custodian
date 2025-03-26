@@ -255,6 +255,32 @@ files = [
 huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
+name = "huaweicloudsdkeip"
+version = "3.1.140"
+description = "EIP"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkeip-3.1.140-py2.py3-none-any.whl", hash = "sha256:8de7c9dc505cbb801c813820277fa27d33e221056fc5e5ee753b4d2578abae76"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
+name = "huaweicloudsdkelb"
+version = "3.1.140"
+description = "ELB"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkelb-3.1.140-py2.py3-none-any.whl", hash = "sha256:8dbb2e878ed25b2e929d3918d15e4caa078f58943365e6a38d2ab823916bf58c"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdkevs"
 version = "3.1.140"
 description = "EVS"
@@ -263,6 +289,19 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 groups = ["main"]
 files = [
     {file = "huaweicloudsdkevs-3.1.140-py2.py3-none-any.whl", hash = "sha256:04c6a62839e99a1433439cf9b4cb0925cc331aae89193d7422163662a17b92bd"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
+name = "huaweicloudsdkgeip"
+version = "3.1.140"
+description = "GEIP"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkgeip-3.1.140-py2.py3-none-any.whl", hash = "sha256:384be176f59ed5ab24b4a2e54c0e3ae9b985a93d9c6f034c4f8bafe43c11d0b0"},
 ]
 
 [package.dependencies]
