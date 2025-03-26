@@ -122,6 +122,7 @@ class ImsTest(BaseTest):
                         "type": "cancel-launch-permission",
                         "status": "accepted",
                         "project_id": "proiect_id",
+                        "image_ids": ["image_id"]
                     }
                 ],
             },
