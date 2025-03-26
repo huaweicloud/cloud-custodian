@@ -113,7 +113,9 @@ class SmnTest(BaseTest):
                 {
                     "type": "topic-access",
                     "effect": "Deny",
-                    "organization": "o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c"
+                    "organization": "o-bf966fe82ebb4d35d68b791729228788"
+                                    "/r-001ebf32880a13eabfc8e1c37eee3ae9"
+                                    "/ou-0dbfffe92fd92ddb35feff9b4079459c"
                 }
             ]
         }, session_factory=factory)
@@ -121,4 +123,3 @@ class SmnTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['name'], "ttt")
         self.assertEqual(resources[0]['topic_id'], "d745b6a999a049c09446fea0ecac8f54")
-

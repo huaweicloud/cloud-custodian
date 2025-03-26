@@ -389,7 +389,8 @@ class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
                                                       value=self.data.get('value')))
             response = client.update_topic_attribute(request)
         except exceptions.ClientRequestException as e:
-            log.error(f"Update access policy to SMN Topics failed, resource :{resource}, exceptions:{e}")
+            log.error(
+                f"Update access policy to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
 
 
@@ -421,7 +422,8 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
             request = DeleteTopicAttributesRequest(topic_urn=resource["topic_urn"])
             response = client.delete_topic_attributes(request)
         except exceptions.ClientRequestException as e:
-            log.error(f"Delete access to SMN Topics failed, resource :{resource}, exceptions:{e}")
+            log.error(
+                f"Delete access policy to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
 
 
@@ -456,5 +458,5 @@ class TopicGetAccessPolicy(HuaweiCloudBaseAction):
             access_policy = response.attributes.access_policy
             resource['access_policy'] = access_policy
         except exceptions.ClientRequestException as e:
-            log.error(f"Get topic access failed, resource :{resource}, exceptions:{e}")
+            log.error(f"Get topic access policy failed, resource :{resource}, exceptions:{e}")
         return response
