@@ -39,6 +39,7 @@ def get_bucket_client(bucket):
     client = ObsClient(access_key_id=ak, secret_access_key=sk, server=endpoint)
     return client
 
+
 class ObsSdkError():
     def __init__(self, code, message, request_id):
         self.error_code = code
@@ -71,7 +72,7 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
         p = bucket.get('Policy')
         if p is None:
             return
-        
+
         if bucket.get(WildcardStatementFilter.annotation_key) is None:
             log.info("bucket %s has not wildcard policy" % bucket_name)
             return
@@ -85,7 +86,7 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
         bucket['State'] = 'delete-wildcard-statements'
         bucket['newStatements'] = new_statements
         return bucket
-    
+
     def process_policy(self, bucket_statements):
         new_statements = []
         for statement in bucket_statements:
@@ -93,11 +94,11 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
             action = statement.get('Action', [])
             if "*" in prinicipal_user or "*" in action:
                 continue
-            
+
             new_statements.append(statement)
-        
+
         return new_statements
-    
+
     def update_statements(self, bucket, policy):
         bucket_name = bucket['name']
         client = get_bucket_client(bucket)
@@ -106,7 +107,7 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
             resp = client.deleteBucketPolicy(bucket_name)
         else:
             resp = client.setBucketPolicy(bucket_name, json.dumps(policy))
-        
+
         if resp.status > 300:
             log.error("update bucket [%s] bucket policy failed." % bucket_name)
             sdk_error = ObsSdkError(resp.errorCode, resp.errorMessage, resp.requestId)
@@ -130,9 +131,9 @@ class SetBucketEncryption(HuaweiCloudBaseAction):
               actions:
                 - type: set-bucket-encryption
                   crypto: AES256
-                  
+
     """
-    schema  = type_schema(
+    schema = type_schema(
         'set-bucket-encryption',
         required=['encryption'],
         encryption={
@@ -183,7 +184,8 @@ class SetBucketEncryption(HuaweiCloudBaseAction):
 
 @Obs.filter_registry.register("wildcard-statements")
 class WildcardStatementFilter(Filter):
-    """Filters for all obs buckets that include wildcard principals in bucket policy.such as "Principal": "*", or wildcard actions, such as "Action": "*".
+    """Filters for all obs buckets that include wildcard principals in bucket policy.
+    such as "Principal": "*", or wildcard actions, such as "Action": "*".
 
     :example:
 
@@ -218,7 +220,7 @@ class WildcardStatementFilter(Filter):
         if not policy:
             log.info("bucket not config bucket policy")
             return None
-        
+
         policy = json.loads(policy)
         bucket_statements = policy.setdefault('Statement', [])
 
@@ -232,9 +234,9 @@ class WildcardStatementFilter(Filter):
         if result:
             set_annotation(bucket, self.annotation_key, result)
             return bucket
-        
+
         return None
-        
+
     def get_bucket_policy(self, bucket):
         client = get_bucket_client(bucket)
         resp = client.getBucketPolicy(bucket['name'])
@@ -266,7 +268,7 @@ class BucketEncryptionStateFilter(Filter):
               filters:
                 - type: bucket-encryption
                   state: False
-                  
+
     """
 
     schema = type_schema(
@@ -294,17 +296,18 @@ class BucketEncryptionStateFilter(Filter):
         if not target_state:
             if target_crypto is None and current_crypto is None:
                 return bucket
-            
+
             if target_crypto is not None and target_crypto != current_crypto:
                 return bucket
         else:
             if target_crypto is None and current_crypto is not None:
                 return bucket
-            
-            if target_crypto is not None and current_crypto is not None and target_crypto == current_crypto:
-                    return bucket
+
+            if target_crypto is not None and current_crypto is not None \
+            and target_crypto == current_crypto:
+                return bucket
         return None
-            
+
     def get_encryption_crypto(self, bucket):
         client = get_bucket_client(bucket)
         resp = client.getBucketEncryption(bucket['name'])
@@ -318,22 +321,8 @@ class BucketEncryptionStateFilter(Filter):
             if 'NoSuchEncryptionConfiguration' == error_code:
                 return None
             else:
-                log.error({"read bucket ": bucket['name'], " encryption config failed. request reason is ":
+                log.error({"read bucket ": bucket['name'],
+                           " encryption config failed. request reason is ":
                             resp.reason, " request id is": resp.requestId})
                 sdk_error = ObsSdkError(resp.errorCode, resp.errorMessage, resp.requestId)
                 raise exceptions.ClientRequestException(resp.status, sdk_error)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -5,6 +5,7 @@ from huaweicloud_common import BaseTest
 import logging
 log = logging.getLogger("custodian.huaweicloud.resources.obs")
 
+
 class ObsWildcardStatementsTest(BaseTest):
     def test_obs_query(self):
         factory = self.replay_flight_data('obs_remove_wildcard_statements')
@@ -27,8 +28,9 @@ class ObsWildcardStatementsTest(BaseTest):
         print(resources)
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['name'], 'test-buckwt-3az1')
-        self.assertEqual(resources[0]['c7n:WildcardStatements'], 
-                         [{'Sid': 'test-policy', 'Effect': 'Allow', 'Principal': {'ID': ['*']}, 'Action': ['*'], 'Resource': ['test-buckwt-3az1', 'test-buckwt-3az1/*']}])
+        self.assertEqual(resources[0]['c7n:WildcardStatements'],
+                         [{'Sid': 'test-policy', 'Effect': 'Allow', 'Principal': {'ID': ['*']},
+                           'Action': ['*'], 'Resource': ['test-buckwt-3az1', 'test-buckwt-3az1/*']}])
 
 
 class ObsEncryptionBucketTest(BaseTest):
@@ -58,7 +60,6 @@ class ObsEncryptionBucketTest(BaseTest):
         self.assertEqual(resources[0]['c7n:BucketEncryptionCrypto'], 'AES256')
         self.assertEqual(resources[1]['name'], 'test-buckwt-3az3')
         self.assertEqual(resources[1]['c7n:BucketEncryptionCrypto'], None)
-        
 
     def test_filter_encryptied_with_kms_crypto_buckets(self):
         factory = self.replay_flight_data('obs_encryption_bucket')
@@ -71,7 +72,7 @@ class ObsEncryptionBucketTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['name'], 'test-buckwt-3az2')
-    
+
     def test_set_bucket_encryption(self):
         factory = self.replay_flight_data('obs_encryption_bucket')
         p = self.load_policy({
