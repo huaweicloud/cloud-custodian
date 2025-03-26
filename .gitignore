@@ -62,6 +62,3 @@ venv*/
 
 # files generated during "make data-update"
 iam_docs/
-
-yml_test/
-=/
