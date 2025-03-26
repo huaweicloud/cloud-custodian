@@ -43,6 +43,10 @@ from huaweicloudsdksmn.v2 import SmnClient, ListTopicsRequest
 from huaweicloudsdknat.v2.region.nat_region import NatRegion
 from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
     ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
+from huaweicloudsdkcts.v3 import *
+from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
+
+
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -183,6 +187,21 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(NatRegion.value_of(self.region)) \
                 .build()
+        elif service == 'cts-tracker':
+            client = CtsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CtsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'cts-notification-smn':
+            client = CtsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CtsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'cts-notification-func':
+            client = CtsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CtsRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -215,5 +234,13 @@ class Session:
             request = ListNatGatewaySnatRulesRequest()
         elif service == 'nat_dnat_rule':
             request = ListNatGatewayDnatRulesRequest()
+        elif service == 'cts-tracker':
+            request = ListTrackersRequest()
+        elif service == 'cts-notification-smn':           
+            request = ListNotificationsRequest()
+            request.notification_type = "smn"
+        elif service == 'cts-notification-func':           
+            request = ListNotificationsRequest()
+            request.notification_type = "fun"
 
         return request
