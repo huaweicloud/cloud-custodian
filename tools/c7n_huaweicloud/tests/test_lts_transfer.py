@@ -3,7 +3,6 @@
 from huaweicloud_common import BaseTest
 
 
-
 class TransferTest(BaseTest):
     def test_transfer_filter(self):
         factory = self.replay_flight_data('lts_transfer_filter')
