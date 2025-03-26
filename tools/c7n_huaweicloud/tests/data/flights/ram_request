@@ -62,11 +62,13 @@ interactions:
       - 20250320T063810Z
     method: POST
     uri: https://ram.myhuaweicloud.com/v1/resource-share-associations/search
-    body: '{"limit":100,"association_type":"principal"}'
+    body: '{"limit":100,"association_type":"principal","association_status":"associated"}'
   response:
-    status: {code: 200, message: OK}
+    status:
+      code: 200
+      message: ''
     body:
-      string: '{ "resource_share_associations": [{ "associated_entity": "9673682b7bf2428cb613f37a19a0693f", "association_type": "principal", "created_at": "2023-12-04T02:43:58.855745Z", "updated_at": "2023-12-04T02:56:47.240164Z", "external": true, "resource_share_id": "a60a0982-7be7-44e4-88ab-7999026f1a57", "resource_share_name": "ZYGX_AHLEI", "status": "associated", "status_message": null }], "page_info": { "previous_marker": null, "next_marker": null, "current_count": 1 } }'
+      string: '{"resource_share_associations":[{"associated_entity":"9673682b7bf2428cb613f37a19a0693f","association_type":"principal","created_at":"2023-12-04T02:43:58.855745Z","updated_at":"2023-12-04T02:56:47.240164Z","external":true,"resource_share_id":"a60a0982-7be7-44e4-88ab-7999026f1a57","resource_share_name":"ZYGX_AHLEI","status":"associated","status_message":null}],"page_info":{"previous_marker":null,"next_marker":null,"current_count":1}}'
     headers:
       Connection:
       - keep-alive
@@ -113,9 +115,11 @@ interactions:
     uri: https://ram.myhuaweicloud.com/v1/resource-shares/{resource_share_id}/disassociate
     body: '{"principals": ["9673682b7bf2428cb613f37a19a0693f"]}'
   response:
-    status: '{"resource_share_associations": [{"associated_entity": "9673682b7bf2428cb613f37a19a0693f","association_type": "principal","created_at": "2023-12-04T02:43:58.855745Z","updated_at": "2025-03-26T06:41:47.156287Z","external": true,"resource_share_id": "a60a0982-7be7-44e4-88ab-7999026f1a57","resource_share_name": "ZYGX_AHLEI","status": "disassociated","status_message": null}] }'
+    status:
+      code: 200
+      message: ''
     body:
-      string: ''
+      string: '{"resource_share_associations":[{"associated_entity":"9673682b7bf2428cb613f37a19a0693f","association_type":"principal","created_at":"2023-12-04T02:43:58.855745Z","updated_at":"2025-03-26T06:41:47.156287Z","external":true,"resource_share_id":"a60a0982-7be7-44e4-88ab-7999026f1a57","resource_share_name":"ZYGX_AHLEI","status":"disassociated","status_message":null}]}'
     headers:
       Connection:
       - keep-alive
