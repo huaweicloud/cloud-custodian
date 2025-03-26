@@ -5,7 +5,6 @@ from huaweicloud_common import BaseTest
 
 class CocTest(BaseTest):
 
-
     def test_non_compliant_alarm(self):
         factory = self.replay_flight_data("non_compliant_alarm")
         p = self.load_policy(
