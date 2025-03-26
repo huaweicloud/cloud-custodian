@@ -5,6 +5,7 @@ import logging
 
 from boto3 import client
 from huaweicloudsdkcts.v3 import *
+from huaweicloudsdkcore.exceptions import exceptions
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -13,6 +14,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 log = logging.getLogger("custodian.huaweicloud.resources.cts")
 
+
 @resources.register('cts-tracker')
 class Tracker(QueryResourceManager):
     class resource_type(TypeInfo):
@@ -20,6 +22,7 @@ class Tracker(QueryResourceManager):
         enum_spec = ("list_trackers", "trackers", "offset")
         id = 'id'
         tag = True
+
 
 @Tracker.action_registry.register("delete-tracker")
 class CtsDeleteTracker(HuaweiCloudBaseAction):
@@ -57,6 +60,7 @@ class CtsDeleteTracker(HuaweiCloudBaseAction):
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return response
+
 
 @Tracker.action_registry.register("toggle-tracker")
 class CtsToggleTracker(HuaweiCloudBaseAction):
@@ -101,6 +105,7 @@ class CtsToggleTracker(HuaweiCloudBaseAction):
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return response
+
 
 @Tracker.action_registry.register("set-trace-file-validation")
 class CtsSetTraceFileValidation(HuaweiCloudBaseAction):

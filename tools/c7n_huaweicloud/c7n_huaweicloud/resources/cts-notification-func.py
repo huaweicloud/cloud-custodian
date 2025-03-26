@@ -5,6 +5,7 @@ import logging
 
 from huaweicloudsdkcts.v3 import (UpdateNotificationRequest, UpdateNotificationRequestBody,
                                   NotificationUsers, Operations)
+from huaweicloudsdkcore.exceptions import exceptions
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
