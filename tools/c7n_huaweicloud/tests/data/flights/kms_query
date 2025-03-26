@@ -1,0 +1,106 @@
+interactions:
+- request:
+    body: '{"key_spec":"ALL"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - kms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: POST
+    uri: https://kms.ap-southeast-1.myhuaweicloud.com/v1.0/ap-southeat-1/kms/list-keys
+  response:
+    body:
+      string: "{\"next_marker\":\"\",\"total\":6,\"key_details\":[{\"key_rotation_enabled\":\"false\",\"key_usage\":\"ENCRYPT_DECRYPT\",\"key_type\":\"1\",\"key_id\":\"17368998-bdca-4302-95ee-8925d139a29f\",\"key_spec\":\"AES_256\",\"origin\":\"kms\",\"expiration_time\":\"\",\"sys_enterprise_project_id\":\"0\",\"default_key_flag\":\"0\",\"creation_date\":\"1716661217000\",\"pending_days\":\"\",\"domain_id\":\"16e914a4f83a4c6ba9f06c24648cc146\",\"keystore_type\":\"DEFAULT\",\"scheduled_deletion_date\":\"\",\"multi_region_key_type\":\"SINGLE\",\"key_alias\":\"KMS-2990\",\"key_description\":\"\",\"realm\":\"ap-southeast-1\",\"keystore_id\":\"0\",\"key_state\":\"2\"},{\"key_rotation_enabled\":\"false\",\"key_usage\":\"ENCRYPT_DECRYPT\",\"key_type\":\"1\",\"key_id\":\"da4d4b85-a0ee-4a04-a179-a4e2dae4b762\",\"key_spec\":\"AES_256\",\"origin\":\"kms\",\"expiration_time\":\"\",\"sys_enterprise_project_id\":\"0\",\"default_key_flag\":\"0\",\"creation_date\":\"1711094925000\",\"pending_days\":\"\",\"domain_id\":\"16e914a4f83a4c6ba9f06c24648cc146\",\"keystore_type\":\"DEFAULT\",\"scheduled_deletion_date\":\"\",\"multi_region_key_type\":\"SINGLE\",\"key_alias\":\"KMS-82e2\",\"key_description\":\"\",\"realm\":\"ap-southeast-1\",\"keystore_id\":\"0\",\"key_state\":\"2\"},{\"key_rotation_enabled\":\"false\",\"key_usage\":\"ENCRYPT_DECRYPT\",\"key_type\":\"1\",\"key_id\":\"287bed34-e3f5-45c2-9d00-d4e0432a0944\",\"key_spec\":\"AES_256\",\"origin\":\"kms\",\"expiration_time\":\"\",\"sys_enterprise_project_id\":\"1812c907-ecef-41ac-b5da-1d99d17e15ce\",\"default_key_flag\":\"0\",\"creation_date\":\"1681743454000\",\"pending_days\":\"\",\"domain_id\":\"16e914a4f83a4c6ba9f06c24648cc146\",\"keystore_type\":\"DEFAULT\",\"scheduled_deletion_date\":\"\",\"multi_region_key_type\":\"SINGLE\",\"key_alias\":\"KMS-f89e\",\"key_description\":\"fdas\",\"realm\":\"ap-southeast-1\",\"keystore_id\":\"0\",\"key_state\":\"2\"},{\"key_rotation_enabled\":\"false\",\"key_usage\":\"ENCRYPT_DECRYPT\",\"key_type\":\"1\",\"key_id\":\"b15f6555-8473-4376-bc9a-eb35278efea6\",\"key_spec\":\"AES_256\",\"origin\":\"kms\",\"expiration_time\":\"\",\"sys_enterprise_project_id\":\"0\",\"default_key_flag\":\"1\",\"creation_date\":\"1679067631000\",\"pending_days\":\"\",\"domain_id\":\"16e914a4f83a4c6ba9f06c24648cc146\",\"keystore_type\":\"DEFAULT\",\"scheduled_deletion_date\":\"\",\"multi_region_key_type\":\"SINGLE\",\"key_alias\":\"evs/default\",\"key_description\":\"\u7528\u4E8E\u52A0\u5BC6\u4E91\u786C\u76D8\u7684\u9ED8\u8BA4\u5BC6\u94A5\u3002\",\"realm\":\"ap-southeast-1\",\"keystore_id\":\"0\",\"key_state\":\"2\"},{\"key_rotation_enabled\":\"false\",\"key_usage\":\"ENCRYPT_DECRYPT\",\"key_type\":\"1\",\"key_id\":\"d34d7736-c143-4e36-95be-4199e99c487b\",\"key_spec\":\"AES_256\",\"origin\":\"kms\",\"expiration_time\":\"\",\"sys_enterprise_project_id\":\"0\",\"default_key_flag\":\"1\",\"creation_date\":\"1656425806000\",\"pending_days\":\"\",\"domain_id\":\"16e914a4f83a4c6ba9f06c24648cc146\",\"keystore_type\":\"DEFAULT\",\"scheduled_deletion_date\":\"\",\"multi_region_key_type\":\"SINGLE\",\"key_alias\":\"kps/default\",\"key_description\":\"\",\"realm\":\"ap-southeast-1\",\"keystore_id\":\"0\",\"key_state\":\"2\"},{\"key_rotation_enabled\":\"false\",\"key_usage\":\"ENCRYPT_DECRYPT\",\"key_type\":\"1\",\"key_id\":\"6f1daf0a-cfa2-4468-b4c4-8915d6a01bc3\",\"key_spec\":\"AES_256\",\"origin\":\"kms\",\"expiration_time\":\"\",\"sys_enterprise_project_id\":\"0\",\"default_key_flag\":\"1\",\"creation_date\":\"1656392040000\",\"pending_days\":\"\",\"domain_id\":\"16e914a4f83a4c6ba9f06c24648cc146\",\"keystore_type\":\"DEFAULT\",\"scheduled_deletion_date\":\"\",\"multi_region_key_type\":\"SINGLE\",\"key_alias\":\"csms/default\",\"key_description\":\"\",\"realm\":\"ap-southeast-1\",\"keystore_id\":\"0\",\"key_state\":\"2\"}],\"keys\":[\"17368998-bdca-4302-95ee-8925d139a29f\",\"da4d4b85-a0ee-4a04-a179-a4e2dae4b762\",\"287bed34-e3f5-45c2-9d00-d4e0432a0944\",\"b15f6555-8473-4376-bc9a-eb35278efea6\",\"d34d7736-c143-4e36-95be-4199e99c487b\",\"6f1daf0a-cfa2-4468-b4c4-8915d6a01bc3\"],\"truncated\":\"false\"}\n"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"key_spec": "ALL"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '19'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - kms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250326T071714Z
+    method: POST
+    uri: https://kms.ap-southeast-1.myhuaweicloud.com/v1.0/ap-southeat-1/kms/list-keys
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"59a2e407ee471a94573b2510cc6db323"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 07:17:14 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 59a2e407ee471a94573b2510cc6db323
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

@@ -26,6 +26,8 @@ from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
+from huaweicloudsdkkms.v2 import KmsClient, ListKeysRequest, ListKeysRequestBody
+from huaweicloudsdkkms.v2.region.kms_region import KmsRegion
 from huaweicloudsdkeg.v1 import EgClient
 from huaweicloudsdkeg.v1.region.eg_region import EgRegion
 from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
@@ -40,6 +42,9 @@ from huaweicloudsdkcbr.v1.region.cbr_region import CbrRegion
 from huaweicloudsdkcbr.v1 import CbrClient
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
 from huaweicloudsdksmn.v2 import SmnClient, ListTopicsRequest
+from huaweicloudsdknat.v2.region.nat_region import NatRegion
+from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
+    ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -103,6 +108,11 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(TmsRegion.value_of(self.tms_region)) \
                 .build()
+        elif service == 'cbr':
+            client = CbrClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CbrRegion.value_of(self.region)) \
+                .build()
         elif service == 'iam':
             globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = IamClient.new_builder() \
@@ -129,6 +139,11 @@ class Session:
             client = SmnClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(SmnRegion.value_of(self.region)) \
+                .build()
+        elif service == 'kms':
+            client = KmsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(KmsRegion.value_of(self.region)) \
                 .build()
         elif service == 'functiongraph':
             client = FunctionGraphClient.new_builder() \
@@ -170,6 +185,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(SmnRegion.value_of(self.region)) \
                 .build()
+        elif service in ['nat_gateway', 'nat_snat_rule', 'nat_dnat_rule']:
+            client = NatClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(NatRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -186,6 +206,11 @@ class Session:
             request = ListDedicatedHostsRequest()
         elif service == 'ces':
             request = ListAlarmRulesRequest()
+        elif service == 'kms':
+            request = ListKeysRequest()
+            request.body = ListKeysRequestBody(
+                key_spec="ALL"
+            )
         elif service == 'functiongraph':
             request = ListFunctionsRequest()
         elif service == 'elb_loadbalancer':
@@ -196,5 +221,11 @@ class Session:
             request = ListImagesRequest()
         elif service == 'smn':
             request = ListTopicsRequest()
+        elif service == 'nat_gateway':
+            request = ListNatGatewaysRequest()
+        elif service == 'nat_snat_rule':
+            request = ListNatGatewaySnatRulesRequest()
+        elif service == 'nat_dnat_rule':
+            request = ListNatGatewayDnatRulesRequest()
 
         return request

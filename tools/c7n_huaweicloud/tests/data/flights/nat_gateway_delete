@@ -1,0 +1,110 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - nat.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://nat.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/nat_gateways?limit=100
+  response:
+    body:
+      string: '{ "nat_gateways": [ { "id": "5008b511-2276-4f3a-b15a-25144d573e85",
+        "name": "test-nat-gateway", "description": "", "router_id": "fa837283-752d-4829-af52-24a2dd74f818",
+        "internal_network_id": "17428136-6afd-45e1-86b4-ff250876ce47", "status": "ACTIVE",
+        "spec": "1", "tenant_id": "0abd0543bd00f3962f4bc003332eeefd", "created_at":
+        "2025-03-23 01:52:13.000000", "admin_state_up": true, "enterprise_project_id":
+        "0", "dnat_rules_limit": 200, "snat_rule_public_ip_limit": 20, "billing_info":
+        "", "ngport_ip_address": "192.168.0.116", "session_conf": { "tcp_session_expire_time":
+        900, "udp_session_expire_time": 300, "icmp_session_expire_time": 10, "tcp_time_wait_time":
+        5 }, "pps_max": 2000000 } ] }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - nat.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250323T065000Z
+    method: DELETE
+    uri: https://nat.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/nat_gateways/5008b511-2276-4f3a-b15a-25144d573e85
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 23 Mar 2025 06:50:00 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 02c7e26b33ece8a940cb0b9d56a57d32
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

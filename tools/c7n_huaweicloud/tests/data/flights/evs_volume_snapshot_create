@@ -1,0 +1,98 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://evs.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/cloudvolumes/detail?limit=100&offset=0
+  response:
+    body:
+      string: '{"count": 1, "volumes": [{"id": "8e79e30b-cea2-45b3-8643-fe879493b7a3", "links": [{"href": "https://evs.ap-southeast-1.myhuaweicloud.com/v2/0970dd9c1a0026a62fddc0038c52b5eb/os-vendor-volumes/8e79e30b-cea2-45b3-8643-fe879493b7a3", "rel": "self"}, {"href": "https://evs.ap-southeast-1.myhuaweicloud.com/0970dd9c1a0026a62fddc0038c52b5eb/os-vendor-volumes/8e79e30b-cea2-45b3-8643-fe879493b7a3", "rel": "bookmark"}], "name": "custodian-volume", "status": "available", "attachments": [], "availability_zone": "ap-southeast-1c", "os-vol-host-attr:host": "cinder-kvm003@GPSSD#5", "created_at": "2025-03-20T07:28:45.780415", "os-vol-tenant-attr:tenant_id": "0970dd9c1a0026a62fddc0038c52b5eb", "volume_image_metadata": {}, "volume_type": "GPSSD", "size": 10, "bootable": "false", "metadata": {"__system__encrypted": "0", "hw:passthrough": "false"}, "updated_at": "2025-03-20T07:28:45.901082", "encrypted": false, "replication_status": "disabled", "shareable": "false", "user_id": "8a69ab024795445ebf20af583e6a4e82", "service_type": "EVS", "multiattach": false, "tags": {}, "wwn": "6888603000002024fa16821e56476146", "enterprise_project_id": "0"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+- request:
+    body: '{"snapshot": {"volume_id": "8e79e30b-cea2-45b3-8643-fe879493b7a3", "force": true}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: POST
+    uri: https://evs.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/cloudsnapshots
+  response:
+    body:
+      string: '{"snapshot": {"status": "creating", "id": "mock_snapshot_id", "volume_id": "8e79e30b-cea2-45b3-8643-fe879493b7a3"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1
