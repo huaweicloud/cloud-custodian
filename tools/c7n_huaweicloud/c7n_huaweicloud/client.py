@@ -26,6 +26,8 @@ from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
+from huaweicloudsdkkms.v2 import KmsClient, ListKeysRequest, ListKeysRequestBody
+from huaweicloudsdkkms.v2.region.kms_region import KmsRegion
 from huaweicloudsdkeg.v1 import EgClient
 from huaweicloudsdkeg.v1.region.eg_region import EgRegion
 from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
@@ -75,13 +77,10 @@ class Session:
                       'Specify a default via HUAWEI_SECRET_ACCESS_KEY or context')
             sys.exit(1)
 
-        self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
-        if not self.tms_region:
-            self.tms_region = 'cn-north-4'
-
     def client(self, service):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID')) \
             .with_security_token(self.token)
+        globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(self.token)
         if service == 'vpc':
             client = VpcClientV3.new_builder() \
                 .with_credentials(credentials) \
@@ -103,10 +102,9 @@ class Session:
                 .with_region(EvsRegion.value_of(self.region)) \
                 .build()
         elif service == 'tms':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = TmsClient.new_builder() \
                 .with_credentials(globalCredentials) \
-                .with_region(TmsRegion.value_of(self.tms_region)) \
+                .with_region(TmsRegion.value_of("cn-north-4")) \
                 .build()
         elif service == 'cbr':
             client = CbrClient.new_builder() \
@@ -114,16 +112,14 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region)) \
                 .build()
         elif service == 'iam':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = IamClient.new_builder() \
                 .with_credentials(globalCredentials) \
                 .with_region(IamRegion.value_of(self.region)) \
                 .build()
         elif service == 'config':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = ConfigClient.new_builder() \
                 .with_credentials(globalCredentials) \
-                .with_region(ConfigRegion.value_of(self.region)) \
+                .with_region(ConfigRegion.value_of("cn-north-4")) \
                 .build()
         elif service == 'deh':
             client = DeHClient.new_builder() \
@@ -139,6 +135,11 @@ class Session:
             client = SmnClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(SmnRegion.value_of(self.region)) \
+                .build()
+        elif service == 'kms':
+            client = KmsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(KmsRegion.value_of(self.region)) \
                 .build()
         elif service == 'functiongraph':
             client = FunctionGraphClient.new_builder() \
@@ -216,6 +217,11 @@ class Session:
             request = ListDedicatedHostsRequest()
         elif service == 'ces':
             request = ListAlarmRulesRequest()
+        elif service == 'kms':
+            request = ListKeysRequest()
+            request.body = ListKeysRequestBody(
+                key_spec="ALL"
+            )
         elif service == 'functiongraph':
             request = ListFunctionsRequest()
         elif service == 'elb_loadbalancer':
