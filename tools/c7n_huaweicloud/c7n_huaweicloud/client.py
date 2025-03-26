@@ -228,5 +228,4 @@ class Session:
             request.body = SearchResourceShareAssociationsReqBody(
                 association_type="principal",
                 association_status="associated")
-
         return request
