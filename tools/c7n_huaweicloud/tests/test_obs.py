@@ -25,13 +25,12 @@ class ObsWildcardStatementsTest(BaseTest):
             },
             session_factory=factory)
         resources = p.run()
-        print(resources)
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['name'], 'test-buckwt-3az1')
         self.assertEqual(resources[0]['c7n:WildcardStatements'],
-                         [{'Sid': 'test-policy', 'Effect': 'Allow', 
+                         [{'Sid': 'test-policy', 'Effect': 'Allow',
                            'Principal': {'ID': ['*']},
-                           'Action': ['*'], 'Resource': 
+                           'Action': ['*'], 'Resource':
                            ['test-buckwt-3az1', 'test-buckwt-3az1/*']}])
 
 
