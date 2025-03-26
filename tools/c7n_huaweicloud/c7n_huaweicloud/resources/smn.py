@@ -221,7 +221,7 @@ class TopicAccessFilter(Filter):
 
 @Topic.action_registry.register("delete")
 class TopicDelete(HuaweiCloudBaseAction):
-    """Deletes SMN Topics.
+    """Delete SMN Topics.
 
     :Example:
 
