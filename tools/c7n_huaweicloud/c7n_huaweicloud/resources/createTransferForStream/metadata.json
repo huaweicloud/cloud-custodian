@@ -1,0 +1,91 @@
+{
+  "policy": {
+    "name": "createTransferForStream",
+    "resource": "huaweicloud.lts-transfer",
+    "filters": [
+      {
+        "type": "value",
+        "key": "log_group_id",
+        "value": "cfddae22-6465-4b2f-8b19-123466021f88"
+      }
+    ],
+    "actions": [
+      {
+        "type": "create-transfer",
+        "log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1",
+        "log_streams": [
+          {
+            "log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"
+          }
+        ],
+        "log_transfer_type": "OBS",
+        "log_transfer_mode": "cycle",
+        "log_storage_format": "JSON",
+        "log_transfer_status": "ENABLE",
+        "obs_period": 2,
+        "obs_period_unit": "min",
+        "obs_bucket_name": "xianggangtest001"
+      }
+    ]
+  },
+  "version": "0.9.43",
+  "execution": {
+    "id": "15fb56e7-a27a-4a16-b9fe-571bc3f03832",
+    "start": 1742956547.676537,
+    "end_time": 1742956550.2991254,
+    "duration": 2.6225883960723877
+  },
+  "config": {
+    "region": "",
+    "regions": [],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": null,
+    "assume_role": null,
+    "session_policy": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": ".",
+    "cache_period": 0,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "createTransferCusto.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": 1,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {},
+  "api-stats": {},
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2025-03-26T10:35:48.817685",
+      "Value": 1,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2025-03-26T10:35:48.817707",
+      "Value": 1.1378669738769531,
+      "Unit": "Seconds"
+    },
+    {
+      "MetricName": "ActionTime",
+      "Timestamp": "2025-03-26T10:35:50.299103",
+      "Value": 1.4810667037963867,
+      "Unit": "Seconds"
+    }
+  ]
+}

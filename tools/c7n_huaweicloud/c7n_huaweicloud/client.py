@@ -12,6 +12,8 @@ from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkvpc.v2 import *
 from huaweicloudsdktms.v1 import *
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
+from huaweicloudsdklts.v2 import *
+from huaweicloudsdklts.v2.region.lts_region import LtsRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -52,13 +54,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(EvsRegion.value_of(self.region)) \
                 .build()
-        elif service == 'tms':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
-            client = TmsClient.new_builder() \
-                .with_credentials(globalCredentials) \
-                .with_region(TmsRegion.value_of(self.region)) \
+        elif service == 'lts-transfer':
+            client = LtsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(LtsRegion.value_of(self.region)) \
                 .build()
-
         return client
 
     def request(self, service):
@@ -66,5 +66,7 @@ class Session:
             request = ListVpcsRequest()
         elif service == 'evs':
             request = ListVolumesRequest()
+        elif service == 'lts-transfer':
+            request = ListTransfersRequest()
 
         return request
