@@ -49,6 +49,8 @@ from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
     ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
 from huaweicloudsdkcts.v3 import CtsClient, ListTrackersRequest, ListNotificationsRequest
 from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
+from huaweicloudsdker.v3 import *
+from huaweicloudsdker.v3.region.er_region import ErRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -206,6 +208,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(CtsRegion.value_of(self.region)) \
                 .build()
+        elif service == 'er':
+            client = ErClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(ErRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -253,5 +260,7 @@ class Session:
         elif service == 'cts-notification-func':
             request = ListNotificationsRequest()
             request.notification_type = "fun"
+        elif service == 'er':
+            request = ListEnterpriseRoutersRequest()
 
         return request
