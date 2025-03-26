@@ -349,13 +349,13 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         request = DeleteListenerForceRequest(listener_id=resource["id"])
         response = client.delete_listener_force(request)
+        log.info(f"Delete listener: {resource['id']}")
 
         if resource['default_pool_id'] and len(resource['default_pool_id']) > 0:
             pool_request = DeletePoolCascadeRequest(pool_id=resource['default_pool_id'])
             client.delete_pool_cascade(pool_request)
             log.info(f"Delete listener default pool: {resource['default_pool_id']}")
 
-        log.info(f"Delete listener: {resource['id']}")
         return response
 
 
