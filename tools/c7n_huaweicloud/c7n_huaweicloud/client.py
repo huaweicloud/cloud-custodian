@@ -81,14 +81,6 @@ class Session:
                       'Specify a default via HUAWEI_SECRET_ACCESS_KEY or context')
             sys.exit(1)
 
-        self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
-        if not self.tms_region:
-            self.tms_region = 'cn-north-4'
-
-        self.coc_region = os.getenv('HUAWEI_DEFAULT_COC_REGION')
-        if not self.coc_region:
-            self.coc_region = 'cn-north-4'
-
     def client(self, service):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID')) \
             .with_security_token(self.token)
