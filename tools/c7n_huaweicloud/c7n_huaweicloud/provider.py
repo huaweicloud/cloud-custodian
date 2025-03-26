@@ -1,8 +1,8 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-import os
 import logging
+from functools import partial
 
 from c7n.registry import PluginRegistry
 from c7n.provider import Provider, clouds
@@ -28,7 +28,7 @@ class HuaweiCloud(Provider):
 
     def get_session_factory(self, options):
         """Get a credential/session factory for api usage."""
-        return Session
+        return partial(Session, options=options)
 
 
 resources = HuaweiCloud.resources
