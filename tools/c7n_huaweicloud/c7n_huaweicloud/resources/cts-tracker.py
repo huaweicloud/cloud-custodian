@@ -4,7 +4,7 @@
 import logging
 
 from huaweicloudsdkcts.v3 import (DeleteTrackerRequest, UpdateTrackerRequest,
-                                  UpdateTrackerRequestBody, )
+                                  UpdateTrackerRequestBody, TrackerObsInfo)
 from huaweicloudsdkcore.exceptions import exceptions
 
 from c7n.utils import type_schema

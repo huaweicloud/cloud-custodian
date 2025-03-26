@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from huaweicloud_common import BaseTest
 
+
 class TrackerListTest(BaseTest):
     def test_tracker_list(self):
         factory = self.replay_flight_data('cts_tracker_query')
