@@ -26,6 +26,8 @@ from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
+from huaweicloudsdkkms.v2 import KmsClient, ListKeysRequest, ListKeysRequestBody
+from huaweicloudsdkkms.v2.region.kms_region import KmsRegion
 from huaweicloudsdkeg.v1 import EgClient
 from huaweicloudsdkeg.v1.region.eg_region import EgRegion
 from huaweicloudsdkelb.v3.region.elb_region import ElbRegion
@@ -138,6 +140,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(SmnRegion.value_of(self.region)) \
                 .build()
+        elif service == 'kms':
+            client = KmsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(KmsRegion.value_of(self.region)) \
+                .build()
         elif service == 'functiongraph':
             client = FunctionGraphClient.new_builder() \
                 .with_credentials(credentials) \
@@ -199,6 +206,11 @@ class Session:
             request = ListDedicatedHostsRequest()
         elif service == 'ces':
             request = ListAlarmRulesRequest()
+        elif service == 'kms':
+            request = ListKeysRequest()
+            request.body = ListKeysRequestBody(
+                key_spec="ALL"
+            )
         elif service == 'functiongraph':
             request = ListFunctionsRequest()
         elif service == 'elb_loadbalancer':
