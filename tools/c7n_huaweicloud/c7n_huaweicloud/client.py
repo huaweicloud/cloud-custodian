@@ -234,10 +234,10 @@ class Session:
             request = ListNatGatewayDnatRulesRequest()
         elif service == 'cts-tracker':
             request = ListTrackersRequest()
-        elif service == 'cts-notification-smn':           
+        elif service == 'cts-notification-smn':
             request = ListNotificationsRequest()
             request.notification_type = "smn"
-        elif service == 'cts-notification-func':           
+        elif service == 'cts-notification-func':
             request = ListNotificationsRequest()
             request.notification_type = "fun"
 

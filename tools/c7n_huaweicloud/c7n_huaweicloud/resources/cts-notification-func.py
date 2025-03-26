@@ -3,7 +3,6 @@
 
 import logging
 
-from boto3 import client
 from huaweicloudsdkcts.v3 import *
 
 from c7n.utils import type_schema
@@ -13,6 +12,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 log = logging.getLogger("custodian.huaweicloud.resources.cts")
 
+
 @resources.register('cts-notification-func')
 class Notification(QueryResourceManager):
     class resource_type(TypeInfo):
@@ -20,6 +20,7 @@ class Notification(QueryResourceManager):
         enum_spec = ("list_notifications", "notifications", "offset")
         id = 'notification_id'
         tag = True
+
 
 @Notification.action_registry.register("update-notification")
 class CtsUpdateNotification(HuaweiCloudBaseAction):
