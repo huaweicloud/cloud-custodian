@@ -19,7 +19,11 @@ from huaweicloudsdkfunctiongraph.v2 import (
     UpdateFunctionCodeRequestBody,
     FuncCode,
     ListFunctionTriggersRequest,
-    DeleteFunctionRequest
+    DeleteFunctionRequest,
+    CreateFunctionTriggerRequest,
+    CreateFunctionTriggerRequestBody,
+    ListDependenciesRequest,
+    ShowDependencyVersionRequest
 )
 from huaweicloudsdkeg.v1 import (
     ListChannelsRequest,
@@ -81,7 +85,8 @@ class FunctionGraphManager:
         request_body = CreateFunctionRequestBody()
         for key, value in params.items():
             setattr(request_body, key, value)
-        request_body.depend_version_list = ["8b9db9aa-274f-4aa3-b95b-0f6cf2a1bca8"]
+        dep_ids = self.get_custodian_depend_version_id(params["runtime"])
+        request_body.depend_version_list = dep_ids
         log.info(request_body.user_data)
         request.body = request_body
         try:
@@ -94,6 +99,29 @@ class FunctionGraphManager:
             return None
 
         return response
+
+    def get_custodian_depend_version_id(self, runtime="Python3.10") -> [str]:
+        depend_name = "custodian-huaweicloud-py3.10"
+        list_dependencies_request = ListDependenciesRequest(runtime=runtime, name=depend_name)
+        try:
+            dependencies = self.client.list_dependencies(list_dependencies_request).dependencies
+        except exceptions.ClientRequestException as e:
+            log.error(f'List dependencies failed, request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            return []
+
+        dependency_versions = []
+        for dependency in dependencies:
+            show_dependency_version_request = ShowDependencyVersionRequest(
+                depend_id=dependency.id,
+                version=dependency.version,
+            )
+            dependency_version = self.client.show_dependency_version(show_dependency_version_request)  # noqa: E501
+            dependency_versions.append(dependency_version.id)
+
+        return dependency_versions
 
     def show_function_config(self, func_name):
         request = ShowFunctionConfigRequest(function_urn=func_name)
@@ -108,8 +136,8 @@ class FunctionGraphManager:
 
         return response
 
-    def update_function_code(self, func_name, archive):
-        request = UpdateFunctionCodeRequest(function_urn=func_name)
+    def update_function_code(self, func, archive):
+        request = UpdateFunctionCodeRequest(function_urn=func.func_name)
         base64_str = base64.b64encode(archive.get_bytes()).decode('utf-8')
         request.body = UpdateFunctionCodeRequestBody(
             code_type='zip',
@@ -117,7 +145,7 @@ class FunctionGraphManager:
             func_code=FuncCode(
                 file=base64_str
             ),
-            depend_version_list=["8b9db9aa-274f-4aa3-b95b-0f6cf2a1bca8"]
+            depend_version_list=self.get_custodian_depend_version_id(func.runtime)
         )
         try:
             response = self.client.update_function_code(request)
@@ -150,14 +178,15 @@ class FunctionGraphManager:
         triggers = self.list_function_triggers(func.func_urn)
         if triggers is not None:
             for trigger in triggers:
-                if trigger.trigger_type_code == "EVENTGRID" and trigger.trigger_status == "ACTIVE":
+                if trigger.trigger_type_code == "CTS" and trigger.trigger_status == "ACTIVE":
                     eg_not_exist = False
                     break
         if eg_not_exist:
             for e in func.get_events(self.session_factory):
                 create_trigger = e.add(func.func_urn)
                 if create_trigger:
-                    log.info(f'Created trigger[{create_trigger.id}] for function[{func.func_name}].')  # noqa: E501
+                    log.info(
+                        f'Created trigger[{create_trigger.trigger_id}] for function[{func.func_name}].')  # noqa: E501
         else:
             log.info("Trigger existed, skip create.")
 
@@ -174,7 +203,7 @@ class FunctionGraphManager:
             result = old_config = existing
             if self.calculate_sha512(archive) != old_config.digest:
                 log.info(f'Updating function[{func.func_name}] code...')
-                result = self.update_function_code(func.func_name, archive)
+                result = self.update_function_code(func, archive)
                 if result:
                     changed = True
         else:
@@ -457,6 +486,83 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
 
 class CloudTraceServiceSource:
+    client_service = 'functiongraph'
+
+    def __init__(self, data, session_factory):
+        self.session_factory = session_factory
+        self._session = None
+        self._client = None
+        self.data = data
+
+    @property
+    def session(self):
+        if not self._session:
+            self._session = self.session_factory()
+        return self._session
+
+    @property
+    def client(self):
+        if not self._client:
+            self._client = self.session.client(self.client_service)
+        return self._client
+
+    def add(self, func_urn):
+        # Create FunctionGraph CTS trigger.
+        create_trigger_request = CreateFunctionTriggerRequest(function_urn=func_urn)
+        create_trigger_request.body = self.build_create_cts_trigger_request_body()
+
+        try:
+            create_trigger_response = self.client.create_function_trigger(create_trigger_request)  # noqa: E501
+            log.info(f'Create CTS trigger for function[{func_urn}] success, '
+                     f'trigger id: [{create_trigger_response.trigger_id}, '
+                     f'trigger name: [{create_trigger_response.event_data.name}], '
+                     f'trigger status: [{create_trigger_response.trigger_status}].')
+            return create_trigger_response
+        except exceptions.ClientRequestException as e:
+            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
+                      f'error_code[{e.error_code}], '
+                      f'error_msg[{e.error_msg}]')
+            return False
+
+    def build_create_cts_trigger_request_body(self):
+        request_body = CreateFunctionTriggerRequestBody(
+            trigger_type_code="CTS",
+            trigger_status="ACTIVE",
+        )
+        operations = []
+        source_map = {}
+        for e in self.data.get('events', []):
+            source = e.get('source')
+            if source:
+                service_type = source.split('.')[0]
+                resource_type = source.split('.')[1]
+            else:
+                continue
+            if service_type not in source_map.keys():
+                source_map[service_type] = {
+                    "resource_type_list": [],
+                    "trace_name_list": []
+                }
+            if resource_type not in source_map[service_type]["resource_type_list"]:
+                source_map[service_type]["resource_type_list"].append(resource_type)
+            event = e.get("event")
+            if event and (event not in source_map[service_type]["trace_name_list"]):
+                source_map[service_type]["trace_name_list"].append(event)
+
+        for service_type in source_map:
+            resource_types = ";".join(source_map[service_type]["resource_type_list"])
+            trace_names = ";".join(source_map[service_type]["trace_name_list"])
+            operation = f'{service_type}:{resource_types}:{trace_names}'
+            operations.append(operation)
+        request_body.event_data = {
+            "name": 'custodian_' + datetime.now().strftime("%Y%m%d%H%M%S"),
+            "operations": operations
+        }
+
+        return request_body
+
+
+class EventGridServiceSource:
     client_service = 'eg'
 
     def __init__(self, data, session_factory):
@@ -493,7 +599,8 @@ class CloudTraceServiceSource:
         channel_id = list_channels_response.items[0].id
         # Create EG subscription, target is FunctionGraph.
         create_subscription_request = CreateSubscriptionRequest()
-        create_subscription_request.body = self.build_create_subscription_request_body(channel_id, func_urn)  # noqa: E501
+        create_subscription_request.body = self.build_create_subscription_request_body(channel_id,
+                                                                                       func_urn)  # noqa: E501
         try:
             create_subscription_response = self.client.create_subscription(create_subscription_request)  # noqa: E501
             log.info(f'Create EG trigger for function[{func_urn}] success, '
