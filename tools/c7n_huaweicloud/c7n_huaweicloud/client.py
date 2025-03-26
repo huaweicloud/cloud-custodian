@@ -22,7 +22,7 @@ from huaweicloudsdkfunctiongraph.v2 import FunctionGraphClient, ListFunctionsReq
 from huaweicloudsdkfunctiongraph.v2.region.functiongraph_region import FunctionGraphRegion
 from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
-from huaweicloudsdklts.v2 import *
+from huaweicloudsdklts.v2 import LtsClient, ListTransfersRequest
 from huaweicloudsdklts.v2.region.lts_region import LtsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion

@@ -26,4 +26,3 @@ class LtsTransferLogGroupStreamFilter(Filter):
                 if (logStream.get("log_stream_id") == params.get('log_stream_id')):
                     matched.append(transfer)
         return matched
-
