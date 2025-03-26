@@ -49,6 +49,8 @@ from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
     ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
 from huaweicloudsdkcts.v3 import CtsClient, ListTrackersRequest, ListNotificationsRequest
 from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
+from huaweicloudsdker.v3 import *
+from huaweicloudsdker.v3.region.er_region import ErRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
