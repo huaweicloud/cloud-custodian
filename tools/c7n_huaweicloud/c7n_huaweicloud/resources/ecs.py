@@ -7,10 +7,54 @@ from typing import List
 from concurrent.futures import as_completed
 
 from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdkevs.v2 import *
-from huaweicloudsdkecs.v2 import *
-from huaweicloudsdkims.v2 import *
-from huaweicloudsdkcbr.v1 import *
+from huaweicloudsdkecs.v2 import (
+    ShowJobRequest,
+    ShowServerRequest,
+    NovaShowFlavorExtraSpecsRequest,
+    ServerId,
+    BatchStartServersRequestBody,
+    UpdateServerBlockDeviceOption,
+    UpdateServerBlockDeviceRequest,
+    UpdateServerBlockDeviceReq,
+    BatchStartServersRequest,
+    BatchStopServersRequestBody,
+    BatchStopServersRequest,
+    BatchRebootServersRequestBody,
+    BatchRebootServersRequest,
+    NovaDeleteServerRequest,
+    NovaAddSecurityGroupOption,
+    NovaAssociateSecurityGroupRequestBody,
+    NovaAssociateSecurityGroupRequest,
+    NovaRemoveSecurityGroupOption,
+    NovaDisassociateSecurityGroupRequest,
+    NovaDisassociateSecurityGroupRequestBody,
+    ResizeServerExtendParam,
+    CpuOptions,
+    ResizePrePaidServerOption,
+    ResizeServerRequest,
+    ResizeServerRequestBody,
+    UpdateServerMetadataRequestBody,
+    UpdateServerMetadataRequest,
+)
+from huaweicloudsdkims.v2 import (
+    CreateWholeImageRequestBody,
+    CreateWholeImageRequest,
+    ShowJobProgressRequest,
+    ListImagesRequest,
+)
+from huaweicloudsdkcbr.v1 import (
+    ResourceCreate,
+    ShowVaultRequest,
+    ShowOpLogRequest,
+    CreateCheckpointRequest,
+    ListOpLogsRequest,
+    Resource,
+    VaultAddResourceReq,
+    CheckpointParam,
+    VaultBackup,
+    AddVaultResourceRequest,
+    VaultBackupReq,
+)
 
 from c7n import utils
 from c7n.utils import type_schema, local_session
@@ -23,13 +67,13 @@ from dateutil.parser import parse
 log = logging.getLogger("custodian.huaweicloud.resources.ecs")
 
 
-@resources.register('ecs')
+@resources.register("ecs")
 class Ecs(QueryResourceManager):
     class resource_type(TypeInfo):
-        service = 'ecs'
+        service = "ecs"
         enum_spec = ("list_servers_details", "servers", "offset")
-        id = 'id'
-        tag_resource_type = 'ecs'
+        id = "id"
+        tag_resource_type = "ecs"
 
 
 @Ecs.action_registry.register("fetch-job-status")
@@ -48,10 +92,12 @@ class FetchJobStatus(HuaweiCloudBaseAction):
                 job_id: "asyn job id"
     """
 
-    schema = type_schema("fetch-job-status", job_id={'type': 'string'}, required=('job_id',))
+    schema = type_schema(
+        "fetch-job-status", job_id={"type": "string"}, required=("job_id",)
+    )
 
     def process(self, resources):
-        job_id = self.data.get('job_id')
+        job_id = self.data.get("job_id")
         client = self.manager.get_client()
         request = ShowJobRequest(job_id=job_id)
         try:
@@ -84,12 +130,12 @@ class EcsStart(HuaweiCloudBaseAction):
               - instance-start
     """
 
-    valid_origin_states = ('SHUTOFF',)
+    valid_origin_states = ("SHUTOFF",)
     schema = type_schema("instance-start")
 
     def process(self, resources):
         client = self.manager.get_client()
-        instances = self.filter_resources(resources, 'status', self.valid_origin_states)
+        instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("No instance need start")
             return None
@@ -104,7 +150,7 @@ class EcsStart(HuaweiCloudBaseAction):
     def init_request(self, instances):
         serverIds: List[ServerId] = []
         for r in instances:
-            serverIds.append(ServerId(id=r['id']))
+            serverIds.append(ServerId(id=r["id"]))
         options = {"servers": serverIds}
         requestBody = BatchStartServersRequestBody(os_start=options)
         request = BatchStartServersRequest(body=requestBody)
@@ -134,12 +180,12 @@ class EcsStop(HuaweiCloudBaseAction):
                 mode: "SOFT"
     """
 
-    valid_origin_states = ('ACTIVE',)
-    schema = type_schema("instance-stop", mode={'type': 'string'})
+    valid_origin_states = ("ACTIVE",)
+    schema = type_schema("instance-stop", mode={"type": "string"})
 
     def process(self, resources):
         client = self.manager.get_client()
-        instances = self.filter_resources(resources, 'status', self.valid_origin_states)
+        instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("No instance need stop")
             return None
@@ -154,8 +200,8 @@ class EcsStop(HuaweiCloudBaseAction):
     def init_request(self, resources):
         serverIds: List[ServerId] = []
         for r in resources:
-            serverIds.append(ServerId(id=r['id']))
-        options = {"servers": serverIds, "type": self.data.get('mode', 'SOFT')}
+            serverIds.append(ServerId(id=r["id"]))
+        options = {"servers": serverIds, "type": self.data.get("mode", "SOFT")}
         requestBody = BatchStopServersRequestBody(os_stop=options)
         request = BatchStopServersRequest(body=requestBody)
         return request
@@ -184,12 +230,12 @@ class EcsReboot(HuaweiCloudBaseAction):
                 mode: "SOFT"
     """
 
-    valid_origin_states = ('ACTIVE',)
-    schema = type_schema("instance-reboot", mode={'type': 'string'})
+    valid_origin_states = ("ACTIVE",)
+    schema = type_schema("instance-reboot", mode={"type": "string"})
 
     def process(self, resources):
         client = self.manager.get_client()
-        instances = self.filter_resources(resources, 'status', self.valid_origin_states)
+        instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("No instance need stop")
             return None
@@ -204,8 +250,8 @@ class EcsReboot(HuaweiCloudBaseAction):
     def init_request(self, resources):
         serverIds: List[ServerId] = []
         for r in resources:
-            serverIds.append(ServerId(id=r['id']))
-        options = {"servers": serverIds, "type": self.data.get('mode', 'SOFT')}
+            serverIds.append(ServerId(id=r["id"]))
+        options = {"servers": serverIds, "type": self.data.get("mode", "SOFT")}
         requestBody = BatchRebootServersRequestBody(reboot=options)
         request = BatchRebootServersRequest(body=requestBody)
         return request
@@ -266,18 +312,20 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
     """
 
     schema = type_schema(
-        "instance-add-security-groups", name={'type': 'string'}, required=('name',)
+        "instance-add-security-groups", name={"type": "string"}, required=("name",)
     )
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        name = self.data.get('name', None)
+        name = self.data.get("name", None)
         if name is None:
             log.error("security group name is None")
             return None
         option = NovaAddSecurityGroupOption(name=name)
         requestBody = NovaAssociateSecurityGroupRequestBody(add_security_group=option)
-        request = NovaAssociateSecurityGroupRequest(server_id=resource["id"], body=requestBody)
+        request = NovaAssociateSecurityGroupRequest(
+            server_id=resource["id"], body=requestBody
+        )
         try:
             response = client.nova_associate_security_group(request)
         except exceptions.ClientRequestException as e:
@@ -306,17 +354,21 @@ class DeleteSecurityGroup(HuaweiCloudBaseAction):
                 name: "test_group"
     """
 
-    schema = type_schema("instance-delete-security-groups", name={'type': 'string'})
+    schema = type_schema("instance-delete-security-groups", name={"type": "string"})
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        name = self.data.get('name', None)
+        name = self.data.get("name", None)
         if name is None:
             log.error("security group name is None")
             return None
         option = NovaRemoveSecurityGroupOption(name=name)
-        requestBody = NovaDisassociateSecurityGroupRequestBody(remove_security_group=option)
-        request = NovaDisassociateSecurityGroupRequest(server_id=resource["id"], body=requestBody)
+        requestBody = NovaDisassociateSecurityGroupRequestBody(
+            remove_security_group=option
+        )
+        request = NovaDisassociateSecurityGroupRequest(
+            server_id=resource["id"], body=requestBody
+        )
         try:
             response = client.nova_disassociate_security_group(request)
         except exceptions.ClientRequestException as e:
@@ -348,21 +400,23 @@ class Resize(HuaweiCloudBaseAction):
 
     schema = type_schema(
         "instance-resize",
-        flavor_ref={'type': 'string'},
-        dedicated_host_id={'type': 'string'},
-        is_auto_pay={'type': 'string'},
-        mode={'type': 'string'},
-        hwcpu_threads={'type': 'int'},
-        dry_run={'type': 'boolean'},
+        flavor_ref={"type": "string"},
+        dedicated_host_id={"type": "string"},
+        is_auto_pay={"type": "string"},
+        mode={"type": "string"},
+        hwcpu_threads={"type": "int"},
+        dry_run={"type": "boolean"},
     )
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        extendParam = ResizeServerExtendParam(is_auto_pay=self.data.get('is_auto_pay', None))
-        cpuOptions = CpuOptions(hwcpu_threads=self.data.get('hwcpu_threads', None))
-        flavorRef = self.data.get('flavor_ref', None)
-        dedicatedHostId = self.data.get('dedicated_host_id', None)
-        mode = self.data.get('mode', None)
+        extendParam = ResizeServerExtendParam(
+            is_auto_pay=self.data.get("is_auto_pay", None)
+        )
+        cpuOptions = CpuOptions(hwcpu_threads=self.data.get("hwcpu_threads", None))
+        flavorRef = self.data.get("flavor_ref", None)
+        dedicatedHostId = self.data.get("dedicated_host_id", None)
+        mode = self.data.get("mode", None)
         if flavorRef is None:
             log.error("flavor_ref con not be None")
             return None
@@ -373,8 +427,10 @@ class Resize(HuaweiCloudBaseAction):
             mode=mode,
             cpu_options=cpuOptions,
         )
-        requestBody = ResizeServerRequestBody(resize=option, dry_run=self.data.get('dry_run', None))
-        request = ResizeServerRequest(server_id=resource['id'], body=requestBody)
+        requestBody = ResizeServerRequestBody(
+            resize=option, dry_run=self.data.get("dry_run", None)
+        )
+        request = ResizeServerRequest(server_id=resource["id"], body=requestBody)
         try:
             response = client.resize_server(request)
         except exceptions.ClientRequestException as e:
@@ -404,13 +460,15 @@ class SetInstanceProfile(HuaweiCloudBaseAction):
                   key: value
     """
 
-    schema = type_schema("set-instance-profile", metadata={'type': 'object'})
+    schema = type_schema("set-instance-profile", metadata={"type": "object"})
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        metadata = self.data.get('metadata', None)
+        metadata = self.data.get("metadata", None)
         requestBody = UpdateServerMetadataRequestBody(metadata=metadata)
-        request = UpdateServerMetadataRequest(server_id=resource['id'], body=requestBody)
+        request = UpdateServerMetadataRequest(
+            server_id=resource["id"], body=requestBody
+        )
         try:
             response = client.update_server_metadata(request)
         except exceptions.ClientRequestException as e:
@@ -441,28 +499,31 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
     """
 
     schema = type_schema(
-        'instance-whole-image',
-        instance_id={'type': 'string'},
-        name={'type': 'string'},
-        vault_id={'type': 'string'},
-        required=('instance_id', 'name', 'vault_id'),
+        "instance-whole-image",
+        instance_id={"type": "string"},
+        name={"type": "string"},
+        vault_id={"type": "string"},
+        required=("instance_id", "name", "vault_id"),
     )
 
     def perform_action(self, resource):
         return super().perform_action(resource)
 
     def process(self, resources):
-        ims_client = local_session(self.manager.session_factory).client('ims')
+        ims_client = local_session(self.manager.session_factory).client("ims")
         requestBody = CreateWholeImageRequestBody(
-            name=self.data.get('name'),
-            instance_id=self.data.get('instance_id'),
-            vault_id=self.data.get('vault_id'),
+            name=self.data.get("name"),
+            instance_id=self.data.get("instance_id"),
+            vault_id=self.data.get("vault_id"),
         )
         request = CreateWholeImageRequest(body=requestBody)
         try:
             response = ims_client.create_whole_image(request)
             if response.status_code != 200:
-                log.error("create whole image for instance %s fail" % self.data.get('instance_id'))
+                log.error(
+                    "create whole image for instance %s fail"
+                    % self.data.get("instance_id")
+                )
                 return False
             return self.wait_backup(response.job_id, ims_client)
         except exceptions.ClientRequestException as e:
@@ -509,14 +570,18 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
     """
 
     schema = type_schema(
-        'instance-snapshot', vault_id={'type': 'string'}, incremental={'type': 'boolean'}
+        "instance-snapshot",
+        vault_id={"type": "string"},
+        incremental={"type": "boolean"},
     )
 
     def perform_action(self, resource):
         return super().perform_action(resource)
 
     def process(self, resources):
-        cbr_backup_client = local_session(self.manager.session_factory).client('cbr-backup')
+        cbr_backup_client = local_session(self.manager.session_factory).client(
+            "cbr-backup"
+        )
         vaults = self.list_vault()
         vaults_resource_ids = self.fetch_vaults_resource_ids(vaults)
         response = self.back_up(resources, vaults_resource_ids, cbr_backup_client)
@@ -524,27 +589,37 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
 
     def back_up(self, resources, vaults_resource_ids, cbr_backup_client):
         for r in resources:
-            server_id = r['id']
+            server_id = r["id"]
             if server_id not in vaults_resource_ids:
                 continue
             vault_id = vaults_resource_ids[server_id]
-            if self.data.get('vault_id', None) is not None:
+            if self.data.get("vault_id", None) is not None:
                 if vault_id is not None:
-                    return self.checkpoint_and_wait(r, vault_id, server_id, cbr_backup_client)
+                    return self.checkpoint_and_wait(
+                        r, vault_id, server_id, cbr_backup_client
+                    )
                 else:
                     resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
-                    add_resource_response = self.add_vault_resource(vault_id, resource, cbr_backup_client)
+                    add_resource_response = self.add_vault_resource(
+                        vault_id, resource, cbr_backup_client
+                    )
                     if add_resource_response.status_code != 200:
                         log.error("add instance %s to vault error" % server_id)
                         return False
-                    return self.checkpoint_and_wait(r, vault_id, server_id,cbr_backup_client)
+                    return self.checkpoint_and_wait(
+                        r, vault_id, server_id, cbr_backup_client
+                    )
             else:
                 resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
-                add_resource_response = self.add_vault_resource(vault_id, resource, cbr_backup_client)
+                add_resource_response = self.add_vault_resource(
+                    vault_id, resource, cbr_backup_client
+                )
                 if add_resource_response.status_code != 200:
                     log.error("add instance %s to vault error" % server_id)
                     return False
-                return self.checkpoint_and_wait(r, vault_id, server_id, cbr_backup_client)
+                return self.checkpoint_and_wait(
+                    r, vault_id, server_id, cbr_backup_client
+                )
 
     def wait_backup(self, vault_id, resource_id, cbr_client):
         while True:
@@ -556,16 +631,19 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
             return True
 
     def checkpoint_and_wait(self, r, vault_id, server_id, cbr_client):
-        checkpoint_response = self.create_checkpoint_for_instance(r, vault_id, cbr_client)
+        checkpoint_response = self.create_checkpoint_for_instance(
+            r, vault_id, cbr_client
+        )
         if checkpoint_response.status_code != 200:
             log.error("instance %s backup error" % server_id)
             return False
         return self.wait_backup(vault_id, server_id, cbr_client)
 
     def create_checkpoint_for_instance(self, r, vault_id, cbr_client):
-        resource_details = [Resource(id=r['id'], type="OS::Nova::Server")]
+        resource_details = [Resource(id=r["id"], type="OS::Nova::Server")]
         params = CheckpointParam(
-            resource_details=resource_details, incremental=self.data.get('incremental', True)
+            resource_details=resource_details,
+            incremental=self.data.get("incremental", True),
         )
         backup = VaultBackup(vault_id=vault_id, parameters=params)
         try:
@@ -578,15 +656,17 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
     def fetch_vaults_resource_ids(self, vaults):
         vaults_resource_ids = {}
         for vault in vaults:
-            resources = vault['resources']
+            resources = vault["resources"]
             for r in resources:
-                if r['protect_status'] == 'available':
-                    vaults_resource_ids.setdefault(r['id'], vault['id'])
+                if r["protect_status"] == "available":
+                    vaults_resource_ids.setdefault(r["id"], vault["id"])
         return vaults_resource_ids
 
     def list_vault(self):
         try:
-            response = self.manager.get_resource_manager('huaweicloud.cbr-vault').resources()
+            response = self.manager.get_resource_manager(
+                "huaweicloud.cbr-vault"
+            ).resources()
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -621,7 +701,9 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         return response
 
     def list_op_log(self, resource_id, vault_id, cbr_client):
-        request = ListOpLogsRequest(status="running", vault_id=vault_id, resource_id=resource_id)
+        request = ListOpLogsRequest(
+            status="running", vault_id=vault_id, resource_id=resource_id
+        )
         try:
             response = cbr_client.list_op_logs(request)
         except exceptions.ClientRequestException as e:
@@ -649,7 +731,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return response
-    
+
 
 @Ecs.action_registry.register("instance-volumes-corrections")
 class InstanceVolumesCorrections(HuaweiCloudBaseAction):
@@ -667,20 +749,19 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
            actions:
              - type: instance-volumes-corrections
     """
+
     schema = type_schema("instance-volumes-corrections")
-    
+
     def perform_action(self, resource):
         client = self.manager.get_client()
-        volumes = list(resource['os-extended-volumes:volumes_attached'])
+        volumes = list(resource["os-extended-volumes:volumes_attached"])
         for volume in volumes:
-            if volume['delete_on_termination'] == 'True':
+            if volume["delete_on_termination"] == "True":
                 continue
             option = UpdateServerBlockDeviceOption(delete_on_termination=True)
             requestBody = UpdateServerBlockDeviceReq(block_device=option)
             request = UpdateServerBlockDeviceRequest(
-                server_id=resource['id'],
-                volume_id=volume['id'],
-                body=requestBody
+                server_id=resource["id"], volume_id=volume["id"], body=requestBody
             )
             try:
                 response = client.update_server_block_device(request)
@@ -693,8 +774,8 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
 # ---------------------------ECS Filter-------------------------------------#
 
 
-@Ecs.filter_registry.register('instance-age')
-class EcsAgeFilter(AgeFilter):
+@Ecs.filter_registry.register("instance-age")
+class EcsInstanceAgeFilter(AgeFilter):
     """ECS Instance Age Filter: greater-than or less-than threshold date
 
     :Example:
@@ -713,16 +794,16 @@ class EcsAgeFilter(AgeFilter):
     date_attribute = "created"
 
     schema = type_schema(
-        'instance-age',
-        op={'$ref': '#/definitions/filters_common/comparison_operators'},
-        days={'type': 'number'},
-        hours={'type': 'number'},
-        minutes={'type': 'number'},
+        "instance-age",
+        op={"$ref": "#/definitions/filters_common/comparison_operators"},
+        days={"type": "number"},
+        hours={"type": "number"},
+        minutes={"type": "number"},
     )
 
 
-@Ecs.filter_registry.register('instance-uptime')
-class EcsAgeFilter(AgeFilter):
+@Ecs.filter_registry.register("instance-uptime")
+class EcsInstanceUptimeFilter(AgeFilter):
     """Automatically filter resources older or younger than a given date.
 
     :Example:
@@ -741,13 +822,13 @@ class EcsAgeFilter(AgeFilter):
     date_attribute = "created"
 
     schema = type_schema(
-        'instance-uptime',
-        op={'$ref': '#/definitions/filters_common/comparison_operators'},
-        days={'type': 'number'},
+        "instance-uptime",
+        op={"$ref": "#/definitions/filters_common/comparison_operators"},
+        days={"type": "number"},
     )
 
 
-@Ecs.filter_registry.register('instance-attribute')
+@Ecs.filter_registry.register("instance-attribute")
 class InstanceAttributeFilter(ValueFilter):
     """ECS Instance Value Filter on a given instance attribute.
 
@@ -766,36 +847,40 @@ class InstanceAttributeFilter(ValueFilter):
                 value: (?smi).*user=
     """
 
-    valid_attrs = ('flavorId', 'OS-EXT-SRV-ATTR:user_data', 'OS-EXT-SRV-ATTR:root_device_name')
+    valid_attrs = (
+        "flavorId",
+        "OS-EXT-SRV-ATTR:user_data",
+        "OS-EXT-SRV-ATTR:root_device_name",
+    )
 
     schema = type_schema(
-        'instance-attribute',
+        "instance-attribute",
         rinherit=ValueFilter.schema,
-        attribute={'enum': valid_attrs},
-        required=('attribute',),
+        attribute={"enum": valid_attrs},
+        required=("attribute",),
     )
     schema_alias = False
 
     def process(self, resources, event=None):
-        attribute = self.data['attribute']
+        attribute = self.data["attribute"]
         self.get_instance_attribute(resources, attribute)
         return [
             resource
             for resource in resources
-            if self.match(resource['c7n:attribute-%s' % attribute])
+            if self.match(resource["c7n:attribute-%s" % attribute])
         ]
 
     def get_instance_attribute(self, resources, attribute):
         for resource in resources:
-            userData = resource.get('OS-EXT-SRV-ATTR:user_data', '')
-            flavorId = resource['flavor']['id']
-            rootDeviceName = ['OS-EXT-SRV-ATTR:root_device_name']
+            userData = resource.get("OS-EXT-SRV-ATTR:user_data", "")
+            flavorId = resource["flavor"]["id"]
+            rootDeviceName = ["OS-EXT-SRV-ATTR:root_device_name"]
             attributes = {
-                'OS-EXT-SRV-ATTR:user_data': {'Value': deserialize_user_data(userData)},
-                'flavorId': {'Value': flavorId},
-                'OS-EXT-SRV-ATTR:root_device_name': {'Value': rootDeviceName},
+                "OS-EXT-SRV-ATTR:user_data": {"Value": deserialize_user_data(userData)},
+                "flavorId": {"Value": flavorId},
+                "OS-EXT-SRV-ATTR:root_device_name": {"Value": rootDeviceName},
             }
-            resource['c7n:attribute-%s' % attribute] = attributes[attribute]
+            resource["c7n:attribute-%s" % attribute] = attributes[attribute]
 
 
 class InstanceImageBase:
@@ -804,27 +889,29 @@ class InstanceImageBase:
         self.image_map = self.get_local_image_mapping(instances)
 
     def get_base_image_mapping(self, image_ids):
-        ims_client = local_session(self.manager.session_factory).client('ims')
+        ims_client = local_session(self.manager.session_factory).client("ims")
         request = ListImagesRequest(id=image_ids)
-        return {
-            i.id: i for i in ims_client.list_images(request).images
-        }
+        return {i.id: i for i in ims_client.list_images(request).images}
 
     def get_instance_image_created_at(self, instance):
-        return instance['image:created_at']
+        return instance["image:created_at"]
 
     def get_local_image_mapping(self, instances):
-        image_ids = ",".join(list(item['metadata']['metering.image_id'] for item in instances))
+        image_ids = ",".join(
+            list(item["metadata"]["metering.image_id"] for item in instances)
+        )
         base_image_map = self.get_base_image_mapping(image_ids)
         for r in instances:
-            if r['metadata']['metering.image_id'] in base_image_map.keys():
-                r['image:created_at'] = base_image_map[r['metadata']['metering.image_id']].created_at
+            if r["metadata"]["metering.image_id"] in base_image_map.keys():
+                r["image:created_at"] = base_image_map[
+                    r["metadata"]["metering.image_id"]
+                ].created_at
             else:
-                r['image:created_at'] = '2000-01-01T01:01:01.000Z'
+                r["image:created_at"] = "2000-01-01T01:01:01.000Z"
         return instances
 
 
-@Ecs.filter_registry.register('instance-image-age')
+@Ecs.filter_registry.register("instance-image-age")
 class ImageAgeFilter(AgeFilter, InstanceImageBase):
     """ECS Image Age Filter
 
@@ -846,9 +933,9 @@ class ImageAgeFilter(AgeFilter, InstanceImageBase):
     date_attribute = "created_at"
 
     schema = type_schema(
-        'instance-image-age',
-        op={'$ref': '#/definitions/filters_common/comparison_operators'},
-        days={'type': 'number'},
+        "instance-image-age",
+        op={"$ref": "#/definitions/filters_common/comparison_operators"},
+        days={"type": "number"},
     )
 
     def process(self, resources, event=None):
@@ -860,7 +947,7 @@ class ImageAgeFilter(AgeFilter, InstanceImageBase):
         return parse(image)
 
 
-@Ecs.filter_registry.register('instance-image')
+@Ecs.filter_registry.register("instance-image")
 class InstanceImageFilter(ValueFilter, InstanceImageBase):
     """ECS Image filter
 
@@ -875,15 +962,17 @@ class InstanceImageFilter(ValueFilter, InstanceImageBase):
               - type: instance-image
     """
 
-    schema = type_schema('instance-image', rinherit=ValueFilter.schema)
+    schema = type_schema("instance-image", rinherit=ValueFilter.schema)
     schema_alias = False
 
     def process(self, resources, event=None):
         results = []
-        image_ids = ",".join(list(item['metadata']['metering.image_id'] for item in resources))
+        image_ids = ",".join(
+            list(item["metadata"]["metering.image_id"] for item in resources)
+        )
         base_image_map = self.get_base_image_mapping(image_ids)
         for r in resources:
-            if r['metadata']['metering.image_id'] in base_image_map.keys():
+            if r["metadata"]["metering.image_id"] in base_image_map.keys():
                 results.append(r)
         return results
 
@@ -906,14 +995,14 @@ class InstanceEphemeralFilter(Filter):
 
     """
 
-    schema = type_schema('ephemeral')
+    schema = type_schema("ephemeral")
 
     def __call__(self, i):
         return self.is_ephemeral(i)
 
     def is_ephemeral(self, i):
         performancetype = self.get_resource_flavor_performancetype(i["flavor"]["id"])
-        if performancetype in ('highio', 'diskintensive'):
+        if performancetype in ("highio", "diskintensive"):
             return True
         return False
 
@@ -932,9 +1021,9 @@ def deserialize_user_data(user_data):
     data = base64.b64decode(user_data)
     # try raw and compressed
     try:
-        return data.decode('utf8')
+        return data.decode("utf8")
     except UnicodeDecodeError:
-        return zlib.decompress(data, 16).decode('utf8')
+        return zlib.decompress(data, 16).decode("utf8")
 
 
 @Ecs.filter_registry.register("instance-user-data")
@@ -958,25 +1047,29 @@ class InstanceUserData(ValueFilter):
                   - instance-stop
     """
 
-    schema = type_schema('instance-user-data', rinherit=ValueFilter.schema)
+    schema = type_schema("instance-user-data", rinherit=ValueFilter.schema)
     schema_alias = False
     batch_size = 50
-    annotation = 'OS-EXT-SRV-ATTR:user_data'
+    annotation = "OS-EXT-SRV-ATTR:user_data"
 
     def __init__(self, data, manager):
         super(InstanceUserData, self).__init__(data, manager)
-        self.data['key'] = "OS-EXT-SRV-ATTR:user_data"
+        self.data["key"] = "OS-EXT-SRV-ATTR:user_data"
 
     def process(self, resources, event=None):
         results = []
         with self.executor_factory(max_workers=3) as w:
             futures = {}
             for instance_set in utils.chunks(resources, self.batch_size):
-                futures[w.submit(self.process_instance_user_data, instance_set)] = instance_set
+                futures[w.submit(self.process_instance_user_data, instance_set)] = (
+                    instance_set
+                )
 
             for f in as_completed(futures):
                 if f.exception():
-                    self.log.error("Error processing userdata on instance set %s", f.exception())
+                    self.log.error(
+                        "Error processing userdata on instance set %s", f.exception()
+                    )
                 results.extend(f.result())
         return results
 
@@ -984,7 +1077,7 @@ class InstanceUserData(ValueFilter):
         results = []
         for r in resources:
             try:
-                result = self.get_instance_info_detail(r['id'])
+                result = self.get_instance_info_detail(r["id"])
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
                 raise
@@ -1007,7 +1100,7 @@ class InstanceUserData(ValueFilter):
         return response.server.os_ext_srv_att_ruser_data
 
 
-@Ecs.filter_registry.register('instance-evs')
+@Ecs.filter_registry.register("instance-evs")
 class InstanceEvs(ValueFilter):
     """ECS instance with EVS volume.
 
@@ -1028,42 +1121,44 @@ class InstanceEvs(ValueFilter):
     """
 
     schema = type_schema(
-        'instance-evs',
+        "instance-evs",
         rinherit=ValueFilter.schema,
-        **{'skip-devices': {'type': 'array', 'items': {'type': 'string'}}}
+        **{"skip-devices": {"type": "array", "items": {"type": "string"}}}
     )
     schema_alias = False
 
     def process(self, resources, event=None):
         self.volume_map = self.get_volume_mapping(resources)
-        self.skip = self.data.get('skip-devices', [])
-        self.operator = self.data.get('operator', 'or') == 'or' and any or all
+        self.skip = self.data.get("skip-devices", [])
+        self.operator = self.data.get("operator", "or") == "or" and any or all
         return list(filter(self, resources))
 
     def get_volume_mapping(self, resources):
         volume_map = {}
-        evsResources = self.manager.get_resource_manager('huaweicloud.volume').resources()
+        evsResources = self.manager.get_resource_manager(
+            "huaweicloud.volume"
+        ).resources()
         for resource in resources:
             for evs in evsResources:
-                evsServerIds = list(item['server_id'] for item in evs['attachments'])
-                if resource['id'] in evsServerIds:
-                    volume_map.setdefault(resource['id'], evs)
+                evsServerIds = list(item["server_id"] for item in evs["attachments"])
+                if resource["id"] in evsServerIds:
+                    volume_map.setdefault(resource["id"], evs)
                     break
         return volume_map
 
     def __call__(self, i):
-        volumes = self.volume_map.get(i['id'])
+        volumes = self.volume_map.get(i["id"])
         if not volumes:
             return False
         if self.skip:
             for v in list(volumes):
-                for a in v.get('id', []):
-                    if a['id'] in self.skip:
+                for a in v.get("id", []):
+                    if a["id"] in self.skip:
                         volumes.remove(v)
         return self.match(volumes)
 
 
-@Ecs.filter_registry.register('instance-vpc')
+@Ecs.filter_registry.register("instance-vpc")
 class InstanceVpc(Filter):
     """ECS instance with VPC.
 
@@ -1080,7 +1175,7 @@ class InstanceVpc(Filter):
              - type: instance-vpc
     """
 
-    schema = type_schema('instance-vpc')
+    schema = type_schema("instance-vpc")
     schema_alias = False
 
     def process(self, resources, event=None):
@@ -1088,18 +1183,18 @@ class InstanceVpc(Filter):
 
     def get_vpcs(self, resources):
         result = []
-        vpcIds = list(item['metadata']['vpc_id'] for item in resources)
-        vpcs = self.manager.get_resource_manager('huaweicloud.vpc').resources()
+        vpcIds = list(item["metadata"]["vpc_id"] for item in resources)
+        vpcs = self.manager.get_resource_manager("huaweicloud.vpc").resources()
         for resource in resources:
             for vpc in vpcs:
-                vpcId = vpc['id']
+                vpcId = vpc["id"]
                 if vpcId in vpcIds:
                     result.append(resource)
                     break
         return result
 
 
-@Ecs.filter_registry.register('instance-volumes-not-compliance')
+@Ecs.filter_registry.register("instance-volumes-not-compliance")
 class InstanceVolumesNotCompliance(Filter):
     """ECS instance with volumes delete_on_termination is false.
 
@@ -1112,22 +1207,22 @@ class InstanceVolumesNotCompliance(Filter):
            resource: huaweicloud.ecs
            filters:
              - type: instance-volumes-not-compliance
-    """    
+    """
 
-    schema = type_schema('instance-volumes-not-compliance')
-    
+    schema = type_schema("instance-volumes-not-compliance")
+
     def process(self, resources, event=None):
         results = []
         for resource in resources:
-            volumes = list(resource['os-extended-volumes:volumes_attached'])
+            volumes = list(resource["os-extended-volumes:volumes_attached"])
             for volume in volumes:
-                if volume['delete_on_termination'] == 'False':
+                if volume["delete_on_termination"] == "False":
                     results.append(resource)
                     break
         return results
 
 
-@Ecs.filter_registry.register('instance-image-not-compliance')
+@Ecs.filter_registry.register("instance-image-not-compliance")
 class InstanceImageNotCompliance(Filter):
     """ECS instance with image is not compliance.
 
@@ -1141,19 +1236,21 @@ class InstanceImageNotCompliance(Filter):
            filters:
              - type: instance-image-not-compliance
                image_ids: ['your instance id']
-    """    
-    schema = type_schema('instance-image-not-compliance',
-                         image_ids = {'type': 'array'})
-    
+    """
+
+    schema = type_schema("instance-image-not-compliance", image_ids={"type": "array"})
+
     def process(self, resources, event=None):
         results = []
-        image_ids = self.data.get('image_ids')
+        image_ids = self.data.get("image_ids")
         if not image_ids:
             log.error("image_ids is required")
             return []
         instance_image_map = {}
         for r in resources:
-            instance_image_map.setdefault(r['metadata']['metering.image_id'], []).append(r)
+            instance_image_map.setdefault(
+                r["metadata"]["metering.image_id"], []
+            ).append(r)
         log.info(instance_image_map.keys())
         for id in instance_image_map.keys():
             if id not in image_ids:
