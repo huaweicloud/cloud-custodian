@@ -1,0 +1,194 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://evs.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/cloudvolumes/detail?limit=100&offset=0
+  response:
+    body:
+      string: '{"count": 3, "volumes": [{"id":"6eab9063-a7a5-4c1c-9e6b-2991b3a0a5f2","links":[{"href":"https://evs.ap-southeast-1.myhuaweicloud.com/v2/09769d37a68026a72f2ac004c7fcc69c/os-vendor-volumes/6eab9063-a7a5-4c1c-9e6b-2991b3a0a5f2","rel":"self"},{"href":"https://evs.ap-southeast-1.myhuaweicloud.com/09769d37a68026a72f2ac004c7fcc69c/os-vendor-volumes/6eab9063-a7a5-4c1c-9e6b-2991b3a0a5f2","rel":"bookmark"}],"name":"volume-backup-exceed-time","status":"available","attachments":[],"availability_zone":"ap-southeast-1a","os-vol-host-attr:host":"cinder-kvm001@GPSSD#16","created_at":"2025-03-21T09:35:29.945355","os-vol-tenant-attr:tenant_id":"09769d37a68026a72f2ac004c7fcc69c","volume_image_metadata":{},"volume_type":"GPSSD","size":10,"bootable":"False","metadata":{"__system__cmkid":"d443edb6-7a65-426d-91cb-9cb94533fbdf","__system__encrypted":"1","hw:passthrough":"False","readonly":"False"},"updated_at":"2025-03-21T10:25:38.718258","encrypted":false,"replication_status":"disabled","shareable":"False","user_id":"MQsrSOren7TXxUUfPYSOrYpHML2MH29S","service_type":"EVS","multiattach":false,"tags":{},"wwn":"68886031470107190000000003e120aa","enterprise_project_id":"0"},{"id":"ba2cd32f-d1e6-4d91-912e-efc4f1a26d0c","links":[{"href":"https://evs.ap-southeast-1.myhuaweicloud.com/v2/09769d37a68026a72f2ac004c7fcc69c/os-vendor-volumes/ba2cd32f-d1e6-4d91-912e-efc4f1a26d0c","rel":"self"},{"href":"https://evs.ap-southeast-1.myhuaweicloud.com/09769d37a68026a72f2ac004c7fcc69c/os-vendor-volumes/ba2cd32f-d1e6-4d91-912e-efc4f1a26d0c","rel":"bookmark"}],"name":"volume-has-no-backup","status":"available","attachments":[],"availability_zone":"ap-southeast-1a","os-vol-host-attr:host":"cinder-kvm001@GPSSD#7","created_at":"2025-03-21T02:12:52.866374","os-vol-tenant-attr:tenant_id":"09769d37a68026a72f2ac004c7fcc69c","volume_image_metadata":{},"volume_type":"GPSSD","size":10,"bootable":"False","metadata":{"hw:passthrough":"False","__system__encrypted":"0"},"updated_at":"2025-03-21T02:12:52.971629","encrypted":false,"replication_status":"disabled","shareable":"False","user_id":"MQsrSOren7TXxUUfPYSOrYpHML2MH29S","service_type":"EVS","multiattach":false,"tags":{},"wwn":"68886031470107190000000003e0dc26","enterprise_project_id":"0"},{"id":"59c03a88-6dee-40e7-a7ca-c17c2cc757d6","links":[{"href":"https://evs.ap-southeast-1.myhuaweicloud.com/v2/09769d37a68026a72f2ac004c7fcc69c/os-vendor-volumes/59c03a88-6dee-40e7-a7ca-c17c2cc757d6","rel":"self"},{"href":"https://evs.ap-southeast-1.myhuaweicloud.com/09769d37a68026a72f2ac004c7fcc69c/os-vendor-volumes/59c03a88-6dee-40e7-a7ca-c17c2cc757d6","rel":"bookmark"}],"name":"volume-backup-ok","status":"available","attachments":[],"availability_zone":"ap-southeast-1a","os-vol-host-attr:host":"cinder-kvm001@GPSSD#7","created_at":"2025-03-21T02:12:52.866374","os-vol-tenant-attr:tenant_id":"09769d37a68026a72f2ac004c7fcc69c","volume_image_metadata":{},"volume_type":"GPSSD","size":10,"bootable":"False","metadata":{"hw:passthrough":"False","__system__encrypted":"0"},"updated_at":"2025-03-21T02:12:52.971629","encrypted":false,"replication_status":"disabled","shareable":"False","user_id":"MQsrSOren7TXxUUfPYSOrYpHML2MH29S","service_type":"EVS","multiattach":false,"tags":{},"wwn":"68886031470107190000000003e0dc26","enterprise_project_id":"0"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/backups?limit=1&resource_id=ba2cd32f-d1e6-4d91-912e-efc4f1a26d0c&resource_type=OS%3A%3ACinder%3A%3AVolume&sort=created_at
+  response:
+    body:
+      string: '{"backups":[],"count":0,"offset":0,"limit":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/backups?limit=1&resource_id=6eab9063-a7a5-4c1c-9e6b-2991b3a0a5f2&resource_type=OS%3A%3ACinder%3A%3AVolume&sort=created_at
+  response:
+    body:
+      string: '{"backups": [{"checkpoint_id": "124147d0-b01e-494c-aaac-6639412f4f50", "created_at": "2025-03-20T01:59:51.413429+00:00", "extend_info": {"auto_trigger": false, "bootable": false, "snapshot_id": "2dd73b03-a934-47ca-8563-0d0aed9ad059", "support_lld": true, "encrypted": false, "system_disk": false, "is_multi_az": false}, "id": "f04b7d00-31db-4733-abd9-62d32192054e", "image_type": "backup", "name": "volume-d812_e90c", "project_id": "09769d37a68026a72f2ac004c7fcc69c", "resource_az": "ap-southeast-3e", "resource_id": "6eab9063-a7a5-4c1c-9e6b-2991b3a0a5f2", "resource_name": "volume-backup-exceed-time", "resource_size": 10, "resource_type": "OS::Cinder::Volume", "status": "available", "updated_at": "2025-03-22T02:07:25.079779+00:00", "vault_id": "71877b98-c532-49de-b76f-48305e09ca2e", "replication_records": [], "provider_id": "d1603440-187d-4516-af25-121250c7cc97", "children": [], "incremental": false, "version": 3}], "count": 1, "offset": 0, "limit": 1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/backups?limit=1&resource_id=59c03a88-6dee-40e7-a7ca-c17c2cc757d6&resource_type=OS%3A%3ACinder%3A%3AVolume&sort=created_at
+  response:
+    body:
+      string: '{"backups": [{"checkpoint_id": "124147d0-b01e-494c-aaac-6639412f4f50", "created_at": "2025-03-22T01:59:51.413429+00:00", "extend_info": {"auto_trigger": false, "bootable": false, "snapshot_id": "2dd73b03-a934-47ca-8563-0d0aed9ad059", "support_lld": true, "encrypted": false, "system_disk": false, "is_multi_az": false}, "id": "f04b7d00-31db-4733-abd9-62d32192054e", "image_type": "backup", "name": "volume-d812_e90c", "project_id": "09769d37a68026a72f2ac004c7fcc69c", "resource_az": "ap-southeast-3e", "resource_id": "6eab9063-a7a5-4c1c-9e6b-2991b3a0a5f2", "resource_name": "volume-backup-exceed-time", "resource_size": 10, "resource_type": "OS::Cinder::Volume", "status": "available", "updated_at": "2025-03-22T02:07:25.079779+00:00", "vault_id": "71877b98-c532-49de-b76f-48305e09ca2e", "replication_records": [], "provider_id": "d1603440-187d-4516-af25-121250c7cc97", "children": [], "incremental": false, "version": 3}], "count": 1, "offset": 0, "limit": 1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1

@@ -1,0 +1,102 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vpc/security-group-rules?limit=100
+  response:
+    body:
+      string: '{"request_id":"58bd5d553d6214370d7363466031ba75","security_group_rules":[{"id":"07d999c9-585f-4df3-905a-d85eadf9421a","project_id":"ap-southeat-1","security_group_id":"6ca078f6-1f69-49dd-b71e-bc7440244298","remote_group_id":null,"direction":"egress","protocol":"tcp","description":"","created_at":"2025-03-17T03:17:27Z","updated_at":"2025-03-17T03:17:27Z","ethertype":"IPv4","remote_ip_prefix":"10.0.0.0/8","multiport":null,"remote_address_group_id":null,"action":"allow","priority":1},{"id":"0ba6bf98-0438-4ffd-8ab8-1d84ac24a4cf","project_id":"ap-southeat-1","security_group_id":"6ca078f6-1f69-49dd-b71e-bc7440244298","remote_group_id":null,"direction":"egress","protocol":"tcp","description":"","created_at":"2025-03-17T03:17:27Z","updated_at":"2025-03-17T03:17:27Z","ethertype":"IPv4","remote_ip_prefix":"192.168.21.0/24","multiport":"3389,8080,22","remote_address_group_id":null,"action":"allow","priority":1}],"page_info":{"previous_marker":"07d999c9-585f-4df3-905a-d85eadf9421a","current_count":2}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: DELETE
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vpc/security-group-rules/0ba6bf98-0438-4ffd-8ab8-1d84ac24a4cf
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: NO_CONTENT
+version: 1

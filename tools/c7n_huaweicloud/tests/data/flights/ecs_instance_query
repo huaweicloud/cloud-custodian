@@ -1,0 +1,56 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ecs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250323T080709Z
+    method: GET
+    uri: https://ecs.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/cloudservers/detail?limit=100&offset=1
+  response:
+    body:
+      string: '{"count":1,"request_id":"requestId","servers":[{"status":"SHUTOFF","updated":"2025-03-21T02:25:17Z","image":{"id":"51a76dc4-0a0c-4e7c-bb01-d9dbaabe1441"},"OS-EXT-STS:vm_state":"stopped","flavor":{"id":"x1.1u.1g","name":"x1.1u.1g","disk":"0","vcpus":"1","ram":"1024","gpus":[],"asic_accelerators":[]},"id":"bac642b0-a9ca-4a13-b6b9-9e41b35905b6","security_groups":[{"name":"default","id":"21acfb26-36cd-4aa4-b42e-fe3f88bd588c"},{"name":"sg-default-smb","id":"de011f0e-d1c2-45b7-aea5-e642f12333b6"}],"OS-EXT-AZ:availability_zone":"ap-southeast-1a","name":"ITAU\u6d4b\u8bd5\u670d\u52a1\u5668_\u52ff\u5220","created":"2025-03-17T10:38:38Z","metadata":{"charging_mode":"0","vpc_id":"24bbb54c-659f-4141-8db9-a957e12b6ee8","os_version":"Huawei Cloud EulerOS 2.0 64bit","__support_agent_list":"hss,ces","metering.imagetype":"gold","image_name":"Huawei Cloud EulerOS 2.0 Standard 64 bit","metering.resourcespeccode":"x1.1u.1g.linux","os_type":"Linux","metering.resourcetype":"1","metering.image_id":"51a76dc4-0a0c-4e7c-bb01-d9dbaabe1441","os_bit":"64","cascaded.instance_extrainfo":"pcibridge:1,virtio_bus_count:8","key":"value"},"OS-EXT-SRV-ATTR:user_data":"IyEvYmluL2Jhc2gKZWNobyAncm9vdDokNiREOWppOXYzciRiSGR2V1lTZ011aWVEeUNqa3ZvOURDVnd0cWZnMzgxTE1XSk9VWlJ1SS82ZEZUTS9qaTFQLlh2S2hiS1c0YUR1aWNPSXZRYkZUSHNtUUhGVXR2QTFYLycgfCBjaHBhc3N3ZCAtZTs=","tags":["_sys_root_resource_id=bac642b0-a9ca-4a13-b6b9-9e41b35905b6","_sys_root_resource_type=hws.resource.type.vm","_sys_type_hcss_x"]}]}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 23 Mar 2025 08:07:09 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Charset, Accept-Encoding, Accept-Language, Accept
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 12a7b47d6950e22018303dadd5cce663
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+version: 1

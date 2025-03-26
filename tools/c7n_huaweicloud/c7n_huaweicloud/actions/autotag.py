@@ -6,7 +6,7 @@ from c7n import utils
 
 from c7n_huaweicloud.provider import resources
 
-DEFAULT_TAG = "auto-tag-user-tag"
+DEFAULT_TAG = "auto-tag-user-key"
 
 
 class AutoTagUser(EventAction):
@@ -22,12 +22,14 @@ class AutoTagUser(EventAction):
             it's missing the OwnerContact tag. If missing it gets created
             with the value of the ID of whomever called the RunInstances API
           mode:
-            type: cloudtrail
-            role: arn:aws:iam::123456789000:role/custodian-auto-tagger
+            type: cloudtracker
+            xrole: fgs_admin
+            eg_agency: EG_TARGET_AGENCY
+            default_region: cn-north-4
             events:
-              - RunInstances
-          filters:
-           - tag:OwnerContact: absent
+              - source: "FunctionGraph"
+                event: "createFunction"
+                ids: "resource_name"
           actions:
            - type: auto-tag-user
              tag: OwnerContact
@@ -68,7 +70,7 @@ class AutoTagUser(EventAction):
     )
 
     def validate(self):
-        if self.manager.data.get('mode', {}).get('type') != 'cloudtrail':
+        if self.manager.data.get('mode', {}).get('type') != 'cloudtrace':
             raise PolicyValidationError(
                 "Auto tag owner requires an event %s" % (self.manager.data,))
         if self.manager.action_registry.get('tag') is None:
@@ -79,50 +81,50 @@ class AutoTagUser(EventAction):
                 "auto-tag action requires 'tag'")
         return self
 
-    def get_user_info_value(self, utype, event):
+    def get_user_info_value(self, utype, event_data):
         value = None
-        user_info = event['user']
+        user_info = event_data['user']
         vtype = self.data.get('value', None)
         if vtype is None:
             return
 
         if vtype == "userName":
             if utype == "User":
-                value = user_info.get('userName', '')
+                value = user_info.get('name', '')
             elif utype == "AssumedAgency" or utype == "ExternalUser":
-                value = user_info.get('userName', '')
+                value = user_info.get('name', '')
         elif vtype == "sourceIPAddress":
-            value = event.get('source_ip', '')
+            value = event_data.get('source_ip', '')
         elif vtype == "principalId":
-            value = user_info.get('principalId', '')
+            value = user_info.get('principal_id', '')
 
         return value
 
-    def get_tag_value(self, event):
-        user_info = event['user']
-        utype = user_info['type']
+    def get_tag_value(self, event_data):
+        user_info = event_data['user']
+        utype = user_info.get('type', None)
         if utype not in self.data.get('user-type', ['AssumedAgency', 'User', 'ExternalUser']):
             return
 
         user = None
         principal_id_value = None
         if utype == "User":
-            user = user_info['name']
+            user = user_info.get('name', None)
             principal_id_value = user_info.get('principal_id', '')
         elif utype == "AssumedAgency" or utype == "ExternalUser":
-            user = user_info['name']
+            user = user_info.get('name', None)
             principal_id_value = user_info.get('principal_id', '')
 
-        value = self.get_user_info_value(utype, event)
+        value = self.get_user_info_value(utype, event_data)
 
         # if the auto-tag-user policy set update to False (or it's unset) then we
         return {'user': user, 'id': principal_id_value, 'value': value}
 
     def process(self, resources, event):
-        if event is None:
+        event_data = event.get("cts", None)
+        if event_data is None:
             return
-
-        user_info = self.get_tag_value(event)
+        user_info = self.get_tag_value(event_data)
         if user_info is None:
             self.log.warning("user info not found in event")
             return
@@ -158,7 +160,8 @@ class AutoTagUser(EventAction):
     def set_resource_tags(self, tags, resources):
         tag_action = self.manager.action_registry.get('tag')
         for key, value in tags.items():
-            tag_action({'key': key, 'value': value}, self.manager).process(resources)
+            actual_value = value.replace(":", "_").replace("/", "_")
+            tag_action({'key': key, 'value': actual_value}, self.manager).process(resources)
 
     def get_tags_from_resource(self, resource):
         try:
@@ -184,10 +187,10 @@ class AutoTagUser(EventAction):
                          tags):
                     # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
                     return {item['key']: item['value'] for item in tags}
-            return None
+            return {}
         except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
-            return None
+            return {}
 
     @classmethod
     def register_resource(cls, registry, resource_class):
