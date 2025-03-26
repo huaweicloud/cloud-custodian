@@ -121,7 +121,7 @@ class AutoTagUser(EventAction):
         return {'user': user, 'id': principal_id_value, 'value': value}
 
     def process(self, resources, event):
-        event_data = event.get("data", None)
+        event_data = event.get("cts", None)
         if event_data is None:
             return
         user_info = self.get_tag_value(event_data)
@@ -187,10 +187,10 @@ class AutoTagUser(EventAction):
                          tags):
                     # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
                     return {item['key']: item['value'] for item in tags}
-            return None
+            return {}
         except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
-            return None
+            return {}
 
     @classmethod
     def register_resource(cls, registry, resource_class):

@@ -78,6 +78,7 @@ class Session:
     def client(self, service):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID')) \
             .with_security_token(self.token)
+        globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(self.token)
         if service == 'vpc':
             client = VpcClientV3.new_builder() \
                 .with_credentials(credentials) \
@@ -99,7 +100,6 @@ class Session:
                 .with_region(EvsRegion.value_of(self.region)) \
                 .build()
         elif service == 'tms':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = TmsClient.new_builder() \
                 .with_credentials(globalCredentials) \
                 .with_region(TmsRegion.value_of("cn-north-4")) \
@@ -110,13 +110,11 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region)) \
                 .build()
         elif service == 'iam':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = IamClient.new_builder() \
                 .with_credentials(globalCredentials) \
                 .with_region(IamRegion.value_of(self.region)) \
                 .build()
         elif service == 'config':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = ConfigClient.new_builder() \
                 .with_credentials(globalCredentials) \
                 .with_region(ConfigRegion.value_of("cn-north-4")) \
