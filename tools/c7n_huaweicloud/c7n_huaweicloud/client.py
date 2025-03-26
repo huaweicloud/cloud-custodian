@@ -106,5 +106,4 @@ class Session:
             request = ListDedicatedHostsRequest()
         elif service == 'obs':
             request = True
-            
         return request

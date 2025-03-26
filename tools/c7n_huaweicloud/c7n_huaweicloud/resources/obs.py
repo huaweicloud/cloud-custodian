@@ -77,13 +77,14 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
             return
 
         p = json.loads(p)
-
         new_statements = self.process_policy(p.get('Statement', []))
 
         p['Statement'] = new_statements
         self.update_statements(bucket, p)
-        
-        return {'name': bucket_name, 'State': 'delete-wildcard-policy', 'Statements': bucket[WildcardStatementFilter.annotation_key]}
+
+        bucket['State'] = 'delete-wildcard-statements'
+        bucket['newStatements'] = new_statements
+        return bucket
     
     def process_policy(self, bucket_statements):
         new_statements = []
@@ -137,16 +138,16 @@ class SetBucketEncryption(HuaweiCloudBaseAction):
             'type': 'object',
             'oneOf': [
                 {
-                    'required': ['method'],
+                    'required': ['crypto'],
                     'properties': {
-                        'method': {'enum': ['SSE-OBS']}
+                        'crypto': {'enum': ['AES256']}
                     }
                 },
                 {
-                    'required': ['method'],
+                    'required': ['crypto'],
                     'properties': {
-                        'method': {'enum': ['SSE-KMS']},
-                        'kms_key_id': {'type': 'string'},
+                        'crypto': {'enum': ['kms']},
+                        'key': {'type': 'string'},
                         'kms_data_encryption': {'enum': ['SM4']}
                     }
                 }
@@ -160,17 +161,18 @@ class SetBucketEncryption(HuaweiCloudBaseAction):
         cfg = self.data['encryption']
 
         client = get_bucket_client(bucket)
-        if cfg['method'] == 'AES256':
+        if cfg['crypto'] == 'AES256':
             resp = client.setBucketEncryption(bucket_name, 'AES256')
         else:
-            key_id = cfg.get('kms_key_id', None)
+            key_id = cfg.get('key', None)
             if not key_id:
                 resp = client.setBucketEncryption(bucket_name, 'kms')
             else:
                 resp = client.setBucketEncryption(bucket_name, 'kms', key_id)
 
         if resp.status < 300:
-            return {'name': bucket_name, 'State': 'set-bucket-encryption', 'Encryption': cfg}
+            bucket['State'] = 'set-bucket-encryption'
+            return bucket
         else:
             sdk_error = ObsSdkError(resp.errorCode, resp.errorMessage, resp.requestId)
             raise exceptions.ClientRequestException(resp.status, sdk_error)
@@ -262,18 +264,18 @@ class BucketEncryptionStateFilter(Filter):
               resource: huaweicloud.obs
               filters:
                 - type: bucket-encryption
-                  state: absent
+                  state: False
                   
     """
 
     schema = type_schema(
         'bucket-encryption',
-        state={'enum': ['absent']},
-        method={'enum': ['kms', 'AES256']},
+        state={'type': 'boolean'},
+        crypto={'enum': ['kms', 'AES256']},
         required=['state']
     )
 
-    annotation_key = 'c7n:BucketEncryptionMethod'
+    annotation_key = 'c7n:BucketEncryptionCrypto'
 
     def process(self, buckets, event=None):
         with self.executor_factory(max_workers=5) as w:
@@ -282,20 +284,27 @@ class BucketEncryptionStateFilter(Filter):
             return results
 
     def process_bucket(self, bucket):
-        target_method = self.data.get('method', None)
+        target_state = self.data.get('state', False)
+        target_crypto = self.data.get('crypto', None)
 
-        current_method = self.get_encryption_method(bucket)
-        bucket[self.annotation_key] = current_method
+        current_crypto = self.get_encryption_crypto(bucket)
+        bucket[self.annotation_key] = current_crypto
 
-        if target_method is None:
-            if current_method is None:
+        if not target_state:
+            if target_crypto is None and current_crypto is None:
+                return bucket
+            
+            if target_crypto is not None and target_crypto != current_crypto:
                 return bucket
         else:
-            if target_method != current_method:
+            if target_crypto is None and current_crypto is not None:
                 return bucket
+            
+            if target_crypto is not None and current_crypto is not None and target_crypto == current_crypto:
+                    return bucket
         return None
             
-    def get_encryption_method(self, bucket):
+    def get_encryption_crypto(self, bucket):
         client = get_bucket_client(bucket)
         resp = client.getBucketEncryption(bucket['name'])
 

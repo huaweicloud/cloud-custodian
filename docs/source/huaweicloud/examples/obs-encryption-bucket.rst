@@ -12,5 +12,5 @@ OBS - Configuration Encryption For Unencrypted Buckets
       actions:
         - type: set-bucket-encryption
           encryption:
-            method: SSE-KMS
-            kms_key_id: a62cf912-898c-4f6g-a911-197cjd4a6f48
+            crypto: kms
+            key: a62cf912-898c-4f6g-a911-197cjd4a6f48
