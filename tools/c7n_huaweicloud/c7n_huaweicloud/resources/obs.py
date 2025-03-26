@@ -126,9 +126,10 @@ class SetBucketEncryption(HuaweiCloudBaseAction):
               resource: huaweicloud.obs
               filters:
                 - type: bucket-encryption
-                  state: absent
+                  state: False
               actions:
                 - type: set-bucket-encryption
+                  crypto: AES256
                   
     """
     schema  = type_schema(

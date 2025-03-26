@@ -7,8 +7,8 @@ OBS - Configuration Encryption For Unencrypted Buckets
     - name: encryption-bucket
       resource: huaweicloud.obs
       filters:
-        - type: bucket-not-encrypted
-          state: absent
+        - type: bucket-encryption
+          state: False
       actions:
         - type: set-bucket-encryption
           encryption:
