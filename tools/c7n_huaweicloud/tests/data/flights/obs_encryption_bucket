@@ -1,0 +1,312 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 08:14:23 GMT
+      Host:
+      - obs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+    method: HEAD
+    uri: https://obs.ap-southeast-1.myhuaweicloud.com/?apiversion
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Date:
+      - Wed, 26 Mar 2025 08:14:24 GMT
+      Server:
+      - OBS
+      x-obs-api:
+      - '3.0'
+      x-obs-id-2:
+      - 32AAAQAAEAABAAAQAAEAABAAAQAAEAABCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D18450E547CB51D2BC85036C
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 08:14:24 GMT
+      Host:
+      - obs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+      x-obs-location:
+      - 'true'
+    method: GET
+    uri: https://obs.ap-southeast-1.myhuaweicloud.com/
+  response:
+    body:
+      string: <?xml version="1.0" encoding="UTF-8" standalone="yes"?><ListAllMyBucketsResult
+        xmlns="http://obs.myhwclouds.com/doc/2015-06-30/"><Owner><ID>9dca8b8801274a3a9c4184b957dffc83</ID></Owner><Buckets><Bucket><Name>test-buckwt-3az1</Name><CreationDate>2023-02-02T07:39:10.903Z</CreationDate><Location>cn-north-4</Location><BucketType>OBJECT</BucketType></Bucket><Bucket><Name>test-buckwt-3az2</Name><CreationDate>2023-05-26T12:44:05.288Z</CreationDate><Location>cn-north-4</Location><BucketType>OBJECT</BucketType></Bucket><Bucket><Name>test-buckwt-3az3</Name><CreationDate>2023-07-20T10:02:44.464Z</CreationDate><Location>cn-north-4</Location><BucketType>OBJECT</BucketType></Bucket></Buckets></ListAllMyBucketsResult>
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '3873'
+      Content-Type:
+      - application/xml
+      Date:
+      - Wed, 26 Mar 2025 08:14:25 GMT
+      Server:
+      - OBS
+      x-obs-id-2:
+      - 32AAAQAAEAABAAAQAAEAABAAAQAAEAABCTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D18453B344D141934E06B7F7
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 09:40:27 GMT
+      Host:
+      - test-buckwt-3az1.obs.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+    method: HEAD
+    uri: https://test-buckwt-3az1.obs.cn-north-4.myhuaweicloud.com/?apiversion
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Date:
+      - Wed, 26 Mar 2025 09:40:27 GMT
+      Server:
+      - OBS
+      x-obs-api:
+      - '3.0'
+      x-obs-id-2:
+      - 32AAAQAAEAABAAAQAAEAABAAAQAAEAABCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D1D31A52E0E52C1CF1ECB8C9
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 09:40:28 GMT
+      Host:
+      - test-buckwt-3az2.obs.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+    method: GET
+    uri: https://test-buckwt-3az2.obs.cn-north-4.myhuaweicloud.com/?encryption
+  response:
+    body:
+      string: <?xml version="1.0" encoding="UTF-8" standalone="yes"?><ServerSideEncryptionConfiguration
+        xmlns="http://obs.myhwclouds.com/doc/2015-06-30/"><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>kms</SSEAlgorithm></ApplyServerSideEncryptionByDefault></Rule></ServerSideEncryptionConfiguration>
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '294'
+      Content-Type:
+      - application/xml
+      Date:
+      - Wed, 26 Mar 2025 09:40:28 GMT
+      Server:
+      - OBS
+      x-obs-id-2:
+      - 32AAAQAAEAABAAAQAAEAABAAAQAAEAABCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D1D31DCDED87F2441A981648
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 09:43:22 GMT
+      Host:
+      - test-buckwt-3az1.obs.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+    method: GET
+    uri: https://test-buckwt-3az1.obs.cn-north-4.myhuaweicloud.com/?encryption
+  response:
+    body:
+      string: <?xml version="1.0" encoding="UTF-8" standalone="yes"?><ServerSideEncryptionConfiguration
+        xmlns="http://obs.myhwclouds.com/doc/2015-06-30/"><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>AES256</SSEAlgorithm></ApplyServerSideEncryptionByDefault></Rule></ServerSideEncryptionConfiguration>
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '297'
+      Content-Type:
+      - application/xml
+      Date:
+      - Wed, 26 Mar 2025 09:43:23 GMT
+      Server:
+      - OBS
+      x-obs-id-2:
+      - 32AAAQAAEAABAAAQAAEAABAAAQAAEAABCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D1D5C721B024B21A69386B23
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 09:43:23 GMT
+      Host:
+      - test-buckwt-3az3.obs.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+    method: GET
+    uri: https://test-buckwt-3az3.obs.cn-north-4.myhuaweicloud.com/?encryption
+  response:
+    body:
+      string: <?xml version="1.0" encoding="UTF-8" standalone="yes"?><Error><Code>NoSuchEncryptionConfiguration</Code><Message>The
+        encryption configuration does not exist</Message><RequestId>00000195D1D5CA71F026F82A20F0D41E</RequestId><HostId>P1keHFQt8qD5+jkHOlvbsCQRcS8WmnUKtsNPacDFO4BcqR/GG3Mnd38i4I5TP+Dd</HostId><BucketName>test-buckwt-3az3</BucketName></Error>
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '351'
+      Content-Type:
+      - application/xml
+      Date:
+      - Wed, 26 Mar 2025 09:43:24 GMT
+      Server:
+      - OBS
+      x-obs-id-2:
+      - 32AAAQAAEAABAAAQAAEAABAAAQAAEAABCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D1D5CA71F026F82A20F0D41E
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 09:44:38 GMT
+      Host:
+      - test-buckwt-3az2.obs.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+    method: HEAD
+    uri: https://test-buckwt-3az2.obs.cn-north-4.myhuaweicloud.com/?apiversion
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 09:44:39 GMT
+      Server:
+      - OBS
+      x-obs-api:
+      - '3.0'
+      x-obs-id-2:
+      - 32AAAQAAEAABAAAQAAEAABAAAQAAEAABCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D1D6F07BD326D492785FF9E7
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Date:
+      - Wed, 26 Mar 2025 10:08:09 GMT
+      Host:
+      - test-buckwt-3az3.obs.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+    method: HEAD
+    uri: https://test-buckwt-3az3.obs.cn-north-4.myhuaweicloud.com/?apiversion
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Date:
+      - Wed, 26 Mar 2025 10:08:10 GMT
+      Server:
+      - OBS
+      x-obs-api:
+      - '3.0'
+      x-obs-id-2:
+      - 32AAAQAAEAABAAAQAAEAABAAAQAAEAABCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D1EC774FF9041E172821953D
+    status:
+      code: 200
+      message: OK
+- request:
+    body: <ServerSideEncryptionConfiguration><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>AES256</SSEAlgorithm></ApplyServerSideEncryptionByDefault></Rule></ServerSideEncryptionConfiguration>
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '192'
+      Date:
+      - Wed, 26 Mar 2025 10:08:10 GMT
+      Host:
+      - test-buckwt-3az3.obs.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - obs-sdk-python/3.24.6.1
+    method: PUT
+    uri: https://test-buckwt-3az3.obs.cn-north-4.myhuaweicloud.com/?encryption
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Date:
+      - Wed, 26 Mar 2025 10:08:11 GMT
+      Server:
+      - OBS
+      x-obs-id-2:
+      - 32AAAQAAEAABSAAgAAEAABAAAQAAEAABCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      x-obs-request-id:
+      - 00000195D1EC7B19F8CAD45C6BF57023
+    status:
+      code: 200
+      message: OK
+version: 1
