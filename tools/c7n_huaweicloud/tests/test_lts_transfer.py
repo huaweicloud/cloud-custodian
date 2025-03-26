@@ -3,6 +3,7 @@
 from huaweicloud_common import BaseTest
 
 
+
 class TransferTest(BaseTest):
     def test_transfer_filter(self):
         factory = self.replay_flight_data('lts_transfer_filter')
@@ -12,8 +13,8 @@ class TransferTest(BaseTest):
             'filters': [{
                 'type': 'transfer-logGroupStream-id',
                 'metadata': {
-                    "log_group_id": "9a7e2183-2d6d-4732-9a9b-e897fd4e49e0",
-                    "log_stream_id": "839dac89-35af-4db2-ab4a-a7dda0d0d3f8"
+                    "log_group_id": "123",
+                    "log_stream_id": "321"
                 }
             }]
         },
@@ -29,7 +30,7 @@ class TransferTest(BaseTest):
             "filters": [{
                 "type": "value",
                 "key": "log_group_id",
-                "value": "9a7e2183-2d6d-4732-9a9b-e897fd4e49e0"
+                "value": "123"
             }],
             "actions": [{
                 "type": "create-transfer",
