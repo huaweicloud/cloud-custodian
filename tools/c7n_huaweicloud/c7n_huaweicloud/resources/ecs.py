@@ -537,8 +537,10 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
             if status == "SUCCESS":
                 log.info("waitting for create whole image")
                 return True
+            elif status == "RUNNING" or status == "INIT":
+                continue
             else:
-                log.error("waiting for create whole image fail")
+                log.error("waitting for create whole image fail")
                 return False
 
     def fetch_ims_job_status(self, job_id, ims_client):
