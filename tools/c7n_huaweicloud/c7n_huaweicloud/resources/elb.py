@@ -30,8 +30,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.elb")
 @resources.register('elb.loadbalancer')
 class Loadbalancer(QueryResourceManager):
     class resource_type(TypeInfo):
-        service = 'elb'
-        resource = 'loadbalancer'
+        service = 'elb_loadbalancer'
         enum_spec = ("list_load_balancers", 'loadbalancers', 'marker')
         id = 'id'
         tag = True
@@ -308,8 +307,7 @@ class LoadbalancerIsNotLoggingFilter(Filter):
 @resources.register('elb.listener')
 class Listener(QueryResourceManager):
     class resource_type(TypeInfo):
-        service = 'elb'
-        resource = 'listener'
+        service = 'elb_listener'
         enum_spec = ("list_listeners", 'listeners', 'marker')
         id = 'id'
         tag = True

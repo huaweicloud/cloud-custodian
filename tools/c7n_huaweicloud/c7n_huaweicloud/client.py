@@ -136,7 +136,7 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(EgRegion.value_of(self.region)) \
                 .build()
-        elif service == 'elb':
+        elif service in ['elb_loadbalancer', 'elb_listener']:
             client = ElbClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(ElbRegion.value_of(self.region)) \
@@ -154,7 +154,7 @@ class Session:
 
         return client
 
-    def request(self, service, resource=None):
+    def request(self, service):
         if service == 'vpc' or service == 'vpc_v2':
             request = ListSecurityGroupsRequest()
         elif service == 'evs':
@@ -167,10 +167,9 @@ class Session:
             request = ListAlarmRulesRequest()
         elif service == 'functiongraph':
             request = ListFunctionsRequest()
-        elif service == 'elb':
-            if resource == 'loadbalancer':
-                request = ListLoadBalancersRequest()
-            elif resource == 'listener':
-                request = ListListenersRequest()
+        elif service == 'elb_loadbalancer':
+            request = ListLoadBalancersRequest()
+        elif service == 'elb_listener':
+            request = ListListenersRequest()
 
         return request
