@@ -34,7 +34,7 @@ class RAMSharedPrincipals(QueryResourceManager):
     """
     class resource_type(TypeInfo):
         service = 'ram'
-        enum_spec = ("search_resource_share_associations", 'resource_share_associations', 'offset')
+        enum_spec = ("search_resource_share_associations", 'resource_share_associations', 'marker')
         id = 'resource_share_id'
 
 @RAMSharedPrincipals.action_registry.register("disassociate")

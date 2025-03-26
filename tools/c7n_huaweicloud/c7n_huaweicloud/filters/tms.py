@@ -9,12 +9,13 @@ from dateutil.parser import parse
 
 from c7n.filters.offhours import Time
 
-
 DEFAULT_TAG = "mark-for-op-custodian"
+
 
 def register_tms_filters(filters):
     filters.register('tag-count', TagCountFilter)
     filters.register('marked-for-op', TagActionFilter)
+
 
 class TagCountFilter(Filter):
     """Simplify tag counting..
@@ -149,33 +150,41 @@ class TagActionFilter(Filter):
             current_date = datetime.now()
 
         return current_date >= (
-            action_date - timedelta(days=skew, hours=skew_hours))
+                action_date - timedelta(days=skew, hours=skew_hours))
 
     def replace_nth_regex(self, s, old, new, n):
         pattern = re.compile(re.escape(old))
         matches = list(pattern.finditer(s))
         if len(matches) < n:
             return s
-        match = matches[n-1]
+        match = matches[n - 1]
         return s[:match.start()] + new + s[match.end():]
 
     def get_tags_from_resource(self, resource):
         try:
-            if isinstance(resource, dict) and 'tags' in resource:
-                tags = resource['tags']
-                if isinstance(tags, dict):
-                    return tags
-                elif isinstance(tags, list):
-                    res_tags = {}
-                    for tag in tags:
-                        if isinstance(tag, dict):
-                            return res_tags.update(tag)
-                        elif isinstance(tag, str):
-                            parts = tag.split('=')
-                            if len(parts) == 2:
-                                res_tags[parts[0]] = parts[1]
-                    return res_tags
+            tags = resource["tags"]
+            if isinstance(tags, dict):
+                return tags
+            elif isinstance(tags, list):
+                if all(isinstance(item, dict) and len(item) == 1 for item in tags):
+                    # [{k1: v1}, {k2: v2}]
+                    result = {}
+                    for item in tags:
+                        key, value = list(item.items())[0]
+                        result[key] = value
+                    return result
+                elif all(isinstance(item, str) and '=' in item for item in tags):
+                    # ["k1=v1", "k2=v2"]
+                    result = {}
+                    for item in tags:
+                        key, value = item.split('=', 1)
+                        result[key] = value
+                    return result
+                elif all(isinstance(item, dict) and 'key' in item and 'value' in item for item in
+                         tags):
+                    # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
+                    return {item['key']: item['value'] for item in tags}
             return None
-        except Exception as ex:
+        except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
             return None
