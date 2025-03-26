@@ -22,6 +22,7 @@ class Tracker(QueryResourceManager):
         enum_spec = ("list_trackers", "trackers", "offset")
         id = 'id'
         tag = True
+        tag_resource_type = 'cts-tracker'
 
 
 @Tracker.action_registry.register("delete-tracker")
