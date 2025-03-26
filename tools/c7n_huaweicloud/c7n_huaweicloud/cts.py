@@ -7,9 +7,17 @@ class CloudTraceServiceEvents:
     """A mapping of events to resource types"""
 
     trace_events = {
-        'CreateFunction': {
-            'source': 'FunctionGraph',
+        'createFunction': {
+            'source': 'FunctionGraph.Functions',
             'ids': 'resource_id',
+        },
+        'createFlowLog': {
+            'source': 'VPC.flowlogs',
+            'ids': 'resource_id'
+        },
+        'updateFlowLog': {
+            'source': 'VPC.flowlogs',
+            'ids': 'resource_id'
         }
     }
 
@@ -19,16 +27,16 @@ class CloudTraceServiceEvents:
 
     @classmethod
     def match(cls, event):
-        if 'data' not in event:
+        if 'cts' not in event:
             return False
-        if 'trace_name' not in event['data']:
+        if 'trace_name' not in event['cts']:
             return False
-        k = event['data']['trace_name']
+        k = event['cts']['trace_name']
 
         if k in cls.trace_events:
             v = dict(cls.trace_events[k])
             if isinstance(v['ids'], str):
-                v['ids'] = e = jmespath_compile('data.%s' % v['ids'])
+                v['ids'] = e = jmespath_compile('cts.%s' % v['ids'])
                 cls.trace_events[k]['ids'] = e
             return v
 
@@ -38,8 +46,8 @@ class CloudTraceServiceEvents:
     def get_trace_ids(cls, event, mode):
         """extract resources ids from a CTS event."""
         resource_ids = ()
-        event_name = event['data']['trace_name']
-        event_source = event['data']['service_type']
+        event_name = event['cts']['trace_name']
+        event_source = event['cts']['service_type'] + "." + event['cts']['resource_type']
         for e in mode.get('events', []):
             if not isinstance(e, dict):
                 # Check if we have a short cut / alias
@@ -57,8 +65,10 @@ class CloudTraceServiceEvents:
                 raise ValueError("No id query configured")
             evt = event
 
-            if not id_query.startswith('data.'):
-                evt = event.get('data', {})
+            if not id_query.startswith('cts.'):
+                evt = event.get('cts', {})
+            if id_query.startswith('request.'):
+                pass
             resource_ids = jmespath_search(id_query, evt)
             if resource_ids:
                 break
