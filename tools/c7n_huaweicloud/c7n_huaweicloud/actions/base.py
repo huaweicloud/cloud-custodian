@@ -8,6 +8,8 @@ from abc import ABC
 from c7n.actions import BaseAction
 from huaweicloudsdkcore.exceptions import exceptions
 
+from c7n.utils import local_session
+
 log = logging.getLogger("custodian.huaweicloud.actions.base")
 
 
@@ -24,7 +26,6 @@ class HuaweiCloudBaseAction(BaseAction, ABC):
 
     def process_result(self, resources):
         self.result.get("succeeded_resources").extend(resources)
-        print(self.result)
         return self.result
 
     def process(self, resources):
@@ -34,13 +35,14 @@ class HuaweiCloudBaseAction(BaseAction, ABC):
             except exceptions.ClientRequestException as ex:
                 res = resource.get("id", resource.get("name"))
                 log.exception(
-                    f"Unable to submit action against the resource - {res} RequestId: {ex.request_id}, Reason: {ex.error_msg}"
+                    f"Unable to submit action against the resource - {res}"
+                    f" RequestId: {ex.request_id}, Reason: {ex.error_msg}"
                 )
                 self.handle_exception(resource, resources)
         return self.process_result(resources)
 
-    # All the HuaweiCloud actions that extends the HuaweiCloudBaseAction should implement the below method to
-    # have the logic for invoking the respective client
+    # All the HuaweiCloud actions that extends the HuaweiCloudBaseAction should implement
+    # the below method to have the logic for invoking the respective client
     @abc.abstractmethod
     def perform_action(self, resource):
         raise NotImplementedError("Base action class does not implement this behavior")

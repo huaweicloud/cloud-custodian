@@ -3,8 +3,7 @@
 
 import logging
 
-from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdkevs.v2 import *
+from huaweicloudsdkevs.v2 import DeleteVolumeRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -20,7 +19,7 @@ class Volume(QueryResourceManager):
         service = 'evs'
         enum_spec = ("list_volumes", 'volumes', 'offset')
         id = 'id'
-        tag = True
+        tag_resource_type = 'disk'
 
 
 @Volume.action_registry.register("delete")
