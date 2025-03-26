@@ -3,8 +3,8 @@
 
 import logging
 
-from boto3 import client
-from huaweicloudsdkcts.v3 import *
+from huaweicloudsdkcts.v3 import (DeleteTrackerRequest, UpdateTrackerRequest,
+                                  UpdateTrackerRequestBody, )
 from huaweicloudsdkcore.exceptions import exceptions
 
 from c7n.utils import type_schema
