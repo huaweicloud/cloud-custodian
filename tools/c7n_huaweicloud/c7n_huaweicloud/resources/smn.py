@@ -71,7 +71,8 @@ class TopicLtsFilter(Filter):
             request = ListLogtankRequest(topic_urn=data["topic_urn"])
             response = client.list_logtank(request)
             res = jmespath.search('count', eval(
-                str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
+                str(response).replace('null', 'None').replace('false', 'False').replace('true',
+                                                                                        'True')))
             if self.check(enabled, res) is False:
                 continue
             data['lts'] = str(response)
@@ -104,7 +105,8 @@ class TopicAccessFilter(Filter):
               - type: topic-access
                 effect: Allow
                 user: *
-                organization: o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c
+                organization: 'o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9
+                /ou-0dbfffe92fd92ddb35feff9b4079459c'
                 service: obs
             actions:
               - delete
@@ -114,7 +116,8 @@ class TopicAccessFilter(Filter):
               - type: topic-access
                 effect: Allow
                 user: 2284f67d00db4d5896511837ef2f7366
-                organization: o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c
+                organization: 'o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9
+                /ou-0dbfffe92fd92ddb35feff9b4079459c'
                 service: obs
             actions:
               - delete
@@ -150,7 +153,6 @@ class TopicAccessFilter(Filter):
                 continue
             data['access_policy'] = access_policy
             resources_valid.append(data)
-            log.info(f"TopicAccessFilter success, resource :{data}, request:{request}, response:{response}")
         return resources_valid
 
     def check(self, access_policy):
@@ -249,7 +251,6 @@ class TopicDelete(HuaweiCloudBaseAction):
         try:
             request = DeleteTopicRequest(topic_urn=resource["topic_urn"])
             response = client.delete_topic(request)
-            log.info(f"TopicDelete success, resource :{resource}, request:{request}, response:{response}")
         except exceptions.ClientRequestException as e:
             log.error(f"TopicDelete failed, resource :{resource}, exceptions:{e}")
         return response
@@ -291,10 +292,10 @@ class TopicCreateLts(HuaweiCloudBaseAction):
         response = None
         try:
             request = CreateLogtankRequest(topic_urn=resource["topic_urn"],
-                                           body=CreateLogtankRequestBody(log_group_id=self.data.get('log_group_id'),
-                                                                         log_stream_id=self.data.get('log_stream_id')))
+                                           body=CreateLogtankRequestBody(
+                                               log_group_id=self.data.get('log_group_id'),
+                                               log_stream_id=self.data.get('log_stream_id')))
             response = client.create_logtank(request)
-            log.info(f"Create lts to SMN Topics success, resource :{resource}, request:{request}, response:{response}")
         except exceptions.ClientRequestException as e:
             log.error(f"Create lts to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
@@ -330,8 +331,6 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                 request = DeleteLogtankRequest(topic_urn=resource["topic_urn"],
                                                logtank_id=ltsResponse.logtanks[0].id)
                 response = client.delete_logtank(request)
-
-            log.info(f"Delete lts to SMN Topics success, resource :{resource}, request:{request}, response:{response}")
         except exceptions.ClientRequestException as e:
             log.error(f"Delete lts to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
@@ -354,7 +353,20 @@ class TopicUpdateAccess(HuaweiCloudBaseAction):
                 value: "111"
             actions:
               - type: update-access
-                value: "{\"Version\":\"2016-09-07\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__user_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"CSP\":[\"urn:csp:iam::{domainID}:root\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"{topic_urn}\"},{\"Sid\":\"__org_path_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"OrgPath\":[\"o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"{topic_urn}\"},{\"Sid\":\"__service_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"obs\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"{topic_urn}\"}]}"
+                value: "{\"Version\":\"2016-09-07\",\"Id\":\"__default_policy_ID\",
+                \"Statement\":[{\"Sid\":\"__user_pub_0\",\"Effect\":\"Allow\",
+                \"Principal\":{\"CSP\":[\"urn:csp:iam::{domainID}:root\"]},
+                \"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],
+                \"Resource\":\"{topic_urn}\"},
+                {\"Sid\":\"__org_path_pub_0\",\"Effect\":\"Allow\",
+                \"Principal\":{\"OrgPath\":[\"o-bf966fe82ebb4d35d68b791729228788
+                /r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c\"]},
+                \"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],
+                \"Resource\":\"{topic_urn}\"},
+                {\"Sid\":\"__service_pub_0\",\"Effect\":\"Allow\",
+                \"Principal\":{\"Service\":[\"obs\"]},
+                \"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],
+                \"Resource\":\"{topic_urn}\"}]}"
     """
 
     schema = type_schema("update-access", rinherit={
@@ -371,11 +383,11 @@ class TopicUpdateAccess(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         response = None
         try:
-            request = UpdateTopicAttributeRequest(topic_urn=resource["topic_urn"], name='access_policy',
+            request = UpdateTopicAttributeRequest(topic_urn=resource["topic_urn"],
+                                                  name='access_policy',
                                                   body=UpdateTopicAttributeRequestBody(
                                                       value=self.data.get('value')))
             response = client.update_topic_attribute(request)
-            log.info(f"Update lts to SMN Topics success, resource :{resource}, request:{request}, response:{response}")
         except exceptions.ClientRequestException as e:
             log.error(f"Update lts to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
@@ -408,9 +420,6 @@ class TopicDeleteAccess(HuaweiCloudBaseAction):
         try:
             request = DeleteTopicAttributesRequest(topic_urn=resource["topic_urn"])
             response = client.delete_topic_attributes(request)
-
-            log.info(
-                f"Delete access to SMN Topics success, resource :{resource}, request:{request}, response:{response}")
         except exceptions.ClientRequestException as e:
             log.error(f"Delete access to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
@@ -441,13 +450,11 @@ class TopicGetAccess(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         response = None
         try:
-            request = ListTopicAttributesRequest(topic_urn=resource["topic_urn"], name='access_policy')
+            request = ListTopicAttributesRequest(topic_urn=resource["topic_urn"],
+                                                 name='access_policy')
             response = client.list_topic_attributes(request)
             access_policy = response.attributes.access_policy
             resource['access_policy'] = access_policy
-
-            log.info(
-                f"Get access to SMN Topics success, resource :{resource}, request:{request}, response:{response}")
         except exceptions.ClientRequestException as e:
             log.error(f"Get access to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
