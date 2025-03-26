@@ -3,7 +3,7 @@
 
 import logging
 
-from huaweicloudsdkcts.v3 import *
+from huaweicloudsdkcts.v3 import UpdateNotificationRequest, UpdateNotificationRequestBody,NotificationUsers
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
