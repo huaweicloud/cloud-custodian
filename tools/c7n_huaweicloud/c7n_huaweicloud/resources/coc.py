@@ -3,12 +3,13 @@
 
 import logging
 
-from huaweicloudsdksmn.v2 import *
+from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody
 from c7n.utils import type_schema, local_session
 from c7n.exceptions import PolicyValidationError
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger("custodian.huaweicloud.resources.coc")
 
@@ -93,5 +94,8 @@ class NonCompliantAlarm(HuaweiCloudBaseAction):
             message=message + '\n' + message_data
         )
         request = PublishMessageRequest(topic_urn=topic_urn, body=message_body)
-        response = client.publish_message(request)
-        log.info(f"Successfully create smn alarm message, the message id: {response.message_id}.")
+        try:
+            response = client.create_alarm_rules(request)
+            log.info(f"Successfully create smn alarm message, the message id: {response.message_id}.")
+        except exceptions.ClientRequestException as e:
+            log.error(f"Create smn alarm message failed: {e.error_msg}")
