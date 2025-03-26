@@ -532,11 +532,14 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
 
     def wait_backup(self, job_id, ims_client):
         while True:
+            time.sleep(5)
             status = self.fetch_ims_job_status(job_id, ims_client)
             if status == "SUCCESS":
                 log.info("waitting for create whole image")
                 return True
-            time.sleep(5)
+            else:
+                log.error("waiting for create whole image fail")
+                return False
 
     def fetch_ims_job_status(self, job_id, ims_client):
         request = ShowJobProgressRequest(job_id=job_id)
