@@ -43,7 +43,8 @@ from huaweicloudsdksmn.v2 import SmnClient, ListTopicsRequest
 from huaweicloudsdknat.v2.region.nat_region import NatRegion
 from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
     ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
-from huaweicloudsdkram.v1 import *
+from huaweicloudsdkram.v1 import RamClient, SearchResourceShareAssociationsRequest, \
+    SearchResourceShareAssociationsReqBody
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 
 log = logging.getLogger('custodian.huaweicloud.client')
@@ -228,4 +229,5 @@ class Session:
             request.body = SearchResourceShareAssociationsReqBody(
                 association_type="principal",
                 association_status="associated")
+
         return request

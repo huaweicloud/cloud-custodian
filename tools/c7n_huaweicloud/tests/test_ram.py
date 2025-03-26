@@ -25,11 +25,10 @@ class RamTest(BaseTest):
         self.assertEqual(resources[0]['association_type'], "principal")
         self.assertEqual(resources[0]['status'], "associated")
 
-
-    def test_search_external_shared_principals(self):
+    def test_disassociate_external_shared_principals(self):
         factory = self.replay_flight_data('ram_request')
         p = self.load_policy({
-            "name": "search-external-shared-principals",
+            "name": "disassociate-external-shared-principals",
             "resource": "huaweicloud.ram-shared-principals",
             "filters": [{
                 "type": "value",

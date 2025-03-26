@@ -3,15 +3,15 @@
 
 import logging
 
-from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdkram.v1 import *
+from huaweicloudsdkram.v1 import DisassociateResourceShareRequest, ResourceShareAssociationReqBody
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-                                                                                           
+
 log = logging.getLogger("custodian.huaweicloud.resources.ram")
+
 
 @resources.register('ram-shared-principals')
 class RAMSharedPrincipals(QueryResourceManager):
@@ -19,18 +19,17 @@ class RAMSharedPrincipals(QueryResourceManager):
 
     :Example:
 
-    Returns all external shared principals       
+    Returns all external shared principals  
 
     .. code-block::yaml
-            
+  
         policies:
           - name: search-external-shared-principals
             resource:huaweicloud.RAMSharedPrincipals
             filters:
             - type: value
-              key: external                                                                                     
+              key: external                                                                            
               vaule: true
-    
     """
     class resource_type(TypeInfo):
         service = 'ram'
@@ -66,5 +65,3 @@ class DisassociatedExternalPrincipals(HuaweiCloudBaseAction):
         log.info(f"response:{response}")
         response = None
         return response
-        
-
