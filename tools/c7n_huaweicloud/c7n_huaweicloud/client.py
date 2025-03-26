@@ -22,10 +22,8 @@ from huaweicloudsdkfunctiongraph.v2 import FunctionGraphClient, ListFunctionsReq
 from huaweicloudsdkfunctiongraph.v2.region.functiongraph_region import FunctionGraphRegion
 from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
-<<<<<<< HEAD
 from huaweicloudsdklts.v2 import *
 from huaweicloudsdklts.v2.region.lts_region import LtsRegion
-=======
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
@@ -42,7 +40,6 @@ from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
 from huaweicloudsdkgeip.v3 import GeipClient
 from huaweicloudsdkims.v2.region.ims_region import ImsRegion
 from huaweicloudsdkims.v2 import ImsClient, ListImagesRequest
->>>>>>> 8f7ac7695b6267ea40f0e4a6363e0f2d80344e02
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -104,6 +101,7 @@ class Session:
             client = LtsClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(LtsRegion.value_of(self.region)) \
+                .build()
         elif service == 'tms':
             globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = TmsClient.new_builder() \

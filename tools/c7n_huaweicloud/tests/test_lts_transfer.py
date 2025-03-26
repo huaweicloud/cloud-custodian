@@ -12,9 +12,36 @@ class TransferTest(BaseTest):
             'filters': [{
                 'type': 'transfer-logGroupStream-id',
                 'metadata': {
-                    "log_group_id": "cfddae22-6465-4b2f-8b19-123466021f88",
-                    "log_stream_id": "b831798c-1798-4a9e-80c4-371402a97f30"
+                    "log_group_id": "9a7e2183-2d6d-4732-9a9b-e897fd4e49e0",
+                    "log_stream_id": "839dac89-35af-4db2-ab4a-a7dda0d0d3f8"
                 }
+            }]
+        },
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+    def test_create_transfer(self):
+        factory = self.replay_flight_data("lts_transfer_create")
+        p = self.load_policy({
+            "name": "createTransferForStream",
+            'resource': 'huaweicloud.lts-transfer',
+            "filters": [{
+                "type": "value",
+                "key": "log_group_id",
+                "value": "9a7e2183-2d6d-4732-9a9b-e897fd4e49e0"
+            }],
+            "actions": [{
+                "type": "create-transfer",
+                "log_group_id": "8ba9e43f-be60-4d8c-9015-xxxxxxxxxxxx",
+                "log_streams": [{"log_stream_id": "c776e1a7-8548-430a-afe5-xxxxxxxxxxxx"}],
+                "log_transfer_type": "OBS",
+                "log_transfer_mode": "cycle",
+                "log_storage_format": "JSON",
+                "log_transfer_status": "ENABLE",
+                "obs_period": 2,
+                "obs_period_unit": "min",
+                "obs_bucket_name": "xianggangtest001"
             }]
         },
             session_factory=factory)

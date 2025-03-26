@@ -23,6 +23,7 @@ class Transfer(QueryResourceManager):
         enum_spec = ("list_transfers", 'log_transfers', 'offset')
         id = 'log_transfer_id'
         tag = True
+        tag_resource_type = 'ltstransfer'
 
 Transfer.filter_registry.register('transfer-logGroupStream-id', LtsTransferLogGroupStreamFilter)
 

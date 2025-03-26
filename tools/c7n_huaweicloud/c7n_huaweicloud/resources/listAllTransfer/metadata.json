@@ -1,0 +1,75 @@
+{
+  "policy": {
+    "name": "listAllTransfer",
+    "resource": "huaweicloud.lts-transfer",
+    "filters": [
+      {
+        "type": "transfer-logGroupStream-id",
+        "metadata": {
+          "log_group_id": "cfddae22-6465-4b2f-8b19-123466021f88",
+          "log_stream_id": "b831798c-1798-4a9e-80c4-371402a97f30"
+        }
+      }
+    ]
+  },
+  "version": "0.9.43",
+  "execution": {
+    "id": "530a2b89-1ef1-4cbd-8731-8c45d07a2539",
+    "start": 1742975875.482415,
+    "end_time": 1742975876.5377889,
+    "duration": 1.0553739070892334
+  },
+  "config": {
+    "region": "",
+    "regions": [],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": null,
+    "assume_role": null,
+    "session_policy": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": ".",
+    "cache_period": 0,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "listTransferCusto.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": 1,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {},
+  "api-stats": {},
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2025-03-26T15:57:56.537461",
+      "Value": 1,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2025-03-26T15:57:56.537482",
+      "Value": 1.0535008907318115,
+      "Unit": "Seconds"
+    },
+    {
+      "MetricName": "ActionTime",
+      "Timestamp": "2025-03-26T15:57:56.537778",
+      "Value": 1.9073486328125e-06,
+      "Unit": "Seconds"
+    }
+  ]
+}
