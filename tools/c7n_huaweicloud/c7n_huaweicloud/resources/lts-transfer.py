@@ -5,14 +5,13 @@ import logging
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdklts.v2 import CreateTransferRequestBodyLogTransferInfo, TransferDetail, \
-    CreateTransferRequestBodyLogStreams, CreateTransferRequestBody, CreateTransferRequest
+            CreateTransferRequestBodyLogStreams, CreateTransferRequestBody, CreateTransferRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-
-from logStreamIdFilter import LtsTransferLogGroupStreamFilter
+from c7n_huaweicloud.filters.transfer import LtsTransferLogGroupStreamFilter
 
 log = logging.getLogger("custodian.huaweicloud.resources.lts-transfer")
 
