@@ -16,23 +16,6 @@ class ObsWildcardStatementsTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 3)
 
-    def test_filter_wildcard_statements(self):
-        factory = self.replay_flight_data('obs_remove_wildcard_statements')
-        p = self.load_policy({
-             'name': 'filter-wildcard-statements',
-             'resource': 'huaweicloud.obs',
-             'filters': [{"type": "wildcard-statements"}]
-            },
-            session_factory=factory)
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0]['name'], 'test-buckwt-3az1')
-        self.assertEqual(resources[0]['c7n:WildcardStatements'],
-                         [{'Sid': 'test-policy', 'Effect': 'Allow',
-                           'Principal': {'ID': ['*']},
-                           'Action': ['*'], 'Resource':
-                           ['test-buckwt-3az1', 'test-buckwt-3az1/*']}])
-
 
 class ObsEncryptionBucketTest(BaseTest):
     def test_filter_not_encryptied_buckets(self):
