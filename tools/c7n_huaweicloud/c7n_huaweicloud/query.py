@@ -5,7 +5,6 @@ import logging
 import jmespath
 import sys
 
-from urllib.parse import parse_qs
 from c7n.actions import ActionRegistry
 from c7n.filters import FilterRegistry
 from c7n.manager import ResourceManager
@@ -169,6 +168,37 @@ class ResourceQuery:
     def _invoke_client_enum(self, client, enum_op, request):
         return getattr(client, enum_op)(request)
 
+    def _pagination_ims(self, m, enum_op, path):
+        session = local_session(self.session_factory)
+        client = session.client(m.service)
+        project_id = client._credentials.project_id
+        marker = None
+        limit = DEFAULT_LIMIT_SIZE
+        resources = []
+        while 1:
+            request = session.request(m.service)
+            request.limit = limit
+            request.marker = marker
+            request.owner = project_id
+            response = self._invoke_client_enum(client, enum_op, request)
+            res = jmespath.search(
+                path,
+                eval(
+                    str(response)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                ),
+            )
+            if not res:
+                return resources
+            for data in res:
+                data["id"] = data[m.id]
+                data["tag_resource_type"] = m.tag_resource_type
+                marker = data["id"]
+            resources.extend(res)
+        return resources
+
 
 # abstract method for pagination
 class DefaultMarkerPagination(MarkerPagination):
@@ -187,30 +217,6 @@ class DefaultMarkerPagination(MarkerPagination):
             return None
         return {'limit': self.limit, 'marker': next_marker}
 
-
-    def _pagination_ims(self, m, enum_op, path):
-        session = local_session(self.session_factory)
-        client = session.client(m.service)
-        project_id=client._credentials.project_id
-        marker = None
-        limit = DEFAULT_LIMIT_SIZE
-        resources = []
-        while 1:
-            request = session.request(m.service)
-            request.limit = limit
-            request.marker = marker
-            request.owner = project_id
-            response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(path, eval(
-                str(response).replace('null', 'None').replace('false', 'False').replace('true', 'True')))
-            if not res:
-                return resources
-            for data in res:
-                data['id'] = data[m.id]
-                data['tag_resource_type'] = m.tag_resource_type
-                marker=data['id']
-            resources.extend(res)            
-        return resources
 
 @sources.register('describe-huaweicloud')
 class DescribeSource:

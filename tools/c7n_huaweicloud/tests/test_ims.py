@@ -1,6 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from huaweicloud_common import *
+from huaweicloud_common import BaseTest
 
 
 class ImsTest(BaseTest):

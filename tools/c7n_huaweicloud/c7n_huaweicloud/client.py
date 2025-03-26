@@ -31,7 +31,7 @@ from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
 from huaweicloudsdkeg.v1 import EgClient
 from huaweicloudsdkeg.v1.region.eg_region import EgRegion
 from huaweicloudsdkims.v2.region.ims_region import ImsRegion
-from huaweicloudsdkims.v2 import *
+from huaweicloudsdkims.v2 import ImsClient, ListImagesRequest
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
