@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ResourceMap = {
-    "huaweicloud.volume": "c7n_huaweicloud.resources.volume.Volume",
     "huaweicloud.evs-volume": "c7n_huaweicloud.resources.evs.Volume",
     "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
     "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker",
