@@ -352,13 +352,9 @@ class Session:
 
     def region_client(self, service, region):
         if service == 'obs':
-            if self.token is not None:
-                client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
-                                    server=ObsRegion.value_of(region).endpoint,
-                                    security_token=self.token)
-            else:
-                client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
-                                    server=ObsRegion.value_of(region).endpoint)
+            client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
+                                server=ObsRegion.value_of(region).endpoint,
+                                security_token=self.token)
         return client
 
     def request(self, service):

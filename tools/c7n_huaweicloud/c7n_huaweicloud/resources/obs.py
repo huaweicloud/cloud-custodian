@@ -33,6 +33,12 @@ class ObsSdkError():
         self.encoded_auth_msg = ""
 
 
+def get_obs_client(session_factory, bucket):
+    session = local_session(session_factory)
+    client = session.region_client(Obs.resource_type.service, bucket['location'])
+    return client
+
+
 @Obs.action_registry.register('delete-wildcard-statements')
 class DeleteWildcardStatement(HuaweiCloudBaseAction):
     """Action to delete wildcard policy statements from obs buckets
@@ -86,8 +92,7 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
 
     def update_statements(self, bucket, policy):
         bucket_name = bucket['name']
-        session = local_session(self.manager.session_factory)
-        client = session.region_client(Obs.resource_type.service, bucket['location'])
+        client = get_obs_client(self.manager.session_factory, bucket)
 
         if not policy['Statement']:
             resp = client.deleteBucketPolicy(bucket_name)
@@ -148,8 +153,7 @@ class SetBucketEncryption(HuaweiCloudBaseAction):
 
         cfg = self.data['encryption']
 
-        session = local_session(self.manager.session_factory)
-        client = session.region_client(Obs.resource_type.service, bucket['location'])
+        client = get_obs_client(self.manager.session_factory, bucket)
         if cfg['crypto'] == 'AES256':
             resp = client.setBucketEncryption(bucket_name, 'AES256')
         else:
@@ -225,8 +229,7 @@ class WildcardStatementFilter(Filter):
         return None
 
     def get_bucket_policy(self, bucket):
-        session = local_session(self.manager.session_factory)
-        client = session.region_client(Obs.resource_type.service, bucket['location'])
+        client = get_obs_client(self.manager.session_factory, bucket)
         resp = client.getBucketPolicy(bucket['name'])
 
         if resp.status < 300:
@@ -297,8 +300,7 @@ class BucketEncryptionStateFilter(Filter):
         return None
 
     def get_encryption_crypto(self, bucket):
-        session = local_session(self.manager.session_factory)
-        client = session.region_client(Obs.resource_type.service, bucket['location'])
+        client = get_obs_client(self.manager.session_factory, bucket)
         resp = client.getBucketEncryption(bucket['name'])
 
         if resp.status < 300:
