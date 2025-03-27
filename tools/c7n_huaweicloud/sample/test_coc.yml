@@ -1,0 +1,27 @@
+policies:
+  - name: non-compliant-patch
+    resource: huaweicloud.coc
+    filters:
+      - type: value
+        key: status
+        value: 'non_compliant'
+        op: eq
+      - type: value
+        key: report_scene
+        value: 'ECS'
+        op: eq
+      - type: value
+        key: operating_system
+        value: 'CentOS'
+        op: eq
+      - type: value
+        key: region
+        value: 'cn-north-4'
+        op: eq
+    actions:
+      - type: non_compliant_alarm
+        smn: True
+        region_id: 'cn-north-4'
+        topic_urn: 'urn:smn:cn-north-4:xxxxx:custodian_test'
+        subject: 'Machine Non-compliant Patch Version Alert'
+        message: 'There are machines with non compliant patch versions installed under your account:'

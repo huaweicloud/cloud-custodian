@@ -25,6 +25,7 @@ ResourceMap = {
     "huaweicloud.nat-gateway": "c7n_huaweicloud.resources.nat.NatGateway",
     "huaweicloud.nat-snat-rule": "c7n_huaweicloud.resources.nat.NatSnatRule",
     "huaweicloud.nat-dnat-rule": "c7n_huaweicloud.resources.nat.NatDnatRule",
+    "huaweicloud.secmaster": "c7n_huaweicloud.resources.secmaster.Secmaster",
     "huaweicloud.cts-tracker": "c7n_huaweicloud.resources.cts-tracker.Tracker",
     "huaweicloud.cts-notification-smn":
         "c7n_huaweicloud.resources.cts-notification-smn.Notification",
@@ -32,4 +33,9 @@ ResourceMap = {
         "c7n_huaweicloud.resources.cts-notification-func.Notification",
     "huaweicloud.cbr-backup": "c7n_huaweicloud.resources.cbr_backup.CbrBackup",
     "huaweicloud.cbr-vault": "c7n_huaweicloud.resources.cbr_vault.CbrVault",
+    "huaweicloud.sfsturbo": "c7n_huaweicloud.resources.sfsturbo.SfsTurbo",
+    "huaweicloud.coc": "c7n_huaweicloud.resources.coc.Coc",
+    "huaweicloud.org-policy": "c7n_huaweicloud.resources.organizations.OrgPolicy",
+    "huaweicloud.org-account": "c7n_huaweicloud.resources.organizations.OrgAccount",
+    "huaweicloud.org-unit": "c7n_huaweicloud.resources.organizations.OrgUnit",
 }
