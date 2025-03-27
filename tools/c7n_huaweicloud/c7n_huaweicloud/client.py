@@ -46,6 +46,9 @@ from huaweicloudsdknat.v2.region.nat_region import NatRegion
 from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
     ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
 
+from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
+from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
+
 log = logging.getLogger('custodian.huaweicloud.client')
 
 
@@ -184,7 +187,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(NatRegion.value_of(self.region)) \
                 .build()
-
+        elif service == 'secmaster':
+            client = SecMasterClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(SecMasterRegion.value_of(self.region)) \
+                .build()
         return client
 
     def request(self, service):
@@ -221,5 +228,6 @@ class Session:
             request = ListNatGatewaySnatRulesRequest()
         elif service == 'nat_dnat_rule':
             request = ListNatGatewayDnatRulesRequest()
-
+        elif service == 'secmaster':
+            request = ListWorkspacesRequest()
         return request

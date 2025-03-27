@@ -21,5 +21,6 @@ ResourceMap = {
     "huaweicloud.elb.listener": "c7n_huaweicloud.resources.elb.Listener",
     "huaweicloud.nat-gateway": "c7n_huaweicloud.resources.nat.NatGateway",
     "huaweicloud.nat-snat-rule": "c7n_huaweicloud.resources.nat.NatSnatRule",
-    "huaweicloud.nat-dnat-rule": "c7n_huaweicloud.resources.nat.NatDnatRule"
+    "huaweicloud.nat-dnat-rule": "c7n_huaweicloud.resources.nat.NatDnatRule",
+    "huaweicloud.secmaster": "c7n_huaweicloud.resources.secmaster.Secmaster"
 }
