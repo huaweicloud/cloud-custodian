@@ -53,11 +53,6 @@ from huaweicloudsdkcbr.v1 import CbrClient
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
 from huaweicloudsdksmn.v2 import SmnClient, ListTopicsRequest
 from huaweicloudsdknat.v2.region.nat_region import NatRegion
-from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
-    ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
-from huaweicloudsdkcts.v3 import CtsClient, ListTrackersRequest, ListNotificationsRequest
-from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
-from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest
 from huaweicloudsdknat.v2 import (
     ListNatGatewaysRequest,
     NatClient,

@@ -41,13 +41,10 @@ huaweicloudsdkkms = "^3.1.138"
 huaweicloudsdkcbr = "^3.1.138"
 huaweicloudsdknat = "^3.1.138"
 huaweicloudsdkcts = "^3.1.139"
-<<<<<<< HEAD
-huaweicloudsdkram = "^3.1.138"
-=======
 huaweicloudsdksecmaster = "^3.1.140"
 huaweicloudsdksfsturbo = "^3.1.138"
 huaweicloudsdkorganizations ="^3.1.138"
->>>>>>> upstream/main
+huaweicloudsdkram = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"
