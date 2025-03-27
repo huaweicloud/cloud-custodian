@@ -5,7 +5,6 @@ from huaweicloud_common import BaseTest
 
 os.environ["HUAWEI_DEFAULT_REGION"] = 'cn-north-4'
 
-
 class RamTest(BaseTest):
 
     def test_search_external_shared_principals(self):
@@ -16,8 +15,8 @@ class RamTest(BaseTest):
             "filters": [{
                 "type": "value",
                 "key": "external",
-                "value": "true"
-            }]
+                "value": True
+            }],
         }, session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -34,11 +33,11 @@ class RamTest(BaseTest):
             "filters": [{
                 "type": "value",
                 "key": "external",
-                "value": "true"
+                "value": True
             }],
             "actions": [{
                 "type": "disassociate"
             }]
         }, session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 0)
+        self.assertEqual(len(resources), 1)
