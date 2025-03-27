@@ -54,8 +54,6 @@ from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
 from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest
 from huaweicloudsdksfsturbo.v1 import SFSTurboClient, ListSharesRequest
 from huaweicloudsdksfsturbo.v1.region.sfsturbo_region import SFSTurboRegion
-from huaweicloudsdkcbr.v1.region.cbr_region import CbrRegion
-from huaweicloudsdkcbr.v1 import CbrClient
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
