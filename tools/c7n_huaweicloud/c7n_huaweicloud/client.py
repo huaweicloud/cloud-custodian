@@ -11,8 +11,6 @@ from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredenti
 from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
-from huaweicloudsdker.v3 import ErClient, ListEnterpriseRoutersRequest
-from huaweicloudsdker.v3.region.er_region import ErRegion
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v3 import IamClient
 from huaweicloudsdkiam.v3.region.iam_region import IamRegion
@@ -24,7 +22,11 @@ from huaweicloudsdkfunctiongraph.v2 import FunctionGraphClient, ListFunctionsReq
 from huaweicloudsdkfunctiongraph.v2.region.functiongraph_region import FunctionGraphRegion
 from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
+from huaweicloudsdklts.v2 import LtsClient, ListTransfersRequest
+from huaweicloudsdklts.v2.region.lts_region import LtsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
+from huaweicloudsdker.v3 import ErClient, ListEnterpriseRoutersRequest
+from huaweicloudsdker.v3.region.er_region import ErRegion
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdkobs.v1.region.obs_region import ObsRegion
 from obs import ObsClient
@@ -110,6 +112,11 @@ class Session:
             client = EvsClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(EvsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'lts-transfer':
+            client = LtsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(LtsRegion.value_of(self.region)) \
                 .build()
         elif service == 'tms':
             client = TmsClient.new_builder() \
@@ -222,12 +229,14 @@ class Session:
             request = ListSecurityGroupsRequest()
         elif service == 'evs':
             request = ListVolumesRequest()
+        elif service == 'er':
+            request = ListEnterpriseRoutersRequest()
+        elif service == 'lts-transfer':
+            request = ListTransfersRequest()
         elif service == 'config':
             request = ShowTrackerConfigRequest()
         elif service == 'ecs':
             request = ListServersDetailsRequest()
-        elif service == 'er':
-            request = ListEnterpriseRoutersRequest()
         elif service == 'deh':
             request = ListDedicatedHostsRequest()
         elif service == 'obs':

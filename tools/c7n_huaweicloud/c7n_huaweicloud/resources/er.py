@@ -4,7 +4,7 @@
 import logging
 
 from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdker.v3 import *
+from huaweicloudsdker.v3 import UpdateEnterpriseRouterRequest,UpdateEnterpriseRouter,UpdateEnterpriseRouterRequestBody
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -55,4 +55,3 @@ class EnterpriseRouterCreate(HuaweiCloudBaseAction):
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return response
-
