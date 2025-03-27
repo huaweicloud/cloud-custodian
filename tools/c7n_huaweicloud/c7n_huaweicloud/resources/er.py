@@ -4,7 +4,9 @@
 import logging
 
 from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdker.v3 import UpdateEnterpriseRouterRequest,UpdateEnterpriseRouter,UpdateEnterpriseRouterRequestBody
+from huaweicloudsdker.v3 import UpdateEnterpriseRouterRequest
+from huaweicloudsdker.v3 import UpdateEnterpriseRouter
+from huaweicloudsdker.v3 import UpdateEnterpriseRouterRequestBody
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
