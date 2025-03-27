@@ -116,7 +116,10 @@ class ConfigCompliance(Filter):
         supported by aws config, automatically, register the
         config-compliance filter.
         """
-        resource_class.filter_registry.register('config-compliance', klass)
+        resource_type = resource_class.resource_type
+        config_resource_support = getattr(resource_type, 'config_resource_support', None)
+        if config_resource_support:
+            resource_class.filter_registry.register('config-compliance', klass)
 
 
 resources.subscribe(ConfigCompliance.register_resources)
