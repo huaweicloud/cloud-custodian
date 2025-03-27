@@ -28,5 +28,7 @@ ResourceMap = {
         "c7n_huaweicloud.resources.cts-notification-smn.Notification",
     "huaweicloud.cts-notification-func":
         "c7n_huaweicloud.resources.cts-notification-func.Notification",
+    "huaweicloud.cbr-backup": "c7n_huaweicloud.resources.cbr_backup.CbrBackup",
+    "huaweicloud.cbr-vault": "c7n_huaweicloud.resources.cbr_vault.CbrVault",
     "huaweicloud.coc": "c7n_huaweicloud.resources.coc.Coc",
 }
