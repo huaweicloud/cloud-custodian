@@ -52,6 +52,10 @@ from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
 from huaweicloudsdkcts.v3 import CtsClient, ListTrackersRequest, ListNotificationsRequest
 from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
 from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest
+from huaweicloudsdksfsturbo.v1 import SFSTurboClient, ListSharesRequest
+from huaweicloudsdksfsturbo.v1.region.sfsturbo_region import SFSTurboRegion
+from huaweicloudsdkcbr.v1.region.cbr_region import CbrRegion
+from huaweicloudsdkcbr.v1 import CbrClient
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -214,7 +218,16 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(CtsRegion.value_of(self.region)) \
                 .build()
-
+        elif service == "sfsturbo":
+            client = SFSTurboClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(SFSTurboRegion.value_of(self.region)) \
+                .build()
+        elif service == 'cbr':
+            client = CbrClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CbrRegion.value_of(self.region)) \
+                .build()
         return client
 
     def request(self, service):
@@ -267,5 +280,7 @@ class Session:
             request = ListBackupsRequest()
         elif service == 'cbr-vault':
             request = ListVaultRequest()
+        elif service == 'sfsturbo':
+            request = ListSharesRequest()
 
         return request
