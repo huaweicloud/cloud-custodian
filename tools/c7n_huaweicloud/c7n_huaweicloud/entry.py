@@ -13,3 +13,5 @@ def initialize_huaweicloud():
     import c7n_huaweicloud.actions
 
     import c7n_huaweicloud.output  # noqa
+
+    import c7n_huaweicloud.policy  # noqa

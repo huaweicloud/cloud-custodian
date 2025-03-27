@@ -1,0 +1,11 @@
+policies:
+  - name: set-User-login-protect
+    resource: huaweicloud.iam-user
+    filters:
+      - type: login-protect
+        key: login_protect
+        value: none
+    actions:
+      - type: set-login-protect
+        enabled: true
+        verification_method: vmfa

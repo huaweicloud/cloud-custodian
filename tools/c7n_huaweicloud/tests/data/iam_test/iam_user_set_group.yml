@@ -1,0 +1,11 @@
+policies:
+  - name: set-groups
+    resource: huaweicloud.iam-user
+    filters:
+      - type: access-key
+        key: status
+        value: inactive
+    actions:
+      - type: set-group
+        state: add
+        group_id: a2dfeca4646a4d77912a892b76a6341b

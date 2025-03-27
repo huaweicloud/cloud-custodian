@@ -1,0 +1,9 @@
+policies:
+  - name: delete-user
+    resource: huaweicloud.iam-user
+    filters:
+      - type: access-key
+        key: status
+        value: inactive
+    actions:
+      - delete

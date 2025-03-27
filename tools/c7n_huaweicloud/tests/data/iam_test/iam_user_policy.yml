@@ -1,0 +1,7 @@
+policies:
+  - name: iam-users-with-admin-access
+    resource: huaweicloud.iam-user
+    filters:
+      - type: policy
+        key: policy_id
+        value: 681a4bacee84471c9851758b25ed0384

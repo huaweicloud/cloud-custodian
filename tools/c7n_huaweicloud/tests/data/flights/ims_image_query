@@ -1,0 +1,368 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://ims.ap-southeast-1.myhuaweicloud.com/v2/cloudimages?limit=100&owner=ap-southeat-1
+  response:
+    body:
+      string: '{"images": [{"__backup_id":"","__data_origin":"instance,b834c375-7231-482e-a87b-3fba804435b4","__description":"","__image_size":"12040331264","__image_source_type":"uds","__imagetype":"private","__isregistered":"True","__originalimagename":"7104a5c9-6c17-47c8-aa47-e29af68fd34e","__os_bit":"64","__os_type":"Windows","__os_version":"Windows
+        Server 2019 Datacenter 64bit","__platform":"Windows","__productcode":"e10d539e-be5d-45ca-8cb5-468c3f5bef70","__support_kvm":"True","__support_xen":"True","__system_support_market":false,"checksum":"bcd7dd7dab80ca42e125a389f986404e","container_format":"bare","created_at":"2025-03-17T12:25:34Z","disk_format":"zvhd2","enterprise_project_id":"0","file":"/v2/images/image_id/file","id":"image_id","min_disk":80,"min_ram":0,"name":"itau","owner":"0b3ade290700f3612f29c005b9d1eaf6","protected":false,"schema":"/v2/schemas/image","self":"/v2/images/image_id","size":18,"status":"active","tags":["test-key=copy_2025-03-26"],"updated_at":"2025-03-18T11:55:29Z","virtual_env_type":"FusionCompute","visibility":"private","hw_firmware_type":"bios","max_ram":"0","__account_code":"","hw_vif_multiqueue_enabled":"False","__lazyloading":"True","__root_origin":"file","__sequence_num":"1","active_at":"2025-03-17T12:35:16Z","tag_resource_type":"private_image"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://ims.ap-southeast-1.myhuaweicloud.com/v2/cloudimages?limit=100&marker=image_id&owner=ap-southeat-1
+  response:
+    body:
+      string: '{"images": []}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://ims.ap-southeast-1.myhuaweicloud.com/v2/images/image_id
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: OK
+- request:
+    body: '{"images": ["image_id"], "projects": [project_id]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '71'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - ims.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250322T082156Z
+    method: POST
+    uri: https://ims.ap-southeast-1.myhuaweicloud.com/v1/cloudimages/members
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 22 Mar 2025 08:21:56 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=f0b04730bfd62c00b5; path=/
+      - HWWAFSESTIME=1742631716485; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 4f58b8d82bf72eeb86233e8e34d5d7b2
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: ''
+- request:
+    body: '{}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - ims.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250322T082439Z
+    method: DELETE
+    uri: https://ims.ap-southeast-1.myhuaweicloud.com/v2/images/image_id
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 22 Mar 2025 08:24:39 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1742631879956; path=/
+      - HWWAFSESID=0bbf173765f1dfdadb; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ccdbd5f7bd9b16d3bfadb78af6018a4d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: ""
+- request:
+    body: '{"description": "123", "name": "test"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '38'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - ims.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250322T090016Z
+    method: POST
+    uri: https://ims.ap-southeast-1.myhuaweicloud.com/v1/cloudimages/image_id/copy
+  response:
+    body:
+      string: '{"job_id": "job_id"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 22 Mar 2025 09:00:16 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=1d7b8732647c43269d; path=/
+      - HWWAFSESTIME=1742634016588; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a17e417b2579e5fc9ee0a70524bdc611
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: ''
+- request:
+    body: '{"images": ["image_id"], "project_id": "project_id", "status": "accepted"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '97'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - ims.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250323T072542Z
+    method: PUT
+    uri: https://ims.ap-southeast-1.myhuaweicloud.com/v1/cloudimages/members
+  response:
+    body:
+      string: '{"job_id": "job_id"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 23 Mar 2025 07:25:42 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1742714742092; path=/
+      - HWWAFSESID=b7a6873390708bb1ce; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 92678e15642026a6455ab64bc3fc87a0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: ''
