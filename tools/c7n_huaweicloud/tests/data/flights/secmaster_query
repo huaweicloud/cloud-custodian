@@ -1,0 +1,55 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces?limit=100&offset=0
+  response:
+    body:
+      string: '{"count":1,"workspaces":[{"create_time":"2024-07-02T09:25:17Z+0800","creator_id":"b4*****************************46a","creator_name":"l00644738","description":"我的工作空间","domain_id":"ac*****************************bf4","domain_name":"scc****09","enterprise_project_id":"","enterprise_project_name":"","id":"39*************bf","is_view":false,"modifier_id":"","modifier_name":"","name":"我的工作空间","project_id":"15**************************da6","project_name":"cn-north-4","region_id":"cn-north-4","update_time":"2024-07-02T09:25:17Z+0800","view_bind_id":"","view_bind_name":"","workspace_agency_list":[]}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1743039227584; path=/
+      - HWWAFSESID=42b8a733d8f755fdcc; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - fafbccedf4d9f64e03701cc558fc2596
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+version: 1

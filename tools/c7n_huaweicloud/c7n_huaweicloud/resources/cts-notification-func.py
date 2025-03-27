@@ -22,6 +22,7 @@ class Notification(QueryResourceManager):
         enum_spec = ("list_notifications", "notifications", "offset")
         id = 'notification_id'
         tag = True
+        tag_resource_type = 'cts-notification-func'
 
 
 @Notification.action_registry.register("update-notification")
