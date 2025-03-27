@@ -255,6 +255,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
+name = "huaweicloudsdker"
+version = "3.1.140"
+description = "ER"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdker-3.1.140-py2.py3-none-any.whl", hash = "sha256:08d6f80ec210f162137c335e69db7d3d37a4ec9059256f687ede9ddc1043bc59"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdkecs"
 version = "3.1.140"
 description = "ECS"
