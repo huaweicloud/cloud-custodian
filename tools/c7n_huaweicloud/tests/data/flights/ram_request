@@ -62,7 +62,7 @@ interactions:
       - 20250320T063810Z
     method: POST
     uri: https://ram.myhuaweicloud.com/v1/resource-share-associations/search
-    body: '{"limit":100,"association_type":"principal","association_status":"associated"}'
+    body: '{"limit":"100","association_type":"principal","association_status":"associated"}'
   response:
     status:
       code: 200
