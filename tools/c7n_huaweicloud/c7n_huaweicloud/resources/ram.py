@@ -15,7 +15,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.ram")
 
 @resources.register('ram-shared-principals')
 class RAMSharedPrincipals(QueryResourceManager):
-    """ RAM Shared Principals.
+    """RAM Shared Principals.
 
     :Example:
 

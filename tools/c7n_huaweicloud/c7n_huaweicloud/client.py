@@ -340,7 +340,7 @@ class Session:
         elif service == 'ram':
             client = RamClient.new_builder() \
                 .with_credentials(globalCredentials) \
-                .with_region(RamRegion.value_of(self.region)) \
+                .with_region(RamRegion.CN_NORTH_4) \
                 .build()
 
         return client

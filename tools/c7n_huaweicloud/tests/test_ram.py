@@ -1,9 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-import os
 from huaweicloud_common import BaseTest
 
-os.environ["HUAWEI_DEFAULT_REGION"] = 'cn-north-4'
 
 class RamTest(BaseTest):
 
