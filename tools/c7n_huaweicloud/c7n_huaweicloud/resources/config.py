@@ -44,8 +44,7 @@ class DeleteTrackerAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         request = DeleteTrackerConfigRequest()
         client.delete_tracker_config(request=request)
-        self.log.info("Successfully delete config-tracker of %s",
-                      resource.get("id", resource.get("name")))
+        self.log.info("Successfully delete config-tracker")
 
 
 class CreateTrackerAction(HuaweiCloudBaseAction):

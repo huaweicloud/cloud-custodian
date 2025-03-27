@@ -147,14 +147,22 @@ class SecurityGroupRuleFilter(Filter):
     Rules that match on the group are annotated onto the group and
     can subsequently be used by the remove-rules action.
 
-    We have specialized handling for matching `InPorts` in ingress/egress
-    rule `multiport`. The following example matches on ingress
+    We have specialized handling for matching `AnyInPorts` or `AllInPorts`
+    in ingress/egress rule `multiport`. The following example matches on ingress
     rules which allow for a range that includes all of the given ports.
 
     .. code-block:: yaml
 
       - type: ingress
-        InPorts: [22, 443, 80]
+        AllInPorts: [22, 443, 80]
+
+    And the following example matches on ingress rules which allow
+    for a range that includes any of the given ports.
+
+    .. code-block:: yaml
+
+      - type: ingress
+        AnyInPorts: [22, 443, 80]
 
     As well for verifying that a rule not allow for a specific set of ports
     as in the following example. The delta between this and the previous
@@ -167,16 +175,16 @@ class SecurityGroupRuleFilter(Filter):
       - type: ingress
         NotInPorts: [22]
 
-    For simplifying ipranges handling which is specified as a list on a rule
-    we provide a `Cidr` key which can be used as a value type filter evaluated
-    against each of the rules. If any iprange cidr match then the permission
-    matches.
+    The list item of `AnyInPorts`, `AllInPorts` and `NotInPorts` could be
+    a integer or a port range representing by a string, like [22, '33-40'].
+
+    If you want to filter out rules that allow all ports, please use `AllPorts`,
+    which is a boolean parameter as follows.
 
     .. code-block:: yaml
 
       - type: ingress
-        IpProtocol: -1
-        FromPort: 445
+        AllPorts: True
 
     We also have specialized handling for matching self-references in
     ingress/egress permissions. The following example matches on ingress
@@ -227,7 +235,7 @@ class SecurityGroupRuleFilter(Filter):
         'Ethertypes', 'Action', 'Priorities', 'Protocols', 'SGReferenceIds',
         'AGReferenceIds'}
     filter_attrs = {
-        'InPorts', 'NotInPorts', 'SelfReference'}
+        'AnyInPorts', 'AllInPorts', 'NotInPorts', 'AllPorts', 'SelfReference'}
     attrs = perm_attrs.union(filter_attrs)
     attrs.add('match-operator')
 
@@ -285,45 +293,93 @@ class SecurityGroupRuleFilter(Filter):
                 found = rule_key in rule and rule[rule_key] == items
         return found
 
+    def _extend_ports(self, req_port_list):
+        if not req_port_list:
+            return []
+        int_port_list = []
+        for item in req_port_list:
+            if isinstance(item, int):
+                int_port_list.append(item)
+            elif isinstance(item, str):
+                port_range = item.split('-')
+                if len(port_range) == 1:
+                    int_port_list.append(port_range[0])
+                elif len(port_range) == 2:
+                    start = int(port_range[0])
+                    end = int(port_range[1])
+                    if start >= end:
+                        continue
+                    ports = [i for i in range(start, end + 1)]
+                    int_port_list.extend(ports)
+            else:
+                continue
+        return int_port_list
+
     def process_ports(self, rule):
-        found = None
-        in_ports = self.data['InPorts'] if 'InPorts' in self.data else []
+        all_ports = self.data['AllPorts'] if 'AllPorts' in self.data else False
+        # rule matches when allows all ports
+        if all_ports is True:
+            return 'multiport' not in rule
+
+        any_in_ports = self.data['AnyInPorts'] if 'AnyInPorts' in self.data else []
+        all_in_ports = self.data['AllInPorts'] if 'AllInPorts' in self.data else []
         not_in_ports = self.data['NotInPorts'] if 'NotInPorts' in self.data else []
-        if not in_ports and not not_in_ports:
+
+        any_in_ports = self._extend_ports(any_in_ports)
+        all_in_ports = self._extend_ports(all_in_ports)
+        not_in_ports = self._extend_ports(not_in_ports)
+
+        if not any_in_ports and not all_in_ports and not not_in_ports:
             return True
         multiport = rule.get('multiport', '-1')
         if multiport == '-1':
-            return in_ports and not not_in_ports
-        port_list = multiport.split(',')
-        single_ports = []
-        range_ports = []
-        for port_item in port_list:
+            return (any_in_ports or all_in_ports) and not not_in_ports
+        rule_port_list = multiport.split(',')
+        single_rule_ports = []
+        range_rule_ports = []
+        for port_item in rule_port_list:
             if '-' in port_item:
-                range_ports.append(port_item)
+                range_rule_ports.append(port_item)
             else:
-                single_ports.append(int(port_item))
+                single_rule_ports.append(int(port_item))
 
-        for port in in_ports:
-            if port in single_ports:
-                found = True
+        # rule matches when all ports of rule in `AllInPorts`
+        all_in_found = True
+        for port in all_in_ports:
+            if port in single_rule_ports:
+                all_in_found = True
                 continue
             else:
-                found = any(port >= int(port_range.split('-')[0])
-                            and port <= int(port_range.split('-')[1])
-                            for port_range in range_ports)
-            if found is False:
+                all_in_found = any(port >= int(port_range.split('-')[0])
+                                   and port <= int(port_range.split('-')[1])
+                                   for port_range in range_rule_ports)
+            if not all_in_found:
                 break
 
+        # rule matches when any port of rule in `AnyInPorts`
+        any_in_found = True
+        for port in any_in_ports:
+            if port in single_rule_ports:
+                any_in_found = True
+            else:
+                any_in_found = any(port >= int(port_range.split('-')[0])
+                                   and port <= int(port_range.split('-')[1])
+                                   for port_range in range_rule_ports)
+            if any_in_found:
+                break
+
+        # rule matches when all ports of rule not in `NotInPorts`
         not_in_found = True
         for port in not_in_ports:
-            if port in single_ports:
+            if port in single_rule_ports:
                 not_in_found = False
                 break
             else:
                 not_in_found = all(port < int(port_range.split('-')[0])
                                    or port > int(port_range.split('-')[1])
-                                   for port_range in range_ports)
-        return found and not_in_found
+                                   for port_range in range_rule_ports)
+
+        return all_in_found and any_in_found and not_in_found
 
     def process_self_reference(self, rule):
         found = None
@@ -402,8 +458,31 @@ SGRuleSchema = {
             ]
         }
     },
-    'InPorts': {'type': 'array', 'items': {'type': 'integer', 'minimum': 0, 'maximum': 65535}},
-    'NotInPorts': {'type': 'array', 'items': {'type': 'integer', 'minimum': 0, 'maximum': 65535}},
+    'AnyInPorts': {
+        'type': 'array', 'items': {
+            'oneOf': [
+                {'type': 'string'},
+                {'type': 'integer', 'minimum': 0, 'maximum': 65535}
+            ]
+        }
+    },
+    'AllInPorts': {
+        'type': 'array', 'items': {
+            'oneOf': [
+                {'type': 'string'},
+                {'type': 'integer', 'minimum': 0, 'maximum': 65535}
+            ]
+        }
+    },
+    'NotInPorts': {
+        'type': 'array', 'items': {
+            'oneOf': [
+                {'type': 'string'},
+                {'type': 'integer', 'minimum': 0, 'maximum': 65535}
+            ]
+        }
+    },
+    'AllPorts': {'type': 'boolean'},
     'SelfReference': {'type': 'boolean'}
 }
 

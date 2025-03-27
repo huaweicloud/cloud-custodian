@@ -21,7 +21,6 @@ from huaweicloudsdkecs.v2 import (
     BatchStopServersRequest,
     BatchRebootServersRequestBody,
     BatchRebootServersRequest,
-    NovaDeleteServerRequest,
     NovaAddSecurityGroupOption,
     NovaAssociateSecurityGroupRequestBody,
     NovaAssociateSecurityGroupRequest,
@@ -35,6 +34,8 @@ from huaweicloudsdkecs.v2 import (
     ResizeServerRequestBody,
     UpdateServerMetadataRequestBody,
     UpdateServerMetadataRequest,
+    DeleteServersRequestBody,
+    DeleteServersRequest
 )
 from huaweicloudsdkims.v2 import (
     CreateWholeImageRequestBody,
@@ -71,7 +72,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.ecs")
 class Ecs(QueryResourceManager):
     class resource_type(TypeInfo):
         service = "ecs"
-        enum_spec = ("list_servers_details", "servers", "offset")
+        enum_spec = ("list_servers_details", "servers", "page")
         id = "id"
         tag_resource_type = "ecs"
 
@@ -134,6 +135,9 @@ class EcsStart(HuaweiCloudBaseAction):
     schema = type_schema("instance-start")
 
     def process(self, resources):
+        if len(resources) > 1000:
+            log.error("The most instances to start is 1000")
+            return
         client = self.manager.get_client()
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
@@ -184,6 +188,9 @@ class EcsStop(HuaweiCloudBaseAction):
     schema = type_schema("instance-stop", mode={"type": "string"})
 
     def process(self, resources):
+        if len(resources) > 1000:
+            log.error("The most instances to stop is 1000")
+            return
         client = self.manager.get_client()
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
@@ -234,10 +241,13 @@ class EcsReboot(HuaweiCloudBaseAction):
     schema = type_schema("instance-reboot", mode={"type": "string"})
 
     def process(self, resources):
+        if len(resources) > 1000:
+            log.error("The most instances to reboot is 1000")
+            return
         client = self.manager.get_client()
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
-            log.warning("No instance need stop")
+            log.warning("No instance need reboot")
             return None
         request = self.init_request(instances)
         try:
@@ -279,17 +289,28 @@ class EcsTerminate(HuaweiCloudBaseAction):
               - instance-terminate
     """
 
-    schema = type_schema("instance-terminate")
+    schema = type_schema("instance-terminate", delete_publicip={'type': 'boolean'},
+                         delete_volume={'type': 'boolean'})
 
-    def perform_action(self, resource):
+    def process(self, resources):
         client = self.manager.get_client()
-        request = NovaDeleteServerRequest(server_id=resource["id"])
+        serverIds: List[ServerId] = []
+        for r in resources:
+            serverIds.append(ServerId(id=r["id"]))
+        delete_publicip = self.data.get('delete_publicip', False)
+        delete_volume = self.data.get('delete_volume', False)
+        requestBody = DeleteServersRequestBody(delete_publicip=delete_publicip,
+                                               delete_volume=delete_volume, servers=serverIds)
+        request = DeleteServersRequest(body=requestBody)
         try:
-            response = client.nova_delete_server(request)
+            response = client.delete_servers(request)
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
-        return response
+        return json.dumps(response.to_dict())
+
+    def perform_action(self, resource):
+        pass
 
 
 @Ecs.action_registry.register("instance-add-security-groups")
@@ -495,15 +516,13 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
              - type: instance-whole-image
                name: "wholeImage"
                vault_id: "your CBR vault id"
-               instance_id: "your instance id"
     """
 
     schema = type_schema(
         "instance-whole-image",
-        instance_id={"type": "string"},
         name={"type": "string"},
         vault_id={"type": "string"},
-        required=("instance_id", "name", "vault_id"),
+        required=("name", "vault_id"),
     )
 
     def perform_action(self, resource):
@@ -511,24 +530,26 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
 
     def process(self, resources):
         ims_client = local_session(self.manager.session_factory).client("ims")
-        requestBody = CreateWholeImageRequestBody(
-            name=self.data.get("name"),
-            instance_id=self.data.get("instance_id"),
-            vault_id=self.data.get("vault_id"),
-        )
-        request = CreateWholeImageRequest(body=requestBody)
-        try:
-            response = ims_client.create_whole_image(request)
-            if response.status_code != 200:
-                log.error(
-                    "create whole image for instance %s fail"
-                    % self.data.get("instance_id")
-                )
-                return False
-            return self.wait_backup(response.job_id, ims_client)
-        except exceptions.ClientRequestException as e:
-            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-            raise
+        # TODO 线程池
+        for r in resources:
+            requestBody = CreateWholeImageRequestBody(
+                name=self.data.get("name"),
+                instance_id=r['id'],
+                vault_id=self.data.get("vault_id"),
+            )
+            request = CreateWholeImageRequest(body=requestBody)
+            try:
+                response = ims_client.create_whole_image(request)
+                if response.status_code != 200:
+                    log.error(
+                        "create whole image for instance %s fail"
+                        % self.data.get("instance_id")
+                    )
+                    return False
+                return self.wait_backup(response.job_id, ims_client)
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                raise
 
     def wait_backup(self, job_id, ims_client):
         while True:
@@ -895,7 +916,7 @@ class InstanceImageBase:
 
     def get_base_image_mapping(self, image_ids):
         ims_client = local_session(self.manager.session_factory).client("ims")
-        request = ListImagesRequest(id=image_ids)
+        request = ListImagesRequest(id=image_ids, limit=1000)
         return {i.id: i for i in ims_client.list_images(request).images}
 
     def get_instance_image_created_at(self, instance):

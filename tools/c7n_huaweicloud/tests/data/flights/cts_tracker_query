@@ -1,0 +1,51 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cts.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://cts.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/trackers
+  response:
+    body:
+      string: '{"trackers":[{"create_time":1742825321325,"domain_id":"5315255b948546efbcb5ab7925ea7c68","enterprise_project_id":"0","id":"d7e6ef97-e50d-4205-acb1-528ce11dec52","is_organization_tracker":false,"is_support_trace_files_encryption":false,"is_support_validate":false,"lts":{"is_lts_enabled":false,"log_group_name":"CTS","log_topic_name":"system-trace"},"management_event_selector":{"exclude_service":[],"read_write_type":[]},"obs_info":{"bucket_lifecycle":0,"bucket_name":"","file_prefix_name":"","is_authorized_bucket":false,"is_obs_created":false,"is_sort_by_service":true},"project_id":"932cb325cbca47a59ec1ea930ecc0f29","status":"enabled","tag":{"_sys_enterprise_project_id":"0"},"tracker_name":"system","tracker_type":"system"},{"create_time":1742820782822,"data_bucket":{"data_bucket_name":"sh2-gaochang1","data_event":["READ"]},"domain_id":"5315255b948546efbcb5ab7925ea7c68","enterprise_project_id":"0","id":"b9352cf1-c2dc-42ee-8053-9bb94acb75c0","is_organization_tracker":false,"is_support_trace_files_encryption":false,"is_support_validate":false,"lts":{"is_lts_enabled":false,"log_group_name":"CTS","log_topic_name":"zaaa"},"obs_info":{"bucket_lifecycle":0,"bucket_name":"","file_prefix_name":"","is_authorized_bucket":false,"is_obs_created":false,"is_sort_by_service":true},"project_id":"932cb325cbca47a59ec1ea930ecc0f29","status":"enabled","tag":{"_sys_enterprise_project_id":"0"},"tracker_name":"zaaa","tracker_type":"data"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK

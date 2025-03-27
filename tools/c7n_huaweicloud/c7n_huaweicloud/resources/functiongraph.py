@@ -36,7 +36,7 @@ class FunctionGraph(QueryResourceManager):
         service = 'functiongraph'
         enum_spec = ("list_functions", 'functions', 'maxitems-marker')
         id = 'func_urn'
-        tag = True
+        tag_resource_type = 'functions'
 
     def get_resources(self, resource_ids):
         result = []
@@ -50,10 +50,16 @@ class FunctionGraph(QueryResourceManager):
                           f'error_msg[{e.error_msg}]')
                 return result
 
-            result.append(eval(str(response).
+            func_config = eval(str(response).
                                replace('null', 'None').
                                replace('false', 'False').
-                               replace('true', 'True')))
+                               replace('true', 'True'))
+            if "id" not in func_config:
+                func_config["id"] = func_config["func_urn"]
+            if "tag_resource_type" not in func_config:
+                func_config["tag_resource_type"] = "functions"
+
+            result.append(func_config)
 
         return result
 
