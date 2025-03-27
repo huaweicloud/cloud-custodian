@@ -32,7 +32,8 @@ class Loadbalancer(QueryResourceManager):
 Loadbalancer.action_registry.register('delete', LoadbalancerDeleteAction)
 Loadbalancer.action_registry.register('enable-logging', LoadbalancerEnableLoggingAction)
 Loadbalancer.action_registry.register('unbind-publicips', LoadbalancerUnbindPublicipsAction)
-Loadbalancer.action_registry.register('create-lts-log-transfer', LoadbalancerCreateLTSLogTransferAction)
+Loadbalancer.action_registry.register('create-lts-log-transfer',
+                                      LoadbalancerCreateLTSLogTransferAction)
 
 Loadbalancer.filter_registry.register('backend-server-count', LoadbalancerBackendServerCountFilter)
 Loadbalancer.filter_registry.register('publicip-count', LoadbalancerPublicipCountFilter)
