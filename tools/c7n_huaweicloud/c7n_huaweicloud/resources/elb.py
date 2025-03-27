@@ -19,7 +19,7 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 
-@resources.register('elb.loadbalancer')
+@resources.register('elb-loadbalancer')
 class Loadbalancer(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'elb_loadbalancer'
@@ -46,7 +46,7 @@ Loadbalancer.filter_registry.register('attributes', ELBAttributesFilter)
 Loadbalancer.filter_registry.register('age', ELBAgeFilter)
 
 
-@resources.register('elb.listener')
+@resources.register('elb-listener')
 class Listener(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'elb_listener'

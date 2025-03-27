@@ -26,7 +26,7 @@ class LoadbalancerBackendServerCountFilter(Filter):
 
         policies:
           - name: delete-no-backend-loadbalancer
-            resource: huaweicloud.elb.loadbalancer
+            resource: huaweicloud.elb-loadbalancer
             filters:
               - type: backend-server-count
                 count: 0
@@ -60,7 +60,7 @@ class LoadbalancerPublicipCountFilter(Filter):
     .. code-block:: yaml
         policies:
           - name: delete-loadbalancer-has-eip
-            resource: huaweicloud.elb.loadbalancer
+            resource: huaweicloud.elb-loadbalancer
             filters:
               - type: publicip-count
                 count: 0
@@ -150,7 +150,7 @@ class LoadbalancerIsLTSLogTransferFilter(Filter):
 
         policies:
           - name: elb-policy-4
-            resource: huaweicloud.elb.loadbalancer
+            resource: huaweicloud.elb-loadbalancer
             filters:
               - type: attributes
                 key: id
@@ -219,7 +219,7 @@ class LoadbalancerIsNotLTSLogTransferFilter(LoadbalancerIsLTSLogTransferFilter):
 
         policies:
           - name: elb-policy-4
-            resource: huaweicloud.elb.loadbalancer
+            resource: huaweicloud.elb-loadbalancer
             filters:
               - type: attributes
                 key: id
@@ -244,7 +244,7 @@ class ELBAttributesFilter(ValueFilter):
     .. code-block:: yaml
         policies:
           - name: list-autoscaling-loadbalancer
-            resource: huaweicloud.elb.loadbalancer or huaweicloud.elb.listener
+            resource: huaweicloud.elb-loadbalancer or huaweicloud.elb-listener
             filters:
               - type: attributes
                 key: autoscaling.enable
@@ -271,7 +271,7 @@ class ELBAgeFilter(AgeFilter):
 
         policies:
           - name: list-latest-loadbalancer
-            resource: huaweicloud.elb.loadbalancer or huaweicloud.elb.listener
+            resource: huaweicloud.elb-loadbalancer or huaweicloud.elb-listener
             filters:
               - type: age
                 days: 7

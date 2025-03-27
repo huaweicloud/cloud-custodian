@@ -109,7 +109,7 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
 
         policies:
           - name: elb-policy-3
-            resource: huaweicloud.elb.loadbalancer
+            resource: huaweicloud.elb-loadbalancer
             filters:
               - type: publicip-count
                 count: 0
@@ -175,7 +175,7 @@ class LoadbalancerCreateLTSLogTransferAction(LtsCreateTransferLog):
 
         policies:
           - name: elb-policy-4
-            resource: huaweicloud.elb.loadbalancer
+            resource: huaweicloud.elb-loadbalancer
             filters:
               - type: attributes
                 key: id
@@ -275,7 +275,7 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
 
         policies:
           - name: ensure-elb-https-only
-            resource: huaweicloud.elb.listener
+            resource: huaweicloud.elb-listener
             filters:
               - type: value
                 key: protocol
@@ -319,7 +319,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
 
         policies:
           - name: set-acl-ipgroup-for-listeners
-            resource: huaweicloud.elb.listener
+            resource: huaweicloud.elb-listener
             filters:
               - type: attributes
                 key: loadbalancers[0].id
