@@ -33,4 +33,5 @@ ResourceMap = {
     "huaweicloud.cbr-backup": "c7n_huaweicloud.resources.cbr_backup.CbrBackup",
     "huaweicloud.cbr-vault": "c7n_huaweicloud.resources.cbr_vault.CbrVault",
     "huaweicloud.sfsturbo": "c7n_huaweicloud.resources.sfsturbo.SfsTurbo",
+    "huaweicloud.coc": "c7n_huaweicloud.resources.coc.Coc",
 }

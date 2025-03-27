@@ -197,6 +197,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
+name = "huaweicloudsdkcoc"
+version = "3.1.140"
+description = "COC"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkcoc-3.1.140-py2.py3-none-any.whl", hash = "sha256:5d428d78322ca2718dc89c774986437befd13faff59c4507b610c2a2fa6eb48f"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdkconfig"
 version = "3.1.140"
 description = "Config"
