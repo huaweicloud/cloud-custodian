@@ -5,6 +5,7 @@ ResourceMap = {
     "huaweicloud.volume": "c7n_huaweicloud.resources.volume.Volume",
     "huaweicloud.evs-volume": "c7n_huaweicloud.resources.evs.Volume",
     "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
+    "huaweicloud.er": "c7n_huaweicloud.resources.er.ERInstance",
     "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker",
     "huaweicloud.obs": "c7n_huaweicloud.resources.obs.Obs",
     "huaweicloud.alarm": "c7n_huaweicloud.resources.ces.Alarm",
@@ -28,5 +29,6 @@ ResourceMap = {
         "c7n_huaweicloud.resources.cts-notification-smn.Notification",
     "huaweicloud.cts-notification-func":
         "c7n_huaweicloud.resources.cts-notification-func.Notification",
-    "huaweicloud.er": "c7n_huaweicloud.resources.er.ERInstance"
+    "huaweicloud.cbr-backup": "c7n_huaweicloud.resources.cbr_backup.CbrBackup",
+    "huaweicloud.cbr-vault": "c7n_huaweicloud.resources.cbr_vault.CbrVault",
 }

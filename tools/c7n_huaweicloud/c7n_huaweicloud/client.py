@@ -11,6 +11,8 @@ from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredenti
 from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
+from huaweicloudsdker.v3 import ErClient, ListEnterpriseRoutersRequest
+from huaweicloudsdker.v3.region.er_region import ErRegion
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v3 import IamClient
 from huaweicloudsdkiam.v3.region.iam_region import IamRegion
@@ -49,8 +51,7 @@ from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
     ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
 from huaweicloudsdkcts.v3 import CtsClient, ListTrackersRequest, ListNotificationsRequest
 from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
-from huaweicloudsdker.v3 import *
-from huaweicloudsdker.v3.region.er_region import ErRegion
+from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -99,6 +100,11 @@ class Session:
             client = EcsClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(EcsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'er':
+            client = ErClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(ErRegion.value_of(self.region)) \
                 .build()
         elif service == 'evs':
             client = EvsClient.new_builder() \
@@ -208,11 +214,6 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(CtsRegion.value_of(self.region)) \
                 .build()
-        elif service == 'er':
-            client = ErClient.new_builder() \
-                .with_credentials(credentials) \
-                .with_region(ErRegion.value_of(self.region)) \
-                .build()
 
         return client
 
@@ -225,6 +226,8 @@ class Session:
             request = ShowTrackerConfigRequest()
         elif service == 'ecs':
             request = ListServersDetailsRequest()
+        elif service == 'er':
+            request = ListEnterpriseRoutersRequest()
         elif service == 'deh':
             request = ListDedicatedHostsRequest()
         elif service == 'obs':
@@ -260,7 +263,9 @@ class Session:
         elif service == 'cts-notification-func':
             request = ListNotificationsRequest()
             request.notification_type = "fun"
-        elif service == 'er':
-            request = ListEnterpriseRoutersRequest()
+        elif service == 'cbr-backup':
+            request = ListBackupsRequest()
+        elif service == 'cbr-vault':
+            request = ListVaultRequest()
 
         return request

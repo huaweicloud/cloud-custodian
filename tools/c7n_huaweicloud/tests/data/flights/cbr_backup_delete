@@ -1,0 +1,100 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T064703Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/backups?limit=100&offset=0
+  response:
+    body:
+      string: '{"backups":[{"children":[],"checkpoint_id":"8baf9d42-d40a-4715-a61a-b58ca3d77313","created_at":"2025-03-25T06:23:27.304116","description":"","expired_at":null,"extend_info":{"auto_trigger":false,"bootable":false,"os_images_data":null,"progress":100,"snapshot_id":"25a7e373-02c3-493d-a8d3-387cc1cf3896","support_lld":true,"supported_restore_mode":null,"system_disk":false,"is_multi_az":false,"encrypted_algorithm":null,"is_dec":false,"app_consistency":null,"encrypted":false},"id":"f2aab24a-b8a0-4577-a5d1-6df33f5c7e69","image_type":"backup","incremental":true,"name":"backup-encrypted","parent_id":null,"project_id":"0d9da8861b80f5a32fb4c00645f2dbd7","protected_at":null,"provider_id":"d1603440-187d-4516-af25-121250c7cc97","resource_az":"ap-southeast-1c","resource_id":"7a84f97a-8ddc-4e5d-b228-a80fe5465508","resource_name":"volume-encrypted","scheduled_operation_id":null,"resource_size":10,"resource_type":"OS::Cinder::Volume","status":"available","updated_at":"2025-03-25T06:26:30.074761","vault_id":"06e844ba-d4bf-40be-b07f-c60d3c2ce679","version":3,"replication_records":[]}],"count":1,"offset":0,"limit":100}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 06:47:04 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 5e4276f11d1e8395f49685ed7892d35c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T064703Z
+    method: DELETE
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/backups/f2aab24a-b8a0-4577-a5d1-6df33f5c7e69
+  response:
+    body:
+      string: '{}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 06:47:04 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 5e4276f11d1e8395f49685ed7892d35c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+version: 1
