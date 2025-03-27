@@ -424,6 +424,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.140"
 
 [[package]]
+name = "huaweicloudsdksecmaster"
+version = "3.1.140"
+description = "SecMaster"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdksecmaster-3.1.140-py2.py3-none-any.whl", hash = "sha256:0b5440310dad919b3c480a3120dbd66fd126e833f3c9a3532460c213d4a0e64d"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.140"
+
+[[package]]
 name = "huaweicloudsdksmn"
 version = "3.1.140"
 description = "SMN"
@@ -506,7 +519,7 @@ name = "jsonpointer"
 version = "3.0.0"
 description = "Identify specific nodes in a JSON document (RFC 6901)"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 files = [
     {file = "jsonpointer-3.0.0-py2.py3-none-any.whl", hash = "sha256:13e088adc14fca8b6aa8177c044e12701e6ad4b28ff10e65f2267a90109c9942"},
     {file = "jsonpointer-3.0.0.tar.gz", hash = "sha256:2b2d729f2091522d61c3b31f82e11870f60b68f43fbc705cb76bf4b832af59ef"},
@@ -1003,4 +1016,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "2a816a8bd25db737464b70c1bd6ccce58c3592f691be016ca21c7bcfbf0ed667"
+content-hash = "31a9baee9f0ba03f9bfdbd42e4bba9a525b5ed7a7d234b1a2304a2adb77d9f1f"
