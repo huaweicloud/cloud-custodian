@@ -33,7 +33,7 @@ class CocTest(BaseTest):
                 }],
                 "actions": [{
                     "type": "non_compliant_alarm",
-                    "smn": "true",
+                    "smn": True,
                     "region_id": "cn-north-4",
                     "topic_urn": "urn:smn:cn-north-4:xxxxx:custodian_test",
                     "subject": "Machine Non-compliant Patch Version Alert",
