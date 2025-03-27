@@ -193,8 +193,6 @@ class LoadbalancerIsLTSLogTransferFilter(Filter):
         while 1:
             lts_request.offset = offset
             lts_response = lts_client.list_transfers(lts_request)
-            log.info(lts_request)
-            log.info(lts_response)
             if lts_response.status_code != 200:
                 log.error(lts_response.status_code, lts_response.request_id,
                           lts_response.error_code, lts_response.error_msg)

@@ -172,17 +172,25 @@ class ResourceQuery:
             else:
                 return resources
 
-    def _non_pagination(self, m, enum_op, path):
+    def _non_pagination(self, manager, enum_op, path):
         session = local_session(self.session_factory)
-        client = session.client(m.service)
-        request = session.request(m.service)
+        client = session.client(manager.service)
+        request = session.request(manager.service)
 
         response = getattr(client, enum_op)(request)
-        res = jmespath.search(path, eval(
+        resources = jmespath.search(path, eval(
             str(response).replace('null', 'None').replace('false', 'False')
             .replace('true', 'True')))
 
-        return list(res)
+        # replace id with the specified one
+        if resources is None or len(resources) == 0:
+            return []
+        # re-set id
+        if 'id' not in resources[0]:
+            for data in resources:
+                data['id'] = data[manager.id]
+
+        return resources
 
     def _pagination_limit_page(self, m, enum_op, path):
         session = local_session(self.session_factory)

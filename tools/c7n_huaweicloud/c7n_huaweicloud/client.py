@@ -12,8 +12,11 @@ from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
-from huaweicloudsdkiam.v3 import IamClient
-from huaweicloudsdkiam.v3.region.iam_region import IamRegion
+from huaweicloudsdkiam.v5 import IamClient as IamClientV5, \
+    ListUsersV5Request, ListPoliciesV5Request
+from huaweicloudsdkiam.v5.region import iam_region as iam_region_v5
+from huaweicloudsdkiam.v3 import IamClient as IamClientV3
+from huaweicloudsdkiam.v3.region.iam_region import IamRegion as iam_region_v3
 from huaweicloudsdkvpc.v2 import ListSecurityGroupsRequest
 from huaweicloudsdkvpc.v2.vpc_client import VpcClient as VpcClientV2
 from huaweicloudsdkvpc.v3.region.vpc_region import VpcRegion
@@ -28,6 +31,8 @@ from huaweicloudsdklts.v2 import LtsClient, ListTransfersRequest
 from huaweicloudsdklts.v2.region.lts_region import LtsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
+from huaweicloudsdker.v3 import ErClient, ListEnterpriseRoutersRequest
+from huaweicloudsdker.v3.region.er_region import ErRegion
 from huaweicloudsdkobs.v1.region.obs_region import ObsRegion
 from obs import ObsClient
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
@@ -75,8 +80,11 @@ from huaweicloudsdkorganizations.v1 import OrganizationsClient, ListAccountsRequ
 from huaweicloudsdkorganizations.v1.region.organizations_region import OrganizationsRegion
 from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
 from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
+from huaweicloudsdkram.v1 import RamClient, SearchResourceShareAssociationsRequest, \
+    SearchResourceShareAssociationsReqBody
+from huaweicloudsdkram.v1.region.ram_region import RamRegion
 
-log = logging.getLogger("custodian.huaweicloud.client")
+log = logging.getLogger('custodian.huaweicloud.client')
 
 
 class Session:
@@ -139,6 +147,13 @@ class Session:
                 .with_region(EcsRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'er':
+            client = (
+                ErClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(ErRegion.value_of(self.region))
+                .build()
+            )
         elif service == "evs":
             client = (
                 EvsClient.new_builder()
@@ -167,11 +182,18 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region))
                 .build()
             )
-        elif service == "iam":
+        elif service in ['iam-user', 'iam-policy']:
             client = (
-                IamClient.new_builder()
+                IamClientV5.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(IamRegion.value_of(self.region))
+                .with_region(iam_region_v5.IamRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "iam-v3":
+            client = (
+                IamClientV3.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(iam_region_v3.value_of(self.region))
                 .build()
             )
         elif service == "config":
@@ -189,11 +211,7 @@ class Session:
                 .build()
             )
         elif service == "obs":
-            client = ObsClient(
-                access_key_id=self.ak,
-                secret_access_key=self.sk,
-                server=ObsRegion.value_of(self.region).endpoint,
-            )
+            client = self.region_client(service, self.region)
         elif service == "ces":
             client = (
                 CesClient.new_builder()
@@ -334,7 +352,19 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(OrganizationsRegion.CN_NORTH_4) \
                 .build()
+        elif service == 'ram':
+            client = RamClient.new_builder() \
+                .with_credentials(globalCredentials) \
+                .with_region(RamRegion.CN_NORTH_4) \
+                .build()
 
+        return client
+
+    def region_client(self, service, region):
+        if service == 'obs':
+            client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
+                                server=ObsRegion.value_of(region).endpoint,
+                                security_token=self.token)
         return client
 
     def request(self, service):
@@ -342,6 +372,8 @@ class Session:
             request = ListSecurityGroupsRequest()
         elif service == "evs":
             request = ListVolumesRequest()
+        elif service == 'er':
+            request = ListEnterpriseRoutersRequest()
         elif service == "lts-transfer":
             request = ListTransfersRequest()
         elif service == "config":
@@ -352,6 +384,10 @@ class Session:
             request = ListDedicatedHostsRequest()
         elif service == "obs":
             request = True
+        elif service == 'iam-user':
+            request = ListUsersV5Request()
+        elif service == 'iam-policy':
+            request = ListPoliciesV5Request()
         elif service == "ces":
             request = ListAlarmRulesRequest()
         elif service == 'org-policy':
@@ -398,5 +434,10 @@ class Session:
             request = ListSharesRequest()
         elif service == "coc":
             request = ListInstanceCompliantRequest()
+        elif service == 'ram':
+            request = SearchResourceShareAssociationsRequest()
+            request.body = SearchResourceShareAssociationsReqBody(
+                association_type="principal",
+                association_status="associated")
 
         return request

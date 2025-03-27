@@ -20,6 +20,7 @@ class ConfigTracker(QueryResourceManager):
         service = 'config'
         enum_spec = ("show_tracker_config", '*', 'offset')
         id = 'domain_id'
+        config_resource_support = True
 
 
 @ConfigTracker.action_registry.register("delete-tracker")

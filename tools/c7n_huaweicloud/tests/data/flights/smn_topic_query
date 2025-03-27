@@ -227,8 +227,8 @@ interactions:
     uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-south-1%3A2284f67d00db4d5896511837ef2f7366%3Attt/attributes?name=access_policy
   response:
     body:
-      string: '{ "attributes": { "access_policy": "{\"Version\":\"2016-09-07\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__user_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"CSP\":[\"urn:csp:iam::2284f67d00db4d5896511837ef2f7366:root\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},{\"Sid\":\"__org_path_pub_0\",\"Effect\":\"Deny\",\"Principal\":{\"OrgPath\":[\"o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},{\"Sid\":\"__service_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"dws\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"}]}"}, "request_id": "dc69a1d299824f728f50c4e0967babaf"
-        }'
+      string: '{ "attributes": { "access_policy": "{\"Version\":\"2016-09-07\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__user_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"CSP\":[\"urn:csp:iam::2284f67d00db4d5896511837ef2f7366:root\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},{\"Sid\":\"__org_path_pub_0\",\"Effect\":\"Deny\",\"Principal\":{\"OrgPath\":[\"o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},{\"Sid\":\"__service_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"dws\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"}]}"},
+        "request_id": "dc69a1d299824f728f50c4e0967babaf" }'
     headers:
       Connection:
       - keep-alive
@@ -250,6 +250,104 @@ interactions:
       - SAMEORIGIN
       X-Request-Id:
       - a2f8a582141d7fb03eb70d918beac785
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T041049Z
+    method: GET
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/smn_topic/d745b6a999a049c09446fea0ecac8f53/tags
+  response:
+    body:
+      string: '{"tags":[{"value":"123","key":"kk1"},{"value":"test","key":"test"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 04:10:49 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 42021d9fc13c54bb255d7e8b32ae110a
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T041242Z
+    method: GET
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/smn_topic/d745b6a999a049c09446fea0ecac8f54/tags
+  response:
+    body:
+      string: '{"tags":[]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 04:12:42 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 3b6b112c72bdba8aa0954bb998551931
       X-XSS-Protection:
       - 1; mode=block;
     status:

@@ -2,15 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import os
 import json
 
-from huaweicloudsdkobs.v1.region.obs_region import ObsRegion
 from huaweicloudsdkcore.exceptions import exceptions
 
-from obs import ObsClient
-
-from c7n.utils import type_schema, set_annotation
+from c7n.utils import type_schema, set_annotation, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -29,23 +25,18 @@ class Obs(QueryResourceManager):
         tag = False
 
 
-def get_bucket_client(bucket):
-    ak = os.getenv('HUAWEI_ACCESS_KEY_ID')
-    sk = os.getenv('HUAWEI_SECRET_ACCESS_KEY')
-
-    bucket_region = bucket['location']
-    endpoint = ObsRegion.value_of(bucket_region).endpoint
-
-    client = ObsClient(access_key_id=ak, secret_access_key=sk, server=endpoint)
-    return client
-
-
 class ObsSdkError():
     def __init__(self, code, message, request_id):
         self.error_code = code
         self.error_msg = message
         self.request_id = request_id
         self.encoded_auth_msg = ""
+
+
+def get_obs_client(session_factory, bucket):
+    session = local_session(session_factory)
+    client = session.region_client(Obs.resource_type.service, bucket['location'])
+    return client
 
 
 @Obs.action_registry.register('delete-wildcard-statements')
@@ -101,7 +92,7 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
 
     def update_statements(self, bucket, policy):
         bucket_name = bucket['name']
-        client = get_bucket_client(bucket)
+        client = get_obs_client(self.manager.session_factory, bucket)
 
         if not policy['Statement']:
             resp = client.deleteBucketPolicy(bucket_name)
@@ -162,7 +153,7 @@ class SetBucketEncryption(HuaweiCloudBaseAction):
 
         cfg = self.data['encryption']
 
-        client = get_bucket_client(bucket)
+        client = get_obs_client(self.manager.session_factory, bucket)
         if cfg['crypto'] == 'AES256':
             resp = client.setBucketEncryption(bucket_name, 'AES256')
         else:
@@ -238,7 +229,7 @@ class WildcardStatementFilter(Filter):
         return None
 
     def get_bucket_policy(self, bucket):
-        client = get_bucket_client(bucket)
+        client = get_obs_client(self.manager.session_factory, bucket)
         resp = client.getBucketPolicy(bucket['name'])
 
         if resp.status < 300:
@@ -309,7 +300,7 @@ class BucketEncryptionStateFilter(Filter):
         return None
 
     def get_encryption_crypto(self, bucket):
-        client = get_bucket_client(bucket)
+        client = get_obs_client(self.manager.session_factory, bucket)
         resp = client.getBucketEncryption(bucket['name'])
 
         if resp.status < 300:
