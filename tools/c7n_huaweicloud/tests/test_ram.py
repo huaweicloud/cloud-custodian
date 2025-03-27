@@ -5,6 +5,7 @@ from huaweicloud_common import BaseTest
 
 os.environ["HUAWEI_DEFAULT_REGION"] = 'cn-north-4'
 
+
 class RamTest(BaseTest):
 
     def test_search_external_shared_principals(self):
