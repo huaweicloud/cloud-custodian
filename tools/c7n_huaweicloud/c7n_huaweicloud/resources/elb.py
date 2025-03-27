@@ -12,7 +12,9 @@ from c7n_huaweicloud.filters.elb import (ELBAgeFilter,
                                          ELBAttributesFilter,
                                          LoadbalancerIsNotLoggingFilter,
                                          LoadbalancerIsLoggingFilter,
-                                         LoadbalancerPublicipCountFilter)
+                                         LoadbalancerPublicipCountFilter,
+                                         LoadbalancerIsLoggingTransferFilter,
+                                         LoadbalancerIsNotLoggingTransferFilter)
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
@@ -36,8 +38,12 @@ Loadbalancer.filter_registry.register('backend-server-count', LoadbalancerBacken
 Loadbalancer.filter_registry.register('publicip-count', LoadbalancerPublicipCountFilter)
 Loadbalancer.filter_registry.register('is-logging', LoadbalancerIsLoggingFilter)
 Loadbalancer.filter_registry.register('is-not-logging', LoadbalancerIsNotLoggingFilter)
+Loadbalancer.filter_registry.register('is-logging-transfer', LoadbalancerIsLoggingTransferFilter)
+Loadbalancer.filter_registry.register('is-not-logging-transfer',
+                                      LoadbalancerIsNotLoggingTransferFilter)
 Loadbalancer.filter_registry.register('attributes', ELBAttributesFilter)
 Loadbalancer.filter_registry.register('age', ELBAgeFilter)
+
 
 @resources.register('elb.listener')
 class Listener(QueryResourceManager):
