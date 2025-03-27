@@ -24,6 +24,8 @@ from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
+from huaweicloudsdkobs.v1.region.obs_region import ObsRegion
+from obs import ObsClient
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
 from huaweicloudsdkkms.v2 import KmsClient, ListKeysRequest, ListKeysRequestBody
@@ -45,6 +47,9 @@ from huaweicloudsdksmn.v2 import SmnClient, ListTopicsRequest
 from huaweicloudsdknat.v2.region.nat_region import NatRegion
 from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
     ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
+from huaweicloudsdkcts.v3 import CtsClient, ListTrackersRequest, ListNotificationsRequest
+from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
+from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -75,13 +80,10 @@ class Session:
                       'Specify a default via HUAWEI_SECRET_ACCESS_KEY or context')
             sys.exit(1)
 
-        self.tms_region = os.getenv('HUAWEI_DEFAULT_TMS_REGION')
-        if not self.tms_region:
-            self.tms_region = 'cn-north-4'
-
     def client(self, service):
         credentials = BasicCredentials(self.ak, self.sk, os.getenv('HUAWEI_PROJECT_ID')) \
             .with_security_token(self.token)
+        globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(self.token)
         if service == 'vpc':
             client = VpcClientV3.new_builder() \
                 .with_credentials(credentials) \
@@ -103,10 +105,9 @@ class Session:
                 .with_region(EvsRegion.value_of(self.region)) \
                 .build()
         elif service == 'tms':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = TmsClient.new_builder() \
                 .with_credentials(globalCredentials) \
-                .with_region(TmsRegion.value_of(self.tms_region)) \
+                .with_region(TmsRegion.value_of("cn-north-4")) \
                 .build()
         elif service == 'cbr':
             client = CbrClient.new_builder() \
@@ -114,22 +115,23 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region)) \
                 .build()
         elif service == 'iam':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = IamClient.new_builder() \
                 .with_credentials(globalCredentials) \
                 .with_region(IamRegion.value_of(self.region)) \
                 .build()
         elif service == 'config':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = ConfigClient.new_builder() \
                 .with_credentials(globalCredentials) \
-                .with_region(ConfigRegion.value_of(self.region)) \
+                .with_region(ConfigRegion.value_of("cn-north-4")) \
                 .build()
         elif service == 'deh':
             client = DeHClient.new_builder() \
                 .with_credentials(credentials) \
                 .with_region(DeHRegion.value_of(self.region)) \
                 .build()
+        elif service == "obs":
+            client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
+                                server=ObsRegion.value_of(self.region).endpoint)
         elif service == 'ces':
             client = CesClient.new_builder() \
                 .with_credentials(credentials) \
@@ -190,6 +192,21 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(NatRegion.value_of(self.region)) \
                 .build()
+        elif service == 'cts-tracker':
+            client = CtsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CtsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'cts-notification-smn':
+            client = CtsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CtsRegion.value_of(self.region)) \
+                .build()
+        elif service == 'cts-notification-func':
+            client = CtsClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(CtsRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -204,6 +221,8 @@ class Session:
             request = ListServersDetailsRequest()
         elif service == 'deh':
             request = ListDedicatedHostsRequest()
+        elif service == 'obs':
+            request = True
         elif service == 'ces':
             request = ListAlarmRulesRequest()
         elif service == 'kms':
@@ -227,5 +246,17 @@ class Session:
             request = ListNatGatewaySnatRulesRequest()
         elif service == 'nat_dnat_rule':
             request = ListNatGatewayDnatRulesRequest()
+        elif service == 'cts-tracker':
+            request = ListTrackersRequest()
+        elif service == 'cts-notification-smn':
+            request = ListNotificationsRequest()
+            request.notification_type = "smn"
+        elif service == 'cts-notification-func':
+            request = ListNotificationsRequest()
+            request.notification_type = "fun"
+        elif service == 'cbr-backup':
+            request = ListBackupsRequest()
+        elif service == 'cbr-vault':
+            request = ListVaultRequest()
 
         return request

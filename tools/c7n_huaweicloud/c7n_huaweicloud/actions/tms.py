@@ -494,21 +494,22 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
     def process_resource(self, resource):
         try:
+            old_value = None
             if not self.old_value:
-                self.old_value = self.get_value_by_key(resource, self.key)
-            if not self.old_value:
+                old_value = self.get_value_by_key(resource, self.key)
+            if not self.old_value and not old_value:
                 self.log.exception("No value of key %s in resource %s", self.key, resource["id"])
                 return
 
-            self.new_value = self.get_new_value(self.old_value, self.action, self.old_sub_str,
+            new_value = self.get_new_value(old_value, self.action, self.old_sub_str,
                                                 self.new_sub_str)
-            if not self.new_value:
+            if not new_value:
                 self.log.exception("Can not get new value of key %s in resource %s", self.key,
                                    resource["id"])
                 return
 
-            old_tags = [{"key": self.key, "value": self.old_value}]
-            new_tags = [{"key": self.key, "value": self.new_value}]
+            old_tags = [{"key": self.key, "value": old_value}]
+            new_tags = [{"key": self.key, "value": new_value}]
             resources = [
                 {"resource_id": resource["id"], "resource_type": resource["tag_resource_type"]}]
 
@@ -661,6 +662,9 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
         try:
             tags = self.get_tags_from_resource(resource)
             delete_keys = self.get_delete_keys(tags, space, preserve)
+            if len(delete_keys) == 0:
+                self.log.info("No need to tag-trim of %s", resource['id'])
+                return
 
             old_tags = [{"key": key, "value": tags[key]} for key in delete_keys]
             resources = [

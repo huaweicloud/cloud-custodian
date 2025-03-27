@@ -45,7 +45,7 @@ class SecurityGroupTest(BaseTest):
              'name': 'security-group-rule-ingress',
              'resource': 'huaweicloud.vpc-security-group-rule',
              'filters': [{'type': 'ingress', 'RemoteIpPrefix': '192.168.21.0/24',
-                          'Protocols': ['tcp'], 'InPorts': [8080]}]},
+                          'Protocols': ['tcp'], 'AllInPorts': [8080]}]},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -60,7 +60,7 @@ class SecurityGroupTest(BaseTest):
              'name': 'security-group-rule-egress',
              'resource': 'huaweicloud.vpc-security-group-rule',
              'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24',
-                          'Protocols': ['tcp'], 'InPorts': [8080]}]},
+                          'Protocols': ['tcp'], 'AllInPorts': [8080]}]},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -75,7 +75,7 @@ class SecurityGroupTest(BaseTest):
              'name': 'security-group-remove-rules',
              'resource': 'huaweicloud.vpc-security-group-rule',
              'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24',
-                          'Protocols': ['tcp'], 'InPorts': [8080]}],
+                          'Protocols': ['tcp'], 'AllInPorts': [8080]}],
              'actions': [{'type': 'remove-rules', 'egress': 'matched'}]},
             session_factory=factory)
         resources = p.run()
@@ -91,7 +91,7 @@ class SecurityGroupTest(BaseTest):
              'name': 'security-group-set-rules',
              'resource': 'huaweicloud.vpc-security-group-rule',
              'filters': [{'type': 'egress', 'RemoteIpPrefix': '192.168.21.0/24',
-                          'Protocols': ['tcp'], 'InPorts': [8080]}],
+                          'Protocols': ['tcp'], 'AllInPorts': [8080]}],
              'actions': [{'type': 'set-rules', 'remove-egress': 'matched',
                           'remove-ingress': [{'protocol': ['tcp'],
                                               'remote_ip_prefix': '192.168.22.0/24'}],
