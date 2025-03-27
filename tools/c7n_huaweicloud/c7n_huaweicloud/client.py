@@ -305,15 +305,19 @@ class Session:
                 .build()
             )
         elif service == "sfsturbo":
-            client = SFSTurboClient.new_builder() \
-                .with_credentials(credentials) \
-                .with_region(SFSTurboRegion.value_of(self.region)) \
+            client = (
+                SFSTurboClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SFSTurboRegion.value_of(self.region))
                 .build()
-        elif service == 'cbr':
-            client = CbrClient.new_builder() \
-                .with_credentials(credentials) \
-                .with_region(CbrRegion.value_of(self.region)) \
+            )
+        elif service == "cbr":
+            client = (
+                CbrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CbrRegion.value_of(self.region))
                 .build()
+            )
         return client
 
     def request(self, service):
@@ -366,7 +370,7 @@ class Session:
             request = ListBackupsRequest()
         elif service == "cbr-vault":
             request = ListVaultRequest()
-        elif service == 'sfsturbo':
+        elif service == "sfsturbo":
             request = ListSharesRequest()
 
         return request
