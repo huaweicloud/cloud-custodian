@@ -175,7 +175,7 @@ class LoadbalancerIsLTSLogTransferFilter(Filter):
             if (log_group_id is None or log_group_id.strip() == ""
                     or log_topic_id is None or log_topic_id.strip() == ""):
                 continue
-            if not transfer_log_topic_id_set:
+            if transfer_log_topic_id_set is None:
                 transfer_log_topic_id_set = self.get_all_transfer_log_topic_ids()
             if log_topic_id in transfer_log_topic_id_set:
                 filter_resources.append(resource)
@@ -193,6 +193,8 @@ class LoadbalancerIsLTSLogTransferFilter(Filter):
         while 1:
             lts_request.offset = offset
             lts_response = lts_client.list_transfers(lts_request)
+            log.info(lts_request)
+            log.info(lts_response)
             if lts_response.status_code != 200:
                 log.error(lts_response.status_code, lts_response.request_id,
                           lts_response.error_code, lts_response.error_msg)
