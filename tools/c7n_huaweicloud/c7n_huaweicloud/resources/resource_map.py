@@ -3,6 +3,7 @@
 
 ResourceMap = {
     "huaweicloud.volume": "c7n_huaweicloud.resources.volume.Volume",
+    "huaweicloud.lts-transfer": "c7n_huaweicloud.resources.lts-transfer.Transfer",
     "huaweicloud.evs-volume": "c7n_huaweicloud.resources.evs.Volume",
     "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
     "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker",
