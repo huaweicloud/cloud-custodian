@@ -4,11 +4,6 @@
 import logging
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from c7n_huaweicloud.filters.transfer import LtsTransferLogGroupStreamFilter
-from c7n_huaweicloud.provider import resources
-from c7n_huaweicloud.provider import resources
-from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.resources.transfer import LtsCreateTransferLog
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkeip.v3 import DisassociatePublicipsRequest

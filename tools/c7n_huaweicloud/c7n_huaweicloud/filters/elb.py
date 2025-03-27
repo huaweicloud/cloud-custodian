@@ -10,10 +10,10 @@ from huaweicloudsdkelb.v3 import ListAllMembersRequest
 from c7n.filters import ValueFilter, AgeFilter, OPERATORS, Filter
 from c7n_huaweicloud.provider import resources
 from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdklts.v2 import LtsClient, ListTransfersRequest
+from huaweicloudsdklts.v2 import ListTransfersRequest
 
 from c7n.utils import type_schema, local_session
-from tools.c7n_huaweicloud.c7n_huaweicloud.filters.transfer import LtsTransferLogGroupStreamFilter
+from c7n_huaweicloud.filters.transfer import LtsTransferLogGroupStreamFilter
 
 log = logging.getLogger("custodian.huaweicloud.resources.elb")
 
