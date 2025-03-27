@@ -8,7 +8,6 @@ from dateutil.parser import parse
 from huaweicloudsdkelb.v3 import ListAllMembersRequest
 
 from c7n.filters import ValueFilter, AgeFilter, OPERATORS, Filter
-from c7n_huaweicloud.provider import resources
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdklts.v2 import ListTransfersRequest
 
@@ -196,7 +195,7 @@ class LoadbalancerIsLoggingTransferFilter(Filter):
             lts_response = lts_client.list_transfers(lts_request)
             if lts_response.status_code != 200:
                 log.error(lts_response.status_code, lts_response.request_id,
-                          lts_response.error_code, e.error_msg)
+                          lts_response.error_code, lts_response.error_msg)
                 raise exceptions.ClientRequestException()
 
             log_transfers = lts_response.log_transfers
