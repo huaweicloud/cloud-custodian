@@ -19,22 +19,23 @@ class RAMSharedPrincipals(QueryResourceManager):
 
     :Example:
 
-    Returns all external shared principals  
+    Returns all external shared principals
 
     .. code-block::yaml
-  
+
         policies:
           - name: search-external-shared-principals
             resource:huaweicloud.RAMSharedPrincipals
             filters:
             - type: value
-              key: external                                                                            
+              key: external
               vaule: true
     """
     class resource_type(TypeInfo):
         service = 'ram'
         enum_spec = ("search_resource_share_associations", 'resource_share_associations', 'marker')
         id = 'resource_share_id'
+
 
 @RAMSharedPrincipals.action_registry.register("disassociate")
 class DisassociatedExternalPrincipals(HuaweiCloudBaseAction):
@@ -56,6 +57,7 @@ class DisassociatedExternalPrincipals(HuaweiCloudBaseAction):
     """
 
     schema = type_schema("disassociate")
+
     def perform_action(self, resource):
         client = self.manager.get_client()
         request = DisassociateResourceShareRequest(resource_share_id=resource["resource_share_id"])
