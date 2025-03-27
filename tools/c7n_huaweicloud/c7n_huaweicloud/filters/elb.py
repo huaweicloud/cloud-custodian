@@ -141,7 +141,7 @@ class LoadbalancerIsNotLoggingFilter(Filter):
         return False
 
 
-class LoadbalancerIsLoggingTransferFilter(Filter):
+class LoadbalancerIsLTSLogTransferFilter(Filter):
     """Check if logging transfer on ELB.
 
     :example:
@@ -156,9 +156,9 @@ class LoadbalancerIsLoggingTransferFilter(Filter):
                 key: id
                 value: "147476c5-1fa5-4743-b4e0-d52ae39e1142"
               - type: is-logging
-              - type: is-logging-transfer
+              - type: is-lts-log-transfer
     """
-    schema = type_schema('is-logging-transfer', rinherit=LtsTransferLogGroupStreamFilter.schema)
+    schema = type_schema('is-lts-log-transfer', rinherit=LtsTransferLogGroupStreamFilter.schema)
 
     def process(self, resources, event=None):
         if len(resources) == 0:
@@ -210,7 +210,7 @@ class LoadbalancerIsLoggingTransferFilter(Filter):
         return log_transfer_stream_ids
 
 
-class LoadbalancerIsNotLoggingTransferFilter(LoadbalancerIsLoggingTransferFilter):
+class LoadbalancerIsNotLTSLogTransferFilter(LoadbalancerIsLTSLogTransferFilter):
     """Check if logging transfer on ELB.
 
     :example:
@@ -225,10 +225,10 @@ class LoadbalancerIsNotLoggingTransferFilter(LoadbalancerIsLoggingTransferFilter
                 key: id
                 value: "147476c5-1fa5-4743-b4e0-d52ae39e1142"
               - type: is-logging
-              - type: is-not-logging-transfer
+              - type: is-not-lts-log-transfer
     """
-    schema = type_schema('is-not-logging-transfer',
-                         rinherit=LoadbalancerIsLoggingTransferFilter.schema)
+    schema = type_schema('is-not-lts-log-transfer',
+                         rinherit=LoadbalancerIsLTSLogTransferFilter.schema)
 
     def process(self, resources, event=None):
         transfer_resources = super().process(resources, event)

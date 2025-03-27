@@ -4,17 +4,17 @@
 from c7n_huaweicloud.actions.elb import (LoadbalancerDeleteAction,
                                          LoadbalancerEnableLoggingAction,
                                          LoadbalancerUnbindPublicipsAction,
-                                         LoadbalancerCreateTransferAction,
+                                         LoadbalancerCreateLTSLogTransferAction,
                                          ListenerDeleteAction,
-                                         ListenerSetIpgroupAction)
+                                         ListenerSetAclIpgroupAction)
 from c7n_huaweicloud.filters.elb import (ELBAgeFilter,
                                          LoadbalancerBackendServerCountFilter,
                                          ELBAttributesFilter,
                                          LoadbalancerIsNotLoggingFilter,
                                          LoadbalancerIsLoggingFilter,
                                          LoadbalancerPublicipCountFilter,
-                                         LoadbalancerIsLoggingTransferFilter,
-                                         LoadbalancerIsNotLoggingTransferFilter)
+                                         LoadbalancerIsLTSLogTransferFilter,
+                                         LoadbalancerIsNotLTSLogTransferFilter)
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
@@ -32,15 +32,15 @@ class Loadbalancer(QueryResourceManager):
 Loadbalancer.action_registry.register('delete', LoadbalancerDeleteAction)
 Loadbalancer.action_registry.register('enable-logging', LoadbalancerEnableLoggingAction)
 Loadbalancer.action_registry.register('unbind-publicips', LoadbalancerUnbindPublicipsAction)
-Loadbalancer.action_registry.register('create-transfer', LoadbalancerCreateTransferAction)
+Loadbalancer.action_registry.register('create-lts-log-transfer', LoadbalancerCreateLTSLogTransferAction)
 
 Loadbalancer.filter_registry.register('backend-server-count', LoadbalancerBackendServerCountFilter)
 Loadbalancer.filter_registry.register('publicip-count', LoadbalancerPublicipCountFilter)
 Loadbalancer.filter_registry.register('is-logging', LoadbalancerIsLoggingFilter)
 Loadbalancer.filter_registry.register('is-not-logging', LoadbalancerIsNotLoggingFilter)
-Loadbalancer.filter_registry.register('is-logging-transfer', LoadbalancerIsLoggingTransferFilter)
-Loadbalancer.filter_registry.register('is-not-logging-transfer',
-                                      LoadbalancerIsNotLoggingTransferFilter)
+Loadbalancer.filter_registry.register('is-lts-log-transfer', LoadbalancerIsLTSLogTransferFilter)
+Loadbalancer.filter_registry.register('is-not-lts-log-transfer',
+                                      LoadbalancerIsNotLTSLogTransferFilter)
 Loadbalancer.filter_registry.register('attributes', ELBAttributesFilter)
 Loadbalancer.filter_registry.register('age', ELBAgeFilter)
 
@@ -56,7 +56,7 @@ class Listener(QueryResourceManager):
 
 
 Listener.action_registry.register('delete', ListenerDeleteAction)
-Listener.action_registry.register('set-ipgroup', ListenerSetIpgroupAction)
+Listener.action_registry.register('set-acl-ipgroup', ListenerSetAclIpgroupAction)
 
 Listener.filter_registry.register('attributes', ELBAttributesFilter)
 Listener.filter_registry.register('age', ELBAgeFilter)

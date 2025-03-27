@@ -25,14 +25,14 @@ log = logging.getLogger("custodian.huaweicloud.resources.elb")
 
 
 class LoadbalancerDeleteAction(HuaweiCloudBaseAction):
-    """Deletes ELB Loadbalancers.
+    """Delete ELB Loadbalancers.
 
     :Example:
 
     .. code-block:: yaml
 
         policies:
-          - name: delete-has-publicip-loadbalancers
+          - name: delete-public-loadbalancers
             filters:
               - type: publicip-count
                 count: 0
@@ -166,7 +166,7 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
         return response
 
 
-class LoadbalancerCreateTransferAction(LtsCreateTransferLog):
+class LoadbalancerCreateLTSLogTransferAction(LtsCreateTransferLog):
     """Enable logging for loadbalancers.
 
     :Example:
@@ -181,9 +181,9 @@ class LoadbalancerCreateTransferAction(LtsCreateTransferLog):
                 key: id
                 value: "147476c5-1fa5-4743-b4e0-d52ae39e1142"
               - type: is-logging
-              - type: is-not-transfer
+              - type: is-not-lts-log-transfer
             actions:
-              - type: create-transfer
+              - type: create-lts-log-transfer
                 log_transfer_type: "OBS"
                 log_transfer_mode: "cycle"
                 log_transfer_status: "ENABLE"
@@ -193,7 +193,7 @@ class LoadbalancerCreateTransferAction(LtsCreateTransferLog):
                 obs_bucket_name: "{my_obs_bucket}"
     """
 
-    schema = type_schema(type_name="create-transfer",
+    schema = type_schema(type_name="create-lts-log-transfer",
                          rinherit=LtsCreateTransferLog.schema,
                          required=['obs_bucket_name'])
 
@@ -267,7 +267,7 @@ class LoadbalancerCreateTransferAction(LtsCreateTransferLog):
 
 
 class ListenerDeleteAction(HuaweiCloudBaseAction):
-    """Deletes ELB Listeners.
+    """Delete ELB Listeners.
 
     :Example:
 
@@ -310,7 +310,7 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
         return response
 
 
-class ListenerSetIpgroupAction(HuaweiCloudBaseAction):
+class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
     """Set Ipgroup for ELB Listeners.
 
     :Example:
@@ -318,7 +318,7 @@ class ListenerSetIpgroupAction(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-          - name: set-ipgroup-for-listeners
+          - name: set-acl-ipgroup-for-listeners
             resource: huaweicloud.elb.listener
             filters:
               - type: attributes
@@ -336,13 +336,13 @@ class ListenerSetIpgroupAction(HuaweiCloudBaseAction):
                   key: ipgroup.type
                   value: "white"
             actions:
-              - type: set-ipgroup
+              - type: set-acl-ipgroup
                 ipgroup_id: ["a5fe56db-4894-416d-a9a7-684c78f5897c"]
                 enable: true
                 ipgroup_type: white
     """
 
-    schema = type_schema(type_name="set-ipgroup",
+    schema = type_schema(type_name="set-acl-ipgroup",
                          ipgroup_id={'type': 'array'},
                          enable={'type': 'boolean'},
                          ipgroup_type={'type': 'string', 'enum': ['white', 'black']})
