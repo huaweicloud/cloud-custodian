@@ -406,5 +406,10 @@ class Session:
             request = ListSharesRequest()
         elif service == "coc":
             request = ListInstanceCompliantRequest()
+        elif service == 'ram':
+            request = SearchResourceShareAssociationsRequest()
+            request.body = SearchResourceShareAssociationsReqBody(
+                association_type="principal",
+                association_status="associated")
 
         return request
