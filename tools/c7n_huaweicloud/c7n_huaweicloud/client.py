@@ -338,10 +338,10 @@ class Session:
                 .with_region(OrganizationsRegion.CN_NORTH_4) \
                 .build()
         elif service == 'ram':
-            globalCredentials = GlobalCredentials(self.ak, self.sk)
             client = RamClient.new_builder() \
                 .with_credentials(globalCredentials) \
                 .with_region(RamRegion.value_of(self.region)) \
+                .build()
 
         return client
 
