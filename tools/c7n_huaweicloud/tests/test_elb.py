@@ -9,7 +9,7 @@ class ElbTest(BaseTest):
         factory = self.replay_flight_data('elb_request')
         p = self.load_policy({
             "name": "ensure-https-only",
-            "resource": "huaweicloud.elb.listener",
+            "resource": "huaweicloud.elb-listener",
             "filters": [{
                 "type": "attributes",
                 "key": "protocol",
