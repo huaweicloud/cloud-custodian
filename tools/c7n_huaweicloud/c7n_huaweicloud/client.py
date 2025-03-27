@@ -201,11 +201,7 @@ class Session:
                 .build()
             )
         elif service == "obs":
-            client = ObsClient(
-                access_key_id=self.ak,
-                secret_access_key=self.sk,
-                server=ObsRegion.value_of(self.region).endpoint,
-            )
+            client = self.region_client(service, self.region)
         elif service == "ces":
             client = (
                 CesClient.new_builder()
@@ -352,6 +348,17 @@ class Session:
                 .with_region(RamRegion.CN_NORTH_4) \
                 .build()
 
+        return client
+
+    def region_client(self, service, region):
+        if service == 'obs':
+            if self.token is not None:
+                client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
+                                    server=ObsRegion.value_of(region).endpoint,
+                                    security_token=self.token)
+            else:
+                client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
+                                    server=ObsRegion.value_of(region).endpoint)
         return client
 
     def request(self, service):
