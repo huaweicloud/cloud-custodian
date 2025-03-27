@@ -3,7 +3,7 @@
 
 ResourceMap = {
     "huaweicloud.volume": "c7n_huaweicloud.resources.volume.Volume",
-    "huaweicloud.lts-transfer": "c7n_huaweicloud.resources.lts-transfer.Transfer",
+    "huaweicloud.lts-transfer": "c7n_huaweicloud.resources.transfer.Transfer",
     "huaweicloud.evs-volume": "c7n_huaweicloud.resources.evs.Volume",
     "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
     "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker",
@@ -32,4 +32,5 @@ ResourceMap = {
         "c7n_huaweicloud.resources.cts-notification-func.Notification",
     "huaweicloud.cbr-backup": "c7n_huaweicloud.resources.cbr_backup.CbrBackup",
     "huaweicloud.cbr-vault": "c7n_huaweicloud.resources.cbr_vault.CbrVault",
+    "huaweicloud.sfsturbo": "c7n_huaweicloud.resources.sfsturbo.SfsTurbo",
 }

@@ -41,6 +41,8 @@ huaweicloudsdkcbr = "^3.1.138"
 huaweicloudsdknat = "^3.1.138"
 huaweicloudsdkcts = "^3.1.139"
 huaweicloudsdksecmaster = "^3.1.140"
+huaweicloudsdksfsturbo = "^3.1.138"
+
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"
 
