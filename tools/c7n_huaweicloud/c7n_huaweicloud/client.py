@@ -143,9 +143,9 @@ class Session:
             )
         elif service == 'er':
             client = (
-                ErClient.new_builder() \
-                .with_credentials(credentials) \
-                .with_region(ErRegion.value_of(self.region)) \
+                ErClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(ErRegion.value_of(self.region))
                 .build()
             )
         elif service == "evs":
