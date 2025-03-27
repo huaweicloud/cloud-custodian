@@ -189,7 +189,8 @@ class TopicAccessFilter(Filter):
         for data in resources:
             access_policy = data.get('access_policy')
             if access_policy is None:
-                request = ListTopicAttributesRequest(topic_urn=data["topic_urn"], name='access_policy')
+                request = ListTopicAttributesRequest(topic_urn=data["topic_urn"],
+                                                     name='access_policy')
                 response = client.list_topic_attributes(request)
                 access_policy = response.attributes.access_policy
                 data['access_policy'] = access_policy
