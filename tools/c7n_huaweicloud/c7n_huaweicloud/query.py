@@ -42,13 +42,18 @@ class ResourceQuery:
 
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
-        enum_op, path, pagination = m.enum_spec
+
+        limit = None
+        if len(m.enum_spec) == 3:
+            enum_op, path, pagination = m.enum_spec
+        else:
+            enum_op, path, pagination, limit = m.enum_spec
 
         # ims special processing
         if pagination == 'ims':
             resources = self._pagination_ims(m, enum_op, path)
         elif pagination == 'offset':
-            resources = self._pagination_limit_offset(m, enum_op, path)
+            resources = self._pagination_limit_offset(m, enum_op, path, limit)
         elif pagination == 'marker':
             resources = self._pagination_limit_marker(m, enum_op, path)
         elif pagination == 'maxitems-marker':
@@ -62,14 +67,14 @@ class ResourceQuery:
             sys.exit(1)
         return resources
 
-    def _pagination_limit_offset(self, m, enum_op, path):
+    def _pagination_limit_offset(self, m, enum_op, path, limit):
         session = local_session(self.session_factory)
         client = session.client(m.service)
 
         offset = 0
         if hasattr(m, 'offset_start_num'):
             offset = m.offset_start_num
-        limit = DEFAULT_LIMIT_SIZE
+        limit = limit or DEFAULT_LIMIT_SIZE
         resources = []
         while 1:
             request = session.request(m.service)
