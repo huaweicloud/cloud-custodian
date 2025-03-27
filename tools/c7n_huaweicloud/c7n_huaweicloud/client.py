@@ -320,11 +320,13 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'coc':
-            client = CocClient.new_builder() \
-                .with_credentials(globalCredentials) \
-                .with_region(CocRegion.value_of("cn-north-4")) \
+        elif service == "coc":
+            client = (
+                CocClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CocRegion.value_of("cn-north-4"))
                 .build()
+            )
 
         return client
 
@@ -380,7 +382,7 @@ class Session:
             request = ListVaultRequest()
         elif service == "sfsturbo":
             request = ListSharesRequest()
-        elif service == 'coc':
+        elif service == "coc":
             request = ListInstanceCompliantRequest()
 
         return request
