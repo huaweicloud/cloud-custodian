@@ -28,7 +28,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.vpc")
 class Vpc(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc_v2'
-        enum_spec = ('list_vpcs', 'vpcs', 'offset')
+        enum_spec = ('list_vpcs', 'vpcs', 'marker')
         id = 'id'
         tag_resource_type = 'vpcs'
 
@@ -37,7 +37,7 @@ class Vpc(QueryResourceManager):
 class Port(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc_v2'
-        enum_spec = ('list_ports', 'ports', 'offset')
+        enum_spec = ('list_ports', 'ports', 'marker')
         id = 'id'
         tag_resource_type = ''
 
@@ -46,7 +46,7 @@ class Port(QueryResourceManager):
 class SecurityGroup(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc'
-        enum_spec = ('list_security_groups', 'security_groups', 'offset')
+        enum_spec = ('list_security_groups', 'security_groups', 'marker')
         id = 'id'
         tag_resource_type = 'security-groups'
 
@@ -62,7 +62,7 @@ class SecurityGroupDelete(HuaweiCloudBaseAction):
         policies:
           - name: security-group-delete-test-name
             resource: huaweicloud.vpc-security-group
-            flters:
+            filters:
               - type: value
                 key: name
                 value: "sg-test"
@@ -84,7 +84,7 @@ class SecurityGroupDelete(HuaweiCloudBaseAction):
 @SecurityGroup.filter_registry.register("unattached")
 class SecurityGroupUnAttached(Filter):
     """Filter to just vpc security groups that are not attached to any ports
-    or are not default one.
+    and are not default one.
 
     :example:
 
@@ -126,7 +126,7 @@ class SecurityGroupUnAttached(Filter):
 class SecurityGroupRule(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc'
-        enum_spec = ('list_security_group_rules', 'security_group_rules', 'offset')
+        enum_spec = ('list_security_group_rules', 'security_group_rules', 'marker')
         id = 'id'
         tag_resource_type = ''
 
@@ -167,7 +167,7 @@ class SecurityGroupRuleFilter(Filter):
     As well for verifying that a rule not allow for a specific set of ports
     as in the following example. The delta between this and the previous
     example is that if the rule allows for any ports not specified here,
-    then the rule will match. ie. NotInPorts is a negative assertion match,
+    then the rule will match. ie. `NotInPorts` is a negative assertion match,
     it matches when a rule includes ports outside of the specified set.
 
     .. code-block:: yaml
@@ -437,7 +437,7 @@ SGRuleSchema = {
     'match-operator': {'type': 'string', 'enum': ['or', 'and']},
     'RemoteIpPrefix': {
         'oneOf': [
-            {'enum': [-1, '-1']},
+            {'enum': [-1]},
             {'type': 'string'}
         ]
     },
@@ -520,11 +520,11 @@ class SecurityGroupRuleDelete(HuaweiCloudBaseAction):
         policies:
           - name: security-group-rule-delete-tcp-22
             resource: huaweicloud.vpc-security-group-rule
-            flters:
+            filters:
               - type: ingress
                 RemoteIpPrefix: '0.0.0.0/0'
                 Protocols: ['tcp']
-                InPorts: [22]
+                AllInPorts: [22]
             actions:
               - delete
     """
@@ -554,7 +554,7 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
                 filters:
                   - type: ingress
                     Protocols: ['tcp']
-                    InPorts: [8080]
+                    AllInPorts: [8080]
                 actions:
                   - type: remove-rules
                     ingress: matched
@@ -653,7 +653,7 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
             - type: ingress
               RemoteIpPrefix: '192.168.21.0/24'
               Protocols: ['tcp']
-              InPorts: [8080]
+              AllInPorts: [8080]
            actions:
             - type: set-rules
               # remove the rule matched by a previous ingress filter.
@@ -707,6 +707,7 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         ret_rules = []
         # add rules
+        add_failed = False
         for sg_id in sg_ids:
             try:
                 request = BatchCreateSecurityGroupRulesRequest()
@@ -728,10 +729,23 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
                 log.exception("Unable to add rules in security group %s. "
                               "RequestId: %s, Reason: %s" %
                               (sg_id, ex.request_id, ex.error_msg))
-                continue
+                add_failed = True
+                break
             res_rules_object = response.security_group_rules
             res_rules = [r.to_dict() for r in res_rules_object]
             ret_rules.extend(res_rules)
+        # revert added rules if add rules failed
+        if add_failed:
+            for rule in ret_rules:
+                try:
+                    request = DeleteSecurityGroupRuleRequest(security_group_rule_id=rule['id'])
+                    response = client.delete_security_group_rule(request)
+                except exceptions.ClientRequestException as ex:
+                    log.exception("Unable to delete rule %s in security group %s. "
+                                  "RequestId: %s, Reason: %s" %
+                                  (rule['id'], rule['security_group_id'],
+                                   ex.request_id, ex.error_msg))
+            return {}
 
         # remove rules
         remover = RemoveSecurityGroupRules(
@@ -756,7 +770,7 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
 class FlowLog(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc_v2'
-        enum_spec = ('list_flow_logs', 'flow_logs', 'offset')
+        enum_spec = ('list_flow_logs', 'flow_logs', 'marker')
         id = 'id'
         tag_resource_type = ''
 
@@ -772,7 +786,7 @@ class SetFlowLog(HuaweiCloudBaseAction):
         policies:
           - name: vpc-enable-flow-logs
             resource: huaweicloud.vpc-flow-log
-            flters:
+            filters:
               - type: value
                 key: resource_type
                 value: vpc
