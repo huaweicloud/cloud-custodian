@@ -1,0 +1,248 @@
+interactions:
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://sfs-turbo.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/sfs-turbo/shares/detail?limit=100&offset=0
+  response:
+    body:
+      string: '{"shares":[{"id":"d4fc3294-861f-4ca9-82c6-c2a3940c5569","name":"sfs-turbo-zy","status":"200","created_at":"2025-03-22T03:36:27","version":"1.0.0","export_location":"d4fc3294-861f-4ca9-82c6-c2a3940c5569.sfsturbo.internal:/","optional_endpoint":"192.168.0.55 192.168.0.164 192.168.0.251 192.168.0.210 192.168.0.94 192.168.0.215 192.168.0.202 192.168.0.240 192.168.0.2 192.168.0.244 192.168.0.241 192.168.0.177 192.168.0.83 192.168.0.53 192.168.0.68 192.168.0.106 192.168.0.191 192.168.0.162 192.168.0.7 192.168.0.218","instanceId":"02ac8da8-111a-45cf-bc5a-24c62c5cc382","statusDetail":"3f75b977ccf20b5fab649bdba2049660","expand_type":"hpc","instanceType":"sfs-turbo-hpc","share_type":"HPC_PERFORMANCE_250M","region":"ap-southeast-1","availability_zone":"ap-southeast-1a","az_name":"ap-southeast-1a","vpc_id":"55523696-283c-4204-a6c0-978d7294caab","subnet_id":"2d0a6f82-40e0-4530-8a67-35b615cc664c","security_group_id":"a4c3dd4e-802f-4709-9d18-6959da06e6d0","size":"1228.00","avail_capacity":"1228.00","pay_model":"0","share_proto":"NFS","enterprise_project_id":"0","hpc_bw":"250M","features":{"backup":{"is_support":true}},"ownership":"sfsturbo"},{"id":"c5f8d19c-f158-4a1a-867e-df44f6c4d068","name":"hongkong-az3-1-evs-consistent","status":"200","created_at":"2024-04-01T04:21:53","version":"1.0.0","export_location":"192.168.0.231:/","instanceId":"653988b4-54f4-40ad-8470-bb391061ecf2","statusDetail":"06a7ff489ea076de7745954d3ff57d41","instanceType":"efs-ha","share_type":"STANDARD","crypt_key_id":"440033eb-1eb0-4c52-8b40-e2f78d54fafc","region":"ap-southeast-1","availability_zone":"ap-southeast-1c","az_name":"ap-southeast-1c","vpc_id":"55523696-283c-4204-a6c0-978d7294caab","subnet_id":"2d0a6f82-40e0-4530-8a67-35b615cc664c","security_group_id":"a4c3dd4e-802f-4709-9d18-6959da06e6d0","size":"500.00","avail_capacity":"500.00","pay_model":"0","share_proto":"NFS","enterprise_project_id":"174cde06-5887-451b-849a-5fe48284a417","features":{"backup":{"is_support":true}},"fail_reason":"SFS.TURBO.0038: Contact customer service.","ownership":"sfsturbo"},{"id":"33a9d16c-ea90-41ee-8dc0-01884204cf95","name":"hongkong-az2-1-evs-consistent","status":"200","created_at":"2024-03-21T11:57:30","version":"1.0.0","export_location":"192.168.0.156:/","instanceId":"0e20eb64-2be2-40bc-8c85-82c690451cde","statusDetail":"276a0f3c6608a15fae30267203661a0c","instanceType":"efs-ha","share_type":"STANDARD","crypt_key_id":"440033eb-1eb0-4c52-8b40-e2f78d54fafc","region":"ap-southeast-1","availability_zone":"ap-southeast-1b","az_name":"ap-southeast-1b","vpc_id":"55523696-283c-4204-a6c0-978d7294caab","subnet_id":"2d0a6f82-40e0-4530-8a67-35b615cc664c","security_group_id":"a4c3dd4e-802f-4709-9d18-6959da06e6d0","size":"500.00","avail_capacity":"500.00","pay_model":"0","share_proto":"NFS","enterprise_project_id":"174cde06-5887-451b-849a-5fe48284a417","features":{"backup":{"is_support":true}},"fail_reason":"SFS.TURBO.0038: Contact customer service.","ownership":"sfsturbo"},{"id":"67c60dbb-d4fa-47aa-ae1d-cf8c8c75584e","name":"hongkong-az1-1-evs-consistent","status":"200","created_at":"2024-03-21T11:50:53","version":"1.0.0","export_location":"192.168.0.110:/","instanceId":"840f3c19-5328-47dd-8dec-931940ecd616","statusDetail":"0f75cc78677f4f4bc1e08d8cf43fdb9e","instanceType":"efs-ha","share_type":"STANDARD","crypt_key_id":"440033eb-1eb0-4c52-8b40-e2f78d54fafc","region":"ap-southeast-1","availability_zone":"ap-southeast-1a","az_name":"ap-southeast-1a","vpc_id":"55523696-283c-4204-a6c0-978d7294caab","subnet_id":"2d0a6f82-40e0-4530-8a67-35b615cc664c","security_group_id":"a4c3dd4e-802f-4709-9d18-6959da06e6d0","size":"500.00","avail_capacity":"500.00","pay_model":"0","share_proto":"NFS","enterprise_project_id":"174cde06-5887-451b-849a-5fe48284a417","features":{"backup":{"is_support":true}},"fail_reason":"SFS.TURBO.0038: Contact customer service.","ownership":"sfsturbo"}],"count":4}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults?object_type=turbo&resource_ids=d4fc3294-861f-4ca9-82c6-c2a3940c5569
+  response:
+    body:
+      string: '{"vaults":[{"id":"c500e1ba-516e-440e-b4c2-9c03001a19ce","name":"vault-b1a7","description":null,"resources":[{"id":"d4fc3294-861f-4ca9-82c6-c2a3940c5569","type":"OS::Sfs::Turbo","name":"sfs-turbo-zy","auto_protect":true,"size":1228,"backup_size":2260,"backup_count":1,"protect_status":"available","extra_info":{}}],"provider_id":"3f3c3220-245c-4805-b811-758870015881","created_at":"2025-03-22T05:37:10.727470","project_id":"0970678fd000f5642f0ac004b1cfae01","enterprise_project_id":"0","auto_bind":false,"bind_rules":{},"auto_expand":false,"smn_notify":true,"threshold":80,"user_id":"68383111f2604b0188147daf592f2075","billing":{"allocated":1228,"cloud_type":"public","consistent_level":"crash_consistent","frozen_scene":null,"charging_mode":"post_paid","order_id":null,"product_id":null,"protect_type":"backup","object_type":"turbo","spec_code":"vault.backup.turbo.normal","is_multi_az":false,"is_double_az":false,"used":2260,"storage_unit":null,"status":"available","size":2456,"partner_bp_id":null},"tags":[],"backup_name_prefix":null,"demand_billing":false,"cbc_delete_count":0,"frozen":false,"availability_zone":"","sys_lock_source_service":"","supplier":"","locked":false,"cross_account":false,"cross_account_urn":""}],"count":1,"offset":0,"limit":1000}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults?object_type=turbo&resource_ids=33a9d16c-ea90-41ee-8dc0-01884204cf95
+  response:
+    body:
+      string: '{"vaults": [], "count": 0}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults?object_type=turbo&resource_ids=67c60dbb-d4fa-47aa-ae1d-cf8c8c75584e
+  response:
+    body:
+      string: '{"vaults": [], "count": 0}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults?object_type=turbo&resource_ids=c5f8d19c-f158-4a1a-867e-df44f6c4d068
+  response:
+    body:
+      string: '{"vaults": [], "count": 0}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+version: 1
