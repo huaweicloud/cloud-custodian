@@ -13,10 +13,7 @@ class EnterpriseRouterTest(BaseTest):
             'filters': [
                 {"type": "value", "key": "auto_accept_shared_attachments", "value": True}
             ],
-            "actions": [{
-                "type": "update",
-                "auto_accept_shared_attachments": False
-            }]
+            "actions": ["update"]
         },
             session_factory=factory
         )
