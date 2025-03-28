@@ -4,15 +4,25 @@
 import logging
 
 from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdkvpc.v2 import ListPortsRequest
-from huaweicloudsdkvpc.v2 import UpdateFlowLogReq, UpdateFlowLogRequest, UpdateFlowLogReqBody
-from huaweicloudsdkvpc.v2 import DeleteFlowLogRequest
-from huaweicloudsdkvpc.v2 import CreateFlowLogRequest, CreateFlowLogReq, CreateFlowLogReqBody
-from huaweicloudsdkvpc.v3 import ListSecurityGroupRulesRequest
-from huaweicloudsdkvpc.v3 import DeleteSecurityGroupRequest, DeleteSecurityGroupRuleRequest
-from huaweicloudsdkvpc.v3 import BatchCreateSecurityGroupRulesRequest
-from huaweicloudsdkvpc.v3 import BatchCreateSecurityGroupRulesRequestBody
-from huaweicloudsdkvpc.v3 import BatchCreateSecurityGroupRulesOption
+from huaweicloudsdkvpc.v2 import (
+    ListPortsRequest,
+    UpdateFlowLogReq,
+    UpdateFlowLogRequest,
+    UpdateFlowLogReqBody,
+    DeleteFlowLogRequest,
+    CreateFlowLogRequest,
+    CreateFlowLogReq,
+    CreateFlowLogReqBody
+)
+from huaweicloudsdkvpc.v3 import (
+    ListSecurityGroupsRequest,
+    ListSecurityGroupRulesRequest,
+    DeleteSecurityGroupRequest,
+    DeleteSecurityGroupRuleRequest,
+    BatchCreateSecurityGroupRulesRequest,
+    BatchCreateSecurityGroupRulesRequestBody,
+    BatchCreateSecurityGroupRulesOption
+)
 
 from c7n.exceptions import PolicyValidationError
 from c7n.filters import Filter, ValueFilter
@@ -28,7 +38,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.vpc")
 class Vpc(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc_v2'
-        enum_spec = ('list_vpcs', 'vpcs', 'offset')
+        enum_spec = ('list_vpcs', 'vpcs', 'marker')
         id = 'id'
         tag_resource_type = 'vpcs'
 
@@ -37,7 +47,7 @@ class Vpc(QueryResourceManager):
 class Port(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc_v2'
-        enum_spec = ('list_ports', 'ports', 'offset')
+        enum_spec = ('list_ports', 'ports', 'marker')
         id = 'id'
         tag_resource_type = ''
 
@@ -46,7 +56,7 @@ class Port(QueryResourceManager):
 class SecurityGroup(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc'
-        enum_spec = ('list_security_groups', 'security_groups', 'offset')
+        enum_spec = ('list_security_groups', 'security_groups', 'marker')
         id = 'id'
         tag_resource_type = 'security-groups'
 
@@ -62,7 +72,7 @@ class SecurityGroupDelete(HuaweiCloudBaseAction):
         policies:
           - name: security-group-delete-test-name
             resource: huaweicloud.vpc-security-group
-            flters:
+            filters:
               - type: value
                 key: name
                 value: "sg-test"
@@ -84,7 +94,7 @@ class SecurityGroupDelete(HuaweiCloudBaseAction):
 @SecurityGroup.filter_registry.register("unattached")
 class SecurityGroupUnAttached(Filter):
     """Filter to just vpc security groups that are not attached to any ports
-    or are not default one.
+    and are not default one.
 
     :example:
 
@@ -126,7 +136,7 @@ class SecurityGroupUnAttached(Filter):
 class SecurityGroupRule(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc'
-        enum_spec = ('list_security_group_rules', 'security_group_rules', 'offset')
+        enum_spec = ('list_security_group_rules', 'security_group_rules', 'marker')
         id = 'id'
         tag_resource_type = ''
 
@@ -167,7 +177,7 @@ class SecurityGroupRuleFilter(Filter):
     As well for verifying that a rule not allow for a specific set of ports
     as in the following example. The delta between this and the previous
     example is that if the rule allows for any ports not specified here,
-    then the rule will match. ie. NotInPorts is a negative assertion match,
+    then the rule will match. ie. `NotInPorts` is a negative assertion match,
     it matches when a rule includes ports outside of the specified set.
 
     .. code-block:: yaml
@@ -195,6 +205,19 @@ class SecurityGroupRuleFilter(Filter):
       - type: ingress
         SelfReference: True
 
+    We can filter out the rules of the default security group using `DefaultSG`,
+    as shown in the following example.
+
+    .. code-block:: yaml
+
+      - type: ingress
+        DefaultSG: True
+
+    If `DefaultSG` is False, this filter matches the rules of non-default
+    security groups. And if you want to filter out the rules of all
+    security groups, including default and non-default, do not set
+    `DefaultSG` parameter.
+
     `SGReferenceIds` can be used to filter out security group references in rules
     by a list of security group ids.
 
@@ -212,7 +235,7 @@ class SecurityGroupRuleFilter(Filter):
         AGReferenceIds: ['fe2850f1-9bfe-41e6-be6d-3641a387ca27']
 
     By default, this filter matches a security group rule if
-    _all_ of its keys match. Using `or`block causes a match
+    _all_ of its keys match. Using `or` block causes a match
     if _any_ key matches. This can help consolidate some simple
     cases that would otherwise require multiple filters. To find
     security groups that allow all inbound traffic over IPv4 or IPv6,
@@ -235,7 +258,8 @@ class SecurityGroupRuleFilter(Filter):
         'Ethertypes', 'Action', 'Priorities', 'Protocols', 'SGReferenceIds',
         'AGReferenceIds'}
     filter_attrs = {
-        'AnyInPorts', 'AllInPorts', 'NotInPorts', 'AllPorts', 'SelfReference'}
+        'AnyInPorts', 'AllInPorts', 'NotInPorts', 'AllPorts', 'SelfReference',
+        'DefaultSG'}
     attrs = perm_attrs.union(filter_attrs)
     attrs.add('match-operator')
 
@@ -259,6 +283,21 @@ class SecurityGroupRuleFilter(Filter):
             vf = ValueFilter(fv, self.manager)
             vf.annotate = False
             self.vfilters.append(vf)
+        self.default_sg = ''
+        if self.data.get('DefaultSG', None) is not None:
+            client = self.manager.get_client()
+            try:
+                list_name = ['default']
+                request = ListSecurityGroupsRequest(name=list_name)
+                response = client.list_security_groups(request)
+                sgs = response.security_groups
+                if len(sgs) > 0:
+                    sgs = [sg.to_dict() for sg in sgs]
+                    self.default_sg = sgs[0].get('id')
+            except exceptions.ClientRequestException as ex:
+                log.exception("Unable to query defauly security group."
+                              "RequestId: %s, Reason: %s." %
+                              (ex.request_id, ex.error_msg))
         return super(SecurityGroupRuleFilter, self).process(resources, event)
 
     def process_direction(self, rule):
@@ -393,6 +432,14 @@ class SecurityGroupRuleFilter(Filter):
                     and rule['remote_group_id'] != rule['security_group_id'])
         return found
 
+    def process_default_sg(self, rule):
+        found = None
+        if self.default_sg:
+            rule_sg_id = rule['security_group_id']
+            found = (self.default_sg == rule_sg_id)\
+                if self.data.get('DefaultSG') else (self.default_sg != rule_sg_id)
+        return found
+
     def __call__(self, resource):
         matched = []
         match_op = self.data.get('match-operator', 'and') == 'and' and all or any
@@ -414,6 +461,7 @@ class SecurityGroupRuleFilter(Filter):
         perm_matches['ports'] = self.process_ports(resource)
         perm_matches['self_reference'] = self.process_self_reference(resource)
         perm_matches['action'] = self.process_items(resource, 'Action', 'action')
+        perm_matches['default'] = self.process_default_sg(resource)
 
         perm_match_values = list(filter(
             lambda x: x is not None, perm_matches.values()))
@@ -437,7 +485,7 @@ SGRuleSchema = {
     'match-operator': {'type': 'string', 'enum': ['or', 'and']},
     'RemoteIpPrefix': {
         'oneOf': [
-            {'enum': [-1, '-1']},
+            {'enum': [-1]},
             {'type': 'string'}
         ]
     },
@@ -483,7 +531,8 @@ SGRuleSchema = {
         }
     },
     'AllPorts': {'type': 'boolean'},
-    'SelfReference': {'type': 'boolean'}
+    'SelfReference': {'type': 'boolean'},
+    'DefaultSG': {'type': 'boolean'}
 }
 
 
@@ -520,11 +569,11 @@ class SecurityGroupRuleDelete(HuaweiCloudBaseAction):
         policies:
           - name: security-group-rule-delete-tcp-22
             resource: huaweicloud.vpc-security-group-rule
-            flters:
+            filters:
               - type: ingress
                 RemoteIpPrefix: '0.0.0.0/0'
                 Protocols: ['tcp']
-                InPorts: [22]
+                AllInPorts: [22]
             actions:
               - delete
     """
@@ -554,7 +603,7 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
                 filters:
                   - type: ingress
                     Protocols: ['tcp']
-                    InPorts: [8080]
+                    AllInPorts: [8080]
                 actions:
                   - type: remove-rules
                     ingress: matched
@@ -653,7 +702,7 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
             - type: ingress
               RemoteIpPrefix: '192.168.21.0/24'
               Protocols: ['tcp']
-              InPorts: [8080]
+              AllInPorts: [8080]
            actions:
             - type: set-rules
               # remove the rule matched by a previous ingress filter.
@@ -707,6 +756,7 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         ret_rules = []
         # add rules
+        add_failed = False
         for sg_id in sg_ids:
             try:
                 request = BatchCreateSecurityGroupRulesRequest()
@@ -728,10 +778,23 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
                 log.exception("Unable to add rules in security group %s. "
                               "RequestId: %s, Reason: %s" %
                               (sg_id, ex.request_id, ex.error_msg))
-                continue
+                add_failed = True
+                break
             res_rules_object = response.security_group_rules
             res_rules = [r.to_dict() for r in res_rules_object]
             ret_rules.extend(res_rules)
+        # revert added rules if add rules failed
+        if add_failed:
+            for rule in ret_rules:
+                try:
+                    request = DeleteSecurityGroupRuleRequest(security_group_rule_id=rule['id'])
+                    response = client.delete_security_group_rule(request)
+                except exceptions.ClientRequestException as ex:
+                    log.exception("Unable to delete rule %s in security group %s. "
+                                  "RequestId: %s, Reason: %s" %
+                                  (rule['id'], rule['security_group_id'],
+                                   ex.request_id, ex.error_msg))
+            return {}
 
         # remove rules
         remover = RemoveSecurityGroupRules(
@@ -756,7 +819,7 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
 class FlowLog(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'vpc_v2'
-        enum_spec = ('list_flow_logs', 'flow_logs', 'offset')
+        enum_spec = ('list_flow_logs', 'flow_logs', 'marker')
         id = 'id'
         tag_resource_type = ''
 
@@ -772,7 +835,7 @@ class SetFlowLog(HuaweiCloudBaseAction):
         policies:
           - name: vpc-enable-flow-logs
             resource: huaweicloud.vpc-flow-log
-            flters:
+            filters:
               - type: value
                 key: resource_type
                 value: vpc
