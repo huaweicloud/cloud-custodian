@@ -795,7 +795,7 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
                 results.append(response)
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                return []
+                continue
         return results
 
 
