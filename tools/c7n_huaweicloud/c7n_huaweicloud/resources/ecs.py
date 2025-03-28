@@ -779,6 +779,7 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
     schema = type_schema("instance-volumes-corrections")
 
     def perform_action(self, resource):
+        results = []
         client = self.manager.get_client()
         volumes = list(resource["os-extended-volumes:volumes_attached"])
         for volume in volumes:
@@ -791,10 +792,11 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
             )
             try:
                 response = client.update_server_block_device(request)
+                results.append(response)
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                raise
-        return response
+                return []
+        return results
 
 
 # ---------------------------ECS Filter-------------------------------------#
