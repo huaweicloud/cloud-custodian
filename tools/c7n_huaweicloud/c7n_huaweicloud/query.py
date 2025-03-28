@@ -162,15 +162,25 @@ class ResourceQuery:
             if 'id' not in res[0]:
                 for data in res:
                     data['id'] = data[m.id]
+            if res and getattr(m, 'tag_resource_type', None):
+                for data in res:
+                    data['tag_resource_type'] = m.tag_resource_type
             # merge result
             resources = resources + res
 
             # get next page info
-            next_page_params = marker_pagination.get_next_page_params(response)
-            if next_page_params:
-                _dict_map(request, next_page_params)
+            if m.service.endswith('v2'):
+                next_page_params_by_id = marker_pagination.get_next_page_params_by_id(res)
+                if next_page_params_by_id:
+                    _dict_map(request, next_page_params_by_id)
+                else:
+                    return resources
             else:
-                return resources
+                next_page_params = marker_pagination.get_next_page_params(response)
+                if next_page_params:
+                    _dict_map(request, next_page_params)
+                else:
+                    return resources
 
     def _non_pagination(self, manager, enum_op, path):
         session = local_session(self.session_factory)
@@ -281,6 +291,17 @@ class DefaultMarkerPagination(MarkerPagination):
         if not next_marker:
             return None
         return {'limit': self.limit, 'marker': next_marker}
+
+    def get_next_page_params_by_id(self, res):
+        if len(res) < self.limit:
+            return None
+        last_resource = res[-1]
+        if not last_resource:
+            return None
+        resource_id = last_resource.get('id')
+        if not resource_id:
+            return None
+        return {'limit': self.limit, 'marker': resource_id}
 
 
 @sources.register('describe-huaweicloud')
