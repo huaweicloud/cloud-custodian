@@ -1,0 +1,7 @@
+policies:
+  - name: mfa-enabled-users
+    resource: huaweicloud.iam-user
+    filters:
+      - type: mfa-device
+        key: mfa_devices
+        value: none

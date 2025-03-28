@@ -1,0 +1,50 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T064703Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/backups?limit=100&offset=0
+  response:
+    body:
+      string: '{"backups":[{"children":[],"checkpoint_id":"9cbb020e-f89b-4579-8f86-84f3d4216970","created_at":"2025-03-25T06:32:07.951164","description":"","expired_at":null,"extend_info":{"auto_trigger":false,"bootable":null,"os_images_data":null,"progress":null,"snapshot_id":null,"support_lld":true,"supported_restore_mode":"backup","system_disk":false,"is_multi_az":false,"encrypted_algorithm":null,"is_dec":false,"app_consistency":{"app_consistency":"0","app_consistency_status":"0","app_consistency_error_code":"0","app_consistency_error_message":""},"contain_system_disk":true,"encrypted":false,"architecture":"x86_64"},"id":"924c9b1f-9056-4a13-8ac2-19c02f27b699","image_type":"backup","incremental":true,"name":"server-backup","parent_id":null,"project_id":"0d9da8861b80f5a32fb4c00645f2dbd7","protected_at":"2025-03-25T06:32:31.057153","provider_id":"0daac4c5-6707-4851-97ba-169e36266b66","resource_az":"ap-southeast-1b","resource_id":"bf624d88-d268-423c-8206-934120da9e43","resource_name":"ecs-zs-custodian","scheduled_operation_id":null,"resource_size":50,"resource_type":"OS::Nova::Server","status":"available","updated_at":"2025-03-25T06:34:03.482887","vault_id":"42da2015-a512-481a-9c86-f02c08cffc10","version":3,"replication_records":[]},{"children":[],"checkpoint_id":"8baf9d42-d40a-4715-a61a-b58ca3d77313","created_at":"2025-03-25T06:23:27.304116","description":"","expired_at":null,"extend_info":{"auto_trigger":false,"bootable":false,"os_images_data":null,"progress":100,"snapshot_id":"25a7e373-02c3-493d-a8d3-387cc1cf3896","support_lld":true,"supported_restore_mode":null,"system_disk":false,"is_multi_az":false,"encrypted_algorithm":null,"is_dec":false,"app_consistency":null,"encrypted":false},"id":"f2aab24a-b8a0-4577-a5d1-6df33f5c7e69","image_type":"backup","incremental":true,"name":"backup-encrypted","parent_id":null,"project_id":"0d9da8861b80f5a32fb4c00645f2dbd7","protected_at":null,"provider_id":"d1603440-187d-4516-af25-121250c7cc97","resource_az":"ap-southeast-1c","resource_id":"7a84f97a-8ddc-4e5d-b228-a80fe5465508","resource_name":"volume-encrypted","scheduled_operation_id":null,"resource_size":10,"resource_type":"OS::Cinder::Volume","status":"available","updated_at":"2025-03-25T06:26:30.074761","vault_id":"06e844ba-d4bf-40be-b07f-c60d3c2ce679","version":3,"replication_records":[]},{"children":[],"checkpoint_id":"c38520cc-5558-4b45-8003-7576a841ade0","created_at":"2025-03-25T06:07:54.084293","description":"","expired_at":null,"extend_info":{"auto_trigger":false,"bootable":null,"os_images_data":null,"progress":null,"snapshot_id":null,"support_lld":true,"supported_restore_mode":"backup","system_disk":false,"is_multi_az":false,"encrypted_algorithm":null,"is_dec":false,"app_consistency":{"app_consistency":"0","app_consistency_status":"0","app_consistency_error_code":"0","app_consistency_error_message":""},"contain_system_disk":true,"encrypted":false,"architecture":"x86_64"},"id":"79fdfc8b-b7dd-45b0-aa3a-b643b2e22d2f","image_type":"backup","incremental":false,"name":"manualbk_vault-e380-custodian-ef4e","parent_id":null,"project_id":"0d9da8861b80f5a32fb4c00645f2dbd7","protected_at":"2025-03-25T06:08:17.237042","provider_id":"0daac4c5-6707-4851-97ba-169e36266b66","resource_az":"ap-southeast-1b","resource_id":"bf624d88-d268-423c-8206-934120da9e43","resource_name":"ecs-zs-custodian","scheduled_operation_id":null,"resource_size":50,"resource_type":"OS::Nova::Server","status":"available","updated_at":"2025-03-25T06:11:19.974284","vault_id":"42da2015-a512-481a-9c86-f02c08cffc10","version":3,"replication_records":[]}],"count":3,"offset":0,"limit":100}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 06:47:04 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 5e4276f11d1e8395f49685ed7892d35c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1

@@ -1,0 +1,202 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250326T033130Z
+    method: GET
+    uri: https://iam.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"","enabled":true,"id":"be4d8afe888888888888888888aa3072cf36","links":{"self":"https://iam.myhuaweicloud.com/v3/domains/be4d8afe888888888888888888aa3072cf36"},"name":"ResourceGovernanceTest001"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 03:31:30 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 63f2d9121fbb6519b6681301888970af
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - organizations.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - be4d8afe888888888888888888aa3072cf36
+      X-Sdk-Date:
+      - 20250326T072249Z
+    method: GET
+    uri: https://organizations.myhuaweicloud.com/v1/organizations/organizational-units?limit=100
+  response:
+    body:
+      string: '{"organizational_units":[{"id":"ou-45wgiop666666666a1m9msn97fvvwe","urn":"organizations::be4d8afe35644849816dcbaa3072cf36:ou:o-wyla9th3pyv56666666663jvrr22e/ou-45wgiop666666666a1m9msn97fvvwe","name":"Consoletest","created_at":"2023-07-20T02:09:29Z"},{"id":"ou-egmx31wa6666666666pb0cqz4fi","urn":"organizations::be4d8afe35644849816dcbaa3072cf36:ou:o-wyla9th3pyv56666666663jvrr22e/ou-egmx31wa6666666666pb0cqz4fi","name":"0312001","created_at":"2024-03-12T14:22:36Z"}],"page_info":{"next_marker":null,"current_count":2}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 07:22:49 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1742973769709; path=/
+      - HWWAFSESID=bc24d73ba07bf831fb; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 888d1364bfb66e0706bf9d9e8f746147
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - organizations.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - be4d8afe888888888888888888aa3072cf36
+      X-Sdk-Date:
+      - 20250326T094623Z
+    method: GET
+    uri: https://organizations.myhuaweicloud.com/v1/organizations/entities?child_id=ou-45wgiop666666666a1m9msn97fvvwe
+  response:
+    body:
+      string: '{"entities":[{"name":"ConsoleTest","id":"ou-egmx31wa6666666666pb0cqz4fi","type":"organizational_unit"}],"page_info":{"next_marker":null,"current_count":1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 09:46:24 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=daed09769423852fe7; path=/
+      - HWWAFSESTIME=1742982379559; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ace7342c14bbe96cd748332a13837800
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - organizations.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - be4d8afe888888888888888888aa3072cf36
+      X-Sdk-Date:
+      - 20250326T094813Z
+    method: GET
+    uri: https://organizations.myhuaweicloud.com/v1/organizations/entities?child_id=ou-egmx31wa6666666666pb0cqz4fi
+  response:
+    body:
+      string: '{"entities":[],"page_info":{"next_marker":null,"current_count":null}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 09:48:13 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=1e8b176d36c1f8cffd; path=/
+      - HWWAFSESTIME=1742982492471; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ff8d12d9be1929e891415cd38723e989
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+
+version: 1

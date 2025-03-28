@@ -1,0 +1,159 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - coc.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - cn-north-4
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://coc.myhuaweicloud.com/v1/patch/instance/compliant?offset=1&limit=100
+  response:
+    body:
+      string: '{"count" : 1,"instance_compliant" : [ {"baseline_id" : "JX-f2d85e2554f7385cbbf2c23a01f41","baseline_name":
+        "COC-EulerOSDefaultPatchBaseline","cce_info_id" : null,"compliant_summary"
+        : {"compliant_count" : 264,"severity_summary" : {"critical_count" : 0,"high_count":
+        0,"informational_count" : 0,"low_count" : 0,"medium_count" : 0,"unspecified_count"
+        : 264}},"eip" : null,"enterprise_project_id" : "string","execution_summary"
+        : {"job_id" : "string","order_id" : "string","report_time" : 1715308575000},"group":
+        null,"id" : "string","instance_id" : "string","ip" : "string","name" : "string","node_id"
+        : "","non_compliant_summary" : {"non_compliant_count" : 204,"severity_summary":
+        {"critical_count" : 0,"high_count" : 0,"informational_count" : 0,"low_count":
+        0,"medium_count" : 0,"unspecified_count" : 0}},"operating_system" : "EulerOS","region"
+        : "cn-north-4","report_scene" : "ECS","rule_type" : "standard","status" :"non_compliant"}
+        ]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250325T134416Z
+    method: GET
+    uri: https://iam.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains": [{"description":"", "enabled": true, "id":"xxxx", "links":{"self":"xxxx"}, "name": "IAMDomain"}], "links": {"self":"xxxx"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 13:44:17 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e0d285422bbad571cb2704a3dc2cc1af
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"subject": "Machine Non-compliant Patch Version Alert", "message": "There
+      are machines with non compliant patch versions installed under your account:\necs_name:
+      string, ecs_instance_id: string, region: cn-north-4, non_compliant_count: 204"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '242'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T143921Z
+    method: POST
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-north-4%3Ace8476c174f94c6991ea7885e3380d99%3Acustodian_test/publish
+  response:
+    body:
+      string: '{"request_id": "6a63a18b8bab40ffb71ebd9cb80d0085","message_id": "bf94b63a5dfb475994d3ac34664e24f2"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 14:39:21 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 03a2b9751a165cf6eeafefbf82addde7
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -1,0 +1,12 @@
+policies:
+  - name: iam-users-with-active-keys
+    resource: huaweicloud.iam-user
+    filters:
+      - type: access-key
+        key: status
+        value: active
+      - type: access-key
+        key: create_time
+        value_type: age
+        value: 3
+        op: lt
