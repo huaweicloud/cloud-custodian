@@ -1274,7 +1274,7 @@ class InstanceImageNotCompliance(Filter):
         image_ids = self.data.get("image_ids", [])
         obs_url = self.data.get('obs_url', None)
         obs_client = local_session(self.manager.session_factory).client("obs")
-        if not image_ids or obs_url is None:
+        if not image_ids and obs_url is None:
             log.error("image_ids or obs_url is required")
             return []
         # 1. 提取第一个变量：从 "https://" 到最后一个 "obs" 的部分
