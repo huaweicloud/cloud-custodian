@@ -2,13 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 import logging
-import jmespath
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdksmn.v2 import DeleteTopicRequest, \
     CreateLogtankRequest, CreateLogtankRequestBody, ListLogtankRequest, DeleteLogtankRequest, \
     UpdateTopicAttributeRequest, UpdateTopicAttributeRequestBody, DeleteTopicAttributesRequest, \
-    ListTopicAttributesRequest
+    ListTopicAttributesRequest, ListResourceTagsRequest
 
 from c7n.filters import Filter
 from c7n.utils import type_schema
@@ -19,7 +18,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 log = logging.getLogger("custodian.huaweicloud.resources.smn")
 
 
-@resources.register('topic')
+@resources.register('smn-topic')
 class Topic(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'smn'
@@ -27,6 +26,49 @@ class Topic(QueryResourceManager):
         id = 'topic_id'
         tag = True
         tag_resource_type = 'smn_topic'
+
+
+@Topic.filter_registry.register('topic-tag')
+class TopicTagFilter(Filter):
+    """Filters SMN Topics. Enable to query tag
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: get-smn-topic-with-tag
+            resource: huaweicloud.smn-topic
+            filters:
+              - type: topic-tag
+    """
+
+    schema_alias = False
+    schema = type_schema('topic-tag', rinherit={
+        'type': 'object',
+        'additionalProperties': False,
+        'required': ['type'],
+        'properties': {
+            'type': {'enum': ['topic-tag']}
+        }
+    })
+    RelatedResource = "c7n_huaweicloud.resources.smn.Topic"
+    AnnotationKey = "matched-topic-tag"
+    RelatedIdsExpression = "topic-tag"
+    FetchThreshold = 10
+
+    def process(self, resources, event=None):
+        client = self.manager.get_client()
+        resources_valid = []
+        for data in resources:
+            tags = data.get('tags')
+            if tags is None:
+                request = ListResourceTagsRequest(resource_type='smn_topic', resource_id=data["id"])
+                response = client.list_resource_tags(request)
+                tags = response.to_dict().get('tags')
+                data['tags'] = tags
+            resources_valid.append(data)
+        return resources_valid
 
 
 @Topic.filter_registry.register('topic-lts')
@@ -39,7 +81,7 @@ class TopicLtsFilter(Filter):
 
         policies:
           - name: delete-smn-topic-not-lts
-            resource: huaweicloud.topic
+            resource: huaweicloud.smn-topic
             filters:
               - type: topic-lts
                 enabled: false
@@ -51,7 +93,7 @@ class TopicLtsFilter(Filter):
     schema = type_schema('topic-lts', rinherit={
         'type': 'object',
         'additionalProperties': False,
-        'required': ['type', 'enabled'],
+        'required': ['type'],
         'properties': {
             'type': {'enum': ['topic-lts']},
             'enabled': {'type': 'boolean'}
@@ -67,19 +109,19 @@ class TopicLtsFilter(Filter):
         enabled = self.data.get('enabled')
         resources_valid = []
         for data in resources:
-            print(data)
-            request = ListLogtankRequest(topic_urn=data["topic_urn"])
-            response = client.list_logtank(request)
-            res = jmespath.search('count', eval(
-                str(response).replace('null', 'None').replace('false', 'False').replace('true',
-                                                                                        'True')))
-            if self.check(enabled, res) is False:
+            lts = data.get('lts')
+            if lts is None:
+                request = ListLogtankRequest(topic_urn=data["topic_urn"])
+                response = client.list_logtank(request)
+                lts = response.to_dict().get('logtanks')
+                data['lts'] = lts
+            if self.check(enabled, lts) is False:
                 continue
-            data['lts'] = str(response)
             resources_valid.append(data)
         return resources_valid
 
-    def check(self, enabled, res):
+    def check(self, enabled, lts):
+        res = len(lts)
         check = False
         if enabled is True:
             if res > 0:
@@ -100,7 +142,7 @@ class TopicAccessFilter(Filter):
 
         policies:
           - name: delete-smn-topic
-            resource: huaweicloud.topic
+            resource: huaweicloud.smn-topic
             filters:
               - type: topic-access
                 effect: Allow
@@ -111,7 +153,7 @@ class TopicAccessFilter(Filter):
             actions:
               - delete
           - name: delete-smn-topic
-            resource: huaweicloud.topic
+            resource: huaweicloud.smn-topic
             filters:
               - type: topic-access
                 effect: Allow
@@ -127,7 +169,7 @@ class TopicAccessFilter(Filter):
     schema = type_schema('topic-access', rinherit={
         'type': 'object',
         'additionalProperties': False,
-        'required': ['type', 'effect'],
+        'required': ['type'],
         'properties': {
             'type': {'enum': ['topic-access']},
             'effect': {'enum': ['Allow', 'Deny']},
@@ -145,32 +187,35 @@ class TopicAccessFilter(Filter):
         client = self.manager.get_client()
         resources_valid = []
         for data in resources:
-            request = ListTopicAttributesRequest(topic_urn=data["topic_urn"], name='access_policy')
-            response = client.list_topic_attributes(request)
-            access_policy = response.attributes.access_policy
-            log.info(f"access_policy:{access_policy}")
+            access_policy = data.get('access_policy')
+            if access_policy is None:
+                request = ListTopicAttributesRequest(topic_urn=data["topic_urn"],
+                                                     name='access_policy')
+                response = client.list_topic_attributes(request)
+                access_policy = response.attributes.access_policy
+                data['access_policy'] = access_policy
             if self.check(access_policy) is False:
                 continue
-            data['access_policy'] = access_policy
             resources_valid.append(data)
         return resources_valid
 
     def check(self, access_policy):
-        if access_policy is None or len(access_policy) == 0:
-            return False
-
-        access_policy_dict = json.loads(access_policy)
-        return self.check_user(access_policy_dict) and self.check_organization(
-            access_policy_dict) and self.check_service(access_policy_dict)
+        return self.check_user(access_policy) and self.check_organization(
+            access_policy) and self.check_service(access_policy)
 
     def check_user(self, access_policy):
         user = self.data.get('user')
         if user is None or len(user) == 0:
             return True
 
+        if access_policy is None or len(access_policy) == 0:
+            return False
+
+        access_policy_dict = json.loads(access_policy)
+
         effect = self.data.get('effect')
         if user == '*':
-            for statement in access_policy.get('Statement'):
+            for statement in access_policy_dict.get('Statement'):
                 if not statement.get('Effect') == effect:
                     continue
                 csp = statement.get('Principal').get('CSP')
@@ -179,7 +224,7 @@ class TopicAccessFilter(Filter):
                 if csp.__contains__('*'):
                     return True
         else:
-            for statement in access_policy.get('Statement'):
+            for statement in access_policy_dict.get('Statement'):
                 if not statement.get('Effect') == effect:
                     continue
                 csp = statement.get('Principal').get('CSP')
@@ -195,8 +240,13 @@ class TopicAccessFilter(Filter):
         if organization is None or len(organization) == 0:
             return True
 
+        if access_policy is None or len(access_policy) == 0:
+            return False
+
+        access_policy_dict = json.loads(access_policy)
+
         effect = self.data.get('effect')
-        for statement in access_policy.get('Statement'):
+        for statement in access_policy_dict.get('Statement'):
             if not statement.get('Effect') == effect:
                 continue
             org_path = statement.get('Principal').get('OrgPath')
@@ -211,8 +261,14 @@ class TopicAccessFilter(Filter):
         service = self.data.get('service')
         if service is None or len(service) == 0:
             return True
+
+        if access_policy is None or len(access_policy) == 0:
+            return False
+
+        access_policy_dict = json.loads(access_policy)
+
         effect = self.data.get('effect')
-        for statement in access_policy.get('Statement'):
+        for statement in access_policy_dict.get('Statement'):
             if not statement.get('Effect') == effect:
                 continue
             Service_path = statement.get('Principal').get('Service')
@@ -234,7 +290,7 @@ class TopicDelete(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-smn-topic
-            resource: huaweicloud.topic
+            resource: huaweicloud.smn-topic
             filters:
               - type: value
                 key: name
@@ -266,7 +322,7 @@ class TopicCreateLts(HuaweiCloudBaseAction):
 
         policies:
           - name: create-lts-to-smn-topic
-            resource: huaweicloud.topic
+            resource: huaweicloud.smn-topic
             filters:
               - type: topic-lts
                 enabled: false
@@ -311,7 +367,7 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-lts-to-smn-topic
-            resource: huaweicloud.topic
+            resource: huaweicloud.smn-topic
             filters:
               - type: topic-lts
                 enabled: true
@@ -325,11 +381,13 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         response = None
         try:
-            request = ListLogtankRequest(topic_urn=resource["topic_urn"])
-            ltsResponse = client.list_logtank(request)
-            if ltsResponse.count > 0:
+            lts = resource["lts"]
+            if lts is None:
+                request = ListLogtankRequest(topic_urn=resource["topic_urn"])
+                lts = client.list_logtank(request).logtanks
+            for logtanks in lts:
                 request = DeleteLogtankRequest(topic_urn=resource["topic_urn"],
-                                               logtank_id=ltsResponse.logtanks[0].id)
+                                               logtank_id=logtanks.id)
                 response = client.delete_logtank(request)
         except exceptions.ClientRequestException as e:
             log.error(f"Delete LTS to SMN Topics failed, resource :{resource}, exceptions:{e}")
@@ -346,7 +404,7 @@ class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
 
         policies:
           - name: update-access-to-smn-topic
-            resource: huaweicloud.topic
+            resource: huaweicloud.smn-topic
             filters:
               - type: value
                 key: name
@@ -404,7 +462,7 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-access-to-smn-topic
-            resource: huaweicloud.topic
+            resource: huaweicloud.smn-topic
             filters:
               - type: value
                 key: name
@@ -424,39 +482,4 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
             log.error(
                 f"Delete access policy to SMN Topics failed, resource :{resource}, exceptions:{e}")
-        return response
-
-
-@Topic.action_registry.register("get-access")
-class TopicGetAccessPolicy(HuaweiCloudBaseAction):
-    """Get access to SMN Topics.
-
-    :Example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: get-access-to-smn-topic
-            resource: huaweicloud.topic
-            filters:
-              - type: value
-                key: name
-                value: "111"
-            actions:
-              - get-access
-    """
-
-    schema = type_schema("get-access")
-
-    def perform_action(self, resource):
-        client = self.manager.get_client()
-        response = None
-        try:
-            request = ListTopicAttributesRequest(topic_urn=resource["topic_urn"],
-                                                 name='access_policy')
-            response = client.list_topic_attributes(request)
-            access_policy = response.attributes.access_policy
-            resource['access_policy'] = access_policy
-        except exceptions.ClientRequestException as e:
-            log.error(f"Get topic access policy failed, resource :{resource}, exceptions:{e}")
         return response

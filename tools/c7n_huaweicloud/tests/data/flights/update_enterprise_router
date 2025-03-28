@@ -1,0 +1,120 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - er.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://er.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/enterprise-router/instances?limit=100
+  response:
+    body:
+      string: '{"instances": [{"id": "94c2b814-99dc-939a-e811-ae84c61ea3ff",
+        "name" : "my_er","description" : "this is my first enterprise router","asn"
+        : 64512,"project_id" : "08d5a9564a704afda6039ae2babbef3c","enable_default_association"
+        : true,"enable_default_propagation" : true,"default_association_route_table_id"
+        : "7f7f738f-453c-40b1-be26-28e7b9e390c1","default_propagation_route_table_id"
+        : "7f7f738f-453c-40b1-be26-28e7b9e390c1","auto_accept_shared_attachments"
+        : true,"created_at" : "2019-09-06 02:11:13Z","updated_at" : "2019-09-06 02:11:13Z","tags"
+        : [ {"key" : "key","value" : "value"} ],"enterprise_project_id" : 0,"availability_zone_ids"
+        : [ "az1", "az2" ]} ],"request_id" : "915a14a6-867b-4af7-83d1-70efceb146f9","page_info"
+        : {"next_marker" : "2","current_count" : 1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"auto_accept_shared_attachments": "false"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - er.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Er-Id:
+      - 94c2b814-99dc-939a-e811-ae84c61ea3ff
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: PUT
+    uri: https://er.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/enterprise-router/instances/94c2b814-99dc-939a-e811-ae84c61ea3ff
+  response:
+    body:
+      string: '{"instance": [{"id": "94c2b814-99dc-939a-e811-ae84c61ea3ff", "name": "my_er","description" : "this is my first enterprise router","asn" : 64512,"project_id"
+        : "08d5a9564a704afda6039ae2babbef3c","enable_default_association" : true,"enable_default_propagation"
+        : true,"default_association_route_table_id" : "7f7f738f-453c-40b1-be26-28e7b9e390c1","default_propagation_route_table_id"
+        : "7f7f738f-453c-40b1-be26-28e7b9e390c1","auto_accept_shared_attachments"
+        : false,"created_at" : "2019-09-06 02:11:13Z","updated_at" : "2019-09-06 02:11:13Z","tags"
+        : [ {"key" : "key","value" : "value"} ],"enterprise_project_id" : 0,"availability_zone_ids"
+        : [ "az1", "az2" ]}],"request_id" : "915a14a6-867b-4af7-83d1-70efceb146f9","page_info"
+        : {"next_marker" : "2","current_count" : 1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

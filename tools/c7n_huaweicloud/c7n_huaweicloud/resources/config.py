@@ -20,6 +20,7 @@ class ConfigTracker(QueryResourceManager):
         service = 'config'
         enum_spec = ("show_tracker_config", '*', 'offset')
         id = 'domain_id'
+        config_resource_support = True
 
 
 @ConfigTracker.action_registry.register("delete-tracker")
@@ -44,8 +45,7 @@ class DeleteTrackerAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         request = DeleteTrackerConfigRequest()
         client.delete_tracker_config(request=request)
-        self.log.info("Successfully delete config-tracker of %s",
-                      resource.get("id", resource.get("name")))
+        self.log.info("Successfully delete config-tracker")
 
 
 class CreateTrackerAction(HuaweiCloudBaseAction):

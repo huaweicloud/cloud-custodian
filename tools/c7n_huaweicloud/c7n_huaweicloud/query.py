@@ -42,17 +42,24 @@ class ResourceQuery:
 
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
-        enum_op, path, pagination = m.enum_spec
+
+        limit = None
+        if len(m.enum_spec) == 3:
+            enum_op, path, pagination = m.enum_spec
+        else:
+            enum_op, path, pagination, limit = m.enum_spec
 
         # ims special processing
         if pagination == 'ims':
             resources = self._pagination_ims(m, enum_op, path)
         elif pagination == 'offset':
-            resources = self._pagination_limit_offset(m, enum_op, path)
+            resources = self._pagination_limit_offset(m, enum_op, path, limit)
         elif pagination == 'marker':
             resources = self._pagination_limit_marker(m, enum_op, path)
         elif pagination == 'maxitems-marker':
             resources = self._pagination_maxitems_marker(m, enum_op, path)
+        elif pagination is None:
+            resources = self._non_pagination(m, enum_op, path)
         elif pagination == 'page':
             resources = self._pagination_limit_page(m, enum_op, path)
         else:
@@ -60,12 +67,14 @@ class ResourceQuery:
             sys.exit(1)
         return resources
 
-    def _pagination_limit_offset(self, m, enum_op, path):
+    def _pagination_limit_offset(self, m, enum_op, path, limit):
         session = local_session(self.session_factory)
         client = session.client(m.service)
 
         offset = 0
-        limit = DEFAULT_LIMIT_SIZE
+        if hasattr(m, 'offset_start_num'):
+            offset = m.offset_start_num
+        limit = limit or DEFAULT_LIMIT_SIZE
         resources = []
         while 1:
             request = session.request(m.service)
@@ -75,10 +84,6 @@ class ResourceQuery:
             res = jmespath.search(path, eval(
                 str(response).replace('null', 'None').replace('false', 'False').
                 replace('true', 'True')))
-
-            if path == '*':
-                resources.append(json.loads(str(response)))
-                return resources
 
             if path == '*':
                 resources.append(json.loads(str(response)))
@@ -167,6 +172,26 @@ class ResourceQuery:
             else:
                 return resources
 
+    def _non_pagination(self, manager, enum_op, path):
+        session = local_session(self.session_factory)
+        client = session.client(manager.service)
+        request = session.request(manager.service)
+
+        response = getattr(client, enum_op)(request)
+        resources = jmespath.search(path, eval(
+            str(response).replace('null', 'None').replace('false', 'False')
+            .replace('true', 'True')))
+
+        # replace id with the specified one
+        if resources is None or len(resources) == 0:
+            return []
+        # re-set id
+        if 'id' not in resources[0]:
+            for data in resources:
+                data['id'] = data[manager.id]
+
+        return resources
+
     def _pagination_limit_page(self, m, enum_op, path):
         session = local_session(self.session_factory)
         client = session.client(m.service)
@@ -233,8 +258,9 @@ class ResourceQuery:
                 return resources
             for data in res:
                 data["id"] = data[m.id]
-                data["tag_resource_type"] = m.tag_resource_type
                 marker = data["id"]
+                if getattr(m, 'tag_resource_type', None):
+                    data["tag_resource_type"] = m.tag_resource_type
             resources.extend(res)
         return resources
 
