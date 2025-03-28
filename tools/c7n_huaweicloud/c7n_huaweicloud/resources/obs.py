@@ -342,7 +342,7 @@ class SetPolicyStatement(HuaweiCloudBaseAction):
               - name: force-obs-https
                 resource: huaweicloud.obs
                 filters:
-                  - type: https-request-only
+                  - type: support-https-request
                 actions:
                   - type: set-statements
                     statements:
@@ -733,7 +733,7 @@ class FilterPublicBlock(Filter):
             return not all(config.values())
 
 
-@Obs.filter_registry.register("https-request-only")
+@Obs.filter_registry.register("support-https-request")
 class SecureTransportFilter(Filter):
     """Find buckets with allow http protocol access
 
@@ -745,7 +745,7 @@ class SecureTransportFilter(Filter):
               - name: obs-bucket-https-request-only
                 resource: huaweicloud.obs
                 filters:
-                  - type: https-request-only
+                  - type: support-https-request
                 actions:
                     - type: set-statements
                       statements:
@@ -762,7 +762,7 @@ class SecureTransportFilter(Filter):
                                 SecureTransport: "false"
 
     """
-    schema = type_schema("https-request-only")
+    schema = type_schema("support-https-request")
 
     required_template = {
             "Effect": "Deny",

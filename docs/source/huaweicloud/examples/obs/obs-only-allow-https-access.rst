@@ -7,7 +7,7 @@ OBS - Configuration Only Allow Https Request Access Bucket
     - name: obs-bucket-https-request-only
       resource: huaweicloud.obs
       filters:
-        - type: https-request-only
+        - type: support-https-request
       actions:
           - type: set-statements
             statements:
