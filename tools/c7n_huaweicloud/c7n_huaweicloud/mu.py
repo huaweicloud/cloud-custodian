@@ -54,7 +54,9 @@ def custodian_archive(packages=None):
 
 
 def package_dependencies(zip_filename):
+    log.info(f'Start package dependencies to {zip_filename}')
     site_packages_dirs = site.getsitepackages()
+    zip_filepath = os.path.abspath(zip_filename)
     with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
         for sp_dir in site_packages_dirs:
             if not os.path.exists(sp_dir):
@@ -70,7 +72,7 @@ def package_dependencies(zip_filename):
                 # Filter files: skip .pyc, .pth, .dll, .exe and .pdb files
                 files = [
                     f for f in files
-                    # 强制小写匹配
+                    # Forced Lowercase Matching
                     if not f.lower().endswith((".pyc", ".pth", ".dll", ".exe", ".pdb"))
                 ]
 
@@ -78,6 +80,17 @@ def package_dependencies(zip_filename):
                     file_path = os.path.join(root, file)
                     arcname = os.path.relpath(file_path, sp_dir)
                     zipf.write(file_path, arcname=arcname)
+
+    # 获取 ZIP 文件大小
+    file_size = os.path.getsize(zip_filepath)
+
+    # 转换为 Base64
+    with open(zip_filepath, "rb") as f:
+        zip_data = f.read()
+    base64_data = base64.b64encode(zip_data).decode("utf-8")
+    log.info(f'Package dependencies success, filepath: {zip_filepath}, zip file size: {file_size}')  # noqa: E501
+
+    return file_size, base64_data
 
 
 class FunctionGraphManager:
@@ -133,7 +146,7 @@ class FunctionGraphManager:
         return response
 
     def get_custodian_depend_version_id(self, runtime="Python3.10") -> [str]:
-        depend_name = "custodian-huaweicloud-py3.10"
+        depend_name = f'custodian-huaweicloud-{runtime}'
         list_dependencies_request = ListDependenciesRequest(runtime=runtime, name=depend_name)
         try:
             dependencies = self.client.list_dependencies(list_dependencies_request).dependencies
@@ -145,13 +158,39 @@ class FunctionGraphManager:
             return []
 
         dependency_versions = []
+        dependency_version_map = {}
         for dependency in dependencies:
             show_dependency_version_request = ShowDependencyVersionRequest(
                 depend_id=dependency.id,
                 version=dependency.version,
             )
-            dependency_version = self.client.show_dependency_version(show_dependency_version_request)  # noqa: E501
-            dependency_versions.append(dependency_version.id)
+            try:
+                dependency_version = self.client.show_dependency_version(show_dependency_version_request)  # noqa: E501
+            except exceptions.ClientRequestException as e:
+                log.error(f'Show dependency version failed, request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
+                continue
+            owner = dependency_version.owner
+            dependency_version_id = dependency_version.id
+            if dependency_version_map.get(owner):
+                dependency_version_map.append(dependency_version_id)
+            else:
+                dependency_version_map[owner] = [dependency_version_id]
+
+        for owner, dependency_version_list in dependency_version_map.items():
+            if owner == "public":
+                dependency_versions = dependency_version_list
+                log.info(f'Creating function by public dependency {dependency_version_list}')
+                return dependency_versions
+            else:
+                dependency_versions += dependency_version_list
+                log.info(
+                    f'Can not find public dependency, using [{owner} private dependency {dependency_version_list}')  # noqa: E501
+
+        if len(dependency_versions) == 0:
+            log.error(f'Not find any dependency named: {depend_name}, please add dependencies manually')  # noqa: E501
 
         return dependency_versions
 
