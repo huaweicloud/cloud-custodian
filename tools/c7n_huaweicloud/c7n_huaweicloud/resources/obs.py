@@ -595,7 +595,8 @@ class GlobalGrantsFilter(Filter):
         permissions={
             'type': 'array',
             'items': {
-                'type': 'string', 'enum': ['READ', 'WRITE', 'WRITE_ACP', 'READ_ACP', 'FULL_CONTROL']}
+                'type': 'string',
+                'enum': ['READ', 'WRITE', 'WRITE_ACP', 'READ_ACP', 'FULL_CONTROL']}
             })
 
     annotation_key = 'c7n:GlobalPermissions'
@@ -750,10 +751,10 @@ class SecureTransportFilter(Filter):
                       statements:
                         - Sid: DenyHttp
                           Effect: Deny
-                          Principal: 
+                          Principal:
                             ID: "*"
                           Action: "*"
-                          Resource: 
+                          Resource:
                             - "{bucket_name}"
                             - "{bucket_name}/*"
                           Condition:
