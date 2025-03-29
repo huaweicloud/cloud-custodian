@@ -1164,7 +1164,7 @@ class InstanceEvs(ValueFilter):
     def get_volume_mapping(self, resources):
         volume_map = {}
         evsResources = self.manager.get_resource_manager(
-            "huaweicloud.volume"
+            "huaweicloud.evs-volume"
         ).resources()
         for resource in resources:
             for evs in evsResources:
