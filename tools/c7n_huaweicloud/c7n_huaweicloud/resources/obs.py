@@ -1019,7 +1019,7 @@ class ObsCrossAccountFilter(Filter):
                 bucket['Policy'] = {}
                 return
             raise_exception(resp, 'getBucketPolicy', bucket)
-        
+
         self.query_bucket_acl(bucket, client)
 
     def query_bucket_acl(self, bucket, client):
@@ -1035,7 +1035,7 @@ class ObsCrossAccountFilter(Filter):
 
     def query_bucket_website_config(self, bucket, client):
         allow_website = self.data.get('allow_website', True)
-        if allow_website == False:
+        if not allow_website:
             bucket['website'] = False
             return
 
