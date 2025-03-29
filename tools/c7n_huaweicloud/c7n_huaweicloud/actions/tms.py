@@ -378,8 +378,8 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
                             if item['key'] == key:
                                 return item['value']
             return None
-        except Exception:
-            self.log.error("Parse Tags in resource %s failed", resource["id"])
+        except Exception as e:
+            self.log.error("Parse Tags in resource %s failed, e: %s", resource["id"], e)
             return None
 
     def handle_exception(self, failed_resources, resources):
@@ -586,8 +586,8 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
                             if item['key'] == key:
                                 return item['value']
             return None
-        except Exception:
-            self.log.error("Parse Tags in resource %s failed", resource["id"])
+        except Exception as e:
+            self.log.error("Parse Tags in resource %s failed, e: %s", resource["id"], e)
             return None
 
     def filter_resources(self, resources):
@@ -738,8 +738,8 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
                     # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
                     return {item['key']: item['value'] for item in tags}
             return {}
-        except Exception:
-            self.log.error("Parse Tags in resource %s failed", resource["id"])
+        except Exception as e:
+            self.log.error("Parse Tags in resource %s failed, e: %s", resource["id"], e)
             return {}
 
     def handle_exception(self, failed_resources, resources):
