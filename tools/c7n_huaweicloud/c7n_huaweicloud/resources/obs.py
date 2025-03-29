@@ -962,11 +962,9 @@ class ObsCrossAccountFilter(Filter):
             return False
 
         principal_user = stmt.get('Principal', {}).get("ID", [])
-        actions = stmt.get('Action', [])
 
         for user in principal_user:
-            if current_account not in user and\
-                any(action in self.black_listed_actions for action in actions):
+            if current_account not in user:
                 return True
 
         return False
