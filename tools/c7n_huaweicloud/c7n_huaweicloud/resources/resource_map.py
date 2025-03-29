@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ResourceMap = {
-    "huaweicloud.volume": "c7n_huaweicloud.resources.volume.Volume",
     "huaweicloud.lts-transfer": "c7n_huaweicloud.resources.transfer.Transfer",
     "huaweicloud.evs-volume": "c7n_huaweicloud.resources.evs.Volume",
     "huaweicloud.er": "c7n_huaweicloud.resources.er.ERInstance",
