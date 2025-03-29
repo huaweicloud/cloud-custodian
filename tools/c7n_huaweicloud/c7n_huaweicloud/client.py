@@ -34,7 +34,6 @@ from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdker.v3 import ErClient, ListEnterpriseRoutersRequest
 from huaweicloudsdker.v3.region.er_region import ErRegion
-from huaweicloudsdkobs.v1.region.obs_region import ObsRegion
 from obs import ObsClient
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion

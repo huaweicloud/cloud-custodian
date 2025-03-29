@@ -948,7 +948,7 @@ class ObsCrossAccountFilter(Filter):
 
     def get_bucket_policy(self, bucket):
         client = get_obs_client(self.manager.session_factory, bucket)
-        resp = client.getBucketPolicy(bucket['name']+"ssfsfsf")
+        resp = client.getBucketPolicy(bucket['name'])
 
         if resp.status < 300:
             policy = resp.body.policyJSON
