@@ -49,13 +49,13 @@ class PolicyDelete(HuaweiCloudBaseAction):
     :example:
 
       .. code-block:: yaml
-
-        - name: iam-delete-unused-policies
-          resource: huaweicloud.iam-policy
-          filters:
-            - type: unused
-          actions:
-            - delete
+        policies:
+          - name: iam-delete-unused-policies
+            resource: huaweicloud.iam-policy
+            filters:
+              - type: unused
+            actions:
+              - delete
 
     """
     schema = type_schema('delete')
@@ -67,6 +67,7 @@ class PolicyDelete(HuaweiCloudBaseAction):
                 client.delete_policy_v5(DeletePolicyV5Request(policy_id=resource['policy_id']))
                 print(f"Successfully detached policy: {resource['policy_id']}")
         except exceptions.ClientRequestException as e:
+            print(f"Failed detached policy: {resource['policy_id']}")
             print(e.status_code)
             print(e.request_id)
             print(e.error_code)
@@ -330,7 +331,7 @@ class UserLoginProtect(ValueFilter):
             actions:
               - type: set-login-protect
                 enabled: false
-                verification_method: none
+                verification_method: vmfa
     """
 
     schema = type_schema('login-protect', rinherit=ValueFilter.schema)
@@ -391,7 +392,6 @@ class UserLoginProtect(ValueFilter):
             print(e.error_msg)
         except Exception as e:
             print(f"Unexpected error: {e}")
-        print(f"matched: {matched}")
         return matched or []
 
 
@@ -410,7 +410,7 @@ class UserMfaDevice(ValueFilter):
             filters:
               - type: mfa-device
                 key: enabled
-                value: not-null
+                value: true
     """
 
     schema = type_schema('mfa-device', rinherit=ValueFilter.schema)
@@ -461,7 +461,6 @@ class UserMfaDevice(ValueFilter):
             print(e.error_msg)
         except Exception as e:
             print(f"Unexpected error: {e}")
-        print(f"matched: {matched}")
         return matched or []
 
 
@@ -556,6 +555,17 @@ class UserAccessKey(ValueFilter):
                   value_type: age
                   value: 90
                   op: gt
+
+        policies:
+          - name: iam-users-with-active-keys-or-created_at
+            resource: huaweicloud.iam-user
+            filters:
+              - type: access-key
+                key: status
+                value: active
+              - type: access-key
+                key: size
+                value: 1
     """
 
     schema = type_schema(
@@ -595,15 +605,19 @@ class UserAccessKey(ValueFilter):
         matched = []
         for r in resources:
             keys = r[self.annotation_key]
-            k_matched = []
-            for k in keys:
-                if self.match(k):
-                    k_matched.append(k)
-            for k in k_matched:
-                k['c7n:match-type'] = 'access'
-            self.merge_annotation(r, self.matched_annotation_key, k_matched)
-            if k_matched:
+            if (self.data.get('key') == 'size'
+                    and len(keys) == self.data.get('value')):
                 matched.append(r)
+            else:
+                k_matched = []
+                for k in keys:
+                    if self.match(k):
+                        k_matched.append(k)
+                for k in k_matched:
+                    k['c7n:match-type'] = 'access'
+                self.merge_annotation(r, self.matched_annotation_key, k_matched)
+                if k_matched:
+                    matched.append(r)
 
         return matched
 
@@ -635,12 +649,12 @@ class AllowAllIamPolicies(ValueFilter):
     allow all:
 
     .. code-block:: yaml
-
-     - name: iam-no-used-all-all-policy
-       resource: iam-policy
-       filters:
-         - type: used
-         - type: has-allow-all
+        policies:
+         - name: iam-no-used-all-all-policy
+           resource: huaweicloud.iam-policy
+           filters:
+             - type: used
+             - type: has-allow-all
 
     Note that scanning and getting all policies and all statements can take
     a while. Use it sparingly or combine it with filters such as 'used' as
@@ -683,6 +697,8 @@ class AllowAllIamPolicies(ValueFilter):
         self.log.info(
             "%d of %d iam policies have allow all.",
             len(results), len(resources))
+        for res in results:
+            self.log.info("allow all iam policy id: %d", res['policy_id'])
         return results
 
 
@@ -696,7 +712,7 @@ class UnusedIamPolicies(ValueFilter):
 
         policies:
           - name: iam-policy-unused
-            resource: iam-policy
+            resource: huaweicloud.iam-policy
             filters:
               - type: unused
     """
@@ -718,7 +734,7 @@ class UsedIamPolicies(ValueFilter):
 
         policies:
           - name: iam-policy-used
-            resource: iam-policy
+            resource: huaweicloud.iam-policy
             filters:
               - type: used
     """
