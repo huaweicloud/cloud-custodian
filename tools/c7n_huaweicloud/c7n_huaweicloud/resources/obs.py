@@ -398,7 +398,9 @@ class SetPolicyStatement(HuaweiCloudBaseAction):
             **self.get_std_format_args(bucket))
 
         policy = bucket.get('Policy') or '{}'
-        policy = json.loads(policy)
+        if policy:
+            policy = json.loads(policy)
+
         bucket_statements = policy.setdefault('Statement', [])
 
         new_statement = []
@@ -423,6 +425,53 @@ class SetPolicyStatement(HuaweiCloudBaseAction):
             'bucket_name': bucket['name'],
             'bucket_region': bucket['location']
         }
+
+
+@Obs.action_registry.register("remove-statements")
+class RemovePolicyStatement(HuaweiCloudBaseAction):
+    """delete cross-account access statements in obs bucket policy
+
+        :example:
+
+        .. code-block:: yaml
+
+                policies:
+                - name: remove-cross-account-access
+                    resource: huaweicloud.obs
+                    filters:
+                      - type: cross-account
+                    actions:
+                      - type: remove-statements
+        """
+    schema = type_schema('remove-statements')
+
+    annotation_key = 'c7n:Statements'
+
+    def perform_action(self, bucket):
+        bucket_name = bucket['name']
+        p = bucket.get('Policy')
+        if p is None:
+            return
+
+        if bucket.get(self.annotation_key) is None:
+            log.info("bucket %s has not statements" % bucket_name)
+            return
+
+        self.update_statements(bucket)
+        return bucket
+
+    def update_statements(self, bucket):
+        bucket_name = bucket['name']
+        client = get_obs_client(self.manager.session_factory, bucket)
+
+        if not bucket[self.annotation_key]:
+            resp = client.deleteBucketPolicy(bucket_name)
+        else:
+            policy = {'Statement': bucket[self.annotation_key]}
+            resp = client.setBucketPolicy(bucket_name, json.dumps(policy))
+
+        if resp.status > 300:
+            raise_exception(resp, 'updateBucketPolicy', bucket)
 
 
 # ----------------------OBS Fileter-------------------------------------------
@@ -490,7 +539,7 @@ class WildcardStatementFilter(Filter):
             policy = resp.body.policyJSON
             bucket['Policy'] = policy
         else:
-            if 'NoSuchBucketPolicy' == resp.errorCode:
+            if 'NoSuchBucketPolicy' == resp.errorCode or 'Not Found' == resp.reason:
                 bucket['Policy'] = {}
             else:
                 raise_exception(resp, 'getBucketPolicy', bucket)
@@ -560,7 +609,7 @@ class BucketEncryptionStateFilter(Filter):
             return encryption
         else:
             error_code = resp.errorCode
-            if 'NoSuchEncryptionConfiguration' == error_code:
+            if 'NoSuchEncryptionConfiguration' == error_code or 'Not Found' == resp.reason:
                 return None
             else:
                 raise_exception(resp, 'getBucketEncryption', bucket)
@@ -642,6 +691,9 @@ class GlobalGrantsFilter(Filter):
             acl = resp.body
             bucket['Acl'] = acl
         else:
+            if 'Not Found' == resp.reason:
+                bucket['Acl'] = {'grants': []}
+                return
             raise_exception(resp, 'getBucketWebsite', bucket)
 
     def is_website_bucket(self, bucket, client):
@@ -711,7 +763,8 @@ class FilterPublicBlock(Filter):
                 config = resp.body
             else:
                 error_code = resp.reason
-                if error_code == 'Forbidden' or error_code == 'Method Not Allowed':
+                if error_code == 'Forbidden' or error_code == 'Method Not Allowed'\
+                or 'Not Found' == resp.reason:
                     log.error('unsupport operate [BucketPublicAccessBlock]')
                     return None
                 raise_exception(resp, 'BucketPublicAccessBlock', bucket)
@@ -794,6 +847,9 @@ class SecureTransportFilter(Filter):
                          for item in self.resource_list_template]
 
         policy = bucket.get('Policy') or '{}'
+        if not policy:
+            return False
+
         policy = json.loads(policy)
         bucket_statements = policy.setdefault('Statement', [])
 
@@ -822,7 +878,83 @@ class SecureTransportFilter(Filter):
             policy = resp.body.policyJSON
             bucket['Policy'] = policy
         else:
-            if 'NoSuchBucketPolicy' == resp.errorCode:
+            if 'NoSuchBucketPolicy' == resp.errorCode or 'Not Found' == resp.reason:
+                bucket['Policy'] = {}
+                return
+            raise_exception(resp, 'getBucketPolicy', bucket)
+
+
+@Obs.filter_registry.register("cross-account")
+class ObsCrossAccountFilter(Filter):
+    """Filters cross-account access to obs buckets
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: find-cross-account-access
+                resource: huaweicloud.obs
+                filters:
+                  - type: cross-account
+    """
+    schema = type_schema('cross-account')
+
+    black_listed_actions = ["PutBucketPolicy", "DeleteBucketPolicy",
+     "PutBucketAcl", "PutEncryptionConfiguration", "PutObjectAcl", "*"]
+
+    def process(self, buckets, event=None):
+        with self.executor_factory(max_workers=5) as w:
+            results = w.map(self.process_bucket, buckets)
+            results = list(filter(None, list(results)))
+            return results
+
+    def process_bucket(self, bucket):
+        self.get_bucket_policy(bucket)
+
+        policy = bucket.get('Policy', {})
+        if not policy:
+            return None
+
+        statements = json.loads(policy).get('Statement', [])
+        legal_statements = []
+        violating = False
+
+        for stmt in statements:
+            if self._is_violation(stmt, bucket['account_id']):
+                violating = True
+            else:
+                legal_statements.append(stmt)
+
+        if violating:
+            bucket[RemovePolicyStatement.annotation_key] = legal_statements
+            return bucket
+
+        return None
+
+    def _is_violation(self, stmt, current_account):
+        if stmt.get('Effect') != 'Allow':
+            return False
+
+        principal_user = stmt.get('Principal', {}).get("ID", [])
+        actions = stmt.get('Action', [])
+
+        for user in principal_user:
+            if current_account not in user and\
+                any(action in self.black_listed_actions for action in actions):
+                return True
+
+        return False
+
+    def get_bucket_policy(self, bucket):
+        client = get_obs_client(self.manager.session_factory, bucket)
+        resp = client.getBucketPolicy(bucket['name']+"ssfsfsf")
+
+        if resp.status < 300:
+            policy = resp.body.policyJSON
+            bucket['Policy'] = policy
+        else:
+            if 'NoSuchBucketPolicy' == resp.errorCode or 'Not Found' == resp.reason:
                 bucket['Policy'] = {}
                 return
             raise_exception(resp, 'getBucketPolicy', bucket)

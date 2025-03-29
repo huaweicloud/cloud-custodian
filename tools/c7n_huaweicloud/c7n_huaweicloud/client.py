@@ -370,8 +370,9 @@ class Session:
 
     def region_client(self, service, region):
         if service == 'obs':
+            server = "https://obs." + region + ".myhuaweicloud.com"
             client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
-                                server=ObsRegion.value_of(region).endpoint,
+                                server=server,
                                 security_token=self.token)
         return client
 
