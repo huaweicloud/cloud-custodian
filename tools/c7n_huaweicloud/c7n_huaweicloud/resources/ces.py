@@ -27,7 +27,7 @@ class Alarm(QueryResourceManager):
         service = 'ces'
         enum_spec = ("list_alarm_rules", 'alarms', 'offset')
         id = 'alarm_id'
-        tag_resource_type = 'CES-alarm'
+        tag_resource_type = None
 
 
 Alarm.filter_registry.register('missing', Missing)
@@ -603,6 +603,10 @@ class NotifyBySMN(BaseAction):
         params = self.data.get('parameters', {})
         subject = params.get('subject', 'subject')
         message = params.get('message', 'message')
+        list_alarm_ids = [str(item["id"]) for item in resources if "id" in item]
+        id_list = '\n'.join([f"- {alarm_id}" for alarm_id in list_alarm_ids])
+        if len(id_list) != 0:
+            message += f"\nalarm list:\n{id_list}"
         message += f"\nregion: {os.getenv('HUAWEI_DEFAULT_REGION')}"
         body = PublishMessageRequestBody(
             subject=subject,
