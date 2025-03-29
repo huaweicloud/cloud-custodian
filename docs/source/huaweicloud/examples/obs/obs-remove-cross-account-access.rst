@@ -8,4 +8,4 @@ OBS - Deletes Bucket Policy Statement That Containing Bucket Blacklisted Actions
         filters:
           - type: cross-account
         actions:
-          - type: remove-statements
+          - type: remove-cross-account-config

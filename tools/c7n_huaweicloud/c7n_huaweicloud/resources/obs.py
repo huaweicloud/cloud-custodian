@@ -427,8 +427,8 @@ class SetPolicyStatement(HuaweiCloudBaseAction):
         }
 
 
-@Obs.action_registry.register("remove-statements")
-class RemovePolicyStatement(HuaweiCloudBaseAction):
+@Obs.action_registry.register("remove-cross-account-config")
+class RemoveCrossAccountAccessConfig(HuaweiCloudBaseAction):
     """delete cross-account access statements in obs bucket policy
 
         :example:
@@ -441,37 +441,51 @@ class RemovePolicyStatement(HuaweiCloudBaseAction):
                     filters:
                       - type: cross-account
                     actions:
-                      - type: remove-statements
+                      - type: remove-cross-account-config
         """
-    schema = type_schema('remove-statements')
+    schema = type_schema('remove-cross-account-config')
 
-    annotation_key = 'c7n:Statements'
+    annotation_policy_key = 'c7n:Statements'
+    annotation_acl_key = 'c7n:Acl'
 
     def perform_action(self, bucket):
-        bucket_name = bucket['name']
         p = bucket.get('Policy')
         if p is None:
             return
 
-        if bucket.get(self.annotation_key) is None:
-            log.info("bucket %s has not statements" % bucket_name)
-            return
+        client = get_obs_client(self.manager.session_factory, bucket)
+        self.update_statements(bucket, client)
+        self.update_acl(bucket, client)
 
-        self.update_statements(bucket)
         return bucket
 
-    def update_statements(self, bucket):
+    def update_statements(self, bucket, client):
         bucket_name = bucket['name']
-        client = get_obs_client(self.manager.session_factory, bucket)
 
-        if not bucket[self.annotation_key]:
+        if bucket.get(self.annotation_policy_key) is None:
+            log.info("bucket %s does not need update bucket policy" % bucket_name)
+            return
+
+        if not bucket[self.annotation_policy_key]:
             resp = client.deleteBucketPolicy(bucket_name)
         else:
-            policy = {'Statement': bucket[self.annotation_key]}
+            policy = {'Statement': bucket[self.annotation_policy_key]}
             resp = client.setBucketPolicy(bucket_name, json.dumps(policy))
 
         if resp.status > 300:
             raise_exception(resp, 'updateBucketPolicy', bucket)
+
+    def update_acl(self, bucket, client):
+        bucket_name = bucket['name']
+
+        if bucket.get(self.annotation_acl_key) is None:
+            log.info("bucket %s does not need update acl" % bucket_name)
+            return
+
+        resp = client.setBucketAcl(bucket_name, bucket[self.annotation_acl_key])
+
+        if resp.status > 300:
+            raise_exception(resp, 'setBucketAcl', bucket)
 
 
 # ----------------------OBS Fileter-------------------------------------------
@@ -898,7 +912,7 @@ class ObsCrossAccountFilter(Filter):
                 filters:
                   - type: cross-account
     """
-    schema = type_schema('cross-account')
+    schema = type_schema('cross-account', allow_website={'type': 'boolean'})
 
     black_listed_actions = ["PutBucketPolicy", "DeleteBucketPolicy",
      "PutBucketAcl", "PutEncryptionConfiguration", "PutObjectAcl", "*"]
@@ -910,29 +924,40 @@ class ObsCrossAccountFilter(Filter):
             return results
 
     def process_bucket(self, bucket):
-        self.get_bucket_policy(bucket)
+        client = get_obs_client(self.manager.session_factory, bucket)
 
+        self.get_bucket_policy(bucket, client)
+        self.query_bucket_acl(bucket, client)
+        self.query_bucket_website_config(bucket, client)
+
+        if self.check_is_cross_account_by_policy(bucket) or\
+               self.check_is_cross_accout_by_acl(bucket):
+            return bucket
+
+        return None
+
+    def check_is_cross_account_by_policy(self, bucket):
         policy = bucket.get('Policy', {})
         if not policy:
-            return None
+            return False
 
         statements = json.loads(policy).get('Statement', [])
         legal_statements = []
         violating = False
 
         for stmt in statements:
-            if self._is_violation(stmt, bucket['account_id']):
+            if self.is_violation(stmt, bucket['account_id']):
                 violating = True
             else:
                 legal_statements.append(stmt)
 
         if violating:
-            bucket[RemovePolicyStatement.annotation_key] = legal_statements
-            return bucket
+            bucket[RemoveCrossAccountAccessConfig.annotation_policy_key] = legal_statements
+            return True
 
-        return None
+        return False
 
-    def _is_violation(self, stmt, current_account):
+    def is_violation(self, stmt, current_account):
         if stmt.get('Effect') != 'Allow':
             return False
 
@@ -946,8 +971,44 @@ class ObsCrossAccountFilter(Filter):
 
         return False
 
-    def get_bucket_policy(self, bucket):
-        client = get_obs_client(self.manager.session_factory, bucket)
+    def check_is_cross_accout_by_acl(self, bucket):
+        acl = bucket.get('Acl', {})
+        if not acl:
+            return False
+
+        grants = acl.get('grants', [])
+        legal_grants = []
+        violating = False
+
+        for grant in grants:
+            grantee = grant.get('grantee', {})
+            if not grantee:
+                continue
+
+            if 'group' in grantee:
+                if grantee['group'] not in ['Everyone']:
+                    legal_grants.append(grant)
+                else:
+                    if grant['permission'] == 'READ' and bucket['website']:
+                        legal_grants.append(grant)
+                        continue
+                    else:
+                        violating = True
+
+            if 'grantee_id' in grantee:
+                if grantee['grantee_id'] != bucket['account_id']:
+                    violating = True
+                else:
+                    legal_grants.append(grant)
+
+        if violating:
+            owner = acl['owner']
+            new_acl = ACL(owner, legal_grants)
+            bucket[RemoveCrossAccountAccessConfig.annotation_acl_key] = new_acl
+
+        return violating
+
+    def get_bucket_policy(self, bucket, client):
         resp = client.getBucketPolicy(bucket['name'])
 
         if resp.status < 300:
@@ -958,3 +1019,38 @@ class ObsCrossAccountFilter(Filter):
                 bucket['Policy'] = {}
                 return
             raise_exception(resp, 'getBucketPolicy', bucket)
+        
+        self.query_bucket_acl(bucket, client)
+
+    def query_bucket_acl(self, bucket, client):
+        resp = client.getBucketAcl(bucket['name'])
+        if resp.status < 300:
+            acl = resp.body
+            bucket['Acl'] = acl
+        else:
+            if 'Not Found' == resp.reason:
+                bucket['Acl'] = {'owner': {}, 'grants': []}
+                return
+            raise_exception(resp, 'getBucketAcl', bucket)
+
+    def query_bucket_website_config(self, bucket, client):
+        allow_website = self.data.get('allow_website', True)
+        if allow_website == False:
+            bucket['website'] = False
+            return
+
+        resp = client.getBucketWebsite(bucket['name'])
+        if resp.status < 300:
+            website_config = resp.body
+            if 'indexDocument' in website_config:
+                bucket['website'] = True
+                return True
+            else:
+                bucket['website'] = False
+                return False
+        else:
+            if 'NoSuchWebsiteConfiguration' == resp.errorCode:
+                bucket['website'] = False
+                return False
+            else:
+                raise_exception(resp, 'getBucketWebsite', bucket)
