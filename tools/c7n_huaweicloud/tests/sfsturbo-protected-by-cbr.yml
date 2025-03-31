@@ -1,0 +1,8 @@
+policies:
+  - name: sfsturbo-protected-by-cbr
+    resource: huaweicloud.sfsturbo
+    filters:
+      - type: not-protected-by-backup
+    actions:
+      - type: add-sfsturbo-to-vault
+        vault_id: "d02c8f88-511f-48ee-990c-e3f19e200504"

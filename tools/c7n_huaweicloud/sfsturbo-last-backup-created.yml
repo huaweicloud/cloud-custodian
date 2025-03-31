@@ -1,0 +1,10 @@
+policies:
+    - name: sfsturbo-last-backup-created
+      resource: huaweicloud.sfsturbo
+      filters:
+        - type: last-backup-exceed-safe-time-interval
+          interval: 24
+      actions:
+        - type: associate-sfsturbo-vault-to-policy
+          policy_id: 3595d045-d3bb-42b6-842c-2b8fb24010fb
+

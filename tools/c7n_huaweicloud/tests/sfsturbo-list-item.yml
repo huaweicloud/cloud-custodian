@@ -1,0 +1,11 @@
+policies:
+ - name: sfsturbo-list-item
+   resource: huaweicloud.sfsturbo
+   filters:
+    - type: list-item
+      key: tags
+      attrs:
+        - not:
+          - type: value
+            key: key
+            value: "a"

@@ -1,0 +1,9 @@
+policies:
+ - name: sfsturbo-rename-tag
+   resource: huaweicloud.sfsturbo
+   filters:
+      - "size": "500.00"
+   actions:
+    - type: rename-tag
+      old_key: owner
+      new_key: tester
