@@ -187,7 +187,7 @@ class FunctionGraphManager:
             else:
                 dependency_versions += dependency_version_list
                 log.info(
-                    f'Can not find public dependency, using [{owner} private dependency {dependency_version_list}')  # noqa: E501
+                    f'Can not find public dependency, using [{owner}] private dependency {dependency_version_list}')  # noqa: E501
 
         if len(dependency_versions) == 0:
             log.error(f'Not find any dependency named: {depend_name}, please add dependencies manually')  # noqa: E501
