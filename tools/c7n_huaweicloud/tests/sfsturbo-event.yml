@@ -1,0 +1,8 @@
+policies:
+ - name: sfsturbo-event
+   resource: huaweicloud.sfsturbo
+   filters:
+    - type: event
+      value: 500
+      op: eq
+      key: "size"

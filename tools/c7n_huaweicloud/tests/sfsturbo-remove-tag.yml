@@ -1,0 +1,10 @@
+policies:
+ - name: sfsturbo-remove-tag
+   resource: huaweicloud.sfsturbo
+   filters:
+      - "size": "500.00"
+   actions:
+    - type: untag
+      tag_values:
+        tester: yushiwen
+        test: a

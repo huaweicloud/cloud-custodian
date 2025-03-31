@@ -1,0 +1,11 @@
+policies:
+ - name: sfsturbo-tag-trim
+   resource: huaweicloud.sfsturbo
+   filters:
+      - "size": 500
+   actions:
+    - type: tag-trim
+      space: 3
+      preserve:
+        - owner1
+        - owner2
