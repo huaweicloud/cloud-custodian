@@ -436,6 +436,7 @@ class Session:
             request.notification_type = "fun"
         elif service == "cbr-backup":
             request = ListBackupsRequest()
+            request.show_replication = True
         elif service == "cbr-vault":
             request = ListVaultRequest()
         elif service == "sfsturbo":

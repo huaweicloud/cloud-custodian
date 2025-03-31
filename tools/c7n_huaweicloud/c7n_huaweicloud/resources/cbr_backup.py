@@ -16,7 +16,7 @@ class CbrBackup(QueryResourceManager):
         service = 'cbr-backup'
         enum_spec = ('list_backups', 'backups', 'offset')
         id = 'id'
-        tag_resource_type = 'vault'
+        tag_resource_type = ''
 
 
 @CbrBackup.action_registry.register('delete')
