@@ -133,6 +133,7 @@ class ResourceQuery:
             if res is not None:
                 for data in res:
                     data['id'] = data[m.id]
+                    data['tag_resource_type'] = m.tag_resource_type
 
             resources = resources + res
             marker = next_marker
