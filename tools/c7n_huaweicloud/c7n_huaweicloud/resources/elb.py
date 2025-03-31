@@ -26,7 +26,7 @@ class Loadbalancer(QueryResourceManager):
         enum_spec = ("list_load_balancers", 'loadbalancers', 'marker')
         id = 'id'
         tag = True
-        tag_resource_type = 'elb'
+        tag_resource_type = 'loadbalancers'
 
 
 Loadbalancer.action_registry.register('delete', LoadbalancerDeleteAction)
@@ -53,7 +53,7 @@ class Listener(QueryResourceManager):
         enum_spec = ("list_listeners", 'listeners', 'marker')
         id = 'id'
         tag = True
-        tag_resource_type = 'elb'
+        tag_resource_type = 'listeners'
 
 
 Listener.action_registry.register('delete', ListenerDeleteAction)
