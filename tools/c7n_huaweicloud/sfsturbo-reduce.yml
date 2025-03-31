@@ -1,0 +1,8 @@
+policies:
+ - name: sfsturbo-reduce
+   resource: huaweicloud.sfsturbo
+   filters:
+    - type: reduce
+      order: randomize
+      limit: 15
+      limit-percent: 40
