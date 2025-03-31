@@ -8,6 +8,7 @@ import sys
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
 from huaweicloudsdkconfig.v1.region.config_region import ConfigRegion
 from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
+from huaweicloudsdkcore.auth.provider import MetadataCredentialProvider
 from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
@@ -33,7 +34,6 @@ from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdker.v3 import ErClient, ListEnterpriseRoutersRequest
 from huaweicloudsdker.v3.region.er_region import ErRegion
-from huaweicloudsdkobs.v1.region.obs_region import ObsRegion
 from obs import ObsClient
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
@@ -78,6 +78,8 @@ from huaweicloudsdkcoc.v1.region.coc_region import CocRegion
 from huaweicloudsdkorganizations.v1 import OrganizationsClient, ListAccountsRequest, \
     ListOrganizationalUnitsRequest, ListPoliciesRequest
 from huaweicloudsdkorganizations.v1.region.organizations_region import OrganizationsRegion
+from huaweicloudsdkantiddos.v1 import AntiDDoSClient, ListDDosStatusRequest
+from huaweicloudsdkantiddos.v1.region.antiddos_region import AntiDDoSRegion
 from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
 from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
 from huaweicloudsdkram.v1 import RamClient, SearchResourceShareAssociationsRequest, \
@@ -103,29 +105,29 @@ class Session:
             self.ak = options.get("SecurityAccessKey")
             self.sk = options.get("SecuritySecretKey")
             self.token = options.get("SecurityToken")
-        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
-        if self.ak is None:
-            log.error(
-                "No access key id set. "
-                "Specify a default via HUAWEI_ACCESS_KEY_ID or context"
-            )
-            sys.exit(1)
 
+        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
         self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
-        if self.sk is None:
-            log.error(
-                "No secret access key set. "
-                "Specify a default via HUAWEI_SECRET_ACCESS_KEY or context"
-            )
-            sys.exit(1)
 
     def client(self, service):
-        credentials = BasicCredentials(
-            self.ak, self.sk, os.getenv("HUAWEI_PROJECT_ID")
-        ).with_security_token(self.token)
-        globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(
-            self.token
-        )
+        if self.ak is None or self.sk is None:
+            # basic
+            basic_provider = MetadataCredentialProvider \
+                .get_basic_credential_metadata_provider()
+            credentials = basic_provider.get_credentials()
+
+            # global
+            global_provider = MetadataCredentialProvider \
+                .get_global_credential_metadata_provider()
+            globalCredentials = global_provider.get_credentials()
+        else:
+            credentials = BasicCredentials(
+                self.ak, self.sk, os.getenv("HUAWEI_PROJECT_ID")
+            ).with_security_token(self.token)
+            globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(
+                self.token
+            )
+
         if service == "vpc":
             client = (
                 VpcClientV3.new_builder()
@@ -357,13 +359,19 @@ class Session:
                 .with_credentials(globalCredentials) \
                 .with_region(RamRegion.CN_NORTH_4) \
                 .build()
+        elif service == 'antiddos':
+            client = AntiDDoSClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(AntiDDoSRegion.value_of(self.region)) \
+                .build()
 
         return client
 
     def region_client(self, service, region):
         if service == 'obs':
+            server = "https://obs." + region + ".myhuaweicloud.com"
             client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
-                                server=ObsRegion.value_of(region).endpoint,
+                                server=server,
                                 security_token=self.token)
         return client
 
@@ -439,5 +447,7 @@ class Session:
             request.body = SearchResourceShareAssociationsReqBody(
                 association_type="principal",
                 association_status="associated")
+        elif service == 'antiddos':
+            request = ListDDosStatusRequest()
 
         return request

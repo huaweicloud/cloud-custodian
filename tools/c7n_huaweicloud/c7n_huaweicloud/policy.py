@@ -35,7 +35,9 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'func_vpc': {'type': 'object', 'required': ['vpc_id', 'subnet_id']},
             'user_data': {'type': 'string'},
             'description': {'type': 'string'},
-            'eg_agency': {'type': 'string'}
+            'eg_agency': {'type': 'string'},
+            'enable_lts_log': {'type': 'boolean'},
+            'log_config': {'type': 'object'},
         }
     )
 
@@ -121,7 +123,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         return mu.PolicyFunctionGraph
 
     def provision(self):
-        # auto tag lambda policies with mode and version, we use the
+        # auto tag function policies with mode and version, we use the
         # version in mugc to effect cleanups.
         tags = self.policy.data['mode'].setdefault('tags', {})
         tags['custodian-info'] = "mode=%s:version=%s" % (
@@ -137,7 +139,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         from c7n_huaweicloud import mu
         with self.policy.ctx:
             self.policy.log.info(
-                "Provisioning policy lambda: %s region: %s", self.policy.name,
+                "Provisioning policy FunctionGraph: %s region: %s", self.policy.name,
                 self.policy.options.region)
             manager = mu.FunctionGraphManager(self.policy.session_factory)
             return manager.publish(

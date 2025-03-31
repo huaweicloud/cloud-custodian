@@ -2,14 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ResourceMap = {
-    "huaweicloud.volume": "c7n_huaweicloud.resources.volume.Volume",
     "huaweicloud.lts-transfer": "c7n_huaweicloud.resources.transfer.Transfer",
     "huaweicloud.evs-volume": "c7n_huaweicloud.resources.evs.Volume",
     "huaweicloud.er": "c7n_huaweicloud.resources.er.ERInstance",
     "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
     "huaweicloud.config-tracker": "c7n_huaweicloud.resources.config.ConfigTracker",
     "huaweicloud.obs": "c7n_huaweicloud.resources.obs.Obs",
-    "huaweicloud.alarm": "c7n_huaweicloud.resources.ces.Alarm",
+    "huaweicloud.ces-alarm": "c7n_huaweicloud.resources.ces.Alarm",
     "huaweicloud.kms": "c7n_huaweicloud.resources.kms.Kms",
     "huaweicloud.ecs": "c7n_huaweicloud.resources.ecs.Ecs",
     "huaweicloud.iam-user": "c7n_huaweicloud.resources.iam.User",
@@ -40,5 +39,6 @@ ResourceMap = {
     "huaweicloud.org-policy": "c7n_huaweicloud.resources.organizations.OrgPolicy",
     "huaweicloud.org-account": "c7n_huaweicloud.resources.organizations.OrgAccount",
     "huaweicloud.org-unit": "c7n_huaweicloud.resources.organizations.OrgUnit",
-    "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals"
+    "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
+    "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip"
 }

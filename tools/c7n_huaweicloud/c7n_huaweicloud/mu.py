@@ -6,6 +6,9 @@ from datetime import datetime
 import json
 import logging
 import base64
+import site
+import zipfile
+import os
 
 from c7n.mu import get_exec_options, custodian_archive as base_archive
 from c7n.utils import local_session
@@ -50,6 +53,46 @@ def custodian_archive(packages=None):
     return archive
 
 
+def package_dependencies(zip_filename):
+    log.info(f'Start package dependencies to {zip_filename}')
+    site_packages_dirs = site.getsitepackages()
+    zip_filepath = os.path.abspath(zip_filename)
+    with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for sp_dir in site_packages_dirs:
+            if not os.path.exists(sp_dir):
+                continue
+
+            for root, dirs, files in os.walk(sp_dir):
+                # Filter directories: skip cache and metadata directories
+                dirs[:] = [
+                    d for d in dirs
+                    if d not in {"__pycache__"}
+                       and not d.endswith(".egg-info")
+                ]
+                # Filter files: skip .pyc, .pth, .dll, .exe and .pdb files
+                files = [
+                    f for f in files
+                    # Forced Lowercase Matching
+                    if not f.lower().endswith((".pyc", ".pth", ".dll", ".exe", ".pdb"))
+                ]
+
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, sp_dir)
+                    zipf.write(file_path, arcname=arcname)
+
+    # 获取 ZIP 文件大小
+    file_size = os.path.getsize(zip_filepath)
+
+    # 转换为 Base64
+    with open(zip_filepath, "rb") as f:
+        zip_data = f.read()
+    base64_data = base64.b64encode(zip_data).decode("utf-8")
+    log.info(f'Package dependencies success, filepath: {zip_filepath}, zip file size: {file_size}')  # noqa: E501
+
+    return file_size, base64_data
+
+
 class FunctionGraphManager:
 
     def __init__(self, session_factory):
@@ -90,7 +133,6 @@ class FunctionGraphManager:
             setattr(request_body, key, value)
         dep_ids = self.get_custodian_depend_version_id(params["runtime"])
         request_body.depend_version_list = dep_ids
-        log.info(request_body.user_data)
         request.body = request_body
         try:
             response = self.client.create_function(request)
@@ -104,7 +146,7 @@ class FunctionGraphManager:
         return response
 
     def get_custodian_depend_version_id(self, runtime="Python3.10") -> [str]:
-        depend_name = "custodian-huaweicloud-py3.10"
+        depend_name = f'custodian-huaweicloud-{runtime}'
         list_dependencies_request = ListDependenciesRequest(runtime=runtime, name=depend_name)
         try:
             dependencies = self.client.list_dependencies(list_dependencies_request).dependencies
@@ -116,13 +158,39 @@ class FunctionGraphManager:
             return []
 
         dependency_versions = []
+        dependency_version_map = {}
         for dependency in dependencies:
             show_dependency_version_request = ShowDependencyVersionRequest(
                 depend_id=dependency.id,
                 version=dependency.version,
             )
-            dependency_version = self.client.show_dependency_version(show_dependency_version_request)  # noqa: E501
-            dependency_versions.append(dependency_version.id)
+            try:
+                dependency_version = self.client.show_dependency_version(show_dependency_version_request)  # noqa: E501
+            except exceptions.ClientRequestException as e:
+                log.error(f'Show dependency version failed, request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
+                continue
+            owner = dependency_version.owner
+            dependency_version_id = dependency_version.id
+            if dependency_version_map.get(owner):
+                dependency_version_map.append(dependency_version_id)
+            else:
+                dependency_version_map[owner] = [dependency_version_id]
+
+        for owner, dependency_version_list in dependency_version_map.items():
+            if owner == "public":
+                dependency_versions = dependency_version_list
+                log.info(f'Creating function by public dependency {dependency_version_list}')
+                return dependency_versions
+            else:
+                dependency_versions += dependency_version_list
+                log.info(
+                    f'Can not find public dependency, using [{owner} private dependency {dependency_version_list}')  # noqa: E501
+
+        if len(dependency_versions) == 0:
+            log.error(f'Not find any dependency named: {depend_name}, please add dependencies manually')  # noqa: E501
 
         return dependency_versions
 
@@ -150,7 +218,8 @@ class FunctionGraphManager:
                                  "log_config", "network_controller", "is_stateful_function",
                                  "enable_dynamic_memory", "enable_auth_in_header", "domain_names",
                                  "restore_hook_handler", "restore_hook_timeout",
-                                 "heartbeat_handler", "enable_class_isolation", "lts_custom_tag"]
+                                 "heartbeat_handler", "enable_class_isolation", "enable_lts_log",
+                                 "lts_custom_tag"]
         request = UpdateFunctionConfigRequest(function_urn=old_config["func_urn"])
         request_body = UpdateFunctionConfigRequestBody(
             func_name=old_config['func_name'],
@@ -163,7 +232,6 @@ class FunctionGraphManager:
         # Put update parameter into the request body.
         for key, value in need_update.items():
             setattr(request_body, key, value)
-
         request.body = request_body
         try:
             response = self.client.update_function_config(request)
@@ -269,7 +337,7 @@ class FunctionGraphManager:
         old_config = old_config.to_dict()
         need_update_params = {}
         for param in params:
-            if params[param] != old_config[param]:
+            if params[param] != old_config.get(param):
                 need_update_params[param] = params[param]
 
         return need_update_params
@@ -364,6 +432,16 @@ class AbstractFunctionGraph:
     def description(self):
         """ """
 
+    @property
+    @abc.abstractmethod
+    def enable_lts_log(self):
+        """Whether open lts log"""
+
+    @property
+    @abc.abstractmethod
+    def log_config(self):
+        """LTS log config"""
+
     @abc.abstractmethod
     def get_events(self, session_factory):
         """ """
@@ -384,6 +462,8 @@ class AbstractFunctionGraph:
             'func_vpc': self.func_vpc,
             'user_data': self.user_data,
             'description': self.description,
+            'enable_lts_log': self.enable_lts_log,
+            'log_config': self.log_config,
         }
 
         return conf
@@ -444,6 +524,14 @@ class FunctionGraph(AbstractFunctionGraph):
     @property
     def description(self):
         return self.func_data.get('description', "")
+
+    @property
+    def enable_lts_log(self):
+        return self.func_data.get('enable_lts_log', False)
+
+    @property
+    def log_config(self):
+        return self.func_data.get('log_config', None)
 
     def get_events(self, ssession_factory):
         return self.func_data.get('events', ())
@@ -512,6 +600,14 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     @property
     def description(self):
         return self.policy.data['mode'].get('description', 'cloud-custodian FunctionGraph policy')
+
+    @property
+    def enable_lts_log(self):
+        return self.policy.data['mode'].get('enable_lts_log', False)
+
+    @property
+    def log_config(self):
+        return self.policy.data['mode'].get('log_config', None)
 
     def eg_agency(self):
         return self.policy.data['mode'].get('eg_agency')
