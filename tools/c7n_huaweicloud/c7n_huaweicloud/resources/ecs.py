@@ -1279,28 +1279,29 @@ class InstanceImageNotCompliance(Filter):
         if not image_ids and obs_url is None:
             log.error("image_ids or obs_url is required")
             return []
-        # 1. 提取第一个变量：从 "https://" 到最后一个 "obs" 的部分
-        protocol_end = len("https://")
-        # 去除协议头后的完整路径
-        path_without_protocol = obs_url[protocol_end:]
-        obs_bucket_name = self.get_obs_name(path_without_protocol)
-        obs_server = self.get_obs_server(path_without_protocol)
-        obs_file = self.get_file_path(path_without_protocol)
-        obs_client.server = obs_server
-        try:
-            resp = obs_client.getObject(bucketName=obs_bucket_name,
-                                        objectKey=obs_file,
-                                        loadStreamInMemory=True)
-            if resp.status < 300:
-                ids = json.loads(resp.body.buffer)['image_ids']
-                image_ids.extend(ids)
-                image_ids = list(set(image_ids))
-            else:
-                log.error("get obs object failed")
-                return []
-        except exceptions.ClientRequestException as e:
-            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-            raise
+        if obs_url is not None:
+            # 1. 提取第一个变量：从 "https://" 到最后一个 "obs" 的部分
+            protocol_end = len("https://")
+            # 去除协议头后的完整路径
+            path_without_protocol = obs_url[protocol_end:]
+            obs_bucket_name = self.get_obs_name(path_without_protocol)
+            obs_server = self.get_obs_server(path_without_protocol)
+            obs_file = self.get_file_path(path_without_protocol)
+            obs_client.server = obs_server
+            try:
+                resp = obs_client.getObject(bucketName=obs_bucket_name,
+                                            objectKey=obs_file,
+                                            loadStreamInMemory=True)
+                if resp.status < 300:
+                    ids = json.loads(resp.body.buffer)['image_ids']
+                    image_ids.extend(ids)
+                    image_ids = list(set(image_ids))
+                else:
+                    log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
+                    return []
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                raise
         instance_image_map = {}
         for r in resources:
             instance_image_map.setdefault(
