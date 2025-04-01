@@ -368,11 +368,23 @@ class Session:
         return client
 
     def region_client(self, service, region):
+        ak = self.ak
+        sk = self.sk
+        token = self.token
+
+        if self.ak is None or self.sk is None:
+            basic_provider = MetadataCredentialProvider \
+                .get_basic_credential_metadata_provider()
+            credentials = basic_provider.get_credentials()
+            ak = credentials.ak
+            sk = credentials.sk
+            token = credentials.security_token
+
         if service == 'obs':
             server = "https://obs." + region + ".myhuaweicloud.com"
-            client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
+            client = ObsClient(access_key_id=ak, secret_access_key=sk,
                                 server=server,
-                                security_token=self.token)
+                                security_token=token)
         return client
 
     def request(self, service):
