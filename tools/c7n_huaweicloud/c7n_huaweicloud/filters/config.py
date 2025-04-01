@@ -16,27 +16,23 @@ class ConfigCompliance(Filter):
     """Filter resources by their compliance with one or more Huawei config rules.
 
     An example of using the filter to find all resources that have
-    been registered as non compliant in the last 30 days against two
-    custom Huawei Config rules.
+    been registered as non compliant against a custom Huawei Config rule.
 
     :example:
 
     .. code-block:: yaml
 
        policies:
-         - name: non-compliant-ec2
-           resource: ec2
+         - name: non-compliant-config-tracker
+           resource: config-tracker
            filters:
             - type: config-compliance
               eval_filters:
                - type: value
-                 key: ResultRecordedTime
-                 value_type: age
-                 value: 30
-                 op: less-than
+                 key: resource_provider
+                 value: "config"
               rules:
-               - custodian-ec2-encryption-required
-               - custodian-ec2-tags-required
+               - test-rule
 
     """
     log = logging.getLogger("custodian.huaweicloud.actions.filters.ConfigCompliance")
@@ -103,9 +99,12 @@ class ConfigCompliance(Filter):
         results = []
         for resource in resources:
             resource_id = resource["id"]
+            if 'retention_period_in_days' in resource.keys():
+                resource_id = "trackerconfig_" + resource_id
             if resource_id in resource_map:
                 resource[self.annotation_key] = resource_map[resource_id]
                 results.append(resource)
+
         return results
 
     @classmethod

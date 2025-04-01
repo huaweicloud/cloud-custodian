@@ -86,7 +86,9 @@ class ResourceQuery:
                 replace('true', 'True')))
 
             if path == '*':
-                resources.append(json.loads(str(response)))
+                data_json = json.loads(str(response))
+                data_json["id"] = data_json[m.id]
+                resources.append(data_json)
                 return resources
 
             # replace id with the specified one
