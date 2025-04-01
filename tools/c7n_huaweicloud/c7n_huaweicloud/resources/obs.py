@@ -687,7 +687,7 @@ class GlobalGrantsFilter(Filter):
 
             if allow_website and grant['permission'] == 'READ' and \
                 self.is_website_bucket(bucket, client=client):
-                print("is website bucket")
+                log.info("is website bucket")
                 continue
 
             if not perms or (perms and grant['permission'] in perms):
@@ -930,8 +930,10 @@ class ObsCrossAccountFilter(Filter):
         self.query_bucket_acl(bucket, client)
         self.query_bucket_website_config(bucket, client)
 
-        if self.check_is_cross_account_by_policy(bucket) or\
-               self.check_is_cross_accout_by_acl(bucket):
+        policy_violating = self.check_is_cross_account_by_policy(bucket)
+        acl_violating = self.check_is_cross_accout_by_acl(bucket)
+
+        if policy_violating or acl_violating:
             return bucket
 
         return None
