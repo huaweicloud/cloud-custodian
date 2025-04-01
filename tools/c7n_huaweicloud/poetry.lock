@@ -184,6 +184,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.141"
 
 [[package]]
+name = "huaweicloudsdkantiddos"
+version = "3.1.141"
+description = "AntiDDoS"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkantiddos-3.1.141-py2.py3-none-any.whl", hash = "sha256:7f15c50f0d0b6e79e77f8b285125cd95e4fc69d87783877a3ad015aefaf6d0dc"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.141"
+
+[[package]]
 name = "huaweicloudsdkces"
 version = "3.1.141"
 description = "CES"
@@ -1081,4 +1094,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "5a65fec05e7c7969d98a9f17a68c2dbbe876f468fce6a0228b8f548be4553364"
+content-hash = "141222a14736fa6cdb8c89b07bca0fba3a3cce42d8c2f0a99917c2096dac49c8"

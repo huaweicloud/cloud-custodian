@@ -6,7 +6,7 @@ CES - Update CES Alarm all start.
     policies:
       - name: alarm-action-enabled-check
         description: "Verify that all alarm rules must be enabled and enable the disabled alarms."
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
           - type: value
             key: enabled

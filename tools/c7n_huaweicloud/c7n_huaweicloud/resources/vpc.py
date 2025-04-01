@@ -40,7 +40,6 @@ class Vpc(QueryResourceManager):
         service = 'vpc_v2'
         enum_spec = ('list_vpcs', 'vpcs', 'marker')
         id = 'id'
-        tag_resource_type = 'vpcs'
 
 
 @resources.register('vpc-port')

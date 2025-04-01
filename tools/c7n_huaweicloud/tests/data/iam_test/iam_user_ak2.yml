@@ -1,0 +1,10 @@
+policies:
+  - name: iam-users-ak2
+    resource: huaweicloud.iam-user
+    filters:
+      - type: access-key
+        key: status
+        value: active
+      - type: access-key
+        key: size
+        value: 1

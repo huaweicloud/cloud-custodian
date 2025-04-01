@@ -18,16 +18,16 @@ from c7n.filters.missing import Missing
 from c7n.utils import type_schema, local_session
 from tools.c7n_huaweicloud.c7n_huaweicloud.filters.ces import AlarmNameSpaceAndMetricFilter
 
-log = logging.getLogger("custodian.huaweicloud.resources.alarm")
+log = logging.getLogger("custodian.huaweicloud.resources.ces-alarm")
 
 
-@resources.register('alarm')
+@resources.register('ces-alarm')
 class Alarm(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'ces'
         enum_spec = ("list_alarm_rules", 'alarms', 'offset')
         id = 'alarm_id'
-        tag_resource_type = 'ces-alarm-tags'
+        tag_resource_type = None
 
 
 Alarm.filter_registry.register('missing', Missing)
@@ -46,7 +46,7 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
       - name: ces-alarm-have-smn-check
         description: "Filter all alarm rules that do not have notifications enabled.
                       Update the SMN notifications corresponding to these alarm settings"
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
           - type: value
             key: notification_enabled
@@ -126,7 +126,7 @@ class BatchStartStoppedAlarmRules(BaseAction):
     policies:
       - name: alarm-action-enabled-check
         description: "Verify that all alarm rules must be enabled and enable the disabled alarms."
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
           - type: value
             key: enabled
@@ -210,11 +210,11 @@ class CreateKmsEventAlarmRule(BaseAction):
         description: "Check whether the monitoring alarm for events that monitor
                       KMS disabling or scheduledkey deletion is configured.
                       If not, create the corresponding alarm."
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
             - type: missing
               policy:
-                resource: huaweicloud.alarm
+                resource: huaweicloud.ces-alarm
                 filters:
                   - type: value
                     key: enabled
@@ -387,11 +387,11 @@ class CreateObsEventAlarmRule(BaseAction):
       - name: alarm-obs-bucket-policy-change
         description: "Check whether the alarm for the OBS bucket policy change
                      event is configured. If not, create a corresponding alarm."
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
             - type: missing
               policy:
-                resource: huaweicloud.alarm
+                resource: huaweicloud.ces-alarm
                 filters:
                   - type: value
                     key: enabled
@@ -556,11 +556,11 @@ class NotifyBySMN(BaseAction):
       - name: alarm-resource-check
         description: "Check if the specified resource type is not bound to the specified
                       indicator CES alarm"
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
             - type: missing
               policy:
-                resource: huaweicloud.alarm
+                resource: huaweicloud.ces-alarm
                 filters:
                   - type: alarm-namespace-metric
                     namespaces: ["SYS.KMS"]
@@ -603,6 +603,10 @@ class NotifyBySMN(BaseAction):
         params = self.data.get('parameters', {})
         subject = params.get('subject', 'subject')
         message = params.get('message', 'message')
+        list_alarm_ids = [str(item["id"]) for item in resources if "id" in item]
+        id_list = '\n'.join([f"- {alarm_id}" for alarm_id in list_alarm_ids])
+        if len(id_list) != 0:
+            message += f"\nalarm list:\n{id_list}"
         message += f"\nregion: {os.getenv('HUAWEI_DEFAULT_REGION')}"
         body = PublishMessageRequestBody(
             subject=subject,
@@ -631,11 +635,11 @@ class CreateVpcEventAlarmRule(BaseAction):
       - name: alarm-vpc-change
         description: "Check whether the event monitoring alarm for monitoring VPC changes
                       is configured. If not, create the corresponding alarm."
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
             - type: missing
               policy:
-                resource: huaweicloud.alarm
+                resource: huaweicloud.ces-alarm
                 filters:
                   - type: value
                     key: enabled

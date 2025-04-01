@@ -6,11 +6,11 @@ CES - Check CES isn't configured VPC change alarm rule.
     policies:
       - name: alarm-vpc-change
         description: "Check whether the event monitoring alarm for monitoring VPC changes is configured. If not, create the corresponding alarm."
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
             - type: missing
               policy:
-                resource: huaweicloud.alarm
+                resource: huaweicloud.ces-alarm
                 filters:
                   - type: value
                     key: enabled

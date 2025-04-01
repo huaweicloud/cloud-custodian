@@ -6,11 +6,11 @@ CES - Check CES isn't configured KMS change alarm rule.
     policies:
       - name: alarm-kms-disable-or-delete-key
         description: "Check whether the monitoring alarm for events that monitor KMS disabling or scheduled key deletion is configured. If not, create the corresponding alarm."
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
             - type: missing
               policy:
-                resource: huaweicloud.alarm
+                resource: huaweicloud.ces-alarm
                 filters:
                   - type: value
                     key: enabled

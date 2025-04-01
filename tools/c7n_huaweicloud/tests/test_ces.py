@@ -9,7 +9,7 @@ class AlarmTest(BaseTest):
         factory = self.replay_flight_data('ces_alarm_query')
         p = self.load_policy({
             'name': 'all-alarms',
-            'resource': 'huaweicloud.alarm'},
+            'resource': 'huaweicloud.ces-alarm'},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -19,7 +19,7 @@ class AlarmTest(BaseTest):
         factory = self.replay_flight_data('ces_alarm_update_notification')
         p = self.load_policy({
             "name": "ces-alarm-have-smn-check",
-            "resource": "huaweicloud.alarm",
+            "resource": "huaweicloud.ces-alarm",
             "filters": [{
                 "type": "value",
                 "key": "notification_enabled",
@@ -41,7 +41,7 @@ class AlarmTest(BaseTest):
         factory = self.replay_flight_data('ces_batch_start_stopped_alarm_rules')
         p = self.load_policy({
             'name': 'batch-start-stopped-alarm-rules',
-            'resource': 'huaweicloud.alarm',
+            'resource': 'huaweicloud.ces-alarm',
             "filters": [{
                 "type": "value",
                 "key": "enabled",
@@ -66,7 +66,7 @@ class AlarmTest(BaseTest):
         factory = self.replay_flight_data('create_kms_event_alarm_rule')
         p = self.load_policy({
             'name': 'alarm-kms-disable-or-delete-key',
-            'resource': 'huaweicloud.alarm',
+            'resource': 'huaweicloud.ces-alarm',
             'actions': [{
                 'type': 'create-kms-event-alarm-rule',
                 'parameters': {
@@ -83,7 +83,7 @@ class AlarmTest(BaseTest):
         factory = self.replay_flight_data('create_obs_event_alarm_rule')
         p = self.load_policy({
             'name': 'alarm-obs-bucket-policy-change',
-            'resource': 'huaweicloud.alarm',
+            'resource': 'huaweicloud.ces-alarm',
             'actions': [{
                 'type': 'create-obs-event-alarm-rule',
                 'parameters': {
@@ -100,7 +100,7 @@ class AlarmTest(BaseTest):
         factory = self.replay_flight_data('notif_by_smn')
         p = self.load_policy({
             'name': 'alarm-resource-check',
-            'resource': 'huaweicloud.alarm',
+            'resource': 'huaweicloud.ces-alarm',
             'actions': [{
                 'type': 'notify-by-smn',
                 'parameters': {
@@ -119,7 +119,7 @@ class AlarmTest(BaseTest):
         factory = self.replay_flight_data('create_vpc_event_alarm_rule')
         p = self.load_policy({
             'name': 'alarm-vpc-change',
-            'resource': 'huaweicloud.alarm',
+            'resource': 'huaweicloud.ces-alarm',
             'actions': [{
                 'type': 'create-vpc-event-alarm-rule',
                 'parameters': {
