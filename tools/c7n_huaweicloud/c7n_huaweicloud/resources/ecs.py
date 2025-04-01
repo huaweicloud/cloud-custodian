@@ -865,8 +865,8 @@ class InstanceAttributeFilter(ValueFilter):
     .. code-block:: yaml
 
         policies:
-          - name: ec2-unoptimized-ebs
-            resource: ec2
+          - name: ecs-instances-attribute
+            resource: huaweicloud.ecs
             filters:
               - type: instance-attribute
                 attribute: OS-EXT-SRV-ATTR:user_data
@@ -1056,7 +1056,7 @@ def deserialize_user_data(user_data):
 
 @Ecs.filter_registry.register("instance-user-data")
 class InstanceUserData(ValueFilter):
-    """Filter on EC2 instances which have matching userdata.
+    """Filter on ECS instances which have matching userdata.
     Note: It is highly recommended to use regexes with the ?sm flags, since Custodian
     uses re.match() and userdata spans multiple lines.
 
@@ -1065,8 +1065,8 @@ class InstanceUserData(ValueFilter):
         .. code-block:: yaml
 
             policies:
-              - name: ecs_instance-user-data
-                resource: ec2
+              - name: ecs-instance-user-data
+                resource: huaweicloud.ecs
                 filters:
                   - type: instance-user-data
                     op: regex
