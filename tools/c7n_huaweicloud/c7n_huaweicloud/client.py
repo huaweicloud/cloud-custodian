@@ -174,7 +174,7 @@ class Session:
             client = (
                 TmsClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(TmsRegion.value_of("cn-north-4"))
+                .with_region(TmsRegion.value_of("ap-southeast-1"))
                 .build()
             )
         elif service == "cbr":
