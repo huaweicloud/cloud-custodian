@@ -1,0 +1,7 @@
+policies:
+ - name: sfsturbo-webhook
+   resource: huaweicloud.sfsturbo
+   actions:
+    - type: webhook
+      url: "https://console.huaweicloud.com/sfs/?agencyId=68383111f2604b0188147daf592f2075&locale=zh-cn&region=ap-southeast-1#/sfs/efsdetail?clusterId=c5f8d19c-f158-4a1a-867e-df44f6c4d068"
+      method: GET

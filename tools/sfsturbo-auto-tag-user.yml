@@ -1,0 +1,6 @@
+policies:
+ - name: sfsturbo-auto-tag-user
+   resource: huaweicloud.sfsturbo
+   actions:
+    - type: auto-tag-user
+      tag: yushiwen

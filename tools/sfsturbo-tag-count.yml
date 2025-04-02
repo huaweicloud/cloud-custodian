@@ -1,0 +1,7 @@
+policies:
+ - name: sfsturbo-tag-count
+   resource: huaweicloud.sfsturbo
+   filters:
+    - type: tag-count
+      count: 0
+      op: eq

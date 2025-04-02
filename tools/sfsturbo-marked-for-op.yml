@@ -1,0 +1,10 @@
+policies:
+ - name: sfsturbo-marked-for-op
+   resource: huaweicloud.sfsturbo
+   filters:
+     - type: marked-for-op
+       tag: test-marked
+       op: tag
+   actions:
+     - type: add-sfsturbo-to-vault
+       vault_id: "a0fa137b-0e86-4500-9c8d-9977d6798d30"

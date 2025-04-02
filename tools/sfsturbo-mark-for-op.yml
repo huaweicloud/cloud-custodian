@@ -1,0 +1,9 @@
+policies:
+ - name: sfsturbo-mark-for-op
+   resource: huaweicloud.sfsturbo
+   filters:
+     - type: not-protected-by-backup
+   actions:
+     - type: mark-for-op
+       tag: test-marked
+       op: tag

@@ -1,0 +1,16 @@
+policies:
+ - name: sfsturbo-normalize-tag
+   resource: huaweicloud.sfsturbo
+   filters:
+    - type: list-item
+      key: tags
+      attrs:
+        - type: value
+          key: "value"
+          value: "tag_2025-04-02"
+   actions:
+     - type: normalize-tag
+       key: "test-marked"
+       action: replace
+       old_sub_str: tag
+       new_sub_str: delete

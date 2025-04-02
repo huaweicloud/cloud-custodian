@@ -1,0 +1,15 @@
+policies:
+ - name: sfsturbo-auto-tag-by-event
+   resource: huaweicloud.sfsturbo
+   mode:
+    type: cloudtrace
+    xrole: fgs_admin
+    enable_lts_log: true
+    default_region: sa-brazil-1
+    events:
+     - source: "SFS_Turbo.sfs_turbo"
+       event: "ChangeShareName"
+       ids: "resource_id"
+   actions:
+    - type: auto-tag-user
+      tag: "auto-tag-test"

@@ -1,0 +1,7 @@
+policies:
+ - name: sfsturbo-json-diff
+   resource: huaweicloud.sfsturbo
+   filters:
+    - type: json-diff
+      selector: previous
+      selector_value: created_at
