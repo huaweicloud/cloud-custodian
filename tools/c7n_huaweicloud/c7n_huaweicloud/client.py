@@ -86,7 +86,10 @@ from huaweicloudsdkram.v1 import RamClient, SearchResourceShareAssociationsReque
     SearchResourceShareAssociationsReqBody
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 
-log = logging.getLogger('custodian.huaweicloud.client')
+from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
+from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
+
+log = logging.getLogger("custodian.huaweicloud.client")
 
 
 class Session:
