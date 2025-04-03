@@ -63,11 +63,11 @@ class PortForwarding(Filter):
 
     .. code-block:: yaml
 
-            policies:
-              - name: eni-port-forwarding-enabled
-                resource: huaweicloud.vpc-port
-                filters:
-                  - port-forwarding
+        policies:
+          - name: eni-port-forwarding-enabled
+            resource: huaweicloud.vpc-port
+            filters:
+              - port-forwarding
 
     """
 
@@ -89,7 +89,7 @@ class PortForwarding(Filter):
 
 @Port.action_registry.register("disable-port-forwarding")
 class PortDisablePortForwarding(HuaweiCloudBaseAction):
-    """Action to disable port forwaring on network interfaces.
+    """Action to disable port forwarding on network interfaces.
 
     :example:
 
