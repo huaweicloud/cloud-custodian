@@ -1,0 +1,103 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/ports?limit=100
+  response:
+    body:
+      string: '{"ports":[{"id":"44e33faa-d517-4681-8706-5ef52ffc80dc","name":"","status":"ACTIVE","admin_state_up":true,"fixed_ips":[{"subnet_id":"7a57b755-1950-4ec5-9a06-c5d220cd65b8","ip_address":"192.168.0.192"}],"mac_address":"fa:16:3e:3e:96:56","network_id":"45c6857f-11c4-492d-b6f9-e6025f922155","tenant_id":"ap-southeat-1","device_id":"548ff47a-8190-4b0e-b4fe-a37b6d88df80","device_owner":"compute:ap-southeast-1a","security_groups":["6ca078f6-1f69-49dd-b71e-bc7440244298"],"extra_dhcp_opts":[],"allowed_address_pairs":[{"ip_address":"1.1.1.1/0","mac_address":"fa:16:3e:3e:96:56"}],"binding:vnic_type":"normal","binding:vif_details":{"port_filter":true,"ovs_hybrid_plug":true,"network_type":"vxlan","router_id":"86f53c84-e218-4ea4-85a4-c46809443696","primary_interface":true,"enable_acceleration":true,"enable_dpdk":true,"enable_offload":true,"bridge_name":"br-int","physical_network":null,"vhostuser_dpdk_plug":true,"vhostuser_socket":"/var/run/vhost-user/tap44e33faa-d5","vhostuser_mode":"client","segmentation_id":1694705},"binding:profile":{},"port_security_enabled":true,"instance_type":"","instance_id":"","zone_id":"ap-southeast-1a","enable_efi":false}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: 
+      string: '{"port":{"allowed_address_pairs":[]}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: PUT
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/ports/44e33faa-d517-4681-8706-5ef52ffc80dc
+  response:
+    body: 
+      string: '{"ports":[{"id":"44e33faa-d517-4681-8706-5ef52ffc80dc","name":"","status":"ACTIVE","admin_state_up":true,"fixed_ips":[{"subnet_id":"7a57b755-1950-4ec5-9a06-c5d220cd65b8","ip_address":"192.168.0.192"}],"mac_address":"fa:16:3e:3e:96:56","network_id":"45c6857f-11c4-492d-b6f9-e6025f922155","tenant_id":"ap-southeat-1","device_id":"548ff47a-8190-4b0e-b4fe-a37b6d88df80","device_owner":"compute:ap-southeast-1a","security_groups":["6ca078f6-1f69-49dd-b71e-bc7440244298"],"extra_dhcp_opts":[],"allowed_address_pairs":[],"binding:vnic_type":"normal","binding:vif_details":{"port_filter":true,"ovs_hybrid_plug":true,"network_type":"vxlan","router_id":"86f53c84-e218-4ea4-85a4-c46809443696","primary_interface":true,"enable_acceleration":true,"enable_dpdk":true,"enable_offload":true,"bridge_name":"br-int","physical_network":null,"vhostuser_dpdk_plug":true,"vhostuser_socket":"/var/run/vhost-user/tap44e33faa-d5","vhostuser_mode":"client","segmentation_id":1694705},"binding:profile":{},"port_security_enabled":true,"instance_type":"","instance_id":"","zone_id":"ap-southeast-1a","enable_efi":false}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1
