@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "c7n_huaweicloud"
-version = "0.1.0"
+version = "0.1.1"
 description = "Cloud Custodian - Huawei Cloud Support"
 readme = "readme.md"
 homepage = "https://cloudcustodian.io"
@@ -9,7 +9,7 @@ documentation = "https://cloudcustodian.io/docs/"
 authors = ["Cloud Custodian Project"]
 license = "Apache-2.0"
 classifiers = [
-    "License :: Huawei Cloud Approved :: Apache Software License",
+    "License :: OSI Approved :: Apache Software License",
     "Topic :: System :: Systems Administration",
     "Topic :: System :: Distributed Computing"
 ]
@@ -23,7 +23,7 @@ huaweicloudsdkevs = "^3.1.138"
 huaweicloudsdkvpc = "^3.1.138"
 huaweicloudsdktms = "^3.1.138"
 huaweicloudsdklts = "^3.1.138"
-huaweicloudsdkiam = "^3.1.138"
+huaweicloudsdkiam = "^3.1.140"
 huaweicloudsdkcoc = "^3.1.138"
 huaweicloudsdkconfig = "^3.1.138"
 huaweicloudsdkdeh = "^3.1.138"
@@ -31,7 +31,7 @@ huaweicloudsdkobs = "^3.1.138"
 esdk-obs-python = "^3.24.12"
 huaweicloudsdkces = "^3.1.138"
 huaweicloudsdksmn = "^3.1.138"
-huaweicloudsdkfunctiongraph = "^3.1.138"
+huaweicloudsdkfunctiongraph = "^3.1.141"
 huaweicloudsdkeg = "^3.1.138"
 huaweicloudsdkelb = "^3.1.138"
 huaweicloudsdkeip = "^3.1.138"
@@ -40,9 +40,13 @@ huaweicloudsdkims = "^3.1.138"
 huaweicloudsdkkms = "^3.1.138"
 huaweicloudsdkcbr = "^3.1.138"
 huaweicloudsdknat = "^3.1.138"
+huaweicloudsdker = "^3.1.138"
 huaweicloudsdkcts = "^3.1.139"
 huaweicloudsdksecmaster = "^3.1.140"
 huaweicloudsdksfsturbo = "^3.1.138"
+huaweicloudsdkorganizations ="^3.1.138"
+huaweicloudsdkram = "^3.1.138"
+huaweicloudsdkantiddos = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"

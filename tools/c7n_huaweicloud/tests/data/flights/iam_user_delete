@@ -1,0 +1,153 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250326T033130Z
+    method: GET
+    uri: https://iam.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"","enabled":true,"id":"domainid1",
+      "links":{"self":"https://iam.myhuaweicloud.com/v3/domains/domainid1"},
+      "name":"domainname1"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 03:31:30 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 63f2d9121fbb6519b6681301888970af
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - domainid1
+      X-Sdk-Date:
+      - 20250326T064814Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v5/users?limit=100
+  response:
+    body:
+      string: '{"users": ["user_name" : "name1", "user_id": "id1"]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 06:48:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1742971694821; path=/
+      - HWWAFSESID=9757c736bcf3c7385c; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 39fce0b907ca7d6c4dae0d4824af2bbd
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - domainid1
+      X-Sdk-Date:
+      - 20250326T064814Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v5/users/id1
+  response:
+    body:
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 06:48:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1742971694821; path=/
+      - HWWAFSESID=9757c736bcf3c7385c; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 39fce0b907ca7d6c4dae0d4824af2bbd
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: OK
+version: 1

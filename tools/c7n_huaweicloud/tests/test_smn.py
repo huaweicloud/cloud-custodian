@@ -9,7 +9,7 @@ class SmnTest(BaseTest):
         factory = self.replay_flight_data('smn_topic_query')
         p = self.load_policy({
             "name": "test_topic_query",
-            "resource": "huaweicloud.topic"
+            "resource": "huaweicloud.smn-topic"
         }, session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 2)
@@ -20,7 +20,7 @@ class SmnTest(BaseTest):
         factory = self.replay_flight_data('smn_topic_query')
         p = self.load_policy({
             "name": "test_topic_filter_lts_enabled",
-            "resource": "huaweicloud.topic",
+            "resource": "huaweicloud.smn-topic",
             "filters": [
                 {
                     "type": "topic-lts",
@@ -37,7 +37,7 @@ class SmnTest(BaseTest):
         factory = self.replay_flight_data('smn_topic_query')
         p = self.load_policy({
             "name": "test_topic_filter_lts_enabled_false",
-            "resource": "huaweicloud.topic",
+            "resource": "huaweicloud.smn-topic",
             "filters": [
                 {
                     "type": "topic-lts",
@@ -54,7 +54,7 @@ class SmnTest(BaseTest):
         factory = self.replay_flight_data('smn_topic_query')
         p = self.load_policy({
             "name": "test_topic_filter_access_user",
-            "resource": "huaweicloud.topic",
+            "resource": "huaweicloud.smn-topic",
             "filters": [
                 {
                     "type": "topic-access",
@@ -72,7 +72,7 @@ class SmnTest(BaseTest):
         factory = self.replay_flight_data('smn_topic_query')
         p = self.load_policy({
             "name": "test_topic_filter_access_user_all",
-            "resource": "huaweicloud.topic",
+            "resource": "huaweicloud.smn-topic",
             "filters": [
                 {
                     "type": "topic-access",
@@ -90,7 +90,7 @@ class SmnTest(BaseTest):
         factory = self.replay_flight_data('smn_topic_query')
         p = self.load_policy({
             "name": "test_topic_filter_access_service",
-            "resource": "huaweicloud.topic",
+            "resource": "huaweicloud.smn-topic",
             "filters": [
                 {
                     "type": "topic-access",
@@ -108,7 +108,7 @@ class SmnTest(BaseTest):
         factory = self.replay_flight_data('smn_topic_query')
         p = self.load_policy({
             "name": "test_topic_filter_access_effect",
-            "resource": "huaweicloud.topic",
+            "resource": "huaweicloud.smn-topic",
             "filters": [
                 {
                     "type": "topic-access",
@@ -123,3 +123,20 @@ class SmnTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['name'], "ttt")
         self.assertEqual(resources[0]['topic_id'], "d745b6a999a049c09446fea0ecac8f54")
+
+    def test_topic_filter_tag(self):
+        factory = self.replay_flight_data('smn_topic_query')
+        p = self.load_policy({
+            "name": "test_topic_filter_tag",
+            "resource": "huaweicloud.smn-topic",
+            "filters": [
+                {
+                    "type": "topic-tag"
+                }
+            ]
+        }, session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 2)
+        self.assertEqual(resources[0]['name'], "tt")
+        self.assertEqual(resources[0]['topic_id'], "d745b6a999a049c09446fea0ecac8f53")
+        self.assertEqual(len(resources[0]['tags']), 2)

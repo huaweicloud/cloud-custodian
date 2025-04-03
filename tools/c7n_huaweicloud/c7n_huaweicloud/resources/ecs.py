@@ -779,6 +779,7 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
     schema = type_schema("instance-volumes-corrections")
 
     def perform_action(self, resource):
+        results = []
         client = self.manager.get_client()
         volumes = list(resource["os-extended-volumes:volumes_attached"])
         for volume in volumes:
@@ -791,10 +792,11 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
             )
             try:
                 response = client.update_server_block_device(request)
+                results.append(response)
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                raise
-        return response
+                continue
+        return results
 
 
 # ---------------------------ECS Filter-------------------------------------#
@@ -863,8 +865,8 @@ class InstanceAttributeFilter(ValueFilter):
     .. code-block:: yaml
 
         policies:
-          - name: ec2-unoptimized-ebs
-            resource: ec2
+          - name: ecs-instances-attribute
+            resource: huaweicloud.ecs
             filters:
               - type: instance-attribute
                 attribute: OS-EXT-SRV-ATTR:user_data
@@ -1054,7 +1056,7 @@ def deserialize_user_data(user_data):
 
 @Ecs.filter_registry.register("instance-user-data")
 class InstanceUserData(ValueFilter):
-    """Filter on EC2 instances which have matching userdata.
+    """Filter on ECS instances which have matching userdata.
     Note: It is highly recommended to use regexes with the ?sm flags, since Custodian
     uses re.match() and userdata spans multiple lines.
 
@@ -1063,8 +1065,8 @@ class InstanceUserData(ValueFilter):
         .. code-block:: yaml
 
             policies:
-              - name: ecs_instance-user-data
-                resource: ec2
+              - name: ecs-instance-user-data
+                resource: huaweicloud.ecs
                 filters:
                   - type: instance-user-data
                     op: regex
@@ -1162,7 +1164,7 @@ class InstanceEvs(ValueFilter):
     def get_volume_mapping(self, resources):
         volume_map = {}
         evsResources = self.manager.get_resource_manager(
-            "huaweicloud.volume"
+            "huaweicloud.evs-volume"
         ).resources()
         for resource in resources:
             for evs in evsResources:
@@ -1262,23 +1264,69 @@ class InstanceImageNotCompliance(Filter):
            filters:
              - type: instance-image-not-compliance
                image_ids: ['your instance id']
+               obs_url: ""
     """
 
-    schema = type_schema("instance-image-not-compliance", image_ids={"type": "array"})
+    schema = type_schema("instance-image-not-compliance",
+                         image_ids={"type": "array"},
+                         obs_url={'type': 'string'})
 
     def process(self, resources, event=None):
         results = []
-        image_ids = self.data.get("image_ids")
-        if not image_ids:
-            log.error("image_ids is required")
+        image_ids = self.data.get("image_ids", [])
+        obs_url = self.data.get('obs_url', None)
+        obs_client = local_session(self.manager.session_factory).client("obs")
+        if not image_ids and obs_url is None:
+            log.error("image_ids or obs_url is required")
             return []
+        if obs_url is not None:
+            # 1. 提取第一个变量：从 "https://" 到最后一个 "obs" 的部分
+            protocol_end = len("https://")
+            # 去除协议头后的完整路径
+            path_without_protocol = obs_url[protocol_end:]
+            obs_bucket_name = self.get_obs_name(path_without_protocol)
+            obs_server = self.get_obs_server(path_without_protocol)
+            obs_file = self.get_file_path(path_without_protocol)
+            obs_client.server = obs_server
+            try:
+                resp = obs_client.getObject(bucketName=obs_bucket_name,
+                                            objectKey=obs_file,
+                                            loadStreamInMemory=True)
+                if resp.status < 300:
+                    ids = json.loads(resp.body.buffer)['image_ids']
+                    image_ids.extend(ids)
+                    image_ids = list(set(image_ids))
+                else:
+                    log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
+                    return []
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                raise
         instance_image_map = {}
         for r in resources:
             instance_image_map.setdefault(
                 r["metadata"]["metering.image_id"], []
             ).append(r)
-        log.info(instance_image_map.keys())
         for id in instance_image_map.keys():
             if id not in image_ids:
                 results.extend(instance_image_map[id])
         return results
+
+    def get_obs_name(self, obs_url):
+        # 找到最后一个 ".obs" 的索引位置
+        last_obs_index = obs_url.rfind(".obs")
+        return obs_url[:last_obs_index]
+
+    def get_obs_server(self, obs_url):
+        # 找到最后一个 ".obs" 的索引位置
+        last_obs_index = obs_url.rfind(".obs")
+        remaining_after_obs = obs_url[last_obs_index:]
+        split_res = remaining_after_obs.split("/", 1)
+        return split_res[0].lstrip(".")
+
+    def get_file_path(self, obs_url):
+        # 找到最后一个 ".obs" 的索引位置
+        last_obs_index = obs_url.rfind(".obs")
+        remaining_after_obs = obs_url[last_obs_index:]
+        split_res = remaining_after_obs.split("/", 1)
+        return split_res[1]

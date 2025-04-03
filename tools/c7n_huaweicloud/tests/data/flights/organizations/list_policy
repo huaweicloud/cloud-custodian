@@ -13,19 +13,19 @@ interactions:
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Sdk-Date:
-      - 20250325T101927Z
+      - 20250326T033130Z
     method: GET
     uri: https://iam.myhuaweicloud.com/v3/auth/domains
   response:
     body:
-      string: '{"domains":[{"description":"","enabled":true,"id":"9a24ebd5e4ee4","links":{"self":"https://iam.myhuaweicloud.com/v3/domains/9a24ebd5e4ee"},"name":"test"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+      string: '{"domains":[{"description":"","enabled":true,"id":"be4d8afe888888888888888888aa3072cf36","links":{"self":"https://iam.myhuaweicloud.com/v3/domains/be4d8afe888888888888888888aa3072cf36"},"name":"ResourceGovernanceTest001"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Tue, 25 Mar 2025 10:19:29 GMT
+      - Wed, 26 Mar 2025 03:31:30 GMT
       Server:
       - api-gateway
       Strict-Transport-Security:
@@ -37,12 +37,12 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 3281aeb4c5b19ffa489355836775d6bf
+      - 63f2d9121fbb6519b6681301888970af
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
-      message: ''
+      message: OK
 - request:
     body: null
     headers:
@@ -55,83 +55,30 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - rms.myhuaweicloud.com
+      - organizations.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
-      - 9a24ebd5e4ee4
+      - be4d8afe888888888888888888aa3072cf36
       X-Sdk-Date:
-      - 20250325T102619Z
+      - 20250326T070812Z
     method: GET
-    uri: https://rms.myhuaweicloud.com/v1/resource-manager/domains/9a24ebd5e4ee4/tracker-config
+    uri: https://organizations.myhuaweicloud.com/v1/organizations/policies?limit=100
   response:
     body:
-      string: '{"channel":{"smn":null,"obs":{"bucket_name":"test","bucket_prefix":null,"region_id":"cn-north-4"}},"selector":{"all_supported":true,"resource_types":[]},"retention_period_in_days":30,"agency_name":"test","domain_id":"9a24ebd","frozen_status":null}'
+      string: '{"policies":[{"is_builtin":false,"description":"RestrictedForOU1 (custodian managed)","id":"p-27lu7qg666666666666bm9jzk2zzk0","urn":"organizations::be4d8afe35644849816dcbaa3072cf36:policy:o-wyla9th3py66666666654k23jvrr22e/service_control_policy/p-27lu7qg666666666666bm9jzk2zzk0","name":"RestrictedForOU1","type":"service_control_policy"},{"is_builtin":false,"description":"","id":"p-4ncc1gg34kj8iis5479yc1ezymno5slt","urn":"organizations::be4d8afe35644849816dcbaa3072cf36:policy:o-wyla9th3py66666666654k23jvrr22e/tag_policy/p-4ncc1gg8888888zymno5slt","name":"tag-tmuntces","type":"tag_policy"}],"page_info":{"next_marker":null,"current_count":2}}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Tue, 25 Mar 2025 10:26:20 GMT
+      - Wed, 26 Mar 2025 07:08:13 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=71d59730f4ad917dcc; path=/
-      - HWWAFSESTIME=1742898380008; path=/
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - 9d311ae788264556b7853cdab20bfbc9
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 200
-      message: ''
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '0'
-      Content-Type:
-      - application/json
-      Host:
-      - rms.myhuaweicloud.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Domain-Id:
-      - 9a24ebd5e4ee4
-      X-Sdk-Date:
-      - 20250325T111955Z
-    method: DELETE
-    uri: https://rms.myhuaweicloud.com/v1/resource-manager/domains/9a24ebd5e4ee4/tracker-config
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 25 Mar 2025 11:19:55 GMT
-      Server:
-      - CloudWAF
-      Set-Cookie:
-      - HWWAFSESID=22da3795a06c187db2; path=/
-      - HWWAFSESTIME=1742901595021; path=/
+      - HWWAFSESTIME=1742972893033; path=/
+      - HWWAFSESID=5641f73f3f04ef7680; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -143,7 +90,56 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - f88a641dc39512e7add3d446be67c87a
+      - acaac21fd27bb6e3384bd881ab1d87f6
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250328T072834Z
+    method: GET
+    uri: https://iam.cn-north-4.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"","enabled":true,"id":"d78cbac186b744899480f25bd022f468","links":{"self":"https://iam.myhuaweicloud.com/v3/domains/d78cbac186b744899480f25bd022f468"},"name":"IAMDomain"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 28 Mar 2025 07:28:35 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1743146912601; path=/
+      - HWWAFSESID=03fddbbee1881126c6; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - c0a193ffe0b45fb9667daefe968b6721
       X-XSS-Protection:
       - 1; mode=block;
     status:

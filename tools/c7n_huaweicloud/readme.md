@@ -6,7 +6,7 @@ This is a plugin to Cloud Custodian that adds Huawei Cloud support.
 
 The Huawei Cloud provider must be installed as a separate package in addition to c7n.
 
-    $ git clone https://github.com/cloud-custodian/cloud-custodian.git
+    $ git clone https://github.com/huaweicloud/cloud-custodian.git
     $ virtualenv custodian
     $ source custodian/bin/activate
     (custodian) $ pip install -e cloud-custodian/.
@@ -26,7 +26,7 @@ Create a file named ``custodian.yml`` with the following content.
 
     policies:
         - name: filter-for-encrypted-volume
-          resource: huaweicloud.volume
+          resource: huaweicloud.evs-volume
           filters:
             - type: value
               key: metadata.__system__encrypted

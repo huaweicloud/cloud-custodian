@@ -1,0 +1,203 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250326T033130Z
+    method: GET
+    uri: https://iam.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"","enabled":true,"id":"be4d8afe888888888888888888aa3072cf36","links":{"self":"https://iam.myhuaweicloud.com/v3/domains/be4d8afe888888888888888888aa3072cf36"},"name":"ResourceGovernanceTest001"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 03:31:30 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 63f2d9121fbb6519b6681301888970af
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"principals": ["9673682b7bf2428cb613f37a19a0693f"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '63'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - ram.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250324T020300Z
+    method: POST
+    uri: https://ram.myhuaweicloud.com/v1/resource-shares/a60a0982-7be7-44e4-88ab-7999026f1a57/disassociate
+  response:
+    body:
+      string: '{"resource_share_associations":[{"associated_entity":"9673682b7bf2428cb613f37a19a0693f","association_type":"principal","created_at":"2023-12-04T02:43:58.855745Z","updated_at":"2025-03-26T06:41:47.156287Z","external":true,"resource_share_id":"a60a0982-7be7-44e4-88ab-7999026f1a57","resource_share_name":"ZYGX_AHLEI","status":"disassociated","status_message":null}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 24 Mar 2025 02:03:00 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=c6fe47359ba7f9e561; path=/
+      - HWWAFSESTIME=1742781780694; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 11128f5f3c92b5aa1f5e34028f157481
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+- request:
+    body: '{"association_status": "associated", "association_type": "principal"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '69'
+      Content-Type:
+      - application/json
+      Host:
+      - ram.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - be4d8afe888888888888888888aa3072cf36
+      X-Sdk-Date:
+      - 20250327T015613Z
+    method: POST
+    uri: https://ram.myhuaweicloud.com/v1/resource-share-associations/search
+  response:
+    body:
+      string: '{"resource_share_associations":[{"resource_share_id":"a60a0982-7be7-44e4-88ab-7999026f1a57","associated_entity":"9673682b7bf2428cb613f37a19a0693f","association_type":"principal","created_at":"2023-12-04T02:43:58.855745Z","updated_at":"2023-12-04T02:56:47.240164Z","external":true,"resource_share_name":"ZYGX_AHLEI","status":"associated","status_message":null}],"page_info":{"previous_marker":null,"next_marker":null,"current_count":1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:56:13 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1743040573639; path=/
+      - HWWAFSESID=ae3e473207a2551c61; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - cfb42ca85cf786d89e8267ae5deeb84e
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250328T072834Z
+    method: GET
+    uri: https://iam.cn-north-4.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"","enabled":true,"id":"d78cbac186b744899480f25bd022f468","links":{"self":"https://iam.myhuaweicloud.com/v3/domains/d78cbac186b744899480f25bd022f468"},"name":"IAMDomain"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 28 Mar 2025 07:28:34 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=9e143942b84e3c1cb7; path=/
+      - HWWAFSESTIME=1743146913031; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 41fb9984cbe89505651495a273fa47f5
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+version: 1

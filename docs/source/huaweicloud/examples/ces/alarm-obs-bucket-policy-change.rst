@@ -6,11 +6,11 @@ CES - Check CES isn't configured OBS change alarm rule.
     policies:
       - name: alarm-obs-bucket-policy-change
         description: "Check whether the alarm for the OBS bucket policy change event is configured. If not, create a corresponding alarm."
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
             - type: missing
               policy:
-                resource: huaweicloud.alarm
+                resource: huaweicloud.ces-alarm
                 filters:
                   - type: value
                     key: enabled
