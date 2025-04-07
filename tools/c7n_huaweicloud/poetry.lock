@@ -411,6 +411,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.142"
 
 [[package]]
+name = "huaweicloudsdkkafka"
+version = "3.1.142"
+description = "Kafka"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkkafka-3.1.142-py2.py3-none-any.whl", hash = "sha256:451d9dea205c35ec4bc54004ae330dc11130cbdb125631ec4673b1629e0b3bfc"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.142"
+
+[[package]]
 name = "huaweicloudsdkkms"
 version = "3.1.142"
 description = "KMS"
@@ -1094,4 +1107,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "989db739fc412f8d4770b3be5f4a29f1ab0970f017cd8ac62be9ec30bb96368f"
+content-hash = "1277f0531439d8b4dddcc2358521d4a1494b45fcb967e8c98af847c53b446cb0"

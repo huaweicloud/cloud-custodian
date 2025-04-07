@@ -1,0 +1,90 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250403T041125Z
+    method: GET
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
+  response:
+    body:
+      string: '{
+"instances" : [ {
+"name" : "kafka-instance-example",
+"engine" : "kafka",
+"port" : 9092,
+"status" : "RUNNING",
+"type" : "cluster",
+"specification" : "100MB",
+"engine_version" : "1.1.0",
+"connect_address" : "192.168.0.100,192.168.0.61,192.168.0.72",
+"instance_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+"resource_spec_code" : "dms.instance.kafka.cluster.c3.mini",
+"charging_mode" : 1,
+"vpc_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+"vpc_name" : "dms-test",
+"created_at" : "1585518587087",
+"product_id" : "00300-30308-0--0",
+"security_group_id" : "securityGroupId",
+"security_group_name" : "Sys-default",
+"subnet_id" : "subnet-testing-kafka",
+"available_zones" : [ "cn-north-4a" ],
+"user_id" : "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+"user_name" : "paas_dms",
+"tags": [
+{
+"key": "environment",
+"value": "testing"
+},
+{
+"key": "custodian_cleanup",
+"value": "delete@2025/01/01 00:00:00 UTC"
+}
+]
+} ],
+"instance_num" : 1
+}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 03 Apr 2025 04:11:26 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=4faa173fb5d81d10ad; path=/
+      - HWWAFSESTIME=1743653486283; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 8feb534caf767d9e39e57a8c14a68fc9
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ""
+version: 1
