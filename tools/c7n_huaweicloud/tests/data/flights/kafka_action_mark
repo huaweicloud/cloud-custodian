@@ -1,0 +1,173 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250403T041625Z
+    method: GET
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
+  response:
+    body:
+      string: '{ "instances" : [ { "name" : "kafka-instance-example", "engine" : "kafka",
+        "port" : 9092, "status" : "RUNNING", "type" : "cluster", "specification" :
+        "100MB", "engine_version" : "1.1.0", "connect_address" : "192.168.0.100,192.168.0.61,192.168.0.72",
+        "instance_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", "resource_spec_code"
+        : "dms.instance.kafka.cluster.c3.mini", "charging_mode" : 1, "vpc_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "vpc_name" : "dms-test", "created_at" : "1585518587087", "product_id" : "00300-30308-0--0",
+        "security_group_id" : "securityGroupId", "security_group_name" : "Sys-default",
+        "subnet_id" : "subnet-testing-kafka", "available_zones" : [ "cn-north-4a"
+        ], "user_id" : "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "user_name" : "paas_dms",
+        "tags": [ { "key": "environment", "value": "testing" } ] } ], "instance_num"
+        : 1 }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 03 Apr 2025 04:16:26 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=4faa173fb5d81d10ad; path=/
+      - HWWAFSESTIME=1743653786283; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 8feb534caf767d9e39e57a8c14a68fc9
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+- request:
+    body: '{"tags": [{"key": "custodian_cleanup", "value": "delete@2025/04/10 04:16:26
+      UTC"}], "action": "create", "instances": ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '158'
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250403T041627Z
+    method: POST
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/kafka/instances/tags/action
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Date:
+      - Thu, 03 Apr 2025 04:16:27 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=38cc67325afaad3ed5; path=/
+      - HWWAFSESTIME=1743653787642; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 84fbecb0f59e408a9ed04ba34eec2380
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: ''
+- request:
+    body: '{"action": "create", "tags": [{"key": "custodian_cleanup", "value": "delete@2025/04/10
+      04:52:30 UTC"}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '103'
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250403T045230Z
+    method: POST
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/kafka/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/tags/action
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"1f9a344f0e70dee8972b4a4c1675be4b"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 03 Apr 2025 04:52:31 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=45555735954b53897e; path=/
+      - HWWAFSESTIME=1743655951419; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 1f9a344f0e70dee8972b4a4c1675be4b
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

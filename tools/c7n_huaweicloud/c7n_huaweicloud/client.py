@@ -37,6 +37,8 @@ from huaweicloudsdker.v3.region.er_region import ErRegion
 from obs import ObsClient
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
+from huaweicloudsdkkafka.v2 import KafkaClient, ListInstancesRequest
+from huaweicloudsdkkafka.v2.region.kafka_region import KafkaRegion
 from huaweicloudsdkkms.v2 import KmsClient, ListKeysRequest, ListKeysRequestBody
 from huaweicloudsdkkms.v2.region.kms_region import KmsRegion
 from huaweicloudsdkeg.v1 import EgClient
@@ -364,6 +366,11 @@ class Session:
                 .with_credentials(credentials) \
                 .with_region(AntiDDoSRegion.value_of(self.region)) \
                 .build()
+        elif service == 'kafka':
+            client = KafkaClient.new_builder() \
+                .with_credentials(credentials) \
+                .with_region(KafkaRegion.value_of(self.region)) \
+                .build()
 
         return client
 
@@ -463,5 +470,7 @@ class Session:
                 association_status="associated")
         elif service == 'antiddos':
             request = ListDDosStatusRequest()
+        elif service == 'kafka':
+            request = ListInstancesRequest()
 
         return request
