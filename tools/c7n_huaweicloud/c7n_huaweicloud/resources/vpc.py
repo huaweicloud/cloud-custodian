@@ -12,7 +12,11 @@ from huaweicloudsdkvpc.v2 import (
     DeleteFlowLogRequest,
     CreateFlowLogRequest,
     CreateFlowLogReq,
-    CreateFlowLogReqBody
+    CreateFlowLogReqBody,
+    AllowedAddressPair,
+    UpdatePortOption,
+    UpdatePortRequest,
+    UpdatePortRequestBody
 )
 from huaweicloudsdkvpc.v3 import (
     ListSecurityGroupsRequest,
@@ -49,6 +53,77 @@ class Port(QueryResourceManager):
         enum_spec = ('list_ports', 'ports', 'marker')
         id = 'id'
         tag_resource_type = ''
+
+
+@Port.filter_registry.register("port-forwarding")
+class PortForwarding(Filter):
+    """Filter to network interfaces that have port forwarding enabled.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: eni-port-forwarding-enabled
+            resource: huaweicloud.vpc-port
+            filters:
+              - port-forwarding
+
+    """
+
+    schema = type_schema('port-forwarding')
+
+    def process(self, resources, event=None):
+        enabled_ports = []
+        for r in resources:
+            if r.get('status') != 'ACTIVE' or 'allowed_address_pairs' not in r:
+                continue
+            pairs = r['allowed_address_pairs']
+            for pair in pairs:
+                if pair.get('ip_address') == '1.1.1.1/0':
+                    enabled_ports.append(r)
+                    break
+
+        return enabled_ports
+
+
+@Port.action_registry.register("disable-port-forwarding")
+class PortDisablePortForwarding(HuaweiCloudBaseAction):
+    """Action to disable port forwarding on network interfaces.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: eni-disable-port-forwarding
+            resource: huaweicloud.vpc-port
+            filters:
+              - port-forwarding
+            actions:
+              - disable-port-forwarding
+    """
+
+    schema = type_schema("disable-port-forwarding")
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        raw_pairs = resource.get('allowed_address_pairs')
+        new_pairs = []
+        if raw_pairs:
+            for pair in raw_pairs:
+                pair_ip = pair.get('ip_address')
+                if pair_ip == '1.1.1.1/0':
+                    continue
+                pair_mac = pair.get('mac_address')
+                new_pair = AllowedAddressPair(ip_address=pair_ip, mac_address=pair_mac)
+                new_pairs.append(new_pair)
+        port_body = UpdatePortOption(allowed_address_pairs=new_pairs)
+        request = UpdatePortRequest()
+        request.port_id = resource['id']
+        request.body = UpdatePortRequestBody(port=port_body)
+        response = client.update_port(request)
+        return response
 
 
 @resources.register('vpc-security-group')

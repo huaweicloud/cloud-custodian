@@ -22,7 +22,7 @@ class ERInstance(QueryResourceManager):
         service = 'er'
         enum_spec = ("list_enterprise_routers", 'instances', "offset")
         id = 'id'
-        tag_resource_type = 'er-instance-tags'
+        tag_resource_type = 'instance'
 
 
 @ERInstance.action_registry.register("update")

@@ -6,7 +6,11 @@ This is a plugin to Cloud Custodian that adds Huawei Cloud support.
 
 The Huawei Cloud provider must be installed as a separate package in addition to c7n.
 
-    $ pip install c7n_huaweicloud
+    $ git clone https://github.com/huaweicloud/cloud-custodian.git
+    $ virtualenv custodian
+    $ source custodian/bin/activate
+    (custodian) $ pip install -e cloud-custodian/.
+    (custodian) $ pip install -e cloud-custodian/tools/c7n_huaweicloud/.
 
 ## Write your first policy
 

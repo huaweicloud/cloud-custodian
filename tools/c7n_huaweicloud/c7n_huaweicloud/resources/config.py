@@ -165,8 +165,8 @@ class ConfigRetentionConfigurations(ValueFilter):
     .. code-block:: yaml
 
         policies:
-        - name: config-recorder-verify-retention
-          resource: config-recorder
+        - name: config-tracker-verify-retention
+          resource: config-tracker
           filters:
             - type: retention
               key: retention_period_in_days
