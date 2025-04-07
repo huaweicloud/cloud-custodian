@@ -99,6 +99,8 @@ class Diff(Filter):
 
     def get_selector_params(self, resource):
         resource_id = resource["id"]
+        if 'retention_period_in_days' in resource.keys():
+            resource_id = "trackerconfig_" + resource_id
         selector = self.data.get('selector', 'previous')
         later_time = None
         limit = None
