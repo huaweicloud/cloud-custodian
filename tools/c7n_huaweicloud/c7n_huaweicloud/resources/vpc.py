@@ -76,13 +76,12 @@ class PortForwarding(Filter):
     def process(self, resources, event=None):
         enabled_ports = []
         for r in resources:
-            if r.get('status') != 'ACTIVE' or 'allowed_address_pairs' not in r:
-                continue
-            pairs = r['allowed_address_pairs']
-            for pair in pairs:
-                if pair.get('ip_address') == '1.1.1.1/0':
-                    enabled_ports.append(r)
-                    break
+            pairs = r.get('allowed_address_pairs')
+            if pairs:
+                for pair in pairs:
+                    if pair.get('ip_address') == '1.1.1.1/0':
+                        enabled_ports.append(r)
+                        break
 
         return enabled_ports
 
