@@ -927,7 +927,6 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         deny_rule_map = {}
         if risk_ports_obj and trust_map_obj:
             risk_ports = self._extend_ports(risk_ports_obj)
-            #print(risk_ports)
             for rule in resources:
                 if rule.get('direction') != direction:
                     continue
@@ -944,14 +943,11 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     risk_rule_ports = risk_ports
                 if not risk_rule_ports:
                     continue
-                #print('raw port list are ', port_list)
-                #print('risk_rule_ports before deny are ', risk_rule_ports)
                 sg = rule['security_group_id']
                 if sg not in deny_rule_map:
                     deny_rules = self.get_deny_rules(sg, direction)
                     new_sg = {sg: deny_rules}
                     deny_rule_map.update(new_sg)
-                # print(deny_rule_map)
                 deny_rules = deny_rule_map.get(sg)
                 protocol = rule.get('protocol')
                 ethertype = rule.get('ethertype')
@@ -964,7 +960,6 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                             break
                         deny_ports = self._extend_ports(deny_ports.split(','))
                         risk_rule_ports = [p for p in risk_rule_ports if p not in deny_ports]
-                #print('risk_rule_ports after deny are ', risk_rule_ports)
                 if sg in trust_map_obj:
                     trust_sg = trust_map_obj.get(sg)
                     trust_port = trust_sg.get('port')
@@ -974,14 +969,11 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                             trust_port = self._extend_ports([trust_port])
                             risk_rule_ports = [p for p in risk_rule_ports if p not in trust_port]
 
-                #print('risk_rule_ports end are ', risk_rule_ports)
                 if risk_rule_ports:
                     if len(port_list) == len(risk_rule_ports):
                         risk_rule_ports = risk_ports
                     new_ports = self.get_multiport(risk_rule_ports)
                     rule['multiport'] = new_ports
-                    #print('new_ports is ', rule['multiport'])
-                    #print('\n')
                     results.append(rule)
 
         return results
@@ -1124,14 +1116,12 @@ class SecurityGroupRuleDenyRiskPorts(HuaweiCloudBaseAction):
     def process(self, resources):
         client = self.manager.get_client()
         rule_map = {}
-        #print('resources are ', resources)
         for r in resources:
             sg_id = r['security_group_id']
             if sg_id not in rule_map:
                 rule_map.update({sg_id: []})
             rule_map.get(sg_id).append(r)
 
-        #print(rule_map)
         ret_rules = []
         for sg_id in rule_map.keys():
             try:
