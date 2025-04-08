@@ -21,7 +21,7 @@ class Coc(QueryResourceManager):
         enum_spec = ('list_instance_compliant', 'instance_compliant', 'offset')
         id = 'id'
         offset_start_num = 1
-        tag_resource_type = 'instance_compliant_tag'
+        tag_resource_type = None
 
 
 @Coc.action_registry.register("non_compliant_alarm")
