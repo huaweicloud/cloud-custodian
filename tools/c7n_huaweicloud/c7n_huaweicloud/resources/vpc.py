@@ -1022,21 +1022,21 @@ class SecurityGroupRuleAllowRiskPort(Filter):
             multiport = str(risk_ports[0])
             return multiport
         order_ports = risk_ports.sort()
-        start = risk_ports[0]
-        end = risk_ports[0]
-        port_len = len(risk_ports)
+        start = order_ports[0]
+        end = order_ports[0]
+        port_len = len(order_ports)
         for i in range(0, port_len - 1):
-            if risk_ports[i + 1] == risk_ports[i] + 1:
-                end = risk_ports[i + 1]
+            if order_ports[i + 1] == order_ports[i] + 1:
+                end = order_ports[i + 1]
             else:
-                end = risk_ports[i]
+                end = order_ports[i]
                 if start == end:
                     port_item_str = str(start)
                 else:
                     port_item_str = str(start) + '-' + str(end)
                 multiport += port_item_str + ','
-                start = risk_ports[i + 1]
-        if end == risk_ports[-1]:
+                start = order_ports[i + 1]
+        if end == order_ports[-1]:
             port_item_str = str(start) + '-' + str(end)
             multiport += port_item_str
         else:
@@ -1110,7 +1110,7 @@ class SecurityGroupRuleDenyRiskPorts(HuaweiCloudBaseAction):
     """
 
     schema = type_schema("deny-risk-ports")
-    post_keys= ['direction', 'ethertype', 'protocol', 'multiport', 'remote_ip_prefix',
+    post_keys = ['direction', 'ethertype', 'protocol', 'multiport', 'remote_ip_prefix',
                 'remote_group_id', 'remote_address_group_id', 'priority']
 
     def process(self, resources):
@@ -1148,7 +1148,6 @@ class SecurityGroupRuleDenyRiskPorts(HuaweiCloudBaseAction):
                 log.exception("Unable to add rules in security group %s. "
                               "RequestId: %s, Reason: %s" %
                               (sg_id, ex.request_id, ex.error_msg))
-                add_failed = True
                 break
             res_rules_object = response.security_group_rules
             res_rules = [r.to_dict() for r in res_rules_object]
