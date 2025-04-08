@@ -35,7 +35,8 @@ from huaweicloudsdkecs.v2 import (
     UpdateServerMetadataRequestBody,
     UpdateServerMetadataRequest,
     DeleteServersRequestBody,
-    DeleteServersRequest
+    DeleteServersRequest,
+    DeleteServerMetadataRequest
 )
 from huaweicloudsdkims.v2 import (
     CreateWholeImageRequestBody,
@@ -799,6 +800,48 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
         return results
 
 
+@Ecs.action_registry.register("instance-delete-metadata-key")
+class InstanceDeleteMetadataKey(HuaweiCloudBaseAction):
+    """Delete Instance metadata key
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+        - name: instance-delete-metadata-key
+            resource: huaweicloud.ecs
+            filters:
+            - type: value
+                key: id
+                value: "bac642b0-a9ca-4a13-b6b9-9e41b35905b6"
+            actions:
+            - type: instance-delete-metadata-key
+                key: "agency_name"
+
+    """
+
+    schema = type_schema("instance-delete-metadata-key", key={"type": "string"})
+
+    def process(self, resources):
+        key = self.data.get("key", None)
+        if key is None:
+            log.error("key is required")
+            return []
+        results = []
+        client = self.manager.get_client()
+        for resource in resources:
+            request = DeleteServerMetadataRequest(key=key, server_id=resource['id'])
+            try:
+                response = client.delete_server_metadata(request)
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                continue
+            results.append(json.dumps(response.to_dict()))
+        return results
+
+    def perform_action(self, resource):
+        pass
 # ---------------------------ECS Filter-------------------------------------#
 
 
@@ -926,7 +969,7 @@ class InstanceImageBase:
 
     def get_local_image_mapping(self, instances):
         image_ids = ",".join(
-            list(item["metadata"]["metering.image_id"] for item in instances)
+            list(set(item["metadata"]["metering.image_id"] for item in instances))
         )
         base_image_map = self.get_base_image_mapping(image_ids)
         for r in instances:
