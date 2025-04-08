@@ -312,10 +312,10 @@ class KafkaInstanceTest(BaseTest):
         self.assertEqual(len(resources), 1)
         # 验证：检查 VCR，确认调用了 delete_instance API
 
-    def test_kafka_action_set_monitoring(self):
-        factory = self.replay_flight_data('kafka_action_set_monitoring')
+    def test_kafka_action_set_config(self):
+        factory = self.replay_flight_data('kafka_action_set_config')
         p = self.load_policy({
-            'name': 'kafka-action-set-monitoring-test',
+            'name': 'kafka-action-set-config-test',
             'resource': 'huaweicloud.kafka',
             'filters': [{  # 假设找到需要修改配置的实例
                 'type': 'config-compliance',
@@ -323,7 +323,7 @@ class KafkaInstanceTest(BaseTest):
                 'value': False
             }],
             'actions': [{
-                'type': 'set-monitoring',
+                'type': 'set-config',
                 'config': {
                     'enable.log.collection': True,  # 修改布尔值
                     'retention.hours': 168  # 修改数字 (会被转为字符串)
