@@ -486,33 +486,6 @@ class KafkaConfigComplianceFilter(ValueFilter):
         return filtered
 
 
-@Kafka.filter_registry.register('json-diff')
-class KafkaJsonDiffFilter(c7n_huaweicloud.filters.revisions.JsonDiff):
-    """
-    Compare differences between Kafka instance configuration and historical version.
-
-    This filter uses HuaweiCloud Config service to track and provide detailed historical
-    configuration records for comparison.
-    Used to detect if resource configuration has changed.
-
-    :example:
-    Check if Kafka instance configuration has changed since last version:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: kafka-config-changed-check
-            resource: huaweicloud.kafka
-            filters:
-              - type: json-diff             # Filter type
-                selector: previous          # Select comparison object ('previous' or 'date')
-                # path: "config.replication.factor" # (Optional) Specify JSON path to compare
-    """
-
-    def get_permissions(self):
-        return ('config:showResourceHistory',)
-
-
 @Kafka.filter_registry.register('marked-for-op')
 class KafkaMarkedForOpFilter(Filter):
     """
@@ -1226,8 +1199,8 @@ class DeleteKafka(HuaweiCloudBaseAction):
             return None
 
 
-@Kafka.action_registry.register('set-monitoring')
-class SetKafkaMonitoring(HuaweiCloudBaseAction):
+@Kafka.action_registry.register('set-config')
+class SetKafkaConfig(HuaweiCloudBaseAction):
     """
     Modify Kafka instance configuration item.
 
@@ -1253,14 +1226,14 @@ class SetKafkaMonitoring(HuaweiCloudBaseAction):
                 op: eq
                 value: false
             actions:
-              - type: set-monitoring        # Action type (might change to 'set-config'?)
+              - type: set-config        # Action type (might change to 'set-config'?)
                 config:                     # Dictionary containing configuration items to modify
                   enable.log.collection: "true" # Note: API might expect boolean string format
                   # access.user.enable: "true" # Can modify multiple configuration items at once
     """
     # Define this action's input pattern (schema)
     schema = type_schema(
-        'set-monitoring',  # Action type name
+        'set-config',  # Action type name
         # Dictionary containing configuration key-value pairs, at least need one attribute
         config={'type': 'object', 'minProperties': 1,
                 'additionalProperties': {'type': ['string', 'number', 'boolean']}},
@@ -1290,7 +1263,7 @@ class SetKafkaMonitoring(HuaweiCloudBaseAction):
         config_data = self.data.get('config', {})
         if not config_data:
             log.warning(
-                f"No 'config' data provided in set-monitoring action, skip instance "
+                f"No 'config' data provided in set-config action, skip instance "
                 f"{instance_name} ({instance_id}).")
             return None
 
@@ -1329,7 +1302,7 @@ class SetKafkaMonitoring(HuaweiCloudBaseAction):
 
             if not kafka_configs:
                 log.warning(
-                    f"No valid configuration items provided for set-monitoring action, "
+                    f"No valid configuration items provided for set-config action, "
                     f"skip instance {instance_name} ({instance_id}).")
                 return None
 
