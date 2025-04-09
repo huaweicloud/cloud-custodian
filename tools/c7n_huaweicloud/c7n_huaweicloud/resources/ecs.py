@@ -63,7 +63,7 @@ from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from c7n.filters import AgeFilter, ValueFilter, Filter
+from c7n.filters import AgeFilter, ValueFilter, Filter, OPERATORS
 from dateutil.parser import parse
 
 log = logging.getLogger("custodian.huaweicloud.resources.ecs")
@@ -525,32 +525,47 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
         vault_id={"type": "string"},
         required=("name", "vault_id"),
     )
+    batch_size = 1
 
     def perform_action(self, resource):
         return super().perform_action(resource)
 
     def process(self, resources):
         ims_client = local_session(self.manager.session_factory).client("ims")
-        # TODO 线程池
-        for r in resources:
-            requestBody = CreateWholeImageRequestBody(
+        results = []
+        with self.executor_factory(max_workers=5) as w:
+            futures = {}
+            for instance_set in utils.chunks(resources, self.batch_size):
+                futures[w.submit(self.create_whole_image, instance_set[0], ims_client)] = (
+                    instance_set
+                )
+            for f in as_completed(futures):
+                if f.exception():
+                    self.log.error(
+                        "Error creating whole image on instance set %s", f.exception()
+                    )
+                results.append(f.result())
+        return results
+
+    def create_whole_image(self, r, ims_client):
+        requestBody = CreateWholeImageRequestBody(
                 name=self.data.get("name"),
                 instance_id=r['id'],
                 vault_id=self.data.get("vault_id"),
             )
-            request = CreateWholeImageRequest(body=requestBody)
-            try:
-                response = ims_client.create_whole_image(request)
-                if response.status_code != 200:
-                    log.error(
-                        "create whole image for instance %s fail"
-                        % self.data.get("instance_id")
-                    )
-                    return False
-                return self.wait_backup(response.job_id, ims_client)
-            except exceptions.ClientRequestException as e:
-                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                raise
+        request = CreateWholeImageRequest(body=requestBody)
+        try:
+            response = ims_client.create_whole_image(request)
+            if response.status_code != 200:
+                log.error(
+                    "create whole image for instance %s fail"
+                    % self.data.get("instance_id")
+                )
+                return False
+            return self.wait_backup(response.job_id, ims_client)
+        except exceptions.ClientRequestException as e:
+            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+            return False
 
     def wait_backup(self, job_id, ims_client):
         while True:
@@ -577,7 +592,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
 
 @Ecs.action_registry.register("instance-snapshot")
 class InstanceSnapshot(HuaweiCloudBaseAction):
-    """CBR Backup The Volumes Attached To An ECS Instance.
+    """CBR Backup The Volumes Attached To An ECS Instance, you should add instance to an vault.
 
     - `vault_id` CBR vault_id the instance was associated
     - `incremental` false : full server volumes backup
@@ -606,6 +621,9 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         return super().perform_action(resource)
 
     def process(self, resources):
+        if self.data.get("vault_id", None) is None:
+            log.error("vault_id is required.")
+            return []
         cbr_backup_client = local_session(self.manager.session_factory).client(
             "cbr-backup"
         )
@@ -618,6 +636,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         for r in resources:
             server_id = r["id"]
             if server_id not in vaults_resource_ids:
+                log.warning("server %s do not related an vault.")
                 continue
             vault_id = vaults_resource_ids[server_id]
             if self.data.get("vault_id", None) is not None:
@@ -626,27 +645,11 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
                         r, vault_id, server_id, cbr_backup_client
                     )
                 else:
-                    resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
-                    add_resource_response = self.add_vault_resource(
-                        vault_id, resource, cbr_backup_client
-                    )
-                    if add_resource_response.status_code != 200:
-                        log.error("add instance %s to vault error" % server_id)
-                        return False
-                    return self.checkpoint_and_wait(
-                        r, vault_id, server_id, cbr_backup_client
-                    )
+                    log.warning("server %s do not related an vault.")
+                    continue
             else:
-                resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
-                add_resource_response = self.add_vault_resource(
-                    vault_id, resource, cbr_backup_client
-                )
-                if add_resource_response.status_code != 200:
-                    log.error("add instance %s to vault error" % server_id)
-                    return False
-                return self.checkpoint_and_wait(
-                    r, vault_id, server_id, cbr_backup_client
-                )
+                log.warning("server %s do not related an vault.")
+                continue
 
     def wait_backup(self, vault_id, resource_id, cbr_client):
         while True:
@@ -1253,16 +1256,12 @@ class InstanceVpc(Filter):
         return self.get_vpcs(resources)
 
     def get_vpcs(self, resources):
-        result = []
-        vpcIds = list(item["metadata"]["vpc_id"] for item in resources)
         vpcs = self.manager.get_resource_manager("huaweicloud.vpc").resources()
-        for resource in resources:
-            for vpc in vpcs:
-                vpcId = vpc["id"]
-                if vpcId in vpcIds:
-                    result.append(resource)
-                    break
-        return result
+        vpc_ids = {vpc["id"] for vpc in vpcs}
+        return [
+            resource for resource in resources
+            if resource["metadata"]["vpc_id"] in vpc_ids
+        ]
 
 
 @Ecs.filter_registry.register("instance-volumes-not-compliance")
@@ -1373,3 +1372,55 @@ class InstanceImageNotCompliance(Filter):
         remaining_after_obs = obs_url[last_obs_index:]
         split_res = remaining_after_obs.split("/", 1)
         return split_res[1]
+
+
+@Ecs.filter_registry.register("instance-tag")
+class InstanceTag(ValueFilter):
+    """ECS instance tag filter.
+
+    :Example:
+
+    .. code-block:: yaml
+
+       policies:
+         - name: instance-tag
+           resource: huaweicloud.ecs
+           filters:
+             - type: instance-tag
+               key: "CCE-Cluster-ID"
+    """
+    OPERATORS.setdefault("not-contains-all", None)
+    OPERATORS.setdefault("contains-all", None)
+    schema = type_schema("instance-tag",
+                         op={'enum': list(OPERATORS.keys())},
+                         rinherit=ValueFilter.schema)
+    schema_alias = False
+    annotation = "tags_map"
+
+    def __init__(self, data, manager=None):
+        super(InstanceTag, self).__init__(data, manager)
+        self.data["key"] = "tags_map"
+
+    def process(self, resources, event=None):
+        results = []
+        for resource in resources:
+            tags = resource["tags"]
+            tags_map = {}
+            for tag in tags:
+                map_key, sep, map_value = tag.partition('=')
+                tags_map[map_key] = map_value if sep else ''
+            resource["tags_map"] = tags_map
+            resource[self.annotation] = tags_map
+            op = self.data.get("op")
+            if op == "not-contains-all":
+                if set(self.data.get("value")).issubset(tags_map.keys()) is False:
+                    results.append(resource)
+                continue
+            elif op == "contains-all":
+                if set(self.data.get("value")).issubset(tags_map.keys()) is True:
+                    results.append(resource)
+                continue
+            else:
+                if self.match(resource):
+                    results.append(resource)
+        return results
