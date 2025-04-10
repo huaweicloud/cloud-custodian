@@ -3,9 +3,6 @@
 
 import logging
 
-from huaweicloudsdkcore.exceptions import exceptions
-
-from c7n.utils import type_schema
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.filters.transfer import LtsTransferLogGroupStreamFilter
