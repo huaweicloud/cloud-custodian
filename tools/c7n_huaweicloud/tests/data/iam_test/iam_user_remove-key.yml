@@ -1,0 +1,18 @@
+policies:
+  - name: UserRemoveAccessKey
+    resource: huaweicloud.iam-user
+    filters:
+      - type: value
+        key: is_root_user
+        value: false
+      - type: access-key
+        key: status
+        value: active
+      - type: access-key
+        key: created_at
+        value_type: age
+        value: 10
+        op: gt
+    actions:
+      - type: remove-access-key
+        disable: true

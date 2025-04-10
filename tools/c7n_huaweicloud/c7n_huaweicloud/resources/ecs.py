@@ -35,7 +35,8 @@ from huaweicloudsdkecs.v2 import (
     UpdateServerMetadataRequestBody,
     UpdateServerMetadataRequest,
     DeleteServersRequestBody,
-    DeleteServersRequest
+    DeleteServersRequest,
+    DeleteServerMetadataRequest
 )
 from huaweicloudsdkims.v2 import (
     CreateWholeImageRequestBody,
@@ -62,7 +63,7 @@ from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from c7n.filters import AgeFilter, ValueFilter, Filter
+from c7n.filters import AgeFilter, ValueFilter, Filter, OPERATORS
 from dateutil.parser import parse
 
 log = logging.getLogger("custodian.huaweicloud.resources.ecs")
@@ -524,41 +525,56 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
         vault_id={"type": "string"},
         required=("name", "vault_id"),
     )
+    batch_size = 1
 
     def perform_action(self, resource):
         return super().perform_action(resource)
 
     def process(self, resources):
         ims_client = local_session(self.manager.session_factory).client("ims")
-        # TODO 线程池
-        for r in resources:
-            requestBody = CreateWholeImageRequestBody(
+        results = []
+        with self.executor_factory(max_workers=5) as w:
+            futures = {}
+            for instance_set in utils.chunks(resources, self.batch_size):
+                futures[w.submit(self.create_whole_image, instance_set[0], ims_client)] = (
+                    instance_set
+                )
+            for f in as_completed(futures):
+                if f.exception():
+                    self.log.error(
+                        "Error creating whole image on instance set %s", f.exception()
+                    )
+                results.append(f.result())
+        return results
+
+    def create_whole_image(self, r, ims_client):
+        requestBody = CreateWholeImageRequestBody(
                 name=self.data.get("name"),
                 instance_id=r['id'],
                 vault_id=self.data.get("vault_id"),
             )
-            request = CreateWholeImageRequest(body=requestBody)
-            try:
-                response = ims_client.create_whole_image(request)
-                if response.status_code != 200:
-                    log.error(
-                        "create whole image for instance %s fail"
-                        % self.data.get("instance_id")
-                    )
-                    return False
-                return self.wait_backup(response.job_id, ims_client)
-            except exceptions.ClientRequestException as e:
-                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                raise
+        request = CreateWholeImageRequest(body=requestBody)
+        try:
+            response = ims_client.create_whole_image(request)
+            if response.status_code != 200:
+                log.error(
+                    "create whole image for instance %s fail"
+                    % self.data.get("instance_id")
+                )
+                return False
+            return self.wait_backup(response.job_id, ims_client)
+        except exceptions.ClientRequestException as e:
+            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+            return False
 
     def wait_backup(self, job_id, ims_client):
         while True:
             time.sleep(5)
             status = self.fetch_ims_job_status(job_id, ims_client)
             if status == "SUCCESS":
-                log.info("waitting for create whole image")
                 return True
             elif status == "RUNNING" or status == "INIT":
+                log.info("waitting for create whole image")
                 continue
             else:
                 log.error("waitting for create whole image fail")
@@ -576,7 +592,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
 
 @Ecs.action_registry.register("instance-snapshot")
 class InstanceSnapshot(HuaweiCloudBaseAction):
-    """CBR Backup The Volumes Attached To An ECS Instance.
+    """CBR Backup The Volumes Attached To An ECS Instance, you should add instance to an vault.
 
     - `vault_id` CBR vault_id the instance was associated
     - `incremental` false : full server volumes backup
@@ -600,11 +616,15 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         vault_id={"type": "string"},
         incremental={"type": "boolean"},
     )
+    batch_size = 1
 
     def perform_action(self, resource):
         return super().perform_action(resource)
 
     def process(self, resources):
+        if self.data.get("vault_id", None) is None:
+            log.error("vault_id is required.")
+            return []
         cbr_backup_client = local_session(self.manager.session_factory).client(
             "cbr-backup"
         )
@@ -614,45 +634,64 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         return response
 
     def back_up(self, resources, vaults_resource_ids, cbr_backup_client):
-        for r in resources:
-            server_id = r["id"]
+        results = []
+        with self.executor_factory(max_workers=5) as w:
+            futures = {}
+            for instance_set in utils.chunks(resources, self.batch_size):
+                futures[w.submit(self.snapshot, instance_set[0],
+                                 vaults_resource_ids, cbr_backup_client)] = (
+                    instance_set
+                )
+            for f in as_completed(futures):
+                if f.exception():
+                    self.log.error(
+                        "Error creating instance snapshot on instance set %s", f.exception()
+                    )
+                results.append(f.result())
+        return results
+
+    def snapshot(self, r, vaults_resource_ids, cbr_backup_client):
+        server_id = r["id"]
+        input_vault_id = self.data.get("vault_id", None)
+        if input_vault_id is not None:
             if server_id not in vaults_resource_ids:
-                continue
-            vault_id = vaults_resource_ids[server_id]
-            if self.data.get("vault_id", None) is not None:
-                if vault_id is not None:
-                    return self.checkpoint_and_wait(
-                        r, vault_id, server_id, cbr_backup_client
-                    )
-                else:
-                    resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
-                    add_resource_response = self.add_vault_resource(
-                        vault_id, resource, cbr_backup_client
-                    )
-                    if add_resource_response.status_code != 200:
-                        log.error("add instance %s to vault error" % server_id)
-                        return False
-                    return self.checkpoint_and_wait(
-                        r, vault_id, server_id, cbr_backup_client
-                    )
-            else:
+                log.warning("server %s do not related an vault." % server_id)
                 resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
                 add_resource_response = self.add_vault_resource(
-                    vault_id, resource, cbr_backup_client
+                    input_vault_id, resource, cbr_backup_client
                 )
                 if add_resource_response.status_code != 200:
                     log.error("add instance %s to vault error" % server_id)
                     return False
                 return self.checkpoint_and_wait(
-                    r, vault_id, server_id, cbr_backup_client
+                    r, input_vault_id, server_id, cbr_backup_client
                 )
+            else:
+                vault_id = vaults_resource_ids[server_id]
+                if vault_id != input_vault_id:
+                    log.error("error vault id for instance %s" % server_id)
+                    return False
+                else:
+                    return self.checkpoint_and_wait(
+                        r, vault_id, server_id, cbr_backup_client
+                    )
+        else:
+            if server_id not in vaults_resource_ids:
+                log.error("server %s do not related an vault." % server_id)
+                return False
+            else:
+                vault_id = vaults_resource_ids[server_id]
+                return self.checkpoint_and_wait(
+                        r, vault_id, server_id, cbr_backup_client
+                    )
 
     def wait_backup(self, vault_id, resource_id, cbr_client):
         while True:
             response = self.list_op_log(resource_id, vault_id, cbr_client)
             op_logs = response.operation_logs
             if len(op_logs) != 0:
-                time.sleep(3)
+                log.info("waitting for create instance snapshot")
+                time.sleep(5)
                 continue
             return True
 
@@ -779,6 +818,7 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
     schema = type_schema("instance-volumes-corrections")
 
     def perform_action(self, resource):
+        results = []
         client = self.manager.get_client()
         volumes = list(resource["os-extended-volumes:volumes_attached"])
         for volume in volumes:
@@ -791,12 +831,55 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
             )
             try:
                 response = client.update_server_block_device(request)
+                results.append(response)
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                raise
-        return response
+                continue
+        return results
 
 
+@Ecs.action_registry.register("instance-delete-metadata-key")
+class InstanceDeleteMetadataKey(HuaweiCloudBaseAction):
+    """Delete Instance metadata key
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+        - name: instance-delete-metadata-key
+            resource: huaweicloud.ecs
+            filters:
+            - type: value
+                key: id
+                value: "bac642b0-a9ca-4a13-b6b9-9e41b35905b6"
+            actions:
+            - type: instance-delete-metadata-key
+                key: "agency_name"
+
+    """
+
+    schema = type_schema("instance-delete-metadata-key", key={"type": "string"})
+
+    def process(self, resources):
+        key = self.data.get("key", None)
+        if key is None:
+            log.error("key is required")
+            return []
+        results = []
+        client = self.manager.get_client()
+        for resource in resources:
+            request = DeleteServerMetadataRequest(key=key, server_id=resource['id'])
+            try:
+                response = client.delete_server_metadata(request)
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                continue
+            results.append(json.dumps(response.to_dict()))
+        return results
+
+    def perform_action(self, resource):
+        pass
 # ---------------------------ECS Filter-------------------------------------#
 
 
@@ -863,8 +946,8 @@ class InstanceAttributeFilter(ValueFilter):
     .. code-block:: yaml
 
         policies:
-          - name: ec2-unoptimized-ebs
-            resource: ec2
+          - name: ecs-instances-attribute
+            resource: huaweicloud.ecs
             filters:
               - type: instance-attribute
                 attribute: OS-EXT-SRV-ATTR:user_data
@@ -924,7 +1007,7 @@ class InstanceImageBase:
 
     def get_local_image_mapping(self, instances):
         image_ids = ",".join(
-            list(item["metadata"]["metering.image_id"] for item in instances)
+            list(set(item["metadata"]["metering.image_id"] for item in instances))
         )
         base_image_map = self.get_base_image_mapping(image_ids)
         for r in instances:
@@ -1054,7 +1137,7 @@ def deserialize_user_data(user_data):
 
 @Ecs.filter_registry.register("instance-user-data")
 class InstanceUserData(ValueFilter):
-    """Filter on EC2 instances which have matching userdata.
+    """Filter on ECS instances which have matching userdata.
     Note: It is highly recommended to use regexes with the ?sm flags, since Custodian
     uses re.match() and userdata spans multiple lines.
 
@@ -1063,8 +1146,8 @@ class InstanceUserData(ValueFilter):
         .. code-block:: yaml
 
             policies:
-              - name: ecs_instance-user-data
-                resource: ec2
+              - name: ecs-instance-user-data
+                resource: huaweicloud.ecs
                 filters:
                   - type: instance-user-data
                     op: regex
@@ -1162,7 +1245,7 @@ class InstanceEvs(ValueFilter):
     def get_volume_mapping(self, resources):
         volume_map = {}
         evsResources = self.manager.get_resource_manager(
-            "huaweicloud.volume"
+            "huaweicloud.evs-volume"
         ).resources()
         for resource in resources:
             for evs in evsResources:
@@ -1208,16 +1291,12 @@ class InstanceVpc(Filter):
         return self.get_vpcs(resources)
 
     def get_vpcs(self, resources):
-        result = []
-        vpcIds = list(item["metadata"]["vpc_id"] for item in resources)
         vpcs = self.manager.get_resource_manager("huaweicloud.vpc").resources()
-        for resource in resources:
-            for vpc in vpcs:
-                vpcId = vpc["id"]
-                if vpcId in vpcIds:
-                    result.append(resource)
-                    break
-        return result
+        vpc_ids = {vpc["id"] for vpc in vpcs}
+        return [
+            resource for resource in resources
+            if resource["metadata"]["vpc_id"] in vpc_ids
+        ]
 
 
 @Ecs.filter_registry.register("instance-volumes-not-compliance")
@@ -1262,23 +1341,121 @@ class InstanceImageNotCompliance(Filter):
            filters:
              - type: instance-image-not-compliance
                image_ids: ['your instance id']
+               obs_url: ""
     """
 
-    schema = type_schema("instance-image-not-compliance", image_ids={"type": "array"})
+    schema = type_schema("instance-image-not-compliance",
+                         image_ids={"type": "array"},
+                         obs_url={'type': 'string'})
 
     def process(self, resources, event=None):
         results = []
-        image_ids = self.data.get("image_ids")
-        if not image_ids:
-            log.error("image_ids is required")
+        image_ids = self.data.get("image_ids", [])
+        obs_url = self.data.get('obs_url', None)
+        obs_client = local_session(self.manager.session_factory).client("obs")
+        if not image_ids and obs_url is None:
+            log.error("image_ids or obs_url is required")
             return []
+        if obs_url is not None:
+            # 1. 提取第一个变量：从 "https://" 到最后一个 "obs" 的部分
+            protocol_end = len("https://")
+            # 去除协议头后的完整路径
+            path_without_protocol = obs_url[protocol_end:]
+            obs_bucket_name = self.get_obs_name(path_without_protocol)
+            obs_server = self.get_obs_server(path_without_protocol)
+            obs_file = self.get_file_path(path_without_protocol)
+            obs_client.server = obs_server
+            try:
+                resp = obs_client.getObject(bucketName=obs_bucket_name,
+                                            objectKey=obs_file,
+                                            loadStreamInMemory=True)
+                if resp.status < 300:
+                    ids = json.loads(resp.body.buffer)['image_ids']
+                    image_ids.extend(ids)
+                    image_ids = list(set(image_ids))
+                else:
+                    log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
+                    return []
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                raise
         instance_image_map = {}
         for r in resources:
             instance_image_map.setdefault(
                 r["metadata"]["metering.image_id"], []
             ).append(r)
-        log.info(instance_image_map.keys())
         for id in instance_image_map.keys():
             if id not in image_ids:
                 results.extend(instance_image_map[id])
+        return results
+
+    def get_obs_name(self, obs_url):
+        # 找到最后一个 ".obs" 的索引位置
+        last_obs_index = obs_url.rfind(".obs")
+        return obs_url[:last_obs_index]
+
+    def get_obs_server(self, obs_url):
+        # 找到最后一个 ".obs" 的索引位置
+        last_obs_index = obs_url.rfind(".obs")
+        remaining_after_obs = obs_url[last_obs_index:]
+        split_res = remaining_after_obs.split("/", 1)
+        return split_res[0].lstrip(".")
+
+    def get_file_path(self, obs_url):
+        # 找到最后一个 ".obs" 的索引位置
+        last_obs_index = obs_url.rfind(".obs")
+        remaining_after_obs = obs_url[last_obs_index:]
+        split_res = remaining_after_obs.split("/", 1)
+        return split_res[1]
+
+
+@Ecs.filter_registry.register("instance-tag")
+class InstanceTag(ValueFilter):
+    """ECS instance tag filter.
+
+    :Example:
+
+    .. code-block:: yaml
+
+       policies:
+         - name: instance-tag
+           resource: huaweicloud.ecs
+           filters:
+             - type: instance-tag
+               key: "CCE-Cluster-ID"
+    """
+    OPERATORS.setdefault("not-contains-all", None)
+    OPERATORS.setdefault("contains-all", None)
+    schema = type_schema("instance-tag",
+                         op={'enum': list(OPERATORS.keys())},
+                         rinherit=ValueFilter.schema)
+    schema_alias = False
+    annotation = "tags_map"
+
+    def __init__(self, data, manager=None):
+        super(InstanceTag, self).__init__(data, manager)
+        self.data["key"] = "tags_map"
+
+    def process(self, resources, event=None):
+        results = []
+        for resource in resources:
+            tags = resource["tags"]
+            tags_map = {}
+            for tag in tags:
+                map_key, sep, map_value = tag.partition('=')
+                tags_map[map_key] = map_value if sep else ''
+            resource["tags_map"] = tags_map
+            resource[self.annotation] = tags_map
+            op = self.data.get("op")
+            if op == "not-contains-all":
+                if set(self.data.get("value")).issubset(tags_map.keys()) is False:
+                    results.append(resource)
+                continue
+            elif op == "contains-all":
+                if set(self.data.get("value")).issubset(tags_map.keys()) is True:
+                    results.append(resource)
+                continue
+            else:
+                if self.match(resource):
+                    results.append(resource)
         return results

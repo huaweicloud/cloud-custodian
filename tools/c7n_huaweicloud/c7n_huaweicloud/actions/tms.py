@@ -134,7 +134,7 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
                 resource["resource_id"] in failed_resource_ids]
 
     def get_project_id(self):
-        iam_client = local_session(self.manager.session_factory).client("iam")
+        iam_client = local_session(self.manager.session_factory).client("iam-v3")
 
         region = local_session(self.manager.session_factory).region
         request = KeystoneListProjectsRequest(name=region)
@@ -246,7 +246,7 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
                 resource["resource_id"] in failed_resource_ids]
 
     def get_project_id(self):
-        iam_client = local_session(self.manager.session_factory).client("iam")
+        iam_client = local_session(self.manager.session_factory).client("iam-v3")
 
         region = local_session(self.manager.session_factory).region
         request = KeystoneListProjectsRequest(name=region)
@@ -388,7 +388,7 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
             resources.remove(failed_resource)
 
     def get_project_id(self):
-        iam_client = local_session(self.manager.session_factory).client("iam")
+        iam_client = local_session(self.manager.session_factory).client("iam-v3")
 
         region = local_session(self.manager.session_factory).region
         request = KeystoneListProjectsRequest(name=region)
@@ -600,7 +600,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
             resources.remove(failed_resource)
 
     def get_project_id(self):
-        iam_client = local_session(self.manager.session_factory).client("iam")
+        iam_client = local_session(self.manager.session_factory).client("iam-v3")
 
         region = local_session(self.manager.session_factory).region
         request = KeystoneListProjectsRequest(name=region)
@@ -737,10 +737,10 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
                          tags):
                     # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
                     return {item['key']: item['value'] for item in tags}
-            return None
+            return {}
         except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
-            return None
+            return {}
 
     def handle_exception(self, failed_resources, resources):
         self.failed_resources.extend(failed_resources)
@@ -748,7 +748,7 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
             resources.remove(failed_resource)
 
     def get_project_id(self):
-        iam_client = local_session(self.manager.session_factory).client("iam")
+        iam_client = local_session(self.manager.session_factory).client("iam-v3")
 
         region = local_session(self.manager.session_factory).region
         request = KeystoneListProjectsRequest(name=region)
@@ -886,7 +886,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
                 resource["resource_id"] in failed_resource_ids]
 
     def get_project_id(self):
-        iam_client = local_session(self.manager.session_factory).client("iam")
+        iam_client = local_session(self.manager.session_factory).client("iam-v3")
 
         region = local_session(self.manager.session_factory).region
         request = KeystoneListProjectsRequest(name=region)

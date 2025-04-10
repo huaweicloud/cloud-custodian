@@ -99,6 +99,8 @@ class Diff(Filter):
 
     def get_selector_params(self, resource):
         resource_id = resource["id"]
+        if 'retention_period_in_days' in resource.keys():
+            resource_id = "trackerconfig_" + resource_id
         selector = self.data.get('selector', 'previous')
         later_time = None
         limit = None
@@ -158,7 +160,10 @@ class JsonDiff(Diff):
         We watch for new resource types being registered and if they
         support aws config, automatically register the jsondiff filter.
         """
-        resource_class.filter_registry.register('json-diff', klass)
+        resource_type = resource_class.resource_type
+        config_resource_support = getattr(resource_type, 'config_resource_support', None)
+        if config_resource_support:
+            resource_class.filter_registry.register('json-diff', klass)
 
 
 if HAVE_JSONPATH:

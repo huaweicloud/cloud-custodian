@@ -1,0 +1,102 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - antiddos.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250324T111839Z
+    method: GET
+    uri: https://antiddos.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/antiddos?limit=100&offset=0
+  response:
+    body:
+      string: '{"total": 2, "showCapacity": false, "ddosStatus": [{"floating_ip_id":"4132911c-9ada-4cde-942c-a6d31f75cb2d","floating_ip_address": "1.92.194.8","network_type":"EIP","status": "notConfig","blackhole_endtime": 0,"protect_type": "null","traffic_threshold": 0,"http_threshold": 0},{"floating_ip_id": "85b7339e-35e6-48f0-a618-a9c7776daae8","floating_ip_address": "116.204.117.234","network_type": "EIP","status": "normal","blackhole_endtime": 0,"protect_type": "manual","traffic_threshold": 1000,"http_threshold": 0}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 24 Mar 2025 11:18:39 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - fb58b4f19a7ca52bcc2a622cc8367bc9
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ok
+- request:
+    body: '{"app_type_id": 0, "cleaning_access_pos_id": 8, "enable_L7": false, "http_request_pos_id": 1, "traffic_pos_id": 9}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '116'
+      Content-Type:
+      - application/json
+      Host:
+      - antiddos.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250324T120703Z
+    method: PUT
+    uri: https://antiddos.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/antiddos/4132911c-9ada-4cde-942c-a6d31f75cb2d
+  response:
+    body:
+      string: '{"error_code": "1000000", error_msg: "任务已接收，正在处理", "task_id": "87bef027-a848-4ec0-96be-fceeca781a27"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 24 Mar 2025 12:07:03 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 15ccf1721ecb072260f15495afe275e9
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ok
+version: 1

@@ -6,11 +6,11 @@ CES - Check if the specified resource type is not bound to the specified indicat
     policies:
       - name: alarm-resource-check
         description: "Check if the specified resource type is not bound to the specified indicator CES alarm"
-        resource: huaweicloud.alarm
+        resource: huaweicloud.ces-alarm
         filters:
             - type: missing
               policy:
-                resource: huaweicloud.alarm
+                resource: huaweicloud.ces-alarm
                 filters:
                   - type: alarm-namespace-metric
                     namespaces: ["SYS.KMS"]

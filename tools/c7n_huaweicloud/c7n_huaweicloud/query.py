@@ -42,13 +42,18 @@ class ResourceQuery:
 
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
-        enum_op, path, pagination = m.enum_spec
+
+        limit = None
+        if len(m.enum_spec) == 3:
+            enum_op, path, pagination = m.enum_spec
+        else:
+            enum_op, path, pagination, limit = m.enum_spec
 
         # ims special processing
         if pagination == 'ims':
             resources = self._pagination_ims(m, enum_op, path)
         elif pagination == 'offset':
-            resources = self._pagination_limit_offset(m, enum_op, path)
+            resources = self._pagination_limit_offset(m, enum_op, path, limit)
         elif pagination == 'marker':
             resources = self._pagination_limit_marker(m, enum_op, path)
         elif pagination == 'maxitems-marker':
@@ -62,12 +67,14 @@ class ResourceQuery:
             sys.exit(1)
         return resources
 
-    def _pagination_limit_offset(self, m, enum_op, path):
+    def _pagination_limit_offset(self, m, enum_op, path, limit):
         session = local_session(self.session_factory)
         client = session.client(m.service)
 
         offset = 0
-        limit = DEFAULT_LIMIT_SIZE
+        if hasattr(m, 'offset_start_num'):
+            offset = m.offset_start_num
+        limit = limit or DEFAULT_LIMIT_SIZE
         resources = []
         while 1:
             request = session.request(m.service)
@@ -79,7 +86,9 @@ class ResourceQuery:
                 replace('true', 'True')))
 
             if path == '*':
-                resources.append(json.loads(str(response)))
+                data_json = json.loads(str(response))
+                data_json["id"] = data_json[m.id]
+                resources.append(data_json)
                 return resources
 
             # replace id with the specified one
@@ -155,27 +164,47 @@ class ResourceQuery:
             if 'id' not in res[0]:
                 for data in res:
                     data['id'] = data[m.id]
+            if res and getattr(m, 'tag_resource_type', None):
+                for data in res:
+                    data['tag_resource_type'] = m.tag_resource_type
             # merge result
             resources = resources + res
 
             # get next page info
-            next_page_params = marker_pagination.get_next_page_params(response)
-            if next_page_params:
-                _dict_map(request, next_page_params)
+            if m.service.endswith('v2'):
+                next_page_params_by_id = marker_pagination.get_next_page_params_by_id(res)
+                if next_page_params_by_id:
+                    _dict_map(request, next_page_params_by_id)
+                else:
+                    return resources
             else:
-                return resources
+                next_page_params = marker_pagination.get_next_page_params(response)
+                if next_page_params:
+                    _dict_map(request, next_page_params)
+                else:
+                    return resources
 
-    def _non_pagination(self, m, enum_op, path):
+    def _non_pagination(self, manager, enum_op, path):
         session = local_session(self.session_factory)
-        client = session.client(m.service)
-        request = session.request(m.service)
+        client = session.client(manager.service)
+        request = session.request(manager.service)
 
         response = getattr(client, enum_op)(request)
-        res = jmespath.search(path, eval(
+        resources = jmespath.search(path, eval(
             str(response).replace('null', 'None').replace('false', 'False')
             .replace('true', 'True')))
 
-        return list(res)
+        # replace id with the specified one
+        if resources is None or len(resources) == 0:
+            return []
+        # re-set id
+        if 'id' not in resources[0]:
+            for data in resources:
+                data['id'] = data[manager.id]
+
+        self._get_obs_account_id(response, manager, resources)
+
+        return resources
 
     def _pagination_limit_page(self, m, enum_op, path):
         session = local_session(self.session_factory)
@@ -249,6 +278,12 @@ class ResourceQuery:
             resources.extend(res)
         return resources
 
+    def _get_obs_account_id(self, response, manager, resources):
+        if manager.service == 'obs':
+            account_id = jmespath.search("body.owner.owner_id", response)
+            for data in resources:
+                data['account_id'] = account_id
+
 
 # abstract method for pagination
 class DefaultMarkerPagination(MarkerPagination):
@@ -266,6 +301,17 @@ class DefaultMarkerPagination(MarkerPagination):
         if not next_marker:
             return None
         return {'limit': self.limit, 'marker': next_marker}
+
+    def get_next_page_params_by_id(self, res):
+        if len(res) < self.limit:
+            return None
+        last_resource = res[-1]
+        if not last_resource:
+            return None
+        resource_id = last_resource.get('id')
+        if not resource_id:
+            return None
+        return {'limit': self.limit, 'marker': resource_id}
 
 
 @sources.register('describe-huaweicloud')

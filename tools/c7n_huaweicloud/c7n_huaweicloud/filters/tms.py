@@ -43,8 +43,38 @@ class TagCountFilter(Filter):
         count = self.data.get('count', 5)
         op_name = self.data.get('op', 'gte')
         op = OPERATORS.get(op_name)
-        tag_count = len([t for t in i.get('tags', {}) if not t.startswith('_sys')])
+        tags = self.get_tags_from_resource(i)
+        tag_count = len([k for k, v in tags.items() if not k.startswith('_sys')])
         return op(tag_count, count)
+
+    def get_tags_from_resource(self, resource):
+        try:
+            tags = resource["tags"]
+            if isinstance(tags, dict):
+                return tags
+            elif isinstance(tags, list):
+                if all(isinstance(item, dict) and len(item) == 1 for item in tags):
+                    # [{k1: v1}, {k2: v2}]
+                    result = {}
+                    for item in tags:
+                        key, value = list(item.items())[0]
+                        result[key] = value
+                    return result
+                elif all(isinstance(item, str) and '=' in item for item in tags):
+                    # ["k1=v1", "k2=v2"]
+                    result = {}
+                    for item in tags:
+                        key, value = item.split('=', 1)
+                        result[key] = value
+                    return result
+                elif all(isinstance(item, dict) and 'key' in item and 'value' in item for item in
+                         tags):
+                    # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
+                    return {item['key']: item['value'] for item in tags}
+            return {}
+        except Exception:
+            self.log.error("Parse Tags in resource %s failed", resource["id"])
+            return {}
 
 
 class TagActionFilter(Filter):
@@ -184,7 +214,7 @@ class TagActionFilter(Filter):
                          tags):
                     # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
                     return {item['key']: item['value'] for item in tags}
-            return None
+            return {}
         except Exception:
             self.log.error("Parse Tags in resource %s failed", resource["id"])
-            return None
+            return {}

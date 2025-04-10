@@ -1,0 +1,11 @@
+policies:
+  - name: list-item-set-groups
+    resource: huaweicloud.iam-user
+    filters:
+      - type: list-item
+        key: id
+        value: asfgsdfsd1adsad
+    actions:
+      - type: set-group
+        state: add
+        group_id: a2dfeca4646a4d77912a892b76a6341b
