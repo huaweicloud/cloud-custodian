@@ -1,0 +1,15 @@
+policies:
+  - name: createTransferForStream
+    resource: huaweicloud.lts-transfer
+    actions:
+      - type: create-transfer
+        log_group_id: "b8291523-efc4-44f5-8e8e-37008fb7edf1"
+        log_streams:
+          - {"log_stream_id":"b7496d6a-b95b-4f1b-a49e-a948c23f2eea"}
+        log_transfer_type: "OBS"
+        log_transfer_mode: "cycle"
+        log_storage_format: "JSON"
+        log_transfer_status: "ENABLE"
+        obs_period: 2
+        obs_period_unit: "min"
+        obs_bucket_name: "xianggangtest001"

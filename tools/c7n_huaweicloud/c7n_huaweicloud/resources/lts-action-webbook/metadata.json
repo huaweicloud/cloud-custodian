@@ -1,0 +1,87 @@
+{
+  "policy": {
+    "name": "lts-action-webbook",
+    "description": "lts action webbook\n",
+    "resource": "huaweicloud.lts-transfer",
+    "actions": [
+      {
+        "type": "webhook",
+        "url": "http://www.huaweicloud.com/",
+        "method": "GET"
+      }
+    ]
+  },
+  "version": "0.9.43",
+  "execution": {
+    "id": "b880b052-ed5b-49ce-ad66-b022d732894d",
+    "start": 1744190471.928676,
+    "end_time": 1744190472.0100935,
+    "duration": 0.08141756057739258
+  },
+  "config": {
+    "region": "",
+    "regions": [],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": null,
+    "assume_role": null,
+    "session_policy": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": ".",
+    "cache_period": 15,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "webbook.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": null,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 0.08145308494567871,
+    "num_fds": 4,
+    "cpu_user": 0.010000000000000009,
+    "num_ctx_switches_voluntary": 57,
+    "num_ctx_switches_involuntary": 44,
+    "read_count": 261,
+    "write_count": 13,
+    "write_bytes": 8192,
+    "rss": 1998848,
+    "vms": 974848,
+    "shared": 987136,
+    "data": 974848
+  },
+  "api-stats": {},
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2025-04-09T17:21:11.930052",
+      "Value": 2,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2025-04-09T17:21:11.930073",
+      "Value": 0.00044655799865722656,
+      "Unit": "Seconds"
+    },
+    {
+      "MetricName": "ActionTime",
+      "Timestamp": "2025-04-09T17:21:12.010079",
+      "Value": 0.07965326309204102,
+      "Unit": "Seconds"
+    }
+  ]
+}

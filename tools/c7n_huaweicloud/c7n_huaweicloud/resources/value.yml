@@ -1,0 +1,9 @@
+
+policies:
+  - name: value
+    resource: huaweicloud.lts-transfer
+    filters:
+      - type: transfer-logGroupStream-id
+        metadata:
+          log_group_id: b8291523-efc4-44f5-8e8e-37008fb7edf1
+          log_stream_id: b7496d6a-b95b-4f1b-a49e-a948c23f2eea

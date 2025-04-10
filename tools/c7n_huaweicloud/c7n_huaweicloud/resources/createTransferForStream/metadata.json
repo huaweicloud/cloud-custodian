@@ -1,0 +1,86 @@
+{
+  "policy": {
+    "name": "createTransferForStream",
+    "resource": "huaweicloud.lts-transfer",
+    "filters": [
+      {
+        "type": "value",
+        "key": "log_group_id",
+        "value": "cfddae22-6465-4b2f-8b19-123466021f88"
+      }
+    ],
+    "actions": [
+      {
+        "type": "create-transfer",
+        "log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1",
+        "log_streams": [
+          {
+            "log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"
+          }
+        ],
+        "log_transfer_type": "OBS",
+        "log_transfer_mode": "cycle",
+        "log_storage_format": "JSON",
+        "log_transfer_status": "ENABLE",
+        "obs_period": 2,
+        "obs_period_unit": "min",
+        "obs_bucket_name": "xianggangtest001"
+      }
+    ]
+  },
+  "version": "0.9.43",
+  "execution": {
+    "id": "4efaf2d8-0127-4593-a200-3c597774aa13",
+    "start": 1744169227.319032,
+    "end_time": 1744169227.3221147,
+    "duration": 0.003082752227783203
+  },
+  "config": {
+    "region": "",
+    "regions": [],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": null,
+    "assume_role": null,
+    "session_policy": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": ".",
+    "cache_period": 0,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "createTransferCusto.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": 1,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 0.0030727386474609375,
+    "num_fds": 1,
+    "num_ctx_switches_involuntary": 57,
+    "read_count": 9,
+    "write_count": 5,
+    "write_bytes": 4096
+  },
+  "api-stats": {},
+  "metrics": [
+    {
+      "MetricName": "PolicyException",
+      "Timestamp": "2025-04-09T11:27:07.322106",
+      "Value": 1,
+      "Unit": "Count"
+    }
+  ]
+}

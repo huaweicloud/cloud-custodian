@@ -1,0 +1,15 @@
+
+policies:
+licies:
+  - name: event-by-retention
+    resource: huaweicloud.config-tracker
+    mode:
+      type: cloudtrace
+      xrole: fgs_admin
+      default_region: cn-north-4
+      events:
+        - source: "IAM.user"
+          event: "createUser"
+          ids: "domain_id"
+    actions:
+      - delete-tracker:

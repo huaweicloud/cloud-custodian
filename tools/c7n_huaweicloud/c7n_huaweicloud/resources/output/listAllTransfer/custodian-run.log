@@ -1,0 +1,3 @@
+2025-04-10 15:06:47,671 - custodian.policy - INFO - policy:listAllTransfer resource:huaweicloud.lts-transfer region: count:2 time:0.00
+2025-04-10 15:29:10,683 - custodian.policy - INFO - policy:listAllTransfer resource:huaweicloud.lts-transfer region: count:1 time:0.00
+2025-04-10 16:29:52,961 - custodian.policy - INFO - policy:listAllTransfer resource:huaweicloud.lts-transfer region: count:1 time:0.21

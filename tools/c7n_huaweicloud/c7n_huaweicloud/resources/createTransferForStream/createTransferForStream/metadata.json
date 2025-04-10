@@ -1,0 +1,97 @@
+{
+  "policy": {
+    "name": "createTransferForStream",
+    "resource": "huaweicloud.lts-transfer",
+    "actions": [
+      {
+        "type": "create-transfer",
+        "log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1",
+        "log_streams": [
+          {
+            "log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"
+          }
+        ],
+        "log_transfer_type": "OBS",
+        "log_transfer_mode": "cycle",
+        "log_storage_format": "JSON",
+        "log_transfer_status": "ENABLE",
+        "obs_period": 2,
+        "obs_period_unit": "min",
+        "obs_bucket_name": "xianggangtest001"
+      }
+    ]
+  },
+  "version": "0.9.43",
+  "execution": {
+    "id": "b966f7ee-b927-467c-bc7e-3c9ba1af72b6",
+    "start": 1744184904.125269,
+    "end_time": 1744184905.1145267,
+    "duration": 0.9892578125
+  },
+  "config": {
+    "region": "",
+    "regions": [],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": null,
+    "assume_role": null,
+    "session_policy": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/createTransferForStream",
+    "cache_period": 0,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/createTransferCusto.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": 1,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 0.9892661571502686,
+    "num_fds": 1,
+    "cpu_user": 0.010000000000000009,
+    "num_ctx_switches_voluntary": 26,
+    "num_ctx_switches_involuntary": 27,
+    "read_count": 76,
+    "write_count": 23,
+    "write_bytes": 12288,
+    "rss": 651264,
+    "vms": 75902976,
+    "shared": 61440,
+    "data": 8925184
+  },
+  "api-stats": {},
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2025-04-09T15:48:24.357393",
+      "Value": 1,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2025-04-09T15:48:24.357404",
+      "Value": 0.23083019256591797,
+      "Unit": "Seconds"
+    },
+    {
+      "MetricName": "ActionTime",
+      "Timestamp": "2025-04-09T15:48:25.114511",
+      "Value": 0.7568957805633545,
+      "Unit": "Seconds"
+    }
+  ]
+}

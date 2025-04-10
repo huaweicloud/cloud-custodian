@@ -1,0 +1,11 @@
+
+policies:
+  - name: lts-action-webhook
+    description: |
+      lts action webhook
+    resource: huaweicloud.lts-transfer
+    actions:
+      - type: webhook
+        url: http://www.huaweicloud.com/
+        method: GET
+

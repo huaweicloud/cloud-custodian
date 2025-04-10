@@ -1,0 +1,89 @@
+{
+  "policy": {
+    "name": "createTransferForStream",
+    "resource": "huaweicloud.lts-transfer",
+    "filters": [
+      {
+        "type": "value",
+        "key": "log_group_id",
+        "value": "cfddae22-6465-4b2f-8b19-123466021f88"
+      }
+    ],
+    "actions": [
+      {
+        "type": "create-transfer",
+        "log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1",
+        "log_streams": [
+          {
+            "log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"
+          }
+        ],
+        "log_transfer_type": "OBS",
+        "log_transfer_mode": "cycle",
+        "log_storage_format": "JSON",
+        "log_transfer_status": "ENABLE",
+        "obs_period": 2,
+        "obs_period_unit": "min",
+        "obs_bucket_name": "xianggangtest001"
+      }
+    ]
+  },
+  "version": "0.9.43",
+  "execution": {
+    "id": "9f505d12-1d2c-41ed-8965-ead730051f4a",
+    "start": 1744179379.30156,
+    "end_time": 1744179379.3034573,
+    "duration": 0.0018973350524902344
+  },
+  "config": {
+    "region": "",
+    "regions": [],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": null,
+    "assume_role": null,
+    "session_policy": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": "./output",
+    "cache_period": 15,
+    "dryrun": true,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "createTransferCusto.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": null,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 0.0019307136535644531,
+    "num_fds": 2,
+    "num_ctx_switches_involuntary": 18,
+    "read_count": 17,
+    "write_count": 2,
+    "rss": 954368,
+    "vms": 143360,
+    "shared": 733184,
+    "data": 143360
+  },
+  "api-stats": {},
+  "metrics": [
+    {
+      "MetricName": "PolicyException",
+      "Timestamp": "2025-04-09T14:16:19.303438",
+      "Value": 1,
+      "Unit": "Count"
+    }
+  ]
+}

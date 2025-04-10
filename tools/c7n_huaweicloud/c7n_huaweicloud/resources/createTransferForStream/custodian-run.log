@@ -1,0 +1,140 @@
+2025-03-27 19:37:16,277 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-03-27 19:37:16,489 - custodian.resources.transfer - DEBUG - Filtered from 2 to 2 transfer
+2025-03-27 19:37:16,492 - custodian.policy - INFO - policy:createTransferForStream resource:huaweicloud.lts-transfer region: count:2 time:0.21
+2025-03-27 19:37:16,493 - custodian.output - DEBUG - metric:ResourceCount Count:2 policy:createtransferforstream restype:huaweicloud.lts-transfer scope:policy
+2025-03-27 19:42:04,228 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-03-27 19:42:04,448 - custodian.resources.transfer - DEBUG - Filtered from 1 to 1 transfer
+2025-03-27 19:42:04,449 - custodian.policy - INFO - policy:createTransferForStream resource:huaweicloud.lts-transfer region: count:1 time:0.22
+2025-03-27 19:42:04,451 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer scope:policy
+2025-03-27 19:50:03,620 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-03-27 19:50:03,866 - custodian.resources.transfer - DEBUG - Filtered from 1 to 1 transfer
+2025-03-27 19:50:03,867 - custodian.policy - INFO - policy:createTransferForStream resource:huaweicloud.lts-transfer region: count:1 time:0.25
+2025-03-27 19:50:03,869 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer scope:policy
+2025-03-27 20:04:14,306 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-03-27 20:04:14,625 - custodian.resources.transfer - DEBUG - Filtered from 1 to 1 transfer
+2025-03-27 20:04:14,625 - custodian.policy - INFO - policy:createTransferForStream resource:huaweicloud.lts-transfer region: count:1 time:0.32
+2025-03-27 20:04:14,626 - custodian.huaweicloud.resources.lts-transfer - WARNING - {"log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1", "log_streams": [{"log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"}], "log_transfer_info": {"log_transfer_type": "OBS", "log_transfer_mode": "cycle", "log_storage_format": "JSON", "log_transfer_status": "ENABLE", "log_transfer_detail": {"obs_period": 2, "obs_period_unit": "min", "obs_bucket_name": "xianggangtest001"}}}
+2025-03-27 20:04:15,918 - custodian.policy - INFO - policy:createTransferForStream action:ltscreatetransferlog resources:1 execution_time:1.29
+2025-03-27 20:04:15,919 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer scope:policy
+2025-03-27 20:05:39,421 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-03-27 20:05:40,061 - custodian.resources.transfer - DEBUG - Filtered from 2 to 1 transfer
+2025-03-27 20:05:40,063 - custodian.policy - INFO - policy:createTransferForStream resource:huaweicloud.lts-transfer region: count:1 time:0.64
+2025-03-27 20:05:40,065 - custodian.huaweicloud.resources.lts-transfer - WARNING - {"log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1", "log_streams": [{"log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"}], "log_transfer_info": {"log_transfer_type": "OBS", "log_transfer_mode": "cycle", "log_storage_format": "JSON", "log_transfer_status": "ENABLE", "log_transfer_detail": {"obs_period": 2, "obs_period_unit": "min", "obs_bucket_name": "xianggangtest001"}}}
+2025-03-27 20:05:40,534 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - e628a637-0f5e-465d-9f10-d7bf26e5b39c RequestId: 25385d9aeeb859ae2669f3ed6aab6737, Reason: The log stream is associated by transfer
+Traceback (most recent call last):
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/root/env-custodian/lib64/python3.9/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://lts.ap-southeast-1.myhuaweicloud.com/v2/9e33faff37bd4216bd019c023a2f6dba/transfers
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/transfer.py", line 74, in perform_action
+    response = client.create_transfer(request)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdklts/v2/lts_client.py", line 1039, in create_transfer
+    return self._call_api(**http_info)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdklts/v2/lts_client.py", line 6142, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:25385d9aeeb859ae2669f3ed6aab6737,error_code:LTS.0207,error_msg:The log stream is associated by transfer,encoded_authorization_message:None }
+2025-03-27 20:05:40,551 - custodian.policy - INFO - policy:createTransferForStream action:ltscreatetransferlog resources:0 execution_time:0.49
+2025-03-27 20:05:40,553 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer scope:policy
+2025-03-27 20:07:27,930 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-03-27 20:07:28,290 - custodian.resources.transfer - DEBUG - Filtered from 1 to 1 transfer
+2025-03-27 20:07:28,291 - custodian.policy - INFO - policy:createTransferForStream resource:huaweicloud.lts-transfer region: count:1 time:0.36
+2025-03-27 20:07:28,293 - custodian.huaweicloud.resources.lts-transfer - WARNING - {"log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1", "log_streams": [{"log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"}], "log_transfer_info": {"log_transfer_type": "OBS", "log_transfer_mode": "cycle", "log_storage_format": "JSON", "log_transfer_status": "ENABLE", "log_transfer_detail": {"obs_period": 2, "obs_period_unit": "min", "obs_bucket_name": "xianggangtest001"}}}
+2025-03-27 20:07:29,799 - custodian.policy - INFO - policy:createTransferForStream action:ltscreatetransferlog resources:1 execution_time:1.51
+2025-03-27 20:07:29,802 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer scope:policy
+2025-03-27 20:28:59,107 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-03-27 20:28:59,306 - custodian.resources.transfer - DEBUG - Filtered from 2 to 1 transfer
+2025-03-27 20:28:59,308 - custodian.policy - INFO - policy:createTransferForStream resource:huaweicloud.lts-transfer region: count:1 time:0.20
+2025-03-27 20:28:59,310 - custodian.huaweicloud.resources.lts-transfer - WARNING - {"log_group_id": "b8291523-efc4-44f5-8e8e-37008fb7edf1", "log_streams": [{"log_stream_id": "b7496d6a-b95b-4f1b-a49e-a948c23f2eea"}], "log_transfer_info": {"log_transfer_type": "OBS", "log_transfer_mode": "cycle", "log_storage_format": "JSON", "log_transfer_status": "ENABLE", "log_transfer_detail": {"obs_period": 2, "obs_period_unit": "min", "obs_bucket_name": "xianggangtest001"}}}
+2025-03-27 20:28:59,715 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - e628a637-0f5e-465d-9f10-d7bf26e5b39c RequestId: 0c04d0f2e33652bdbbd866924a5bd27f, Reason: The log stream is associated by transfer
+Traceback (most recent call last):
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/root/env-custodian/lib64/python3.9/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://lts.ap-southeast-1.myhuaweicloud.com/v2/9e33faff37bd4216bd019c023a2f6dba/transfers
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/transfer.py", line 74, in perform_action
+    response = client.create_transfer(request)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdklts/v2/lts_client.py", line 1039, in create_transfer
+    return self._call_api(**http_info)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdklts/v2/lts_client.py", line 6142, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/root/env-custodian/lib64/python3.9/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:0c04d0f2e33652bdbbd866924a5bd27f,error_code:LTS.0207,error_msg:The log stream is associated by transfer,encoded_authorization_message:None }
+2025-03-27 20:28:59,744 - custodian.policy - INFO - policy:createTransferForStream action:ltscreatetransferlog resources:0 execution_time:0.43
+2025-03-27 20:28:59,747 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer scope:policy
+2025-04-09 11:24:57,367 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-04-09 11:24:57,369 - custodian.huaweicloud.client - ERROR - No default region set. Specify a default via HUAWEI_DEFAULT_REGION
+2025-04-09 11:24:57,370 - custodian.output - DEBUG - metric:PolicyException Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer
+2025-04-09 11:24:57,371 - custodian.output - ERROR - Error while executing policy
+Traceback (most recent call last):
+  File "/root/cloud-custodian/c7n/policy.py", line 330, in run
+    resources = self.policy.resource_manager.resources()
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 374, in resources
+    resources = self._fetch_resources(q)
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 393, in _fetch_resources
+    return self.augment(self.source.get_resources(query)) or []
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 280, in get_resources
+    return self.query.filter(self.manager, **query)
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 51, in filter
+    resources = self._pagination_limit_offset(m, enum_op, path)
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 66, in _pagination_limit_offset
+    session = local_session(self.session_factory)
+  File "/root/cloud-custodian/c7n/utils.py", line 334, in local_session
+    s = factory()
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/client.py", line 66, in __init__
+    sys.exit(1)
+SystemExit: 1
+2025-04-09 11:27:07,321 - custodian.policy - DEBUG - Running policy:createTransferForStream resource:huaweicloud.lts-transfer region:default c7n:0.9.43
+2025-04-09 11:27:07,321 - custodian.huaweicloud.client - ERROR - No default region set. Specify a default via HUAWEI_DEFAULT_REGION
+2025-04-09 11:27:07,322 - custodian.output - DEBUG - metric:PolicyException Count:1 policy:createtransferforstream restype:huaweicloud.lts-transfer
+2025-04-09 11:27:07,322 - custodian.output - ERROR - Error while executing policy
+Traceback (most recent call last):
+  File "/root/cloud-custodian/c7n/policy.py", line 330, in run
+    resources = self.policy.resource_manager.resources()
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 374, in resources
+    resources = self._fetch_resources(q)
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 393, in _fetch_resources
+    return self.augment(self.source.get_resources(query)) or []
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 280, in get_resources
+    return self.query.filter(self.manager, **query)
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 51, in filter
+    resources = self._pagination_limit_offset(m, enum_op, path)
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 66, in _pagination_limit_offset
+    session = local_session(self.session_factory)
+  File "/root/cloud-custodian/c7n/utils.py", line 334, in local_session
+    s = factory()
+  File "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/client.py", line 66, in __init__
+    sys.exit(1)
+SystemExit: 1

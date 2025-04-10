@@ -1,0 +1,78 @@
+{
+  "policy": {
+    "name": "listAllTransfer",
+    "resource": "huaweicloud.lts-transfer"
+  },
+  "version": "0.9.43",
+  "execution": {
+    "id": "e3e1420b-4d24-428c-9ae9-169c2646fbbc",
+    "start": 1744183920.109835,
+    "end_time": 1744183920.3194692,
+    "duration": 0.20963430404663086
+  },
+  "config": {
+    "region": "",
+    "regions": [],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": null,
+    "assume_role": null,
+    "session_policy": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/createTransferForStream",
+    "cache_period": 0,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "/root/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/listTransferCusto.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": 1,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 0.20963430404663086,
+    "num_fds": 1,
+    "num_ctx_switches_voluntary": 18,
+    "num_ctx_switches_involuntary": 9,
+    "read_count": 57,
+    "write_count": 14,
+    "write_bytes": 8192,
+    "rss": 720896,
+    "vms": 75898880,
+    "shared": 135168,
+    "data": 8921088
+  },
+  "api-stats": {},
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2025-04-09T15:32:00.319109",
+      "Value": 1,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2025-04-09T15:32:00.319123",
+      "Value": 0.20712041854858398,
+      "Unit": "Seconds"
+    },
+    {
+      "MetricName": "ActionTime",
+      "Timestamp": "2025-04-09T15:32:00.319458",
+      "Value": 2.1457672119140625e-06,
+      "Unit": "Seconds"
+    }
+  ]
+}
