@@ -673,7 +673,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
                     r, vault_id, server_id, cbr_backup_client
                 )
         else:
-            log.warning("server %s do not related an vault.")
+            log.warning("server %s do not related an vault." % server_id)
             return False
 
     def wait_backup(self, vault_id, resource_id, cbr_client):
