@@ -652,29 +652,38 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
 
     def snapshot(self, r, vaults_resource_ids, cbr_backup_client):
         server_id = r["id"]
-        if server_id not in vaults_resource_ids:
-            log.warning("server %s do not related an vault.")
-            return False
-        vault_id = vaults_resource_ids[server_id]
-        if self.data.get("vault_id", None) is not None:
-            if vault_id is not None:
-                return self.checkpoint_and_wait(
-                    r, vault_id, server_id, cbr_backup_client
-                )
-            else:
+        input_vault_id = self.data.get("vault_id", None)
+        if input_vault_id is not None:
+            if server_id not in vaults_resource_ids:
+                log.warning("server %s do not related an vault." % server_id)
                 resource = [ResourceCreate(id=server_id, type="OS::Nova::Server")]
                 add_resource_response = self.add_vault_resource(
-                    self.data.get("vault_id", None), resource, cbr_backup_client
+                    input_vault_id, resource, cbr_backup_client
                 )
                 if add_resource_response.status_code != 200:
                     log.error("add instance %s to vault error" % server_id)
                     return False
                 return self.checkpoint_and_wait(
-                    r, vault_id, server_id, cbr_backup_client
+                    r, input_vault_id, server_id, cbr_backup_client
                 )
+            else:
+                vault_id = vaults_resource_ids[server_id]
+                if vault_id != input_vault_id:
+                    log.error("error vault id for instance %s" % server_id)
+                    return False
+                else:
+                    return self.checkpoint_and_wait(
+                        r, vault_id, server_id, cbr_backup_client
+                    )
         else:
-            log.warning("server %s do not related an vault." % server_id)
-            return False
+            if server_id not in vaults_resource_ids:
+                log.error("server %s do not related an vault." % server_id)
+                return False
+            else:
+                vault_id = vaults_resource_ids[server_id]
+                return self.checkpoint_and_wait(
+                        r, vault_id, server_id, cbr_backup_client
+                    )
 
     def wait_backup(self, vault_id, resource_id, cbr_client):
         while True:
