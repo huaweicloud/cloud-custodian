@@ -1,0 +1,129 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250403T032425Z
+    method: GET
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
+  response:
+    body:
+      string: '{
+"instances" : [ {
+"name" : "kafka-instance-example",
+"engine" : "kafka",
+"port" : 9092,
+"status" : "RUNNING",
+"type" : "cluster",
+"specification" : "100MB",
+"engine_version" : "1.1.0",
+"connect_address" : "192.168.0.100,192.168.0.61,192.168.0.72",
+"instance_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+"resource_spec_code" : "dms.instance.kafka.cluster.c3.mini",
+"charging_mode" : 1,
+"vpc_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+"vpc_name" : "dms-test",
+"created_at" : "1585618587087",
+"product_id" : "00300-30308-0--0",
+"security_group_id" : "securityGroupId",
+"security_group_name" : "Sys-default",
+"subnet_id" : "subnet-testing-kafka",
+"available_zones" : [ "38b0f7a602344246bcb0da47b5d548e7" ],
+"available_zone_names" : [ "AZ1" ],
+"user_id" : "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+"user_name" : "paas_dms",
+"maintain_begin" : "02:00:00",
+"maintain_end" : "06:00:00",
+"enable_log_collection" : false,
+"new_auth_cert" : false,
+"storage_space" : 492,
+"total_storage_space" : 600,
+"used_storage_space" : 25,
+"partition_num" : "300",
+"enable_publicip" : false,
+"ssl_enable" : false,
+"broker_ssl_enable" : false,
+"cert_replaced" : false,
+"management_connect_address" : "https://192.168.0.100:9999",
+"cross_vpc_info" : "{\"192.168.0.61\":{\"advertised_ip\":\"192.168.0.61\",\"port\":9011,\"port_id\":\"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\"},\"192.168.0.72\":{\"advertised_ip\":\"192.168.0.72\",\"port\":9011,\"port_id\":\"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\"},\"192.168.0.100\":{\"advertised_ip\":\"192.168.0.100\",\"port\":9011,\"port_id\":\"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\"}}",
+"storage_resource_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+"storage_spec_code" : "dms.physical.storage.ultra",
+"service_type" : "advanced",
+"storage_type" : "hec",
+"enterprise_project_id" : "0",
+"is_logical_volume" : true,
+"extend_times" : 0,
+"retention_policy" : "produce_reject",
+"ipv6_enable" : false,
+"ipv6_connect_addresses" : [ ],
+"connector_enable" : false,
+"connector_node_num" : 0,
+"connector_id" : "",
+"rest_enable" : false,
+"rest_connect_address" : "",
+"kafka_public_status" : "closed",
+"public_bandwidth" : 0,
+"message_query_inst_enable" : true,
+"vpc_client_plain" : false,
+"support_features" : "kafka.new.pod.port,feature.physerver.kafka.topic.modify,feature.physerver.kafka.topic.accesspolicy,message_trace_enable,features.pod.token.access,feature.physerver.kafka.pulbic.dynamic,roma_app_enable,features.log.collection,auto_topic_switch,feature.physerver.kafka.user.manager",
+"trace_enable" : false,
+"agent_enable" : false,
+"pod_connect_address" : "100.86.75.15:9080,100.86.142.77:9080,100.86.250.167:9080",
+"disk_encrypted" : false,
+"kafka_private_connect_address" : "192.168.0.61:9092,192.168.0.100:9092,192.168.0.72:9092",
+"enable_auto_topic" : false,
+"new_spec_billing_enable" : false,
+"ces_version" : "linux",
+"tags": [
+{
+"key": "environment",
+"value": "testing"
+}
+]
+} ],
+"instance_num" : 1
+}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 03 Apr 2025 03:24:25 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=5fa1c7338ee1ffe367; path=/
+      - HWWAFSESTIME=1743650665771; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 050c8d6af8b9da6e805ba4f4b542781e
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ""
+version: 1

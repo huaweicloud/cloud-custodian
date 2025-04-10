@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import json
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkvpc.v2 import (
@@ -30,7 +31,7 @@ from huaweicloudsdkvpc.v3 import (
 
 from c7n.exceptions import PolicyValidationError
 from c7n.filters import Filter, ValueFilter
-from c7n.utils import type_schema
+from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -883,6 +884,275 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
         multi_result.update(remove_result)
         print(multi_result)
         return multi_result
+
+    def perform_action(self, resource):
+        return None
+
+
+@SecurityGroupRule.filter_registry.register("rule-allow-risk-ports")
+class SecurityGroupRuleAllowRiskPort(Filter):
+    """Filter for security group rules that allow high risk ports.
+
+    :Example:
+
+    .. code-block:: yaml
+
+       policies:
+         - name: sg-rule-allow-high-risk-port
+           resource: huaweicloud.security-group-rule
+           filters:
+             - type: rule-allow-risk-ports
+               direction: ingress
+               risk_ports_path: ""
+               trust_map_path: ""
+    """
+
+    schema = type_schema("rule-allow-risk-ports",
+                         direction={'enum': ['ingress', 'egress']},
+                         risk_ports_path={'type': 'string'},
+                         trust_map_path={'type': 'string'},
+                         required=['direction', 'risk_ports_path', 'trust_map_path'])
+
+    def process(self, resources, event=None):
+        results = []
+        risk_ports_path = self.data.get('risk_ports_path')
+        trust_map_path = self.data.get('trust_map_path')
+        direction = self.data.get('direction')
+        if not risk_ports_path or not trust_map_path:
+            log.error("risk-ports-path and trust-map-path are required")
+            return []
+        risk_ports_obj = self.get_file_content(risk_ports_path)
+        trust_map_obj = self.get_file_content(trust_map_path)
+        # {sg_id : deny_rules}
+        deny_rule_map = {}
+        if risk_ports_obj and trust_map_obj:
+            risk_ports = self._extend_ports(risk_ports_obj)
+            for rule in resources:
+                if rule.get('direction') != direction:
+                    continue
+                ip = rule.get('remote_ip_prefix')
+                if ip and ip not in ('0.0.0.0/0', '::/0'):
+                    continue
+                ports = rule.get('multiport')
+                port_list = []
+                if ports:
+                    ports = ports.split(',')
+                    port_list = self._extend_ports(ports)
+                    risk_rule_ports = [p for p in port_list if p in risk_ports]
+                else:
+                    risk_rule_ports = risk_ports
+                if not risk_rule_ports:
+                    continue
+                sg = rule['security_group_id']
+                if sg not in deny_rule_map:
+                    deny_rules = self.get_deny_rules(sg, direction)
+                    new_sg = {sg: deny_rules}
+                    deny_rule_map.update(new_sg)
+                deny_rules = deny_rule_map.get(sg)
+                protocol = rule.get('protocol')
+                ethertype = rule.get('ethertype')
+                for deny_rule in deny_rules:
+                    if protocol == deny_rule.get('protocol') and \
+                       ethertype == deny_rule.get('ethertype'):
+                        deny_ports = deny_rule.get('multiport')
+                        if not deny_ports:
+                            risk_rule_ports = []
+                            break
+                        deny_ports = self._extend_ports(deny_ports.split(','))
+                        risk_rule_ports = [p for p in risk_rule_ports if p not in deny_ports]
+                if sg in trust_map_obj:
+                    trust_sg = trust_map_obj.get(sg)
+                    trust_port = trust_sg.get('port')
+                    if trust_port:
+                        trust_protocol = trust_sg.get('protocol')
+                        if (trust_protocol and protocol in trust_protocol) or not trust_protocol:
+                            trust_port = self._extend_ports([trust_port])
+                            risk_rule_ports = [p for p in risk_rule_ports if p not in trust_port]
+
+                if risk_rule_ports:
+                    if len(port_list) == len(risk_rule_ports):
+                        risk_rule_ports = risk_ports
+                    new_ports = self.get_multiport(risk_rule_ports)
+                    rule['multiport'] = new_ports
+                    results.append(rule)
+
+        return results
+
+    def get_file_content(self, obs_url):
+        obs_client = local_session(self.manager.session_factory).client("obs")
+        protocol_end = len("https://")
+        path_without_protocol = obs_url[protocol_end:]
+        obs_bucket_name = self.get_obs_name(path_without_protocol)
+        obs_server = self.get_obs_server(path_without_protocol)
+        obs_file = self.get_file_path(path_without_protocol)
+        obs_client.server = obs_server
+        try:
+            resp = obs_client.getObject(bucketName=obs_bucket_name,
+                                        objectKey=obs_file,
+                                        loadStreamInMemory=True)
+            if resp.status < 300:
+                content = json.loads(resp.body.buffer)
+                return content
+            else:
+                log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
+                return None
+        except exceptions.ClientRequestException as e:
+            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+            raise
+
+    def get_obs_name(self, obs_url):
+        last_obs_index = obs_url.rfind(".obs")
+        return obs_url[:last_obs_index]
+
+    def get_obs_server(self, obs_url):
+        last_obs_index = obs_url.rfind(".obs")
+        remaining_after_obs = obs_url[last_obs_index:]
+        split_res = remaining_after_obs.split("/", 1)
+        return split_res[0].lstrip(".")
+
+    def get_file_path(self, obs_url):
+        last_obs_index = obs_url.rfind(".obs")
+        remaining_after_obs = obs_url[last_obs_index:]
+        split_res = remaining_after_obs.split("/", 1)
+        return split_res[1]
+
+    def get_multiport(self, risk_ports):
+        multiport = ''
+        if len(risk_ports) == 1:
+            multiport = str(risk_ports[0])
+            return multiport
+        order_ports = risk_ports.sort()
+        start = order_ports[0]
+        end = order_ports[0]
+        port_len = len(order_ports)
+        for i in range(0, port_len - 1):
+            if order_ports[i + 1] == order_ports[i] + 1:
+                end = order_ports[i + 1]
+            else:
+                end = order_ports[i]
+                if start == end:
+                    port_item_str = str(start)
+                else:
+                    port_item_str = str(start) + '-' + str(end)
+                multiport += port_item_str + ','
+                start = order_ports[i + 1]
+        if end == order_ports[-1]:
+            port_item_str = str(start) + '-' + str(end)
+            multiport += port_item_str
+        else:
+            port_item_str = str(start)
+            multiport += port_item_str
+        return multiport
+
+    def get_deny_rules(self, sg_id, direction):
+        client = self.manager.get_client()
+        sg_ids = [sg_id]
+        action = 'deny'
+        ret_rules = []
+        try:
+            request = ListSecurityGroupRulesRequest(security_group_id=sg_ids,
+                                                    action=action,
+                                                    direction=direction)
+            response = client.list_security_group_rules(request)
+            deny_rules_object = response.security_group_rules
+            deny_rules = [r.to_dict() for r in deny_rules_object]
+        except exceptions.ClientRequestException as ex:
+            log.exception("Unable to list deny rules in security group %s"
+                          "RequestId: %s, Reason: %s." %
+                          (sg_id, ex.request_id, ex.error_msg))
+        for r in deny_rules:
+            ip = r.get('remote_ip_prefix')
+            if not ip or ip in ('0.0.0.0/0', '::/0'):
+                ret_rules.append(r)
+        return ret_rules
+
+    def _extend_ports(self, req_port_list):
+        if not req_port_list:
+            return []
+        int_port_list = []
+        for item in req_port_list:
+            if isinstance(item, int):
+                int_port_list.append(item)
+            elif isinstance(item, str):
+                port_range = item.split('-')
+                if len(port_range) == 1:
+                    int_port_list.append(int(port_range[0]))
+                elif len(port_range) == 2:
+                    start = int(port_range[0])
+                    end = int(port_range[1])
+                    if start >= end:
+                        continue
+                    ports = [i for i in range(start, end + 1)]
+                    int_port_list.extend(ports)
+            else:
+                continue
+        return list(set(int_port_list))
+
+
+@SecurityGroupRule.action_registry.register("deny-risk-ports")
+class SecurityGroupRuleDenyRiskPorts(HuaweiCloudBaseAction):
+    """Action to add deny rules that contain high risk ports.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: deny-high-risk-ports
+            resource: huaweicloud.vpc-security-group-rule
+            filters:
+              - type: rule-allow-risk-ports
+                direction: ingress
+                risk_ports_path: ""
+                trust_map_path: ""
+            actions:
+              - deny-risk-ports
+    """
+
+    schema = type_schema("deny-risk-ports")
+    post_keys = ['direction', 'ethertype', 'protocol', 'multiport', 'remote_ip_prefix',
+                'remote_group_id', 'remote_address_group_id', 'priority']
+
+    def process(self, resources):
+        client = self.manager.get_client()
+        rule_map = {}
+        for r in resources:
+            sg_id = r['security_group_id']
+            if sg_id not in rule_map:
+                rule_map.update({sg_id: []})
+            rule_map.get(sg_id).append(r)
+
+        ret_rules = []
+        for sg_id in rule_map.keys():
+            try:
+                request = BatchCreateSecurityGroupRulesRequest()
+                request.security_group_id = sg_id
+                create_rules = []
+                rules = rule_map.get(sg_id)
+                action = 'deny'
+                for r in rules:
+                    rule_option = BatchCreateSecurityGroupRulesOption(action=action)
+                    for key, value in r.items():
+                        if key in self.post_keys:
+                            setattr(rule_option, key, value)
+                    if 'protocol' not in r:
+                        setattr(rule_option, 'protocol', 'tcp')
+                    create_rules.append(rule_option)
+                if not create_rules:
+                    continue
+                request.body = \
+                    BatchCreateSecurityGroupRulesRequestBody(security_group_rules=create_rules,
+                                                             ignore_duplicate=True)
+                response = client.batch_create_security_group_rules(request)
+            except exceptions.ClientRequestException as ex:
+                log.exception("Unable to add rules in security group %s. "
+                              "RequestId: %s, Reason: %s" %
+                              (sg_id, ex.request_id, ex.error_msg))
+                break
+            res_rules_object = response.security_group_rules
+            res_rules = [r.to_dict() for r in res_rules_object]
+            ret_rules.extend(res_rules)
+        return self.process_result(ret_rules)
 
     def perform_action(self, resource):
         return None
