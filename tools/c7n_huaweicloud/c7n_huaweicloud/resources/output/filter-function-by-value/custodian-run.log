@@ -1,6 +1,0 @@
-2025-04-10 14:29:36,607 - custodian.policy - INFO - policy:filter-function-by-value resource:huaweicloud.lts-transfer region: count:0 time:0.26
-2025-04-10 14:35:59,839 - custodian.policy - INFO - policy:filter-function-by-value resource:huaweicloud.lts-transfer region: count:0 time:0.00
-2025-04-10 15:06:24,141 - custodian.policy - INFO - policy:filter-function-by-value resource:huaweicloud.lts-transfer region: count:0 time:0.33
-2025-04-10 15:37:17,069 - custodian.policy - INFO - policy:filter-function-by-value resource:huaweicloud.lts-transfer region: count:0 time:0.00
-2025-04-10 15:59:08,326 - custodian.policy - INFO - policy:filter-function-by-value resource:huaweicloud.lts-transfer region: count:0 time:0.23
-2025-04-10 16:31:34,275 - custodian.policy - INFO - policy:filter-function-by-value resource:huaweicloud.lts-transfer region: count:0 time:0.00

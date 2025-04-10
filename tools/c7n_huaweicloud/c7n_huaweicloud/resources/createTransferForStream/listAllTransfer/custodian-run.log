@@ -1,8 +1,0 @@
-2025-04-09 15:20:35,049 - custodian.policy - DEBUG - Running policy:listAllTransfer resource:huaweicloud.lts-transfer region:default c7n:0.9.43
-2025-04-09 15:20:35,281 - custodian.resources.transfer - DEBUG - Filtered from 1 to 1 transfer
-2025-04-09 15:20:35,284 - custodian.policy - INFO - policy:listAllTransfer resource:huaweicloud.lts-transfer region: count:1 time:0.23
-2025-04-09 15:20:35,286 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:listalltransfer restype:huaweicloud.lts-transfer scope:policy
-2025-04-09 15:32:00,110 - custodian.policy - DEBUG - Running policy:listAllTransfer resource:huaweicloud.lts-transfer region:default c7n:0.9.43
-2025-04-09 15:32:00,317 - custodian.resources.transfer - DEBUG - Filtered from 1 to 1 transfer
-2025-04-09 15:32:00,318 - custodian.policy - INFO - policy:listAllTransfer resource:huaweicloud.lts-transfer region: count:1 time:0.21
-2025-04-09 15:32:00,319 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:listalltransfer restype:huaweicloud.lts-transfer scope:policy

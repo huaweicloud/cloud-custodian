@@ -1,5 +1,0 @@
-2025-04-09 17:18:30,960 - custodian.policy - INFO - policy:lts-action-webbook resource:huaweicloud.lts-transfer region: count:0 time:0.29
-2025-04-09 17:21:11,929 - custodian.policy - INFO - policy:lts-action-webbook resource:huaweicloud.lts-transfer region: count:2 time:0.00
-2025-04-09 17:21:11,982 - custodian.actions - INFO - GET got response 200 with URL http://www.huaweicloud.com/
-2025-04-09 17:21:12,009 - custodian.actions - INFO - GET got response 200 with URL http://www.huaweicloud.com/
-2025-04-09 17:21:12,009 - custodian.policy - INFO - policy:lts-action-webbook action:webhook resources:2 execution_time:0.08
