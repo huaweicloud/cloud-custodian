@@ -51,6 +51,7 @@ from huaweicloudsdknat.v2 import ListNatGatewaysRequest, NatClient, \
     ListNatGatewaySnatRulesRequest, ListNatGatewayDnatRulesRequest
 from huaweicloudsdkcts.v3 import CtsClient, ListTrackersRequest, ListNotificationsRequest
 from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
+from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest
 
 log = logging.getLogger('custodian.huaweicloud.client')
 
@@ -262,5 +263,9 @@ class Session:
         elif service == 'cts-notification-func':
             request = ListNotificationsRequest()
             request.notification_type = "fun"
+        elif service == 'cbr-backup':
+            request = ListBackupsRequest()
+        elif service == 'cbr-vault':
+            request = ListVaultRequest()
 
         return request
