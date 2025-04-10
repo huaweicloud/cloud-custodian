@@ -572,9 +572,9 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
             time.sleep(5)
             status = self.fetch_ims_job_status(job_id, ims_client)
             if status == "SUCCESS":
-                log.info("waitting for create whole image")
                 return True
             elif status == "RUNNING" or status == "INIT":
+                log.info("waitting for create whole image")
                 continue
             else:
                 log.error("waitting for create whole image fail")
@@ -681,7 +681,8 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
             response = self.list_op_log(resource_id, vault_id, cbr_client)
             op_logs = response.operation_logs
             if len(op_logs) != 0:
-                time.sleep(3)
+                log.info("waitting for create instance snapshot")
+                time.sleep(5)
                 continue
             return True
 
