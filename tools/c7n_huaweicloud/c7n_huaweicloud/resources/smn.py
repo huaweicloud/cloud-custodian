@@ -27,6 +27,14 @@ class Topic(QueryResourceManager):
         tag = True
         tag_resource_type = 'smn_topic'
 
+    def get_resources(self, resource_ids):
+        resources = self.augment(self.source.get_resources(self.get_resource_query())) or []
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids or resource["topic_urn"] in resource_ids:
+                result.append(resource)
+        return result
+
 
 @Topic.filter_registry.register('topic-tag')
 class TopicTagFilter(Filter):
