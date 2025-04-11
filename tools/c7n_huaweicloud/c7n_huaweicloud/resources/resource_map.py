@@ -41,5 +41,8 @@ ResourceMap = {
     "huaweicloud.org-unit": "c7n_huaweicloud.resources.organizations.OrgUnit",
     "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
     "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
-    "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka"
+    "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
+    "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
+    "huaweicloud.dns-privatezone": "c7n_huaweicloud.resources.dns.PrivateZone",
+    "huaweicloud.dns-recordset": "c7n_huaweicloud.resources.dns.RecordSet"
 }

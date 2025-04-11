@@ -1,0 +1,203 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093110Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2.1/recordsets?limit=100
+  response:
+    body:
+      string: '{"links": {"self": "https://dns.huaweicloud.com/v2.1/recordsets?limit=100"},
+        "recordsets": [{"id": "2c9eb1538a138432018a13lllll00001", "name": "setstatus.example.com.",
+        "description": "Record set to change status", "zone_id": "2c9eb1538a138432018a13mmmmm00001",
+        "zone_name": "example.com.", "type": "A", "ttl": 300, "records": ["192.168.1.2"],
+        "status": "ACTIVE", "default": false, "project_id": "0605dc51495c4447b48f5168309f9b5f",
+        "created_at": "2023-03-15T12:00:11Z", "updated_at": "2023-03-15T12:00:11Z",
+        "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13mmmmm00001/recordsets/2c9eb1538a138432018a13lllll00001"},
+        "tags": []}], "metadata": {"total_count": 1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '750'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:10 GMT
+      X-Request-Id:
+      - 7d38e8d91bd89aa953b3799eadc2e981
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"status": "DISABLE"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '20'
+      Content-Type:
+      - application/json;charset=utf8
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093111Z
+    method: PUT
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2.1/recordsets/2c9eb1538a138432018a13lllll00001/statuses/set
+  response:
+    body:
+      string: '{"id": "2c9eb1538a138432018a13lllll00001", "name": "setstatus.example.com.",
+        "description": "Record set to change status", "zone_id": "2c9eb1538a138432018a13mmmmm00001",
+        "zone_name": "example.com.", "type": "A", "ttl": 300, "records": ["192.168.1.2"],
+        "status": "DISABLE", "default": false, "project_id": "0605dc51495c4447b48f5168309f9b5f",
+        "created_at": "2023-03-15T12:00:11Z", "updated_at": "2023-03-15T12:00:12Z",
+        "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13mmmmm00001/recordsets/2c9eb1538a138432018a13lllll00001"},
+        "tags": []}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '700'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:11 GMT
+      X-Request-Id:
+      - 7d38e8d91bd89aa953b3799eadc2e982
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T094719Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones/2c9eb1538a138432018a13mmmmm00001/recordsets/2c9eb1538a138432018a13lllll00001
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"0c7b3cbefb131460afcb117a10630d34"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 09 Apr 2025 09:47:20 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=86d1b765ef90659ec3; path=/
+      - HWWAFSESTIME=1744192036611; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 0c7b3cbefb131460afcb117a10630d34
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: '{"status": "DISABLE"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '21'
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250410T061447Z
+    method: PUT
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2.1/recordsets/2c9eb1538a138432018a13lllll00001/statuses/set
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"2a5344db13cae41a84820031e70ecd4a"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 10 Apr 2025 06:14:48 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1744265685109; path=/
+      - HWWAFSESID=029c1762cb789430ae; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 2a5344db13cae41a84820031e70ecd4a
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

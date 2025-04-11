@@ -1,0 +1,148 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093108Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones?limit=100
+  response:
+    body:
+      string: '{"links": {"self": "https://dns.huaweicloud.com/v2/zones?limit=100"},
+        "zones": [{"id": "2c9eb1538a138432018a13uuuuu00001", "name": "public-delete.example.com.",
+        "description": "Public zone to be deleted", "email": "admin@example.com",
+        "zone_type": "public", "ttl": 300, "serial": 1678886416, "status": "ACTIVE",
+        "record_num": 0, "pool_id": "pubpooliddelete", "project_id": "0605dc51495c4447b48f5168309f9b5f",
+        "created_at": "2023-03-15T12:00:16Z", "updated_at": "2023-03-15T12:00:16Z",
+        "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13uuuuu00001"},
+        "masters": [], "router": {"router_id": "null", "status": "PENDING_CREATE"},
+        "tags": [], "enterprise_project_id": "0"}], "metadata": {"total_count": 1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '700'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:08 GMT
+      X-Request-Id:
+      - ceebb47cfe8a83d3a0a067fba212f696
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093109Z
+    method: DELETE
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones/2c9eb1538a138432018a13uuuuu00001
+  response:
+    body:
+      string: '{"id": "2c9eb1538a138432018a13uuuuu00001", "name": "public-delete.example.com.",
+        "description": "Public zone to be deleted", "email": "admin@example.com",
+        "zone_type": "public", "ttl": 300, "serial": 1678886416, "status": "PENDING_DELETE",
+        "record_num": 0, "pool_id": "pubpooliddelete", "project_id": "0605dc51495c4447b48f5168309f9b5f",
+        "created_at": "2023-03-15T12:00:16Z", "updated_at": "2023-03-15T12:00:17Z",
+        "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13uuuuu00001"},
+        "masters": [], "router": {"router_id": "null", "status": "PENDING_CREATE"},
+        "tags": [], "enterprise_project_id": "0"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '650'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:09 GMT
+      X-Request-Id:
+      - ceebb47cfe8a83d3a0a067fba212f697
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T094716Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones/2c9eb1538a138432018a13uuuuu00001
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"6cb616e736c9020d890eaeb7e2340de8"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 09 Apr 2025 09:47:16 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=bc8587313d281fab37; path=/
+      - HWWAFSESTIME=1744192036386; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6cb616e736c9020d890eaeb7e2340de8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

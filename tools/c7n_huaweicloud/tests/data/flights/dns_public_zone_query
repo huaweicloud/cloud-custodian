@@ -1,0 +1,102 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093040Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones?limit=100
+  response:
+    body:
+      string: '{"links": {"self": "https://dns.huaweicloud.com/v2/zones?limit=100",
+        "next": null}, "zones": [{"id": "2c9eb1538a138432018a138884d00001", "name":
+        "example.com.", "description": "Example public zone", "email": "admin@example.com",
+        "zone_type": "public", "ttl": 300, "serial": 1678886400, "status": "ACTIVE",
+        "record_num": 2, "pool_id": "0d78b34a-7d31-4b0e-8c7f-30766db5434c", "project_id":
+        "0605dc51495c4447b48f5168309f9b5f", "created_at": "2023-03-15T12:00:00Z",
+        "updated_at": "2023-03-15T12:00:00Z", "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a138884d00001"},
+        "masters": [], "router": {"router_id": "null", "status": "PENDING_CREATE"},
+        "tags": [{"key": "key1", "value": "value1"}], "enterprise_project_id": "0"}],
+        "metadata": {"total_count": 1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '734'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:30:40 GMT
+      X-Request-Id:
+      - 5fb86a88b530fadc377d0a0e72e79278
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093814Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones/2c9eb1538a138432018a138884d00001
+  response:
+    body:
+      string: '{"id": "2c9eb1538a138432018a138884d00001", "name": "example.com.", "description": "Example public zone", "email": "admin@example.com", "zone_type": "public", "ttl": 300, "serial": 1678886400, "status": "ACTIVE", "record_num": 2, "pool_id": "0d78b34a-7d31-4b0e-8c7f-30766db5434c", "project_id": "0605dc51495c4447b48f5168309f9b5f", "created_at": "2023-03-15T12:00:00Z", "updated_at": "2023-03-15T12:00:00Z", "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a138884d00001"}, "masters": [], "router": {"router_id": "null", "status": "PENDING_CREATE"}, "tags": [{"key": "key1", "value": "value1"}], "enterprise_project_id": "0"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 09 Apr 2025 09:38:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1744191490450; path=/
+      - HWWAFSESID=fc353769de8813ab98; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 5b4024f823ad3b8fa03f82ebf0141e45
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

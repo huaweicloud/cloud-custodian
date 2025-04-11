@@ -1,0 +1,128 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093109Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones?limit=100&type=private
+  response:
+    body:
+      string: '{"links": {"self": "https://dns.huaweicloud.com/v2/zones?limit=100&type=private"},
+        "zones": [{"id": "2c9eb1538a138432018a13ccccc00001", "name": "disassociate.example.com.",
+        "description": "Zone with associated VPC", "email": "admin@example.com", "zone_type":
+        "private", "ttl": 300, "serial": 1678886403, "status": "ACTIVE", "record_num":
+        1, "pool_id": "privpooliddisassoc", "project_id": "0605dc51495c4447b48f5168309f9b5f",
+        "created_at": "2023-03-15T12:00:03Z", "updated_at": "2023-03-15T12:00:03Z",
+        "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13ccccc00001"},
+        "masters": [], "routers": [{"router_id": "vpc-c853fea981c3416c83181f7d01095375",
+        "router_region": "ap-southeast-1", "status": "ACTIVE"}], "tags": [], "enterprise_project_id":
+        "0"}], "metadata": {"total_count": 1}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '700'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:09 GMT
+      X-Request-Id:
+      - cf4f1d293fb849a68c32cfec6608c37f
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"router": {"router_id": "vpc-c853fea981c3416c83181f7d01095375"}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '60'
+      Content-Type:
+      - application/json;charset=utf8
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093110Z
+    method: POST
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones/2c9eb1538a138432018a13ccccc00001/disassociaterouter
+  response:
+    body:
+      string: '{"router_id": "vpc-c853fea981c3416c83181f7d01095375", "router_region":
+        null, "status": "PENDING_DELETE"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '110'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:10 GMT
+      X-Request-Id:
+      - cf4f1d293fb849a68c32cfec6608c380
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T094718Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones/2c9eb1538a138432018a13ccccc00001
+  response:
+    body:
+      string: '{"id": "2c9eb1538a138432018a13ccccc00001", "name": "disassociate.example.com.", "description": "Zone with associated VPC", "email": "admin@example.com", "zone_type": "private", "ttl": 300, "serial": 1678886403, "status": "ACTIVE", "record_num": 1, "pool_id": "privpooliddisassoc", "project_id": "0605dc51495c4447b48f5168309f9b5f", "created_at": "2023-03-15T12:00:03Z", "updated_at": "2023-03-15T12:00:03Z", "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13ccccc00001"}, "masters": [], "routers": [], "tags": [], "enterprise_project_id": "0"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '650'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:47:18 GMT
+      X-Request-Id:
+      - 3630ba077695da91213879a036b690ff
+    status:
+      code: 200
+      message: success
+version: 1
