@@ -145,7 +145,7 @@ class FunctionGraphManager:
 
         return response
 
-    def get_custodian_depend_version_id(self, runtime="Python3.10") -> [str]:
+    def get_custodian_depend_version_id(self, runtime="Python3.10") -> list[str]:
         depend_name = f'custodian-huaweicloud-{runtime}'
         list_dependencies_request = ListDependenciesRequest(runtime=runtime, name=depend_name)
         try:
@@ -194,15 +194,18 @@ class FunctionGraphManager:
 
         return dependency_versions
 
-    def show_function_config(self, func_name):
+    def show_function_config(self, func_name, is_public=False):
         request = ShowFunctionConfigRequest(function_urn=func_name)
         try:
             response = self.client.show_function_config(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Show function config failed, request id:[{e.request_id}], '
-                      f'status code:[{e.status_code}], '
-                      f'error code:[{e.error_code}], '
-                      f'error message:[{e.error_msg}].')
+            if is_public and e.status_code == 404:
+                log.warning(f'Can not find function[{func_name}], will create.')
+            else:
+                log.error(f'Show function config failed, request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
             return None
 
         return response
@@ -303,7 +306,7 @@ class FunctionGraphManager:
         role = func.xrole or role
         assert role, "FunctionGraph function xrole must be specified"
         archive = func.get_archive()
-        existing = self.show_function_config(func.func_name)
+        existing = self.show_function_config(func.func_name, is_public=True)
 
         changed = False
         if existing:
@@ -542,6 +545,9 @@ class FunctionGraph(AbstractFunctionGraph):
 
 FunctionGraphHandlerTemplate = """\
 from c7n_huaweicloud import handler
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 def run(event, context):
     return handler.run(event, context)
@@ -622,6 +628,10 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
             events.append(
                 CloudTraceServiceSource(
                     self.policy.data['mode'], session_factory))
+        elif self.policy.data['mode']['type'] == 'huaweicloud-periodic':
+            events.append(
+                TimerServiceSource(
+                    self.policy.data['mode'], session_factory))
         return events
 
     def get_archive(self):
@@ -634,7 +644,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
         return self.archive
 
 
-class CloudTraceServiceSource:
+class FunctionGraphTriggerBase:
     client_service = 'functiongraph'
 
     def __init__(self, data, session_factory):
@@ -654,6 +664,30 @@ class CloudTraceServiceSource:
         if not self._client:
             self._client = self.session.client(self.client_service)
         return self._client
+
+    @property
+    def trigger_type_code(self):
+        raise NotImplementedError("subclass responsibility")
+
+    def add(self, func_urn):
+        raise NotImplementedError("subclass responsibility")
+
+    def remove(self, trigger_id, func_urn):
+        request = DeleteFunctionTriggerRequest(function_urn=func_urn,
+                                               trigger_type_code=self.trigger_type_code,
+                                               trigger_id=trigger_id)
+        try:
+            _ = self.client.delete_function_trigger(request)
+        except exceptions.ClientRequestException as e:
+            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
+                      f'error_code[{e.error_code}], '
+                      f'error_msg[{e.error_msg}]')
+            return False
+
+        return True
+
+
+class CloudTraceServiceSource(FunctionGraphTriggerBase):
 
     @property
     def trigger_type_code(self):
@@ -677,23 +711,9 @@ class CloudTraceServiceSource:
                       f'error_msg[{e.error_msg}]')
             return False
 
-    def remove(self, trigger_id, func_urn):
-        request = DeleteFunctionTriggerRequest(function_urn=func_urn,
-                                               trigger_type_code=self.trigger_type_code,
-                                               trigger_id=trigger_id)
-        try:
-            _ = self.client.delete_function_trigger(request)
-        except exceptions.ClientRequestException as e:
-            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
-                      f'error_code[{e.error_code}], '
-                      f'error_msg[{e.error_msg}]')
-            return False
-
-        return True
-
     def build_create_cts_trigger_request_body(self):
         request_body = CreateFunctionTriggerRequestBody(
-            trigger_type_code="CTS",
+            trigger_type_code=self.trigger_type_code,
             trigger_status="ACTIVE",
         )
         operations = []
@@ -722,8 +742,53 @@ class CloudTraceServiceSource:
             operation = f'{service_type}:{resource_types}:{trace_names}'
             operations.append(operation)
         request_body.event_data = {
-            "name": 'custodian_' + datetime.now().strftime("%Y%m%d%H%M%S"),
+            "name": self.data.get('trigger_name',
+                                  'custodian_timer_' + datetime.now().strftime("%Y%m%d%H%M%S")),
             "operations": operations
+        }
+
+        return request_body
+
+
+class TimerServiceSource(FunctionGraphTriggerBase):
+
+    @property
+    def trigger_type_code(self):
+        return "TIMER"
+
+    def add(self, func_urn):
+        # Create FunctionGraph TIMER trigger.
+        create_trigger_request = CreateFunctionTriggerRequest(function_urn=func_urn)
+        create_trigger_request.body = self.build_create_timer_trigger_request_body()
+
+        try:
+            create_trigger_response = self.client.create_function_trigger(create_trigger_request)  # noqa: E501
+            log.info(f'Create TIMER trigger for function[{func_urn}] success, '
+                     f'trigger id: [{create_trigger_response.trigger_id}, '
+                     f'trigger name: [{create_trigger_response.event_data.name}], '
+                     f'trigger status: [{create_trigger_response.trigger_status}].')
+            return create_trigger_response
+        except exceptions.ClientRequestException as e:
+            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
+                      f'error_code[{e.error_code}], '
+                      f'error_msg[{e.error_msg}]')
+            return False
+
+    def build_create_timer_trigger_request_body(self):
+        request_body = CreateFunctionTriggerRequestBody(
+            trigger_type_code=self.trigger_type_code,
+            trigger_status=self.data.get('status', 'ACTIVE'),
+        )
+        schedule = self.data.get('schedule')
+        if self.data.get('schedule_type') == "Cron" \
+                and self.data.get('cron_tz', "") \
+                and not schedule.startswith("@every"):
+            schedule = f'CRON_TZ={self.data.get("cron_tz")} {schedule}'
+        request_body.event_data = {
+            "name": self.data.get('trigger_name',
+                                  'custodian_timer_' + datetime.now().strftime("%Y%m%d%H%M%S")),
+            "schedule_type": self.data.get('schedule_type'),
+            "schedule": schedule,
         }
 
         return request_body
