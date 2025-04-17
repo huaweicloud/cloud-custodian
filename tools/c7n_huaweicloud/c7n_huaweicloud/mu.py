@@ -131,6 +131,7 @@ class FunctionGraphManager:
         request_body = CreateFunctionRequestBody()
         for key, value in params.items():
             setattr(request_body, key, value)
+        # 配置公共依赖
         dep_ids = self.get_custodian_depend_version_id(params["runtime"])
         request_body.depend_version_list = dep_ids
         request.body = request_body
@@ -182,7 +183,7 @@ class FunctionGraphManager:
         for owner, dependency_version_list in dependency_version_map.items():
             if owner == "public":
                 dependency_versions = dependency_version_list
-                log.info(f'Creating function by public dependency {dependency_version_list}')
+                log.info(f'Using public dependency {dependency_version_list}')
                 return dependency_versions
             else:
                 dependency_versions += dependency_version_list
@@ -212,22 +213,23 @@ class FunctionGraphManager:
 
     def update_function_config(self, old_config, need_update):
         old_config = old_config.to_dict()
-        allow_parameters_list = ["timeout", "handler", "memory_size", "gpu_memory", "gpu_type",
-                                 "user_data", "encrypted_user_data", "xrole", "app_xrole",
-                                 "description", "func_vpc", "peering_cidr", "mount_config",
-                                 "strategy_config", "custom_image", "extend_config",
-                                 "initializer_handler", "initializer_timeout", "pre_stop_handler",
-                                 "pre_stop_timeout", "ephemeral_storage", "enterprise_project_id",
-                                 "log_config", "network_controller", "is_stateful_function",
-                                 "enable_dynamic_memory", "enable_auth_in_header", "domain_names",
-                                 "restore_hook_handler", "restore_hook_timeout",
-                                 "heartbeat_handler", "enable_class_isolation", "enable_lts_log",
-                                 "lts_custom_tag"]
+        allow_parameters_list = [
+            "timeout", "handler", "memory_size", "gpu_memory", "gpu_type", "xrole", "app_xrole",
+            "description", "func_vpc", "peering_cidr", "mount_config", "strategy_config",
+            "custom_image", "extend_config", "initializer_handler", "initializer_timeout",
+            "pre_stop_handler", "pre_stop_timeout", "ephemeral_storage", "enterprise_project_id",
+            "log_config", "network_controller", "is_stateful_function", "enable_dynamic_memory",
+            "enable_auth_in_header", "domain_names", "restore_hook_handler",
+            "restore_hook_timeout", "heartbeat_handler", "enable_class_isolation",
+            "enable_lts_log", "lts_custom_tag"
+        ]
         request = UpdateFunctionConfigRequest(function_urn=old_config["func_urn"])
         request_body = UpdateFunctionConfigRequestBody(
             func_name=old_config['func_name'],
             runtime=old_config['runtime'],
         )
+        if 'enable_lts_log' not in need_update:
+            old_config.pop('enable_lts_log', None)
         # Put the original configuration into the request body, and check whether parameter is valid.  # noqa: E501
         for key, value in old_config.items():
             if key in allow_parameters_list:
@@ -318,6 +320,7 @@ class FunctionGraphManager:
                     changed = True
             need_update = self.compare_function_config(old_config, func)
             if need_update:
+                log.info(f'Updating function[{func.func_name}] config: [{need_update}]...')
                 result = self.update_function_config(old_config, need_update)
         else:
             log.info(f'Creating custodian policy FunctionGraph function[{func.func_name}]...')
@@ -546,8 +549,9 @@ class FunctionGraph(AbstractFunctionGraph):
 FunctionGraphHandlerTemplate = """\
 from c7n_huaweicloud import handler
 import logging
+import os
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=os.getenv("LOG_LEVEL"))
 
 def run(event, context):
     return handler.run(event, context)
@@ -599,7 +603,8 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     @property
     def user_data(self):
         user_data = {
-            "HUAWEI_DEFAULT_REGION": self.policy.data['mode'].get('default_region', "")
+            "HUAWEI_DEFAULT_REGION": os.getenv("HUAWEI_DEFAULT_REGION"),
+            "LOG_LEVEL": self.policy.data['mode'].get('log_level', "WARNING"),
         }
         return json.dumps(user_data)
 

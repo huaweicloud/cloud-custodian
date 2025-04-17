@@ -22,7 +22,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
         'huaweicloud',
         access_key_id={'type': 'string'},
         secret_access_key={'type': 'string'},
-        default_region={'type': 'string'},
+        log_level={'type': 'string', 'enum': ['NOTSET', 'DEBUG', 'INFO', 'WARNING',
+                                              'WARN', 'ERROR', 'FATAL', 'CRITICAL']},
         **{
             'execution-options': {'type': 'object'},
             'function-prefix': {'type': 'string'},
@@ -35,7 +36,6 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'memory_size': {'type': 'number'},
             'xrole': {'type': 'string'},
             'func_vpc': {'type': 'object', 'required': ['vpc_id', 'subnet_id']},
-            'user_data': {'type': 'string'},
             'description': {'type': 'string'},
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},
@@ -184,13 +184,13 @@ class PeriodicMode(FunctionGraphMode, PullMode):
         'huaweicloud-periodic',
         rinherit=FunctionGraphMode.schema,
         schedule={'type': 'string',
-                  'description': 'When the schedule type is "Rate", this parameter means scheduled rule. '
-                                 'When the schedule type is "Cron", this parameter means cron expression.'},
+                  'description': 'When the schedule type is "Rate", this parameter means scheduled rule. '  # noqa: E501
+                                 'When the schedule type is "Cron", this parameter means cron expression.'},  # noqa: E501
         schedule_type={'type': 'string',
-                       'description': 'Rate: specifies the frequency (minutes, hours, or days) at which the function '
-                                      'is invoked. If the unit is minute, the value cannot exceed 60. If the unit is '
-                                      'hour, the value cannot exceed 24. If the unit is day, the value cannot exceed '
-                                      '30. Cron: specifies a Cron expression to periodically invoke a function.',
+                       'description': 'Rate: specifies the frequency (minutes, hours, or days) at which the function '  # noqa: E501
+                                      'is invoked. If the unit is minute, the value cannot exceed 60. If the unit is '  # noqa: E501
+                                      'hour, the value cannot exceed 24. If the unit is day, the value cannot exceed '  # noqa: E501
+                                      '30. Cron: specifies a Cron expression to periodically invoke a function.',  # noqa: E501
                        'enum': ['Rate', 'Cron']},
         trigger_name={'type': 'string'},
         status={'type': 'string', 'enum': ['ACTIVE', 'DISABLED']},
@@ -213,13 +213,54 @@ class PeriodicMode(FunctionGraphMode, PullMode):
                 )
             )
 
+    def validate_rate(self, mode):
+        rules = {
+            'm': {'name': 'Minute', 'min': 1, 'max': 60},
+            'h': {'name': 'Hour', 'min': 1, 'max': 24},
+            'd': {'name': 'Date', 'min': 1, 'max': 30},
+        }
+        schedule = mode.get('schedule')
+        unit = schedule[-1]
+        if unit not in rules.keys():
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid unit '%s', "
+                "only support %s." % (
+                    self.policy.name,
+                    unit,
+                    list(rules.keys()),
+                )
+            )
+        try:
+            num = int(schedule[:-1])
+        except ValueError as e:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid Rate schedule number '%s', "
+                "error message: %s." % (
+                    self.policy.name,
+                    schedule[:-1],
+                    str(e),
+                )
+            )
+        rule = rules[unit]
+        if num > rule['max'] or num < rule['min']:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid Rate schedule "
+                "number[%d] out of range %s: [%d, %d]" % (
+                    self.policy.name,
+                    num,
+                    rule['name'],
+                    rule['min'],
+                    rule['max'],
+                )
+            )
+
     def validate_cron(self, mode):
         cron_tz = mode.get('cron_tz', "")
         # 1. 校验时区部分（如果存在）
         if cron_tz:
             self._validate_cron_timezone(cron_tz)
 
-        schedule = mode.get('schedule', "")
+        schedule = mode.get('schedule')
         if schedule.startswith("@every"):
             # 2. 校验@every格式
             self._validate_at_every(schedule)
@@ -249,7 +290,7 @@ class PeriodicMode(FunctionGraphMode, PullMode):
         pattern = r"^@every\s+(?=\d+[hms])(?:(\d+h))?(?:(\d+m))?(?:(\d+s))?$"
         if not bool(re.match(pattern, expression)):
             raise PolicyValidationError(
-                "Custodian FunctionGraph policies[%s] has a invalid @every cron expression [%s]." % (
+                "Custodian FunctionGraph policies[%s] has a invalid @every cron expression [%s]." % (  # noqa: E501
                     self.policy.name,
                     expression,
                 )
@@ -330,14 +371,14 @@ class PeriodicMode(FunctionGraphMode, PullMode):
         """
         # 字段配置：名称、最小值、最大值
         field_config = [
-            {"name": "Second", "min": 0, "max": 59},
-            {"name": "Minute", "min": 0, "max": 59},
-            {"name": "Hour", "min": 0, "max": 23},
-            {"name": "Date", "min": 1, "max": 31},
-            {"name": "Month", "min": 1, "max": 12},
+            {'name': 'Second', 'min': 0, 'max': 59},
+            {'name': 'Minute', 'min': 0, 'max': 59},
+            {'name': 'Hour', 'min': 0, 'max': 23},
+            {'name': 'Date', 'min': 1, 'max': 31},
+            {'name': 'Month', 'min': 1, 'max': 12},
         ]
         if num_fields == 6:
-            field_config.insert(5, {"name": "Week", "min": 0, "max": 7})
+            field_config.insert(5, {'name': 'Week', 'min': 0, 'max': 7})
 
         fields = expression.split()
         for i, field in enumerate(fields):
@@ -348,11 +389,11 @@ class PeriodicMode(FunctionGraphMode, PullMode):
                 if '-' in part:
                     start, end = map(int, part.split('-'))
                 else:
-                    start = end = int(part) if part != '*' else config["min"]
+                    start = end = int(part) if part != '*' else config['min']
 
                 # 检查范围
-                if start < config["min"] or end > config["max"]:
-                    return False, f"{config['name']} out of range {config['min']}-{config['max']}: {field}"
+                if start < config['min'] or end > config['max']:
+                    return False, f'{config["name"]} out of range {config["min"]}-{config["max"]}: {field}'  # noqa: E501
         return True, ""
 
     @staticmethod
