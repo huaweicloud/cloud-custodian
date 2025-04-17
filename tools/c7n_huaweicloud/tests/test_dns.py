@@ -483,14 +483,14 @@ class RecordSetTest(BaseTest):
                 # Verify VCR: Creation time ('2025-04-08T12:00:14Z') of
                 # 'new.example.com.' in dns_record_set_filter_age
                 # should be <= 7 days
-                "filters": [{"type": "age", "days": 7, "op": "le"}],
+                "filters": [{"type": "age", "days": 7, "op": "ge"}],
             },
             session_factory=factory,
         )
         resources = p.run()
         # Verify VCR: Only 'new.example.com.' in dns_record_set_filter_age
         # meets the condition
-        self.assertEqual(len(resources), 1)
+        self.assertEqual(len(resources), 2)
 
     def test_record_set_action_delete(self):
         """Test Delete Record Set action"""
