@@ -20,10 +20,12 @@ log = logging.getLogger('c7n_huaweicloud.policy')
 class FunctionGraphMode(ServerlessExecutionMode):
     schema = type_schema(
         'huaweicloud',
-        access_key_id={'type': 'string'},
-        secret_access_key={'type': 'string'},
-        log_level={'type': 'string', 'enum': ['NOTSET', 'DEBUG', 'INFO', 'WARNING',
-                                              'WARN', 'ERROR', 'FATAL', 'CRITICAL']},
+        log_level={
+            'type': 'string',
+            'default': 'WARNING',
+            'enum': ['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'WARN', 'ERROR', 'FATAL', 'CRITICAL'],
+            'description': 'Log level when policy run in FunctionGraph functions.',
+        },
         **{
             'execution-options': {'type': 'object'},
             'function-prefix': {'type': 'string'},
@@ -40,6 +42,163 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},
             'log_config': {'type': 'object'},
+            'async_invoke_config': {
+                'type': "object",
+                'additionalProperties': False,
+                'properties': {
+                    'enable_async_status_log': {'type': 'boolean'},
+                    'max_async_retry_attempts': {
+                        'type': 'integer', 'default': 3, 'minimum': 0, 'maximum': 3,
+                    },
+                    'max_async_event_age_in_seconds': {
+                        'type': 'integer', 'default': 3600, 'minimum': 1, 'maximum': 86400,
+                    },
+                    'log_group_id': {'type': 'string'},
+                    'log_stream_id': {'type': 'string'},
+                    'destination_config': {
+                        'type': 'object',
+                        'additionalProperties': False,
+                        'properties': {
+                            'on_success': {
+                                'oneOf': [
+                                    {
+                                        'type': 'object',
+                                        'additionalProperties': False,
+                                        'properties': {
+                                            'destination': {'type': 'string', 'enum': ['SMN']},
+                                            'param': {
+                                                'type': 'object',
+                                                'additionalProperties': False,
+                                                'properties': {
+                                                    'topic_urn': {'type': 'string'},
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        'type': 'object',
+                                        'additionalProperties': False,
+                                        'properties': {
+                                            'destination': {'type': 'string', 'enum': ['FunctionGraph']},  # noqa: E501
+                                            'param': {
+                                                'type': 'object',
+                                                'additionalProperties': False,
+                                                'properties': {
+                                                    'func_urn': {'type': 'string'},
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        'type': 'object',
+                                        'additionalProperties': False,
+                                        'properties': {
+                                            'destination': {'type': 'string', 'enum': ['DIS']},
+                                            'param': {
+                                                'type': 'object',
+                                                'additionalProperties': False,
+                                                'properties': {
+                                                    'stream_name': {'type': 'string'},
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        'type': 'object',
+                                        'additionalProperties': False,
+                                        'properties': {
+                                            'destination': {'type': 'string', 'enum': ['OBS']},
+                                            'param': {
+                                                'type': 'object',
+                                                'additionalProperties': False,
+                                                'properties': {
+                                                    'bucket': {'type': 'string'},
+                                                    'prefix': {'type': 'string'},
+                                                    'expires': {
+                                                        'type': 'integer',
+                                                        'default': 0,
+                                                        'minimum': 0,
+                                                        'maximum': 365,
+                                                    },
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {'type': 'null'},
+                                ]
+                            },
+                            'on_failure': {
+                                'oneOf': [
+                                    {
+                                        'type': 'object',
+                                        'additionalProperties': False,
+                                        'properties': {
+                                            'destination': {'type': 'string', 'enum': ['SMN']},
+                                            'param': {
+                                                'type': 'object',
+                                                'additionalProperties': False,
+                                                'properties': {
+                                                    'topic_urn': {'type': 'string'},
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        'type': 'object',
+                                        'additionalProperties': False,
+                                        'properties': {
+                                            'destination': {'type': 'string', 'enum': ['FunctionGraph']},  # noqa: E501
+                                            'param': {
+                                                'type': 'object',
+                                                'additionalProperties': False,
+                                                'properties': {
+                                                    'func_urn': {'type': 'string'},
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        'type': 'object',
+                                        'additionalProperties': False,
+                                        'properties': {
+                                            'destination': {'type': 'string', 'enum': ['DIS']},
+                                            'param': {
+                                                'type': 'object',
+                                                'additionalProperties': False,
+                                                'properties': {
+                                                    'stream_name': {'type': 'string'},
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        'type': 'object',
+                                        'additionalProperties': False,
+                                        'properties': {
+                                            'destination': {'type': 'string', 'enum': ['OBS']},
+                                            'param': {
+                                                'type': 'object',
+                                                'additionalProperties': False,
+                                                'properties': {
+                                                    'bucket': {'type': 'string'},
+                                                    'prefix': {'type': 'string'},
+                                                    'expires': {
+                                                        'type': 'integer',
+                                                        'default': 0,
+                                                        'minimum': 0,
+                                                        'maximum': 365,
+                                                    },
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {'type': 'null'},
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
         }
     )
 
