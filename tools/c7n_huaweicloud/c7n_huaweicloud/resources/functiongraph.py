@@ -212,7 +212,7 @@ class FunctionTrigger(ValueFilter):
 
         # value extract
         # Function triggers in FunctionGraph is list
-        resources_triggers = i.get(self.annotation_key)
+        resources_triggers = i.get(self.annotation_key, [])
 
         # skip value type conversion
         v = self.v

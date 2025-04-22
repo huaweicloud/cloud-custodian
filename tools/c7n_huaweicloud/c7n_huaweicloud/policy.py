@@ -3,10 +3,12 @@
 
 import logging
 import time
+import re
+import pytz
 
 from c7n import utils
 from c7n.exceptions import PolicyValidationError
-from c7n.policy import execution, ServerlessExecutionMode
+from c7n.policy import execution, ServerlessExecutionMode, PullMode
 from c7n.utils import type_schema
 from c7n.version import version
 
@@ -20,7 +22,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
         'huaweicloud',
         access_key_id={'type': 'string'},
         secret_access_key={'type': 'string'},
-        default_region={'type': 'string'},
+        log_level={'type': 'string', 'enum': ['NOTSET', 'DEBUG', 'INFO', 'WARNING',
+                                              'WARN', 'ERROR', 'FATAL', 'CRITICAL']},
         **{
             'execution-options': {'type': 'object'},
             'function-prefix': {'type': 'string'},
@@ -33,7 +36,6 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'memory_size': {'type': 'number'},
             'xrole': {'type': 'string'},
             'func_vpc': {'type': 'object', 'required': ['vpc_id', 'subnet_id']},
-            'user_data': {'type': 'string'},
             'description': {'type': 'string'},
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},
@@ -47,10 +49,10 @@ class FunctionGraphMode(ServerlessExecutionMode):
         MAX_FUNCTIONGRAPH_NAME_LENGTH = 64
         if len(prefix + self.policy.name) > MAX_FUNCTIONGRAPH_NAME_LENGTH:
             raise PolicyValidationError(
-                "Custodian FunctionGraph policies has a max length with prefix of %s"
-                " policy:%s prefix:%s" % (
-                    MAX_FUNCTIONGRAPH_NAME_LENGTH,
+                "Custodian FunctionGraph policies[%s] has a max length with prefix of %s, "
+                "prefix:%s" % (
                     self.policy.name,
+                    MAX_FUNCTIONGRAPH_NAME_LENGTH,
                     prefix
                 )
             )
@@ -155,6 +157,7 @@ class CloudTraceMode(FunctionGraphMode):
     schema = type_schema(
         'cloudtrace',
         delay={'type': 'integer', 'description': 'sleep for delay seconds before processing an event'},  # noqa: E501
+        trigger_name={'type': 'string'},
         events={'type': 'array', 'items': {
             'oneOf': [
                 {'type': 'string'},
@@ -173,3 +176,241 @@ class CloudTraceMode(FunctionGraphMode):
         if delay:
             time.sleep(delay)
         return super().resolve_resources(event)
+
+
+@execution.register('huaweicloud-periodic')
+class PeriodicMode(FunctionGraphMode, PullMode):
+    schema = type_schema(
+        'huaweicloud-periodic',
+        rinherit=FunctionGraphMode.schema,
+        schedule={'type': 'string',
+                  'description': 'When the schedule type is "Rate", this parameter means scheduled rule. '  # noqa: E501
+                                 'When the schedule type is "Cron", this parameter means cron expression.'},  # noqa: E501
+        schedule_type={'type': 'string',
+                       'description': 'Rate: specifies the frequency (minutes, hours, or days) at which the function '  # noqa: E501
+                                      'is invoked. If the unit is minute, the value cannot exceed 60. If the unit is '  # noqa: E501
+                                      'hour, the value cannot exceed 24. If the unit is day, the value cannot exceed '  # noqa: E501
+                                      '30. Cron: specifies a Cron expression to periodically invoke a function.',  # noqa: E501
+                       'enum': ['Rate', 'Cron']},
+        trigger_name={'type': 'string'},
+        status={'type': 'string', 'enum': ['ACTIVE', 'DISABLED']},
+        cron_tz={'type': 'string'},
+        required=['schedule', 'schedule_type'],
+    )
+
+    def validate(self):
+        mode = self.policy.data['mode']
+        schedule_type = mode['schedule_type']
+        if schedule_type == 'Rate':
+            self.validate_rate(mode)
+        elif schedule_type == 'Cron':
+            self.validate_cron(mode)
+        else:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid schedule_type [%s]." % (
+                    self.policy.name,
+                    schedule_type,
+                )
+            )
+
+    def validate_rate(self, mode):
+        rules = {
+            'm': {'name': 'Minute', 'min': 1, 'max': 60},
+            'h': {'name': 'Hour', 'min': 1, 'max': 24},
+            'd': {'name': 'Date', 'min': 1, 'max': 30},
+        }
+        schedule = mode.get('schedule')
+        unit = schedule[-1]
+        if unit not in rules.keys():
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid unit '%s', "
+                "only support %s." % (
+                    self.policy.name,
+                    unit,
+                    list(rules.keys()),
+                )
+            )
+        try:
+            num = int(schedule[:-1])
+        except ValueError as e:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid Rate schedule number '%s', "
+                "error message: %s." % (
+                    self.policy.name,
+                    schedule[:-1],
+                    str(e),
+                )
+            )
+        rule = rules[unit]
+        if num > rule['max'] or num < rule['min']:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid Rate schedule "
+                "number[%d] out of range %s: [%d, %d]" % (
+                    self.policy.name,
+                    num,
+                    rule['name'],
+                    rule['min'],
+                    rule['max'],
+                )
+            )
+
+    def validate_cron(self, mode):
+        cron_tz = mode.get('cron_tz', "")
+        # 1. 校验时区部分（如果存在）
+        if cron_tz:
+            self._validate_cron_timezone(cron_tz)
+
+        schedule = mode.get('schedule')
+        if schedule.startswith("@every"):
+            # 2. 校验@every格式
+            self._validate_at_every(schedule)
+        else:
+            # 3. 校验标准cron格式
+            self._validate_cron_expression(schedule)
+
+    def _validate_cron_timezone(self, timezone_str: str):
+        """
+        校验时区是否合法（如 "Asia/Shanghai"）
+        """
+        try:
+            pytz.timezone(timezone_str)
+            return
+        except pytz.UnknownTimeZoneError:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid cron_tz [%s]." % (
+                    self.policy.name,
+                    timezone_str,
+                )
+            )
+
+    def _validate_at_every(self, expression: str):
+        """
+        校验 @every 格式（如 @every 1h30m）
+        """
+        pattern = r"^@every\s+(?=\d+[hms])(?:(\d+h))?(?:(\d+m))?(?:(\d+s))?$"
+        if not bool(re.match(pattern, expression)):
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid @every cron expression [%s]." % (  # noqa: E501
+                    self.policy.name,
+                    expression,
+                )
+            )
+        return
+
+    def _validate_cron_expression(self, expression: str):
+        """
+        自定义校验 cron 表达式（支持 5 或 6 字段）
+        """
+        # 定义每个字段的规则（正则表达式）
+        field_rules = {
+            5: [
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*)$",  # 秒
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*)$",  # 分钟
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*)$",  # 小时
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*)$",  # 日
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?("
+                r"/\d+)?)*|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$",  # 月（支持英文缩写）
+
+            ],
+            6: [
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*)$",  # 秒
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*)$",  # 分钟
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*)$",  # 小时
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*)$",  # 日
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?("
+                r"/\d+)?)*|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$",  # 月（支持英文缩写）
+                # 周（支持英文缩写）
+                r"^(\*|(\d+|\*/\d+|\d+-\d+)(/\d+)?(,\d+(-\d+)?(/\d+)?)*|mon|tue|wed|thu|fri|sat|sun)$",
+            ]
+        }
+
+        # 预处理英文缩写
+        preprocessed_expression = self._preprocess_cron(expression)
+        # 按空格分割字段
+        fields = preprocessed_expression.split()
+        num_fields = len(fields)
+        if num_fields not in field_rules.keys():
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid cron expression [%s]." % (
+                    self.policy.name,
+                    expression,
+                )
+            )
+
+        # 校验基础格式
+        for i, field in enumerate(fields):
+            pattern = field_rules[num_fields][i]
+            if not re.match(pattern, field.lower()):
+                raise PolicyValidationError(
+                    "Custodian FunctionGraph policies[%s] has a invalid cron expression [%s]"
+                    "in position[%d], value is [%s]." % (
+                        self.policy.name,
+                        expression,
+                        i + 1,
+                        field
+                    )
+                )
+        # 校验数值范围
+        is_valid, error_message = self._validate_cron_ranges(preprocessed_expression, num_fields)
+        if not is_valid:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid cron expression [%s], "
+                "%s." % (
+                    self.policy.name,
+                    expression,
+                    error_message,
+                )
+            )
+
+        return
+
+    @staticmethod
+    def _validate_cron_ranges(expression: str, num_fields: int = 5) -> (bool, str):
+        """
+        校验各字段的数值范围
+        """
+        # 字段配置：名称、最小值、最大值
+        field_config = [
+            {'name': 'Second', 'min': 0, 'max': 59},
+            {'name': 'Minute', 'min': 0, 'max': 59},
+            {'name': 'Hour', 'min': 0, 'max': 23},
+            {'name': 'Date', 'min': 1, 'max': 31},
+            {'name': 'Month', 'min': 1, 'max': 12},
+        ]
+        if num_fields == 6:
+            field_config.insert(5, {'name': 'Week', 'min': 0, 'max': 7})
+
+        fields = expression.split()
+        for i, field in enumerate(fields):
+            config = field_config[i]
+            for part in field.split(','):
+                # 处理步长（如 */15 或 1-30/5）
+                part = part.split('/')[0]
+                if '-' in part:
+                    start, end = map(int, part.split('-'))
+                else:
+                    start = end = int(part) if part != '*' else config['min']
+
+                # 检查范围
+                if start < config['min'] or end > config['max']:
+                    return False, f'{config["name"]} out of range {config["min"]}-{config["max"]}: {field}'  # noqa: E501
+        return True, ""
+
+    @staticmethod
+    def _preprocess_cron(expression: str) -> str:
+        """
+        将月份和周缩写替换为数字（如 JAN→1, MON→1）
+        """
+        month_map = {'JAN': 1, 'FEB': 2, 'MAR': 3, 'APR': 4, 'MAY': 5, 'JUN': 6,
+                     'JUL': 7, 'AUG': 8, 'SEP': 9, 'OCT': 10, 'NOV': 11, 'DEC': 12}
+        day_map = {'SUN': 0, 'MON': 1, 'TUE': 2, 'WED': 3, 'THU': 4, 'FRI': 5, 'SAT': 6}
+
+        fields = expression.upper().split()
+        if len(fields) >= 5:  # 替换月份
+            fields[4] = ','.join([str(month_map.get(p, p)) for p in fields[4].split(',')])
+        if len(fields) >= 6:  # 替换星期
+            fields[5] = ','.join([str(day_map.get(p, p)) for p in fields[5].split(',')])
+        return ' '.join(fields)
+
+    def run(self, event, context):
+        return PullMode.run(self)
