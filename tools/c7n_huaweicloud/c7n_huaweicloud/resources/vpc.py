@@ -1323,7 +1323,7 @@ class PeeringCrossAccount(Filter):
 
 @Peering.filter_registry.register("missing-route")
 class PeeringMissingRoute(Filter):
-    """Return active VPC peering connections which are missing a route 
+    """Return active VPC peering connections which are missing a route
     in route tables.
 
     If the peering connection is between two vpcs in the same account,
