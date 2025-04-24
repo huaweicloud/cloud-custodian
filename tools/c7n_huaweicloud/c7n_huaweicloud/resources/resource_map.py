@@ -15,6 +15,7 @@ ResourceMap = {
     "huaweicloud.iam-policy": "c7n_huaweicloud.resources.iam.Policy",
     "huaweicloud.vpc": "c7n_huaweicloud.resources.vpc.Vpc",
     "huaweicloud.vpc-flow-log": "c7n_huaweicloud.resources.vpc.FlowLog",
+    "huaweicloud.vpc-peering": "c7n_huaweicloud.resources.vpc.Peering",
     "huaweicloud.vpc-port": "c7n_huaweicloud.resources.vpc.Port",
     "huaweicloud.vpc-security-group": "c7n_huaweicloud.resources.vpc.SecurityGroup",
     "huaweicloud.vpc-security-group-rule": "c7n_huaweicloud.resources.vpc.SecurityGroupRule",
