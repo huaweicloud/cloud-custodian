@@ -308,7 +308,10 @@ class FunctionGraphManager:
                     log.info(
                         f'Created trigger[{create_trigger.trigger_id}] for function[{func.func_name}].')  # noqa: E501
 
-        return result
+        results = []
+        if result:
+            results.append(result)
+        return results
 
     def _create_or_update(self, func, role=None):
         role = func.xrole or role
