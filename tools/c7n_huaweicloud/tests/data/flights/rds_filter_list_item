@@ -1,0 +1,73 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250422T115640Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "ds317963178645f4b1a845f36a659bcein01", "status": "ACTIVE",
+        "name": "rds-4ab5", "port": 3306, "type": "Ha", "ha": {"replication_mode":
+        "semisync"}, "region": "aaa", "datastore": {"type": "MySQL", "version": "5.7"},
+        "created": "2023-10-24T03:10:28+0000", "updated": "2023-10-24T03:10:28+0000",
+        "volume": {"type": "ULTRAHIGH", "size": 100}, "nodes": [{"id":
+        "5c69db73b9cd4a28b66232d6775906d1no01", "name": "rds-4ab5_node0", "role":
+        "master", "status": "ACTIVE", "availability_zone": ["cn-north-4a","bbb"]}], "alias":
+        "description", "private_ips": ["192.168.0.1"], "private_dns_names":
+        ["ed7cc6166ec24360a5ed5c5c9c2ed726in01.internal.xxx.com"], "public_dns_names":
+        [], "public_ips": [], "enable_ssl": false, "db_user_name": "root", "vpc_id":
+        "b21630c1-e7d3-450d-907d-39ef5f445ae7", "subnet_id":
+        "45557a98-9e17-4600-8aec-999150bc4eef", "security_group_id":
+        "38815c5c-482b-450a-80b6-0a301f2afd97", "flavor_ref": "rds.mysql.s1.large",
+        "cpu": "2", "mem": "4", "switch_strategy": "", "read_only_by_user": false,
+        "charge_info": {"charge_mode": "postPaid"}, "backup_strategy": {"start_time":
+        "19:00-20:00", "keep_days": 7}, "maintenance_window": "02:00-06:00",
+        "related_instance": [], "disk_encryption_id": "", "enterprise_project_id": "0",
+        "time_zone": "", "tags": [{"key": "rds001", "value": "001"}, {"key": "rds002",
+        "value": "002"}], "associated_with_ddm": false}], "total_count": 1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 22 Apr 2025 11:56:40 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745323000949; path=/
+      - HWWAFSESID=c11b473b59b4d2e11a; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ffa25242b58e9a86648f886c245c27bb
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
