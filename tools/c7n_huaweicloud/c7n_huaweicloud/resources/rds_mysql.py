@@ -40,7 +40,7 @@ class TagEntity:
 @resources.register('rds')
 class RDS(QueryResourceManager):
     """Huawei Cloud RDS Instance Resource Manager
-    
+
     :example:
 
         policies:
