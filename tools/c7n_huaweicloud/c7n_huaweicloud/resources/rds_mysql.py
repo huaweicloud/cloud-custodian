@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from c7n.filters import Filter
 from c7n.utils import type_schema
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -13,7 +12,6 @@ from c7n_huaweicloud.filters.vpc import SecurityGroupFilter, VpcFilter
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkrds.v3 import (
-    ListInstancesRequest,
     DeleteInstanceRequest,
     StartInstanceRestartActionRequest,
     StartupInstanceRequest,

@@ -1,10 +1,8 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-
 import logging
 import os
 import sys
-
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
 from huaweicloudsdkconfig.v1.region.config_region import ConfigRegion
 from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
@@ -99,16 +97,12 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsReqBody,
 )
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
-
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkrds.v3 import ListDatabasesRequest, ListDbUsersRequest
-
 log = logging.getLogger("custodian.huaweicloud.client")
-
 class Session:
     """Session"""
-
     def __init__(self, options=None):
         self.region = os.getenv("HUAWEI_DEFAULT_REGION")
         self.token = None
@@ -117,15 +111,12 @@ class Session:
                 "No default region set. Specify a default via HUAWEI_DEFAULT_REGION"
             )
             sys.exit(1)
-
         if options is not None:
             self.ak = options.get("SecurityAccessKey")
             self.sk = options.get("SecuritySecretKey")
             self.token = options.get("SecurityToken")
-
         self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
         self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
-
     def client(self, service):
         if self.ak is None or self.sk is None:
             # basic
@@ -133,7 +124,6 @@ class Session:
                 MetadataCredentialProvider.get_basic_credential_metadata_provider()
             )
             credentials = basic_provider.get_credentials()
-
             # global
             global_provider = (
                 MetadataCredentialProvider.get_global_credential_metadata_provider()
@@ -146,7 +136,6 @@ class Session:
             globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(
                 self.token
             )
-
         if service == "vpc":
             client = (
                 VpcClientV3.new_builder()
@@ -403,14 +392,11 @@ class Session:
                 .with_region(RdsRegion.value_of(self.region))
                 .build()
             )
-
         return client
-
     def region_client(self, service, region):
         ak = self.ak
         sk = self.sk
         token = self.token
-
         if self.ak is None or self.sk is None:
             basic_provider = (
                 MetadataCredentialProvider.get_basic_credential_metadata_provider()
@@ -419,7 +405,6 @@ class Session:
             ak = credentials.ak
             sk = credentials.sk
             token = credentials.security_token
-
         if service == "obs":
             server = "https://obs." + region + ".myhuaweicloud.com"
             client = ObsClient(
@@ -429,7 +414,6 @@ class Session:
                 security_token=token,
             )
         return client
-
     def request(self, service):
         if service == "vpc" or service == "vpc_v2":
             request = ListSecurityGroupsRequest()
@@ -461,7 +445,6 @@ class Session:
             request = ListOrganizationalUnitsRequest()
         elif service == "org-account":
             request = ListAccountsRequest()
-
         elif service == "kms":
             request = ListKeysRequest()
             request.body = ListKeysRequestBody(key_spec="ALL")
@@ -515,5 +498,4 @@ class Session:
             request = ListDatabasesRequest()
         elif service == 'rds-mysql-user':
             request = ListDbUsersRequest()
-
         return request
