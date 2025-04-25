@@ -380,7 +380,7 @@ class FunctionGraphManager:
             old_config = self.client.show_function_async_invoke_config(
                 show_async_config_request).to_dict()
         except exceptions.ClientRequestException as e:
-            if e.status_code == '404':
+            if int(e.status_code) == 404:
                 old_config = None
             else:
                 log.error(f'Show function async config failed, request id:[{e.request_id}], '
