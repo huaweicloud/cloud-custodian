@@ -714,9 +714,6 @@ class ReusableFeaturesTest(BaseTest):
         # Verify that the matched zone is the one with the tag
         self.assertEqual(resources[0]['id'], target_zone_id)
 
-    # Note: Testing event and reduce filters is complex, usually requiring specific
-    # event or aggregation scenarios, omitted here
-
     def test_filter_marked_for_op_match(self):
         """Test marked-for-op filter - Match"""
         # Verify VCR: Zone 'public-marked.example.com.' in

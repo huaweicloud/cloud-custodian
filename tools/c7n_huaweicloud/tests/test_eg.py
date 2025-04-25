@@ -171,3 +171,23 @@ class EventStreamingTest(BaseTest):
             # Verify results: There should be only one event stream marked for webhook
             self.assertEqual(len(resources), 1)
             self.assertEqual(resources[0]['id'], 'es-004-marked')
+
+    def test_filter_value_match(self):
+        """Test value filter - Match"""
+        factory = self.replay_flight_data("eg_eventstreaming_filter_value_name")
+        # Get the name value from eg_eventstreaming_filter_value_name
+        # Verify VCR: Match the 'name' of 'es-001-target' in
+        # eg_eventstreaming_filter_value_name
+        target_name = "es-001-target"
+        p = self.load_policy(
+            {
+                "name": "eventstreaming-filter-value-name-match",
+                "resource": "huaweicloud.eventstreaming",
+                "filters": [{"type": "value", "key": "name", "value": target_name}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: Only one EventStreaming in eg_eventstreaming_filter_value_name matches this name
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['name'], target_name)
