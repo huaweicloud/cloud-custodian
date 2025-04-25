@@ -398,6 +398,7 @@ class Session:
                 .build()
             )
         return client
+
     def region_client(self, service, region):
         ak = self.ak
         sk = self.sk
@@ -419,6 +420,7 @@ class Session:
                 security_token=token,
             )
         return client
+
     def request(self, service):
         if service == "vpc" or service == "vpc_v2":
             request = ListSecurityGroupsRequest()
