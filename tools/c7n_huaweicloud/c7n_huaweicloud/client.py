@@ -99,6 +99,8 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsReqBody,
 )
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
+from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
+from huaweicloudsdkcc.v3.region.cc_region import CcRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -297,7 +299,7 @@ class Session:
                 .build()
             )
         elif (
-                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -396,6 +398,13 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
+        elif service == "cc":
+            client = (
+                CcClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CcRegion.CN_NORTH_4)
+                .build()
+            )
 
         return client
 
@@ -430,6 +439,8 @@ class Session:
             request = ListVolumesRequest()
         elif service == "er":
             request = ListEnterpriseRoutersRequest()
+        elif service == "cc":
+            request = ListCentralNetworksRequest()
         elif service == "lts-transfer":
             request = ListTransfersRequest()
         elif service == "config":

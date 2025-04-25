@@ -42,5 +42,6 @@ ResourceMap = {
     "huaweicloud.org-unit": "c7n_huaweicloud.resources.organizations.OrgUnit",
     "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
     "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
-    "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka"
+    "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
+    "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
 }
