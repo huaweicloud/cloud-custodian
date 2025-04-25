@@ -86,7 +86,9 @@ class ResourceQuery:
                 replace('true', 'True')))
 
             if path == '*':
-                resources.append(json.loads(str(response)))
+                data_json = json.loads(str(response))
+                data_json["id"] = data_json[m.id]
+                resources.append(data_json)
                 return resources
 
             # replace id with the specified one
@@ -131,6 +133,7 @@ class ResourceQuery:
             if res is not None:
                 for data in res:
                     data['id'] = data[m.id]
+                    data['tag_resource_type'] = m.tag_resource_type
 
             resources = resources + res
             marker = next_marker
@@ -199,6 +202,8 @@ class ResourceQuery:
         if 'id' not in resources[0]:
             for data in resources:
                 data['id'] = data[manager.id]
+
+        self._get_obs_account_id(response, manager, resources)
 
         return resources
 
@@ -273,6 +278,12 @@ class ResourceQuery:
                     data["tag_resource_type"] = m.tag_resource_type
             resources.extend(res)
         return resources
+
+    def _get_obs_account_id(self, response, manager, resources):
+        if manager.service == 'obs':
+            account_id = jmespath.search("body.owner.owner_id", response)
+            for data in resources:
+                data['account_id'] = account_id
 
 
 # abstract method for pagination

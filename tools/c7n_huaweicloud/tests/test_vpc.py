@@ -108,3 +108,60 @@ class SecurityGroupTest(BaseTest):
         self.assertEqual(resources[0]['protocol'], 'tcp')
         self.assertEqual(resources[0]['remote_ip_prefix'], '192.168.21.0/24')
         self.assertIn('8080', resources[0]['multiport'])
+
+
+class FlowLogTest(BaseTest):
+
+    def test_flow_log_set_flow_log_action(self):
+        factory = self.replay_flight_data('vpc_flow_log_set_flow_log')
+        p = self.load_policy({
+             'name': 'set-flow-log',
+             'resource': 'huaweicloud.vpc-flow-log',
+             'filters': [{'type': 'value', 'key': 'resource_type', 'value': 'vpc'},
+                         {'type': 'value', 'key': 'status', 'value': 'DOWN'}],
+             'actions': [{'type': 'set-flow-log', 'action': 'enable'}]},
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['resource_type'], 'vpc')
+        self.assertEqual(resources[0]['status'], 'DOWN')
+
+
+class PortTest(BaseTest):
+    def test_port_disable_port_forwarding(self):
+        factory = self.replay_flight_data('vpc_port_disable_port_forwarding')
+        p = self.load_policy({
+             'name': 'disable-port-forwarding',
+             'resource': 'huaweicloud.vpc-port',
+             'filters': ['port-forwarding'],
+             'actions': ['disable-port-forwarding']},
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertNotEqual(len(resources[0]['allowed_address_pairs']), 0)
+        pairs = resources[0]['allowed_address_pairs']
+        self.assertEqual(pairs[0]['ip_address'], '1.1.1.1/0')
+
+
+class PeeringTest(BaseTest):
+    def test_peering_cross_account(self):
+        factory = self.replay_flight_data('vpc_peering_cross_account')
+        p = self.load_policy({
+            'name': 'vpc-peering-cross-account',
+            'resource': 'huaweicloud.vpc-peering',
+            'filters': ['cross-account'],
+            'actions': ['delete']},
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+    def test_peering_missing_route(self):
+        factory = self.replay_flight_data('vpc_peering_missing_route')
+        p = self.load_policy({
+            'name': 'vpc-peering-missing-route',
+            'resource': 'huaweicloud.vpc-peering',
+            'filters': ['missing-route'],
+            'actions': ['delete']},
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)

@@ -1,13 +1,10 @@
 import functools
 import json
 import logging
-import os
 
-from huaweicloudsdkcore.auth.credentials import GlobalCredentials
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkiam.v3 import (UpdateLoginProtectRequest, UpdateLoginProjectReq,
-    IamClient as IamClientV3, ShowUserLoginProtectRequest, UpdateLoginProject)
-from huaweicloudsdkiam.v3.region import iam_region as iam_region_v3
+    ShowUserLoginProtectRequest, UpdateLoginProject)
 from huaweicloudsdkiam.v5 import (DeletePolicyV5Request, ListAttachedUserPoliciesV5Request,
     DetachUserPolicyV5Request, DetachUserPolicyReqBody, DeleteUserV5Request,
     AddUserToGroupV5Request, AddUserToGroupReqBody, RemoveUserFromGroupV5Request,
@@ -16,10 +13,10 @@ from huaweicloudsdkiam.v5 import (DeletePolicyV5Request, ListAttachedUserPolicie
     GetPolicyVersionV5Request)
 
 from c7n.filters import ValueFilter
-from c7n.utils import type_schema, chunks
-from tools.c7n_huaweicloud.c7n_huaweicloud.actions import HuaweiCloudBaseAction
-from tools.c7n_huaweicloud.c7n_huaweicloud.provider import resources
-from tools.c7n_huaweicloud.c7n_huaweicloud.query import QueryResourceManager, TypeInfo
+from c7n.utils import type_schema, chunks, local_session
+from c7n_huaweicloud.actions import HuaweiCloudBaseAction
+from c7n_huaweicloud.provider import resources
+from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 log = logging.getLogger("custodian.huaweicloud.resources.iam")
 
@@ -49,13 +46,13 @@ class PolicyDelete(HuaweiCloudBaseAction):
     :example:
 
       .. code-block:: yaml
-
-        - name: iam-delete-unused-policies
-          resource: huaweicloud.iam-policy
-          filters:
-            - type: unused
-          actions:
-            - delete
+        policies:
+          - name: iam-delete-unused-policies
+            resource: huaweicloud.iam-policy
+            filters:
+              - type: unused
+            actions:
+              - delete
 
     """
     schema = type_schema('delete')
@@ -67,6 +64,7 @@ class PolicyDelete(HuaweiCloudBaseAction):
                 client.delete_policy_v5(DeletePolicyV5Request(policy_id=resource['policy_id']))
                 print(f"Successfully detached policy: {resource['policy_id']}")
         except exceptions.ClientRequestException as e:
+            print(f"Failed detached policy: {resource['policy_id']}")
             print(e.status_code)
             print(e.request_id)
             print(e.error_code)
@@ -282,12 +280,7 @@ class SetLoginProtect(HuaweiCloudBaseAction):
     )
 
     def perform_action(self, resource):
-        globalCredentials = GlobalCredentials(
-            os.getenv('HUAWEI_ACCESS_KEY_ID'), os.getenv('HUAWEI_SECRET_ACCESS_KEY'))
-        client = IamClientV3.new_builder() \
-            .with_credentials(globalCredentials) \
-            .with_region(iam_region_v3.IamRegion.value_of(os.getenv('HUAWEI_DEFAULT_REGION'))) \
-            .build()
+        client = local_session(self.manager.session_factory).client("iam-v3")
         try:
             request = UpdateLoginProtectRequest(user_id=resource["id"])
 
@@ -330,7 +323,7 @@ class UserLoginProtect(ValueFilter):
             actions:
               - type: set-login-protect
                 enabled: false
-                verification_method: none
+                verification_method: vmfa
     """
 
     schema = type_schema('login-protect', rinherit=ValueFilter.schema)
@@ -340,13 +333,7 @@ class UserLoginProtect(ValueFilter):
 
     def _user_login_protect(self, resource):
         try:
-            globalCredentials = GlobalCredentials(os.getenv('HUAWEI_ACCESS_KEY_ID'),
-                                                  os.getenv('HUAWEI_SECRET_ACCESS_KEY'))
-            client = IamClientV3.new_builder() \
-                .with_credentials(globalCredentials) \
-                .with_region(iam_region_v3.IamRegion.value_of(
-                os.getenv('HUAWEI_DEFAULT_REGION'))) \
-                .build()
+            client = local_session(self.manager.session_factory).client("iam-v3")
             request = ShowUserLoginProtectRequest(user_id=resource["id"])
             response = client.show_user_login_protect(request)
             login_protect = response.login_protect
@@ -391,7 +378,6 @@ class UserLoginProtect(ValueFilter):
             print(e.error_msg)
         except Exception as e:
             print(f"Unexpected error: {e}")
-        print(f"matched: {matched}")
         return matched or []
 
 
@@ -410,7 +396,7 @@ class UserMfaDevice(ValueFilter):
             filters:
               - type: mfa-device
                 key: enabled
-                value: not-null
+                value: true
     """
 
     schema = type_schema('mfa-device', rinherit=ValueFilter.schema)
@@ -461,7 +447,6 @@ class UserMfaDevice(ValueFilter):
             print(e.error_msg)
         except Exception as e:
             print(f"Unexpected error: {e}")
-        print(f"matched: {matched}")
         return matched or []
 
 
@@ -556,6 +541,17 @@ class UserAccessKey(ValueFilter):
                   value_type: age
                   value: 90
                   op: gt
+
+        policies:
+          - name: iam-users-with-active-keys-or-created_at
+            resource: huaweicloud.iam-user
+            filters:
+              - type: access-key
+                key: status
+                value: active
+              - type: access-key
+                key: size
+                value: 1
     """
 
     schema = type_schema(
@@ -595,15 +591,19 @@ class UserAccessKey(ValueFilter):
         matched = []
         for r in resources:
             keys = r[self.annotation_key]
-            k_matched = []
-            for k in keys:
-                if self.match(k):
-                    k_matched.append(k)
-            for k in k_matched:
-                k['c7n:match-type'] = 'access'
-            self.merge_annotation(r, self.matched_annotation_key, k_matched)
-            if k_matched:
+            if (self.data.get('key') == 'size'
+                    and len(keys) == self.data.get('value')):
                 matched.append(r)
+            else:
+                k_matched = []
+                for k in keys:
+                    if self.match(k):
+                        k_matched.append(k)
+                for k in k_matched:
+                    k['c7n:match-type'] = 'access'
+                self.merge_annotation(r, self.matched_annotation_key, k_matched)
+                if k_matched:
+                    matched.append(r)
 
         return matched
 
@@ -635,12 +635,12 @@ class AllowAllIamPolicies(ValueFilter):
     allow all:
 
     .. code-block:: yaml
-
-     - name: iam-no-used-all-all-policy
-       resource: iam-policy
-       filters:
-         - type: used
-         - type: has-allow-all
+        policies:
+         - name: iam-no-used-all-all-policy
+           resource: huaweicloud.iam-policy
+           filters:
+             - type: used
+             - type: has-allow-all
 
     Note that scanning and getting all policies and all statements can take
     a while. Use it sparingly or combine it with filters such as 'used' as
@@ -681,8 +681,10 @@ class AllowAllIamPolicies(ValueFilter):
         client = self.manager.get_client()
         results = [r for r in resources if self.has_allow_all_policy(client, r)]
         self.log.info(
-            "%d of %d iam policies have allow all.",
+            "%s of %s iam policies have allow all.",
             len(results), len(resources))
+        for res in results:
+            self.log.info("allow all iam policy id: %s", res['policy_id'])
         return results
 
 
@@ -696,7 +698,7 @@ class UnusedIamPolicies(ValueFilter):
 
         policies:
           - name: iam-policy-unused
-            resource: iam-policy
+            resource: huaweicloud.iam-policy
             filters:
               - type: unused
     """
@@ -718,7 +720,7 @@ class UsedIamPolicies(ValueFilter):
 
         policies:
           - name: iam-policy-used
-            resource: iam-policy
+            resource: huaweicloud.iam-policy
             filters:
               - type: used
     """

@@ -1,0 +1,7 @@
+domains:
+  - name: "wangchao_92"
+    domain_id: "0f73f7a6b15144a0a646ebd20e8e2d15"
+    agency_urn: "iam::0f73f7a6b15144a0a646ebd20e8e2d15:agency:custodian_dawu"
+    duration_seconds: 1800
+    regions:
+      - "ap-southeast-1"

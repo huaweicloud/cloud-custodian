@@ -13,8 +13,11 @@ from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
-from huaweicloudsdkiam.v5 import IamClient as IamClientV5, \
-    ListUsersV5Request, ListPoliciesV5Request
+from huaweicloudsdkiam.v5 import (
+    IamClient as IamClientV5,
+    ListUsersV5Request,
+    ListPoliciesV5Request,
+)
 from huaweicloudsdkiam.v5.region import iam_region as iam_region_v5
 from huaweicloudsdkiam.v3 import IamClient as IamClientV3
 from huaweicloudsdkiam.v3.region.iam_region import IamRegion as iam_region_v3
@@ -34,10 +37,11 @@ from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
 from huaweicloudsdker.v3 import ErClient, ListEnterpriseRoutersRequest
 from huaweicloudsdker.v3.region.er_region import ErRegion
-from huaweicloudsdkobs.v1.region.obs_region import ObsRegion
 from obs import ObsClient
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
+from huaweicloudsdkkafka.v2 import KafkaClient, ListInstancesRequest
+from huaweicloudsdkkafka.v2.region.kafka_region import KafkaRegion
 from huaweicloudsdkkms.v2 import KmsClient, ListKeysRequest, ListKeysRequestBody
 from huaweicloudsdkkms.v2.region.kms_region import KmsRegion
 from huaweicloudsdkeg.v1 import EgClient
@@ -76,56 +80,72 @@ from huaweicloudsdksfsturbo.v1 import SFSTurboClient, ListSharesRequest
 from huaweicloudsdksfsturbo.v1.region.sfsturbo_region import SFSTurboRegion
 from huaweicloudsdkcoc.v1 import CocClient, ListInstanceCompliantRequest
 from huaweicloudsdkcoc.v1.region.coc_region import CocRegion
-from huaweicloudsdkorganizations.v1 import OrganizationsClient, ListAccountsRequest, \
-    ListOrganizationalUnitsRequest, ListPoliciesRequest
-from huaweicloudsdkorganizations.v1.region.organizations_region import OrganizationsRegion
+from huaweicloudsdkorganizations.v1 import (
+    OrganizationsClient,
+    ListAccountsRequest,
+    ListOrganizationalUnitsRequest,
+    ListPoliciesRequest,
+)
+from huaweicloudsdkorganizations.v1.region.organizations_region import (
+    OrganizationsRegion,
+)
+from huaweicloudsdkantiddos.v1 import AntiDDoSClient, ListDDosStatusRequest
+from huaweicloudsdkantiddos.v1.region.antiddos_region import AntiDDoSRegion
 from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
 from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
-from huaweicloudsdkram.v1 import RamClient, SearchResourceShareAssociationsRequest, \
-    SearchResourceShareAssociationsReqBody
+from huaweicloudsdkram.v1 import (
+    RamClient,
+    SearchResourceShareAssociationsRequest,
+    SearchResourceShareAssociationsReqBody,
+)
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 
-log = logging.getLogger('custodian.huaweicloud.client')
+log = logging.getLogger("custodian.huaweicloud.client")
 
 
 class Session:
     """Session"""
 
     def __init__(self, options=None):
-        self.region = os.getenv("HUAWEI_DEFAULT_REGION")
         self.token = None
+        self.domain_id = None
+
+        if options is not None:
+            self.ak = options.get("access_key_id")
+            self.sk = options.get("secret_access_key")
+            self.token = options.get("security_token")
+            self.domain_id = options.get("account_id")
+            self.region = options.get("region")
+
+        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
+        self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
+        self.region = os.getenv("HUAWEI_DEFAULT_REGION") or self.region
+
         if not self.region:
             log.error(
                 "No default region set. Specify a default via HUAWEI_DEFAULT_REGION"
             )
             sys.exit(1)
 
-        if options is not None:
-            self.ak = options.get("SecurityAccessKey")
-            self.sk = options.get("SecuritySecretKey")
-            self.token = options.get("SecurityToken")
-
-        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
-        self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
-
     def client(self, service):
         if self.ak is None or self.sk is None:
             # basic
-            basic_provider = MetadataCredentialProvider \
-                .get_basic_credential_metadata_provider()
+            basic_provider = (
+                MetadataCredentialProvider.get_basic_credential_metadata_provider()
+            )
             credentials = basic_provider.get_credentials()
 
             # global
-            global_provider = MetadataCredentialProvider \
-                .get_global_credential_metadata_provider()
+            global_provider = (
+                MetadataCredentialProvider.get_global_credential_metadata_provider()
+            )
             globalCredentials = global_provider.get_credentials()
         else:
             credentials = BasicCredentials(
                 self.ak, self.sk, os.getenv("HUAWEI_PROJECT_ID")
             ).with_security_token(self.token)
-            globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(
-                self.token
-            )
+            globalCredentials = (GlobalCredentials(self.ak, self.sk, self.domain_id)
+                                 .with_security_token(self.token))
 
         if service == "vpc":
             client = (
@@ -148,7 +168,7 @@ class Session:
                 .with_region(EcsRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'er':
+        elif service == "er":
             client = (
                 ErClient.new_builder()
                 .with_credentials(credentials)
@@ -173,7 +193,7 @@ class Session:
             client = (
                 TmsClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(TmsRegion.value_of("cn-north-4"))
+                .with_region(TmsRegion.value_of("ap-southeast-1"))
                 .build()
             )
         elif service == "cbr":
@@ -183,7 +203,7 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region))
                 .build()
             )
-        elif service in ['iam-user', 'iam-policy']:
+        elif service in ["iam-user", "iam-policy"]:
             client = (
                 IamClientV5.new_builder()
                 .with_credentials(globalCredentials)
@@ -277,7 +297,7 @@ class Session:
                 .build()
             )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -348,24 +368,59 @@ class Session:
                 .with_region(CocRegion.value_of("cn-north-4"))
                 .build()
             )
-        elif service in ['org-policy', 'org-unit', 'org-account']:
-            client = OrganizationsClient.new_builder() \
-                .with_credentials(globalCredentials) \
-                .with_region(OrganizationsRegion.CN_NORTH_4) \
+        elif service in ["org-policy", "org-unit", "org-account"]:
+            client = (
+                OrganizationsClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(OrganizationsRegion.CN_NORTH_4)
                 .build()
-        elif service == 'ram':
-            client = RamClient.new_builder() \
-                .with_credentials(globalCredentials) \
-                .with_region(RamRegion.CN_NORTH_4) \
+            )
+        elif service == "ram":
+            client = (
+                RamClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(RamRegion.CN_NORTH_4)
                 .build()
+            )
+        elif service == "antiddos":
+            client = (
+                AntiDDoSClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AntiDDoSRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'kafka':
+            client = (
+                KafkaClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(KafkaRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
     def region_client(self, service, region):
-        if service == 'obs':
-            client = ObsClient(access_key_id=self.ak, secret_access_key=self.sk,
-                                server=ObsRegion.value_of(region).endpoint,
-                                security_token=self.token)
+        ak = self.ak
+        sk = self.sk
+        token = self.token
+
+        if self.ak is None or self.sk is None:
+            basic_provider = (
+                MetadataCredentialProvider.get_basic_credential_metadata_provider()
+            )
+            credentials = basic_provider.get_credentials()
+            ak = credentials.ak
+            sk = credentials.sk
+            token = credentials.security_token
+
+        if service == "obs":
+            server = "https://obs." + region + ".myhuaweicloud.com"
+            client = ObsClient(
+                access_key_id=ak,
+                secret_access_key=sk,
+                server=server,
+                security_token=token,
+            )
         return client
 
     def request(self, service):
@@ -373,32 +428,34 @@ class Session:
             request = ListSecurityGroupsRequest()
         elif service == "evs":
             request = ListVolumesRequest()
-        elif service == 'er':
+        elif service == "er":
             request = ListEnterpriseRoutersRequest()
         elif service == "lts-transfer":
             request = ListTransfersRequest()
         elif service == "config":
             request = ShowTrackerConfigRequest()
         elif service == "ecs":
-            request = ListServersDetailsRequest()
+            request = ListServersDetailsRequest(
+                not_tags="__type_baremetal"
+            )
         elif service == "deh":
             request = ListDedicatedHostsRequest()
         elif service == "obs":
             request = True
-        elif service == 'iam-user':
+        elif service == "iam-user":
             request = ListUsersV5Request()
-        elif service == 'iam-policy':
+        elif service == "iam-policy":
             request = ListPoliciesV5Request()
         elif service == "ces":
             request = ListAlarmRulesRequest()
-        elif service == 'org-policy':
+        elif service == "org-policy":
             request = ListPoliciesRequest()
-        elif service == 'org-unit':
+        elif service == "org-unit":
             request = ListOrganizationalUnitsRequest()
-        elif service == 'org-account':
+        elif service == "org-account":
             request = ListAccountsRequest()
 
-        elif service == 'kms':
+        elif service == "kms":
             request = ListKeysRequest()
             request.body = ListKeysRequestBody(key_spec="ALL")
         elif service == "functiongraph":
@@ -429,16 +486,21 @@ class Session:
             request.notification_type = "fun"
         elif service == "cbr-backup":
             request = ListBackupsRequest()
+            request.show_replication = True
         elif service == "cbr-vault":
             request = ListVaultRequest()
         elif service == "sfsturbo":
             request = ListSharesRequest()
         elif service == "coc":
             request = ListInstanceCompliantRequest()
-        elif service == 'ram':
+        elif service == "ram":
             request = SearchResourceShareAssociationsRequest()
             request.body = SearchResourceShareAssociationsReqBody(
-                association_type="principal",
-                association_status="associated")
+                association_type="principal", association_status="associated"
+            )
+        elif service == "antiddos":
+            request = ListDDosStatusRequest()
+        elif service == 'kafka':
+            request = ListInstancesRequest()
 
         return request

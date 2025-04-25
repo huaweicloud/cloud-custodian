@@ -398,7 +398,9 @@ class SetPolicyStatement(HuaweiCloudBaseAction):
             **self.get_std_format_args(bucket))
 
         policy = bucket.get('Policy') or '{}'
-        policy = json.loads(policy)
+        if policy:
+            policy = json.loads(policy)
+
         bucket_statements = policy.setdefault('Statement', [])
 
         new_statement = []
@@ -423,6 +425,67 @@ class SetPolicyStatement(HuaweiCloudBaseAction):
             'bucket_name': bucket['name'],
             'bucket_region': bucket['location']
         }
+
+
+@Obs.action_registry.register("remove-cross-account-config")
+class RemoveCrossAccountAccessConfig(HuaweiCloudBaseAction):
+    """delete cross-account access statements in obs bucket policy
+
+        :example:
+
+        .. code-block:: yaml
+
+                policies:
+                - name: remove-cross-account-access
+                    resource: huaweicloud.obs
+                    filters:
+                      - type: cross-account
+                    actions:
+                      - type: remove-cross-account-config
+        """
+    schema = type_schema('remove-cross-account-config')
+
+    annotation_policy_key = 'c7n:Statements'
+    annotation_acl_key = 'c7n:Acl'
+
+    def perform_action(self, bucket):
+        p = bucket.get('Policy')
+        if p is None:
+            return
+
+        client = get_obs_client(self.manager.session_factory, bucket)
+        self.update_statements(bucket, client)
+        self.update_acl(bucket, client)
+
+        return bucket
+
+    def update_statements(self, bucket, client):
+        bucket_name = bucket['name']
+
+        if bucket.get(self.annotation_policy_key) is None:
+            log.info("bucket %s does not need update bucket policy" % bucket_name)
+            return
+
+        if not bucket[self.annotation_policy_key]:
+            resp = client.deleteBucketPolicy(bucket_name)
+        else:
+            policy = {'Statement': bucket[self.annotation_policy_key]}
+            resp = client.setBucketPolicy(bucket_name, json.dumps(policy))
+
+        if resp.status > 300:
+            raise_exception(resp, 'updateBucketPolicy', bucket)
+
+    def update_acl(self, bucket, client):
+        bucket_name = bucket['name']
+
+        if bucket.get(self.annotation_acl_key) is None:
+            log.info("bucket %s does not need update acl" % bucket_name)
+            return
+
+        resp = client.setBucketAcl(bucket_name, bucket[self.annotation_acl_key])
+
+        if resp.status > 300:
+            raise_exception(resp, 'setBucketAcl', bucket)
 
 
 # ----------------------OBS Fileter-------------------------------------------
@@ -490,7 +553,7 @@ class WildcardStatementFilter(Filter):
             policy = resp.body.policyJSON
             bucket['Policy'] = policy
         else:
-            if 'NoSuchBucketPolicy' == resp.errorCode:
+            if 'NoSuchBucketPolicy' == resp.errorCode or 'Not Found' == resp.reason:
                 bucket['Policy'] = {}
             else:
                 raise_exception(resp, 'getBucketPolicy', bucket)
@@ -560,7 +623,7 @@ class BucketEncryptionStateFilter(Filter):
             return encryption
         else:
             error_code = resp.errorCode
-            if 'NoSuchEncryptionConfiguration' == error_code:
+            if 'NoSuchEncryptionConfiguration' == error_code or 'Not Found' == resp.reason:
                 return None
             else:
                 raise_exception(resp, 'getBucketEncryption', bucket)
@@ -624,7 +687,7 @@ class GlobalGrantsFilter(Filter):
 
             if allow_website and grant['permission'] == 'READ' and \
                 self.is_website_bucket(bucket, client=client):
-                print("is website bucket")
+                log.info("is website bucket")
                 continue
 
             if not perms or (perms and grant['permission'] in perms):
@@ -642,6 +705,9 @@ class GlobalGrantsFilter(Filter):
             acl = resp.body
             bucket['Acl'] = acl
         else:
+            if 'Not Found' == resp.reason:
+                bucket['Acl'] = {'grants': []}
+                return
             raise_exception(resp, 'getBucketWebsite', bucket)
 
     def is_website_bucket(self, bucket, client):
@@ -711,7 +777,8 @@ class FilterPublicBlock(Filter):
                 config = resp.body
             else:
                 error_code = resp.reason
-                if error_code == 'Forbidden' or error_code == 'Method Not Allowed':
+                if error_code == 'Forbidden' or error_code == 'Method Not Allowed'\
+                or 'Not Found' == resp.reason:
                     log.error('unsupport operate [BucketPublicAccessBlock]')
                     return None
                 raise_exception(resp, 'BucketPublicAccessBlock', bucket)
@@ -794,6 +861,9 @@ class SecureTransportFilter(Filter):
                          for item in self.resource_list_template]
 
         policy = bucket.get('Policy') or '{}'
+        if not policy:
+            return False
+
         policy = json.loads(policy)
         bucket_statements = policy.setdefault('Statement', [])
 
@@ -822,7 +892,165 @@ class SecureTransportFilter(Filter):
             policy = resp.body.policyJSON
             bucket['Policy'] = policy
         else:
-            if 'NoSuchBucketPolicy' == resp.errorCode:
+            if 'NoSuchBucketPolicy' == resp.errorCode or 'Not Found' == resp.reason:
                 bucket['Policy'] = {}
                 return
             raise_exception(resp, 'getBucketPolicy', bucket)
+
+
+@Obs.filter_registry.register("cross-account")
+class ObsCrossAccountFilter(Filter):
+    """Filters cross-account access to obs buckets
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: find-cross-account-access
+                resource: huaweicloud.obs
+                filters:
+                  - type: cross-account
+    """
+    schema = type_schema('cross-account', allow_website={'type': 'boolean'})
+
+    black_listed_actions = ["PutBucketPolicy", "DeleteBucketPolicy",
+     "PutBucketAcl", "PutEncryptionConfiguration", "PutObjectAcl", "*"]
+
+    def process(self, buckets, event=None):
+        with self.executor_factory(max_workers=5) as w:
+            results = w.map(self.process_bucket, buckets)
+            results = list(filter(None, list(results)))
+            return results
+
+    def process_bucket(self, bucket):
+        client = get_obs_client(self.manager.session_factory, bucket)
+
+        self.get_bucket_policy(bucket, client)
+        self.query_bucket_acl(bucket, client)
+        self.query_bucket_website_config(bucket, client)
+
+        policy_violating = self.check_is_cross_account_by_policy(bucket)
+        acl_violating = self.check_is_cross_accout_by_acl(bucket)
+
+        if policy_violating or acl_violating:
+            return bucket
+
+        return None
+
+    def check_is_cross_account_by_policy(self, bucket):
+        policy = bucket.get('Policy', {})
+        if not policy:
+            return False
+
+        statements = json.loads(policy).get('Statement', [])
+        legal_statements = []
+        violating = False
+
+        for stmt in statements:
+            if self.is_violation(stmt, bucket['account_id']):
+                violating = True
+            else:
+                legal_statements.append(stmt)
+
+        if violating:
+            bucket[RemoveCrossAccountAccessConfig.annotation_policy_key] = legal_statements
+            return True
+
+        return False
+
+    def is_violation(self, stmt, current_account):
+        if stmt.get('Effect') != 'Allow':
+            return False
+
+        principal_user = stmt.get('Principal', {}).get("ID", [])
+
+        for user in principal_user:
+            if current_account not in user:
+                return True
+
+        return False
+
+    def check_is_cross_accout_by_acl(self, bucket):
+        acl = bucket.get('Acl', {})
+        if not acl:
+            return False
+
+        grants = acl.get('grants', [])
+        legal_grants = []
+        violating = False
+
+        for grant in grants:
+            grantee = grant.get('grantee', {})
+            if not grantee:
+                continue
+
+            if 'group' in grantee:
+                if grantee['group'] not in ['Everyone']:
+                    legal_grants.append(grant)
+                else:
+                    if grant['permission'] == 'READ' and bucket['website']:
+                        legal_grants.append(grant)
+                        continue
+                    else:
+                        violating = True
+
+            if 'grantee_id' in grantee:
+                if grantee['grantee_id'] != bucket['account_id']:
+                    violating = True
+                else:
+                    legal_grants.append(grant)
+
+        if violating:
+            owner = acl['owner']
+            new_acl = ACL(owner, legal_grants)
+            bucket[RemoveCrossAccountAccessConfig.annotation_acl_key] = new_acl
+
+        return violating
+
+    def get_bucket_policy(self, bucket, client):
+        resp = client.getBucketPolicy(bucket['name'])
+
+        if resp.status < 300:
+            policy = resp.body.policyJSON
+            bucket['Policy'] = policy
+        else:
+            if 'NoSuchBucketPolicy' == resp.errorCode or 'Not Found' == resp.reason:
+                bucket['Policy'] = {}
+                return
+            raise_exception(resp, 'getBucketPolicy', bucket)
+
+        self.query_bucket_acl(bucket, client)
+
+    def query_bucket_acl(self, bucket, client):
+        resp = client.getBucketAcl(bucket['name'])
+        if resp.status < 300:
+            acl = resp.body
+            bucket['Acl'] = acl
+        else:
+            if 'Not Found' == resp.reason:
+                bucket['Acl'] = {'owner': {}, 'grants': []}
+                return
+            raise_exception(resp, 'getBucketAcl', bucket)
+
+    def query_bucket_website_config(self, bucket, client):
+        allow_website = self.data.get('allow_website', True)
+        if not allow_website:
+            bucket['website'] = False
+            return
+
+        resp = client.getBucketWebsite(bucket['name'])
+        if resp.status < 300:
+            website_config = resp.body
+            if 'indexDocument' in website_config:
+                bucket['website'] = True
+                return True
+            else:
+                bucket['website'] = False
+                return False
+        else:
+            if 'NoSuchWebsiteConfiguration' == resp.errorCode:
+                bucket['website'] = False
+                return False
+            else:
+                raise_exception(resp, 'getBucketWebsite', bucket)

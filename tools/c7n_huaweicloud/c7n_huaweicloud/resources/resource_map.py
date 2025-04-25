@@ -15,6 +15,7 @@ ResourceMap = {
     "huaweicloud.iam-policy": "c7n_huaweicloud.resources.iam.Policy",
     "huaweicloud.vpc": "c7n_huaweicloud.resources.vpc.Vpc",
     "huaweicloud.vpc-flow-log": "c7n_huaweicloud.resources.vpc.FlowLog",
+    "huaweicloud.vpc-peering": "c7n_huaweicloud.resources.vpc.Peering",
     "huaweicloud.vpc-port": "c7n_huaweicloud.resources.vpc.Port",
     "huaweicloud.vpc-security-group": "c7n_huaweicloud.resources.vpc.SecurityGroup",
     "huaweicloud.vpc-security-group-rule": "c7n_huaweicloud.resources.vpc.SecurityGroupRule",
@@ -39,5 +40,7 @@ ResourceMap = {
     "huaweicloud.org-policy": "c7n_huaweicloud.resources.organizations.OrgPolicy",
     "huaweicloud.org-account": "c7n_huaweicloud.resources.organizations.OrgAccount",
     "huaweicloud.org-unit": "c7n_huaweicloud.resources.organizations.OrgUnit",
-    "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals"
+    "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
+    "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
+    "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka"
 }

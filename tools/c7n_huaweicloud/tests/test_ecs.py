@@ -1,7 +1,7 @@
 from huaweicloud_common import BaseTest
 
 
-class InstanceStartTest(BaseTest):
+class EcsTest(BaseTest):
 
     def test_instance_query(self):
         factory = self.replay_flight_data("ecs_instance_query")

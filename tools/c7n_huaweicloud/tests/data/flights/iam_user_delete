@@ -18,9 +18,9 @@ interactions:
     uri: https://iam.myhuaweicloud.com/v3/auth/domains
   response:
     body:
-      string: '{"domains":[{"description":"","enabled":true,"id":"be4d8afe888888888888888888aa3072cf36",
-      "links":{"self":"https://iam.myhuaweicloud.com/v3/domains/be4d8afe888888888888888888aa3072cf36"},
-      "name":"ResourceGovernanceTest001"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+      string: '{"domains":[{"description":"","enabled":true,"id":"domainid1",
+      "links":{"self":"https://iam.myhuaweicloud.com/v3/domains/domainid1"},
+      "name":"domainname1"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
     headers:
       Connection:
       - keep-alive
@@ -57,18 +57,18 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - organizations.myhuaweicloud.com
+      - iam.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
-      - be4d8afe888888888888888888aa3072cf36
+      - domainid1
       X-Sdk-Date:
       - 20250326T064814Z
     method: GET
-    uri: https://organizations.myhuaweicloud.com/v1/organizations/accounts?limit=100
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v5/users?limit=100
   response:
     body:
-      string: '{"accounts":[{"id":"8e5fe930d666666666666666602c","urn":"organizations::be4d8afe888888888888888888aa3072cf36:account:o-wyla9th3pyv5ni3z8ud554k23jvrr22e/8e5fe930d666666666666666602c","join_method":"invited","status":"active","joined_at":"2023-07-20T02:07:56Z","name":"fake_account_name","description":null,"mobile_phone":null,"intl_number_prefix":null,"email":null},{"id":"be4d8afe888888888888888888aa3072cf36","urn":"organizations::be4d8afe888888888888888888aa3072cf36:account:o-wyla9th3pyv5ni3z8ud554k23jvrr22e/be4d8afe888888888888888888aa3072cf36","join_method":"created","status":"active","joined_at":"2023-07-20T01:01:22Z","name":"ResourceGovernanceTest001","description":null,"mobile_phone":null,"intl_number_prefix":null,"email":null}],"page_info":{"next_marker":null,"current_count":2}}'
+      string: '{"users": ["user_name" : "name1", "user_id": "id1"]}'
     headers:
       Connection:
       - keep-alive
@@ -97,5 +97,57 @@ interactions:
       - 1; mode=block;
     status:
       code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - domainid1
+      X-Sdk-Date:
+      - 20250326T064814Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v5/users/id1
+  response:
+    body:
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 26 Mar 2025 06:48:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1742971694821; path=/
+      - HWWAFSESID=9757c736bcf3c7385c; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 39fce0b907ca7d6c4dae0d4824af2bbd
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
       message: OK
 version: 1

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "c7n_huaweicloud"
-version = "0.1.0"
+version = "0.1.1"
 description = "Cloud Custodian - Huawei Cloud Support"
 readme = "readme.md"
 homepage = "https://cloudcustodian.io"
@@ -9,7 +9,7 @@ documentation = "https://cloudcustodian.io/docs/"
 authors = ["Cloud Custodian Project"]
 license = "Apache-2.0"
 classifiers = [
-    "License :: Huawei Cloud Approved :: Apache Software License",
+    "License :: OSI Approved :: Apache Software License",
     "Topic :: System :: Systems Administration",
     "Topic :: System :: Distributed Computing"
 ]
@@ -17,6 +17,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 jsonpatch = "^1.25"
+pytz = "^2025.2"
 python-dateutil = "^2.8.2"
 huaweicloudsdkecs = "^3.1.138"
 huaweicloudsdkevs = "^3.1.138"
@@ -37,6 +38,7 @@ huaweicloudsdkelb = "^3.1.138"
 huaweicloudsdkeip = "^3.1.138"
 huaweicloudsdkgeip = "^3.1.138"
 huaweicloudsdkims = "^3.1.138"
+huaweicloudsdkkafka = "^3.1.138"
 huaweicloudsdkkms = "^3.1.138"
 huaweicloudsdkcbr = "^3.1.138"
 huaweicloudsdknat = "^3.1.138"
@@ -46,6 +48,7 @@ huaweicloudsdksecmaster = "^3.1.140"
 huaweicloudsdksfsturbo = "^3.1.138"
 huaweicloudsdkorganizations ="^3.1.138"
 huaweicloudsdkram = "^3.1.138"
+huaweicloudsdkantiddos = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"
