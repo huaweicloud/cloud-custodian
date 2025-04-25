@@ -54,6 +54,7 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
+from huaweicloudsdkeg.v1 import ListEventStreamingRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
 from huaweicloudsdkeip.v3 import EipClient
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
@@ -538,5 +539,6 @@ class Session:
             request = ListInstancesRequest()
         elif service == "bms":
             request = ListBareMetalServerDetailsRequest()
-
+        elif service == 'eg':
+            request = ListEventStreamingRequest()
         return request
