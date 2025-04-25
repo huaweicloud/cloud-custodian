@@ -103,6 +103,7 @@ from huaweicloudsdkrds.v3 import ListDatabasesRequest, ListDbUsersRequest
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
+
 class Session:
     """Session"""
     def __init__(self, options=None):
@@ -118,7 +119,9 @@ class Session:
             self.sk = options.get("SecuritySecretKey")
             self.token = options.get("SecurityToken")
         self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
+
         self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
+
     def client(self, service):
         if self.ak is None or self.sk is None:
             # basic
