@@ -13,30 +13,220 @@ interactions:
       Host:
       - eg.cn-north-4.myhuaweicloud.com
       User-Agent:
-      - huaweicloud-usdk-python/3.1
-      X-Auth-Token:
-      - MIIZGAYJKoZIhvcNAQcCoIIZCTCCGQUCAQExDTALBg...
+      - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20240520T080400Z
+      - 20250425T043608Z
     method: GET
     uri: https://eg.cn-north-4.myhuaweicloud.com/v1/ap-southeat-1/eventstreamings?limit=100&offset=0
   response:
     body:
-      string: '{"total":2,"size":2,"items":[{"id":"es-005-two-tags","name":"event-streaming-two-tags","description":"具有两个标签的事件流","source":{"name":"SMN","source_smn":{"topic_urn":"urn:smn:cn-north-4:test:test-topic"}},"sink":{"name":"OBS","sink_obs":{"obs_bucket":"event-data","obs_path":"events/","time_format":"yyyy/MM/dd"}},"rule_config":{},"option":{"thread_num":1,"batch_window":{"count":100,"time":60}},"status":"RUNNING","created_time":"2023-06-01T10:00:00Z","updated_time":"2023-06-01T10:00:00Z","tags":{"env":"production","project":"cloud-custodian"}},{"id":"es-006-three-tags","name":"event-streaming-three-tags","description":"具有三个标签的事件流","source":{"name":"DIS","source_dis":{"stream_name":"test-stream"}},"sink":{"name":"DWS","sink_dws":{"cluster_name":"test-cluster","database_name":"test-db","schema_name":"test-schema","table_name":"test-table"}},"rule_config":{},"option":{"thread_num":2,"batch_window":{"count":200,"time":120}},"status":"RUNNING","created_time":"2023-07-01T10:00:00Z","updated_time":"2023-07-01T10:00:00Z","tags":{"env":"development","project":"cloud-custodian","department":"IT"}}]}'
+      string: '{ "total": 3, "size": 3, "items": [ { "id": "es-005-two-tags", "name":
+        "test-streaming-two-tags", "source": { "name": "DIS", "source_dis": { "stream_name":
+        "test-stream" } }, "sink": { "name": "OBS", "sink_obs": { "obs_bucket": "test-bucket",
+        "obs_path": "events/", "time_format": "yyyy/MM/dd" } }, "rule_config": {},
+        "option": { "thread_num": 1, "batch_window": { "count": 100, "time": 60 }
+        }, "status": "RUNNING", "created_time": "2025-04-20T10:30:00Z", "updated_time":
+        "2025-04-20T10:30:00Z" }, { "id": "es-007-one-tag", "name": "test-streaming-one-tag",
+        "source": { "name": "DIS", "source_dis": { "stream_name": "test-stream-2"
+        } }, "sink": { "name": "OBS", "sink_obs": { "obs_bucket": "test-bucket-2",
+        "obs_path": "events/", "time_format": "yyyy/MM/dd" } }, "rule_config": {},
+        "option": { "thread_num": 1, "batch_window": { "count": 100, "time": 60 }
+        }, "status": "RUNNING", "created_time": "2025-04-20T10:35:00Z", "updated_time":
+        "2025-04-20T10:35:00Z" }, { "id": "es-008-no-tags", "name": "test-streaming-no-tags",
+        "source": { "name": "DIS", "source_dis": { "stream_name": "test-stream-3"
+        } }, "sink": { "name": "OBS", "sink_obs": { "obs_bucket": "test-bucket-3",
+        "obs_path": "events/", "time_format": "yyyy/MM/dd" } }, "rule_config": {},
+        "option": { "thread_num": 1, "batch_window": { "count": 100, "time": 60 }
+        }, "status": "RUNNING", "created_time": "2025-04-20T10:40:00Z", "updated_time":
+        "2025-04-20T10:40:00Z" } ] }'
     headers:
-      Content-Length:
-      - '1024'
+      Connection:
+      - keep-alive
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Mon, 20 May 2024 08:04:00 GMT
+      - Fri, 25 Apr 2025 04:36:08 GMT
       Server:
       - API Gateway
       X-Request-Id:
-      - a9b17299-8af4-4c88-b5a1-d6e25a11c123
+      - 245c7f419684f34ca1395fe30c9d3293
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - tms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Auth-Token:
+      - MIIZGAYJKoZIhvcNAQcCoIIZCTCCGQUCAQExDTALBg...
+    method: GET
+    uri: https://tms.ap-southeast-1.myhuaweicloud.com/v2.0/resources/es-005-two-tags/tags?resource_type=EGS_EVENTSTREAMING
+  response:
+    body:
+      string: '{"tags":[{"key":"environment","value":"testing"},{"key":"project","value":"cloud-custodian"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 25 Apr 2025 04:36:09 GMT
+      Server:
+      - API Gateway
+      X-Request-Id:
+      - 346c8f520795f45db2406fe41d0e4304
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - tms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Auth-Token:
+      - MIIZGAYJKoZIhvcNAQcCoIIZCTCCGQUCAQExDTALBg...
+    method: GET
+    uri: https://tms.ap-southeast-1.myhuaweicloud.com/v2.0/resources/es-007-one-tag/tags?resource_type=EGS_EVENTSTREAMING
+  response:
+    body:
+      string: '{"tags":[{"key":"environment","value":"development"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 25 Apr 2025 04:36:10 GMT
+      Server:
+      - API Gateway
+      X-Request-Id:
+      - 447d9f631806f56ec3517fe52e1f5415
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250425T055138Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"07c29ea5fe4cce5c0b93fd96b27850fc"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 05:51:38 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=cfbab82c13c4157b23; path=/
+      - HWWAFSESTIME=1745560293941; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 07c29ea5fe4cce5c0b93fd96b27850fc
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250425T063318Z
+    method: GET
+    uri: https://iam.cn-north-4.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"34c0bea05f7f20c25bbc942b560c951f"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 06:33:19 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745562794968; path=/
+      - HWWAFSESID=1654b23b71cbd6064f0; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 34c0bea05f7f20c25bbc942b560c951f
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
 version: 1
