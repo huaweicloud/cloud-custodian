@@ -1,0 +1,98 @@
+interactions:
+- request:
+    body: '{"tags": {"env": "test", "project": "cloud-custodian"}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '51'
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250425T023653Z
+    method: POST
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/eventstreamings/tags/action
+  response:
+    body:
+      string: ''
+    headers:
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 25 Apr 2025 02:36:53 GMT
+      Server:
+      - API Gateway
+      X-Request-Id:
+      - d9b17299-8af4-4c88-b5a1-d6e25a11c012
+    status:
+      code: 204
+      message: No Content
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250425T034032Z
+    method: GET
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/ap-southeat-1/eventstreamings?limit=100&offset=0
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: ak access_key_id
+        not exist","error_code":"APIGW.0301","request_id":"6ccc796a7400f50185df485a339ccb5a"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 03:40:32 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745552432292; path=/
+      - HWWAFSESID=86e4773da098f143a7; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6ccc796a7400f50185df485a339ccb5a
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

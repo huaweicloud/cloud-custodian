@@ -1,0 +1,165 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250425T063652Z
+    method: GET
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/eventstreamings?limit=100&offset=0
+  response:
+    body:
+      string: '{"items": [{"id": "es-002-for-tag-removal", "name": "event-streaming-for-tag-removal", 
+        "status": "RUNNING", "description": "EventStreaming for tag removal test", 
+        "created_time": "2023-04-15T12:00:20Z", "updated_time": "2023-04-15T12:00:20Z",
+        "project_id": "0605dc51495c4447b48f5168309f9b5f", 
+        "tags": [{"key": "temporary", "value": "to-be-removed"}, {"key": "test-tag", "value": "remove-me"}]}], 
+        "count": 1, "page_info": {"next_marker": null}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '450'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Fri, 25 Apr 2025 06:36:52 GMT
+      X-Request-Id:
+      - f863bae561ce591bed7859b32707f4d7
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"key": "temporary"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '22'
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250425T063653Z
+    method: DELETE
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/eventstreamings/es-002-for-tag-removal/tags/temporary
+  response:
+    body:
+      string: ''
+    headers:
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 25 Apr 2025 06:36:53 GMT
+      Server:
+      - API Gateway
+      X-Request-Id:
+      - f9b17299-8af4-4c88-b5a1-d6e25a11c678
+    status:
+      code: 204
+      message: No Content
+- request:
+    body: '{"key": "test-tag"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '20'
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250425T063654Z
+    method: DELETE
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/eventstreamings/es-002-for-tag-removal/tags/test-tag
+  response:
+    body:
+      string: ''
+    headers:
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 25 Apr 2025 06:36:54 GMT
+      Server:
+      - API Gateway
+      X-Request-Id:
+      - 09b17299-8af4-4c88-b5a1-d6e25a11c901
+    status:
+      code: 204
+      message: No Content
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250425T063655Z
+    method: GET
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/eventstreamings/es-002-for-tag-removal
+  response:
+    body:
+      string: '{"id": "es-002-for-tag-removal", "name": "event-streaming-for-tag-removal", 
+        "status": "RUNNING", "description": "EventStreaming for tag removal test", 
+        "created_time": "2023-04-15T12:00:20Z", "updated_time": "2023-04-15T12:00:20Z",
+        "project_id": "0605dc51495c4447b48f5168309f9b5f", 
+        "tags": []}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 06:36:55 GMT
+      X-Request-Id:
+      - 54a25573a7141ea64cb1f427d8e1e84f
+    status:
+      code: 200
+      message: OK
+version: 1

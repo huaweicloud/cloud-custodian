@@ -52,6 +52,7 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
+from huaweicloudsdkeg.v1 import ListEventStreamingRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
 from huaweicloudsdkeip.v3 import EipClient
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
@@ -466,7 +467,6 @@ class Session:
             request = ListOrganizationalUnitsRequest()
         elif service == "org-account":
             request = ListAccountsRequest()
-
         elif service == "kms":
             request = ListKeysRequest()
             request.body = ListKeysRequestBody(key_spec="ALL")
@@ -521,4 +521,6 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
+        elif service == 'eg':
+            request = ListEventStreamingRequest()
         return request
