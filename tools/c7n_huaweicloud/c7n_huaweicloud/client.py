@@ -100,7 +100,9 @@ from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkrds.v3 import ListDatabasesRequest, ListDbUsersRequest
+
 log = logging.getLogger("custodian.huaweicloud.client")
+
 class Session:
     """Session"""
     def __init__(self, options=None):

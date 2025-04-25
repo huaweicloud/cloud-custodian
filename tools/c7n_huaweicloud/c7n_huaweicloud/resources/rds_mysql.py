@@ -43,8 +43,6 @@ class RDS(QueryResourceManager):
     
     :example:
     
-    .. code-block:: yaml
-    
         policies:
           - name: rds-list
             resource: huaweicloud.rds
@@ -97,8 +95,6 @@ class RDSSecurityGroupFilter(SecurityGroupFilter):
     
     :example:
     
-    .. code-block:: yaml
-    
         policies:
           - name: rds-with-public-access-sg
             resource: huaweicloud.rds
@@ -115,8 +111,6 @@ class RDSVpcFilter(VpcFilter):
     """Filter RDS instances by VPC
     
     :example:
-    
-    .. code-block:: yaml
     
         policies:
           - name: rds-in-production-vpc
@@ -140,8 +134,6 @@ class RDSDelete(HuaweiCloudBaseAction):
     """Delete RDS instance.
     
     :example:
-    
-    .. code-block:: yaml
     
         policies:
           - name: delete-test-rds
@@ -178,8 +170,6 @@ class RDSStart(HuaweiCloudBaseAction):
     
     :example:
     
-    .. code-block:: yaml
-    
         policies:
           - name: start-stopped-rds
             resource: huaweicloud.rds
@@ -214,8 +204,6 @@ class RDSStop(HuaweiCloudBaseAction):
     """Stop RDS instance.
     
     :example:
-    
-    .. code-block:: yaml
     
         policies:
           - name: stop-idle-rds
@@ -252,8 +240,6 @@ class RDSReboot(HuaweiCloudBaseAction):
     
     :example:
     
-    .. code-block:: yaml
-    
         policies:
           - name: reboot-hung-rds
             resource: huaweicloud.rds
@@ -288,8 +274,6 @@ class RDSSnapshot(HuaweiCloudBaseAction):
     """Create a manual backup (snapshot) of the RDS instance.
     
     :example:
-    
-    .. code-block:: yaml
     
         policies:
           - name: backup-critical-rds
