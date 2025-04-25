@@ -297,6 +297,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.142"
 
 [[package]]
+name = "huaweicloudsdkdns"
+version = "3.1.142"
+description = "DNS"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkdns-3.1.142-py2.py3-none-any.whl", hash = "sha256:a25a3d5600911375f59d0dce0a8b2701cbd2be1ab9dbf5a3a1a4932d594435a5"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.142"
+
+[[package]]
 name = "huaweicloudsdkecs"
 version = "3.1.142"
 description = "ECS"
@@ -1177,4 +1190,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "629b3c6ffc26180692b2cb768678702d835d7ef0968c854b39e356f255ccb9cb"
+content-hash = "83370736406f5f2c287c78e858846f746d4f489eed6c794edf49ffc92c275c0d"

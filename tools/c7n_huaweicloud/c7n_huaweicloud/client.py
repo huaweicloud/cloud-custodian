@@ -99,6 +99,13 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsReqBody,
 )
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
+from huaweicloudsdkdns.v2 import (
+    ListPublicZonesRequest,
+    ListPrivateZonesRequest,
+    ListRecordSetsWithLineRequest,
+    DnsClient
+)
+from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -396,6 +403,13 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
+        elif service in ['dns-publiczone', 'dns-privatezone', 'dns-recordset']:
+            client = (
+                DnsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DnsRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -502,5 +516,11 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
-
+        elif service == 'dns-publiczone':
+            request = ListPublicZonesRequest()
+        elif service == 'dns-privatezone':
+            request = ListPrivateZonesRequest()
+            request.type = "private"
+        elif service == 'dns-recordset':
+            request = ListRecordSetsWithLineRequest()
         return request
