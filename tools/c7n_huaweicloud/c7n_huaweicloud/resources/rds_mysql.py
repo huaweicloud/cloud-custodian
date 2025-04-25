@@ -2,15 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import datetime
-from c7n.filters import Filter, ValueFilter
-from c7n.utils import type_schema, local_session
+from c7n.filters import Filter
+from c7n.utils import type_schema
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
-from c7n_huaweicloud.filters.vpc import SecurityGroupFilter, VpcFilter, SubnetFilter
+from c7n_huaweicloud.filters.vpc import SecurityGroupFilter, VpcFilter
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkrds.v3 import (
@@ -21,22 +20,6 @@ from huaweicloudsdkrds.v3 import (
     StopInstanceRequest,
     CreateManualBackupRequest,
     CreateManualBackupRequestBody,
-    ListDatabasesRequest,
-    CreateDatabaseRequest,
-    DeleteDatabaseRequest,
-    ListDbUsersRequest,
-    CreateDbUserRequest,
-    DeleteDbUserRequest,
-    BatchTagActionAddRequestBody,
-    BatchTagActionDelRequestBody,
-    BatchTagAddActionRequest,
-    BatchTagDelActionRequest
-)
-from huaweicloudsdkces.v1 import (
-    BatchListMetricDataRequest,
-    MetricsDimension,
-    BatchListMetricDataRequestBody,
-    BatchMetricData
 )
 
 log = logging.getLogger('custodian.huaweicloud.resources.rds_mysql')
