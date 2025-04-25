@@ -3,6 +3,8 @@
 
 from unittest import mock
 import os
+import json
+from dateutil.parser import parse
 
 from tools.c7n_huaweicloud.tests.huaweicloud_common import BaseTest
 
@@ -93,3 +95,79 @@ class EventStreamingTest(BaseTest):
             # Verify VCR: Should find resources with more than 1 tag
             self.assertEqual(len(resources_gt), 1)
             self.assertEqual(resources_gt[0]['id'], 'es-005-two-tags')
+
+    def test_filter_list_item_match(self):
+        """Test list-item filter - matching (tag list)"""
+        factory = self.replay_flight_data('eg_eventstreaming_filter_list_item_tag')
+        
+        # Mock augment to simulate tag data in actual API responses
+        with mock.patch('c7n_huaweicloud.resources.eg.EventStreaming.augment') as mock_augment:
+            def mock_augment_implementation(resources):
+                for resource in resources:
+                    if resource['id'] == 'es-003-with-tags':
+                        resource['tags'] = [
+                            {'key': 'filtertag', 'value': 'filtervalue'},
+                            {'key': 'department', 'value': 'IT'}
+                        ]
+                    elif resource['id'] == 'es-007-other-tags':
+                        resource['tags'] = [
+                            {'key': 'othertag', 'value': 'othervalue'}
+                        ]
+                return resources
+            
+            mock_augment.side_effect = mock_augment_implementation
+            
+            # Load policy to find event streams with specific tags
+            p = self.load_policy({
+                'name': 'eventstreaming-list-item-tag-match',
+                'resource': 'huaweicloud.eventstreaming',
+                'filters': [{
+                    'type': 'list-item',
+                    'key': 'tags',
+                    'attrs': [
+                        {'type': 'value', 'key': 'key', 'value': 'filtertag'},
+                        {'type': 'value', 'key': 'value', 'value': 'filtervalue'}
+                    ]
+                }]
+            }, session_factory=factory)
+            
+            # Execute policy
+            resources = p.run()
+            
+            # Verify results: There should be two event streams matching the tag conditions
+            self.assertEqual(len(resources), 2)
+            self.assertEqual(resources[0]['id'], 'es-003-with-tags')
+
+    def test_filter_marked_for_op_match(self):
+        """Test marked-for-op filter - matching"""
+        factory = self.replay_flight_data('eg_eventstreaming_filter_marked_for_op')
+        
+        # Mock augment to simulate tag data in actual API responses
+        with mock.patch('c7n_huaweicloud.resources.eg.EventStreaming.augment') as mock_augment:
+            def mock_augment_implementation(resources):
+                for resource in resources:
+                    if resource['id'] == 'es-004-marked':
+                        resource['tags'] = [
+                            {'key': 'c7n_status', 'value': 'webhook_2023/01/01 00:00:00 UTC'}
+                        ]
+                    elif resource['id'] == 'es-009-not-marked':
+                        resource['tags'] = [
+                            {'key': 'environment', 'value': 'production'}
+                        ]
+                return resources
+            
+            mock_augment.side_effect = mock_augment_implementation
+            
+            # Load policy to find event streams marked for webhook operation
+            p = self.load_policy({
+                'name': 'eventstreaming-marked-for-op-webhook-match',
+                'resource': 'huaweicloud.eventstreaming',
+                'filters': [{'type': 'marked-for-op', 'op': 'webhook', 'tag': 'c7n_status'}]
+            }, session_factory=factory)
+            
+            # Execute policy
+            resources = p.run()
+            
+            # Verify results: There should be only one event stream marked for webhook
+            self.assertEqual(len(resources), 1)
+            self.assertEqual(resources[0]['id'], 'es-004-marked')

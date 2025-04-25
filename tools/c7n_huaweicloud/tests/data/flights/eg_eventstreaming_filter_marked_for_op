@@ -13,7 +13,7 @@ interactions:
       Host:
       - eg.cn-north-4.myhuaweicloud.com
       User-Agent:
-      - huaweicloud-usdk-python/3.1
+      - huaweicloud-usdk-python/3.0
       X-Auth-Token:
       - MIIZGAYJKoZIhvcNAQcCoIIZCTCCGQUCAQExDTALBg...
       X-Project-Id:
@@ -24,10 +24,25 @@ interactions:
     uri: https://eg.cn-north-4.myhuaweicloud.com/v1/ap-southeat-1/eventstreamings?limit=100&offset=0
   response:
     body:
-      string: '{"total":2,"size":2,"items":[{"id":"es-004-marked","name":"event-streaming-marked","description":"标记为删除的事件流","source":{"name":"SMN","source_smn":{"topic_urn":"urn:smn:cn-north-4:test:test-topic"}},"sink":{"name":"OBS","sink_obs":{"obs_bucket":"event-data","obs_path":"events/","time_format":"yyyy/MM/dd"}},"rule_config":{},"option":{"thread_num":1,"batch_window":{"count":100,"time":60}},"status":"RUNNING","created_time":"2023-05-01T10:00:00Z","updated_time":"2023-05-01T10:00:00Z","tags":{"c7n_status":"marked-for-op:delete:2023-01-01"}},{"id":"es-009-not-marked","name":"event-streaming-not-marked","description":"未标记的事件流","source":{"name":"DIS","source_dis":{"stream_name":"test-stream"}},"sink":{"name":"DWS","sink_dws":{"cluster_name":"test-cluster","database_name":"test-db","schema_name":"test-schema","table_name":"test-table"}},"rule_config":{},"option":{"thread_num":2,"batch_window":{"count":200,"time":120}},"status":"RUNNING","created_time":"2023-07-01T10:00:00Z","updated_time":"2023-07-01T10:00:00Z","tags":{"environment":"production"}}]}'
+      string: '{ "total": 2, "size": 2, "items": [ { "id": "es-004-marked", "name":
+        "event-streaming-marked", "description": "标记为删除的事件流", "source": { "name": "SMN",
+        "source_smn": { "topic_urn": "urn:smn:cn-north-4:test:test-topic" } }, "sink":
+        { "name": "OBS", "sink_obs": { "obs_bucket": "event-data", "obs_path": "events/",
+        "time_format": "yyyy/MM/dd" } }, "rule_config": {}, "option": { "thread_num": 1,
+        "batch_window": { "count": 100, "time": 60 } }, "status": "RUNNING", "created_time":
+        "2023-05-01T10:00:00Z", "updated_time": "2023-05-01T10:00:00Z", "tags": [
+        { "key": "c7n_status", "value": "webhook_2023/01/01 00:00:00 UTC" } ] },
+        { "id": "es-009-not-marked", "name": "event-streaming-not-marked", "description":
+        "未标记的事件流", "source": { "name": "DIS", "source_dis": { "stream_name": "test-stream"
+        } }, "sink": { "name": "DWS", "sink_dws": { "cluster_name": "test-cluster",
+        "database_name": "test-db", "schema_name": "test-schema", "table_name": "test-table"
+        } }, "rule_config": {}, "option": { "thread_num": 2, "batch_window": { "count": 200,
+        "time": 120 } }, "status": "RUNNING", "created_time": "2023-07-01T10:00:00Z",
+        "updated_time": "2023-07-01T10:00:00Z", "tags": [ { "key": "environment", "value":
+        "production" } ] } ] }'
     headers:
-      Content-Length:
-      - '940'
+      Connection:
+      - keep-alive
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -39,4 +54,4 @@ interactions:
     status:
       code: 200
       message: OK
-version: 1 
+version: 1
