@@ -52,7 +52,6 @@ class Hss(QueryResourceManager):
         # Ensure all important fields are present in resource objects
         for r in resources:
             r["id"] = r.get("host_id")  # Ensure id field exists
-            # Preserve register_time field for AgeFilter to use
             if "register_time" in r:
                 log.debug(
                     f"Resource {r['host_id']} has register_time: {r['register_time']}"
