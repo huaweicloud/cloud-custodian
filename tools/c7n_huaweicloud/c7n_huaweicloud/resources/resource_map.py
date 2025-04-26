@@ -27,6 +27,7 @@ ResourceMap = {
     "huaweicloud.nat-snat-rule": "c7n_huaweicloud.resources.nat.NatSnatRule",
     "huaweicloud.nat-dnat-rule": "c7n_huaweicloud.resources.nat.NatDnatRule",
     "huaweicloud.secmaster": "c7n_huaweicloud.resources.secmaster.Secmaster",
+    "huaweicloud.hss": "c7n_huaweicloud.resources.hss.Hss",
     "huaweicloud.cts-tracker": "c7n_huaweicloud.resources.cts-tracker.Tracker",
     "huaweicloud.cts-notification-smn":
         "c7n_huaweicloud.resources.cts-notification-smn.Notification",

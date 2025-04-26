@@ -1,0 +1,1099 @@
+2025-04-02 17:53:45,420 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:0 time:0.00
+2025-04-02 17:55:10,998 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:0 time:0.00
+2025-04-02 17:55:39,707 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-02 18:03:21,667 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-02 18:03:23,038 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:updateplaybook resources:5 execution_time:1.37
+2025-04-03 11:36:23,817 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.52
+2025-04-03 11:36:24,742 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:updateplaybook resources:5 execution_time:0.92
+2025-04-03 11:38:00,844 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:38:02,180 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:updateplaybook resources:5 execution_time:1.33
+2025-04-03 11:38:34,495 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:38:35,846 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:updateplaybook resources:5 execution_time:1.35
+2025-04-03 11:42:07,238 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:42:08,767 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:updateplaybook resources:5 execution_time:1.53
+2025-04-03 11:44:20,602 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:44:21,533 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 2d6db5f8-56d0-48a4-aeae-92c88615a0d0 RequestId: 851c793d34d65948570026dece84d590, Reason: Unknown errors
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/2d6db5f8-56d0-48a4-aeae-92c88615a0d0/soc/playbooks/be2ab0dd-c032-366b-a680-b32fc45ef203
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 70, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:851c793d34d65948570026dece84d590,error_code:SecMaster.20039999,error_msg:Unknown errors,encoded_authorization_message:None }
+2025-04-03 11:44:22,240 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:4 execution_time:1.64
+2025-04-03 11:44:46,995 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:44:48,168 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.17
+2025-04-03 11:46:40,345 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:46:40,347 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:46:40,814 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:46:41,133 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:46:41,134 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:46:41,419 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:46:41,675 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.33
+2025-04-03 11:47:30,700 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:47:31,176 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,177 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,178 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,288 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: 2dfb5b9be05f9745e8b5df5fc53641d2, Reason: 未知错误
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 71, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:2dfb5b9be05f9745e8b5df5fc53641d2,error_code:SecMaster.20039999,error_msg:未知错误,encoded_authorization_message:None }
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,552 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,553 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,554 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,554 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,554 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,554 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,555 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,555 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,555 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,555 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,555 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,555 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,556 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,556 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,859 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,859 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,859 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,860 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,860 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,860 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,860 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,860 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,860 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,860 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,860 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,861 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,861 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,861 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,861 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,861 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,861 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,861 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,861 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,862 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,863 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,863 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,863 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,863 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,863 - custodian.huaweicloud.resources.secmaster - INFO - 11111
+2025-04-03 11:47:31,864 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:4 execution_time:1.16
+2025-04-03 11:48:27,877 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:48:29,253 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.38
+2025-04-03 11:48:45,196 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:48:46,406 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.21
+2025-04-03 11:49:29,835 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:49:30,330 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,330 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,330 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,330 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,330 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,331 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,332 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,764 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,764 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,764 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,764 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,764 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,764 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,765 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,766 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:30,767 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,022 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,023 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,023 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,023 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,023 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,023 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,024 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,024 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,024 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,024 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,024 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,024 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,024 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,024 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,025 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,026 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,026 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,026 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,026 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,026 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,026 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,026 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,277 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,277 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,277 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,277 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,277 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,277 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,278 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,279 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,280 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,280 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,280 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,280 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,280 - custodian.huaweicloud.resources.secmaster - INFO - 高危告警自动通知
+2025-04-03 11:49:31,281 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.44
+2025-04-03 11:51:07,552 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - Automatic shutdown of low-risk alarms
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - Notification on host asset risk statistics
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - Add Host Asset Protection Status Notification
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - Ransomware host isolation
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - Asset Protection Status Statistics Notification
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host Rootkit event attacks
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - Fetching Indicator from alert
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - SecMaster WAF Address Group Association Policy
+2025-04-03 11:51:08,033 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host rebound Shell attacks
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - WAF Clear Non-domain Policy
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - WAF synchronizes black IP addresses to intelligence
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Automatic closing of repeated alerts
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Automatic renaming of alarm names
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Attack link analysis alert notification
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Add the IP indicator tag to the alert
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk vulnerabilities
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - HostDefenseAlarmsAreAssociatedWithHistoricalHandlingInformation
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Real-time notifications of critical maintenance operations
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Mining host isolation
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - IdentityWithHistoricalHandlingInformation
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Alerts statistics Notify
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - The IP intelligence association
+2025-04-03 11:51:08,034 - custodian.huaweicloud.resources.secmaster - INFO - Network_defense
+2025-04-03 11:51:08,035 - custodian.huaweicloud.resources.secmaster - INFO - HSS High-Risk Alarm Interception Notification
+2025-04-03 11:51:08,035 - custodian.huaweicloud.resources.secmaster - INFO - Apply_defense
+2025-04-03 11:51:08,035 - custodian.huaweicloud.resources.secmaster - INFO - AutomaticSecurityBlockingOfHig-riskAlarms
+2025-04-03 11:51:08,035 - custodian.huaweicloud.resources.secmaster - INFO - HSS isolation and killing of malware
+2025-04-03 11:51:08,035 - custodian.huaweicloud.resources.secmaster - INFO - Synchronization of HSS alert status
+2025-04-03 11:51:08,035 - custodian.huaweicloud.resources.secmaster - INFO - CFW Synchronizes Black IP Addresses to Intelligence
+2025-04-03 11:51:08,035 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 11:51:08,035 - custodian.huaweicloud.resources.secmaster - INFO - Web login Burst Interception
+2025-04-03 11:51:08,334 - custodian.huaweicloud.resources.secmaster - INFO - Ransomware host isolation
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Web login Burst Interception
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Fetching Indicator from alert
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host Rootkit event attacks
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Add the IP indicator tag to the alert
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Automatic renaming of alarm names
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - WAF Clear Non-domain Policy
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Asset Protection Status Statistics Notification
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - CFW Synchronizes Black IP Addresses to Intelligence
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Add Host Asset Protection Status Notification
+2025-04-03 11:51:08,335 - custodian.huaweicloud.resources.secmaster - INFO - Network_defense
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host rebound Shell attacks
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - HSS isolation and killing of malware
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - WAF synchronizes black IP addresses to intelligence
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - AutomaticSecurityBlockingOfHig-riskAlarms
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - HostDefenseAlarmsAreAssociatedWithHistoricalHandlingInformation
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - Real-time notifications of critical maintenance operations
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk vulnerabilities
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - HSS High-Risk Alarm Interception Notification
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - The IP intelligence association
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - Apply_defense
+2025-04-03 11:51:08,336 - custodian.huaweicloud.resources.secmaster - INFO - Notification on host asset risk statistics
+2025-04-03 11:51:08,337 - custodian.huaweicloud.resources.secmaster - INFO - Attack link analysis alert notification
+2025-04-03 11:51:08,337 - custodian.huaweicloud.resources.secmaster - INFO - IdentityWithHistoricalHandlingInformation
+2025-04-03 11:51:08,337 - custodian.huaweicloud.resources.secmaster - INFO - SecMaster WAF Address Group Association Policy
+2025-04-03 11:51:08,337 - custodian.huaweicloud.resources.secmaster - INFO - Automatic closing of repeated alerts
+2025-04-03 11:51:08,337 - custodian.huaweicloud.resources.secmaster - INFO - Mining host isolation
+2025-04-03 11:51:08,337 - custodian.huaweicloud.resources.secmaster - INFO - Alerts statistics Notify
+2025-04-03 11:51:08,338 - custodian.huaweicloud.resources.secmaster - INFO - Automatic shutdown of low-risk alarms
+2025-04-03 11:51:08,338 - custodian.huaweicloud.resources.secmaster - INFO - Synchronization of HSS alert status
+2025-04-03 11:51:08,634 - custodian.huaweicloud.resources.secmaster - INFO - Identity Defense Line
+2025-04-03 11:51:08,634 - custodian.huaweicloud.resources.secmaster - INFO - Notification on host asset risk statistics
+2025-04-03 11:51:08,634 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host Rootkit event attacks
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Alerts statistics Notify
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Synchronization of HSS alert status
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host rebound Shell attacks
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - WAF Clear Non-domain Policy
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Automatic shutdown of low-risk alarms
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Apply_defense
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk vulnerabilities
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Attack link analysis alert notification
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Host defense line
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Add the IP indicator tag to the alert
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - The IP intelligence association
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - Asset Protection Status Statistics Notification
+2025-04-03 11:51:08,635 - custodian.huaweicloud.resources.secmaster - INFO - CFW Synchronizes Black IP Addresses to Intelligence
+2025-04-03 11:51:08,636 - custodian.huaweicloud.resources.secmaster - INFO - Web login Burst Interception
+2025-04-03 11:51:08,636 - custodian.huaweicloud.resources.secmaster - INFO - Automatic renaming of alarm names
+2025-04-03 11:51:08,636 - custodian.huaweicloud.resources.secmaster - INFO - Network_defense
+2025-04-03 11:51:08,636 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 11:51:08,636 - custodian.huaweicloud.resources.secmaster - INFO - Automatic closing of repeated alerts
+2025-04-03 11:51:08,636 - custodian.huaweicloud.resources.secmaster - INFO - Mining host isolation
+2025-04-03 11:51:08,636 - custodian.huaweicloud.resources.secmaster - INFO - Add Host Asset Protection Status Notification
+2025-04-03 11:51:08,637 - custodian.huaweicloud.resources.secmaster - INFO - HSS isolation and killing of malware
+2025-04-03 11:51:08,637 - custodian.huaweicloud.resources.secmaster - INFO - Ransomware host isolation
+2025-04-03 11:51:08,637 - custodian.huaweicloud.resources.secmaster - INFO - WAF synchronizes black IP addresses to intelligence
+2025-04-03 11:51:08,637 - custodian.huaweicloud.resources.secmaster - INFO - Fetching Indicator from alert
+2025-04-03 11:51:08,637 - custodian.huaweicloud.resources.secmaster - INFO - Real-time notifications of critical maintenance operations
+2025-04-03 11:51:08,637 - custodian.huaweicloud.resources.secmaster - INFO - HSS High-Risk Alarm Interception Notification
+2025-04-03 11:51:08,637 - custodian.huaweicloud.resources.secmaster - INFO - AutomaticSecurityBlockingOfHig-riskAlarms
+2025-04-03 11:51:08,637 - custodian.huaweicloud.resources.secmaster - INFO - SecMaster WAF Address Group Association Policy
+2025-04-03 11:51:08,968 - custodian.huaweicloud.resources.secmaster - INFO - 测试基线
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - 主机安全告警
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - CFW Synchronizes Black IP Addresses to Intelligence
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - WAF synchronizes black IP addresses to intelligence
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - Web login Burst Interception
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - Ransomware host isolation
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - The IP intelligence association
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - Network_defense
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - Add the IP indicator tag to the alert
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - Alerts statistics Notify
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - Mining host isolation
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - IdentityWithHistoricalHandlingInformation
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - Attack link analysis alert notification
+2025-04-03 11:51:08,969 - custodian.huaweicloud.resources.secmaster - INFO - Real-time notifications of critical maintenance operations
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk vulnerabilities
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host rebound Shell attacks
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - HSS High-Risk Alarm Interception Notification
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Automatic renaming of alarm names
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - WAF Clear Non-domain Policy
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Apply_defense
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - HostDefenseAlarmsAreAssociatedWithHistoricalHandlingInformation
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Notification on host asset risk statistics
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Asset Protection Status Statistics Notification
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - HSS isolation and killing of malware
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Fetching Indicator from alert
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - Automatic closing of repeated alerts
+2025-04-03 11:51:08,970 - custodian.huaweicloud.resources.secmaster - INFO - AutomaticSecurityBlockingOfHig-riskAlarms
+2025-04-03 11:51:08,971 - custodian.huaweicloud.resources.secmaster - INFO - SecMaster WAF Address Group Association Policy
+2025-04-03 11:51:08,971 - custodian.huaweicloud.resources.secmaster - INFO - Automatic shutdown of low-risk alarms
+2025-04-03 11:51:08,971 - custodian.huaweicloud.resources.secmaster - INFO - Synchronization of HSS alert status
+2025-04-03 11:51:08,971 - custodian.huaweicloud.resources.secmaster - INFO - Add Host Asset Protection Status Notification
+2025-04-03 11:51:08,971 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host Rootkit event attacks
+2025-04-03 11:51:08,972 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.42
+2025-04-03 11:52:54,573 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.58
+2025-04-03 11:52:54,860 - custodian.huaweicloud.resources.secmaster - INFO - Automatic shutdown of low-risk alarms
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Notification on host asset risk statistics
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Add Host Asset Protection Status Notification
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Ransomware host isolation
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Asset Protection Status Statistics Notification
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host Rootkit event attacks
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Fetching Indicator from alert
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - SecMaster WAF Address Group Association Policy
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host rebound Shell attacks
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - WAF Clear Non-domain Policy
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - WAF synchronizes black IP addresses to intelligence
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Automatic closing of repeated alerts
+2025-04-03 11:52:54,861 - custodian.huaweicloud.resources.secmaster - INFO - Automatic renaming of alarm names
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Attack link analysis alert notification
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Add the IP indicator tag to the alert
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk vulnerabilities
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - HostDefenseAlarmsAreAssociatedWithHistoricalHandlingInformation
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Real-time notifications of critical maintenance operations
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Mining host isolation
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - IdentityWithHistoricalHandlingInformation
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Alerts statistics Notify
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - The IP intelligence association
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Network_defense
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - HSS High-Risk Alarm Interception Notification
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Apply_defense
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - AutomaticSecurityBlockingOfHig-riskAlarms
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - HSS isolation and killing of malware
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - Synchronization of HSS alert status
+2025-04-03 11:52:54,862 - custodian.huaweicloud.resources.secmaster - INFO - CFW Synchronizes Black IP Addresses to Intelligence
+2025-04-03 11:52:54,863 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 11:52:55,010 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: d860d402d78c7f64d4e1053a577c61cf, Reason: Unknown errors
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 71, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:d860d402d78c7f64d4e1053a577c61cf,error_code:SecMaster.20039999,error_msg:Unknown errors,encoded_authorization_message:None }
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Identity Defense Line
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Notification on host asset risk statistics
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host Rootkit event attacks
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Alerts statistics Notify
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Synchronization of HSS alert status
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Automated handling of host rebound Shell attacks
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - WAF Clear Non-domain Policy
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Automatic shutdown of low-risk alarms
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Apply_defense
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk vulnerabilities
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Attack link analysis alert notification
+2025-04-03 11:52:55,368 - custodian.huaweicloud.resources.secmaster - INFO - Host defense line
+2025-04-03 11:52:55,369 - custodian.huaweicloud.resources.secmaster - INFO - Add the IP indicator tag to the alert
+2025-04-03 11:52:55,369 - custodian.huaweicloud.resources.secmaster - INFO - The IP intelligence association
+2025-04-03 11:52:55,369 - custodian.huaweicloud.resources.secmaster - INFO - Asset Protection Status Statistics Notification
+2025-04-03 11:52:55,369 - custodian.huaweicloud.resources.secmaster - INFO - CFW Synchronizes Black IP Addresses to Intelligence
+2025-04-03 11:52:55,369 - custodian.huaweicloud.resources.secmaster - INFO - Web login Burst Interception
+2025-04-03 11:52:55,369 - custodian.huaweicloud.resources.secmaster - INFO - Automatic renaming of alarm names
+2025-04-03 11:52:55,369 - custodian.huaweicloud.resources.secmaster - INFO - Network_defense
+2025-04-03 11:52:55,369 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 11:52:55,512 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: 29fa0f8504ddc27e77a7d0fc8bc105e9, Reason: Unknown errors
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 71, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:29fa0f8504ddc27e77a7d0fc8bc105e9,error_code:SecMaster.20039999,error_msg:Unknown errors,encoded_authorization_message:None }
+2025-04-03 11:52:55,513 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:0.94
+2025-04-03 11:53:15,503 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:53:16,137 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: e82d76b9d1cb9f388751ed806e072e4b, Reason: Unknown errors
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 70, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:e82d76b9d1cb9f388751ed806e072e4b,error_code:SecMaster.20039999,error_msg:Unknown errors,encoded_authorization_message:None }
+2025-04-03 11:53:16,564 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: 814c0ad2a48b47812fed969587e1d790, Reason: Unknown errors
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 70, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:814c0ad2a48b47812fed969587e1d790,error_code:SecMaster.20039999,error_msg:Unknown errors,encoded_authorization_message:None }
+2025-04-03 11:53:16,565 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:1.06
+2025-04-03 11:54:13,979 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 11:54:14,475 - custodian.huaweicloud.resources.secmaster - INFO - 0d70cab5-cd2d-3196-ab68-a4110a06e069
+2025-04-03 11:54:14,585 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: b33eb1ee722da53e12f74a334ce0d466, Reason: Unknown errors
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 70, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:b33eb1ee722da53e12f74a334ce0d466,error_code:SecMaster.20039999,error_msg:Unknown errors,encoded_authorization_message:None }
+2025-04-03 11:54:14,805 - custodian.huaweicloud.resources.secmaster - INFO - 6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+2025-04-03 11:54:14,925 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: a96fc205dcb8648fb2e4312c18352a24, Reason: Unknown errors
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 70, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:a96fc205dcb8648fb2e4312c18352a24,error_code:SecMaster.20039999,error_msg:Unknown errors,encoded_authorization_message:None }
+2025-04-03 11:54:14,928 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:0.95
+2025-04-03 14:22:06,774 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.70
+2025-04-03 14:22:07,150 - custodian.huaweicloud.resources.secmaster - INFO - 0d70cab5-cd2d-3196-ab68-a4110a06e069
+2025-04-03 14:22:07,296 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: e4125c397a8ae4462a8de6e27bc6bf7c, Reason: Unknown errors
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 70, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:e4125c397a8ae4462a8de6e27bc6bf7c,error_code:SecMaster.20039999,error_msg:Unknown errors,encoded_authorization_message:None }
+2025-04-03 14:22:07,621 - custodian.huaweicloud.resources.secmaster - INFO - 6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+2025-04-03 14:22:07,719 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: 221fb8e259297abf5cafe4a88d4822b3, Reason: 未知错误
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 70, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:221fb8e259297abf5cafe4a88d4822b3,error_code:SecMaster.20039999,error_msg:未知错误,encoded_authorization_message:None }
+2025-04-03 14:22:07,720 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:0.95
+2025-04-03 14:56:00,842 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.57
+2025-04-03 14:56:01,320 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: c7e5a632b614a5b55731ac954ead1310, Reason: Invalid parameters.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 72, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:c7e5a632b614a5b55731ac954ead1310,error_code:SecMaster.20030001,error_msg:Invalid parameters.,encoded_authorization_message:None }
+2025-04-03 14:56:01,840 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: 55bb738a230237a81d2f07747c99f842, Reason: Invalid parameters.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 72, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:55bb738a230237a81d2f07747c99f842,error_code:SecMaster.20030001,error_msg:Invalid parameters.,encoded_authorization_message:None }
+2025-04-03 14:56:01,841 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:1.00
+2025-04-03 14:57:14,213 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 14:57:14,907 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: 92570d7d6517d72dd46589eff3d0a7e4, Reason: Invalid parameters.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 73, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:92570d7d6517d72dd46589eff3d0a7e4,error_code:SecMaster.20030001,error_msg:Invalid parameters.,encoded_authorization_message:None }
+2025-04-03 14:57:15,228 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: aec1372a3bcc9e10b0a5b52ba60d76c6, Reason: Invalid parameters.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 73, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:aec1372a3bcc9e10b0a5b52ba60d76c6,error_code:SecMaster.20030001,error_msg:Invalid parameters.,encoded_authorization_message:None }
+2025-04-03 14:57:15,249 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:1.03
+2025-04-03 15:05:47,227 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 15:05:47,754 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 15:05:47,908 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: 623d7353aaff7b6de9685e6d744eee8f, Reason: Invalid parameters.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 74, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:623d7353aaff7b6de9685e6d744eee8f,error_code:SecMaster.20030001,error_msg:Invalid parameters.,encoded_authorization_message:None }
+2025-04-03 15:05:48,289 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 15:05:48,432 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: 1664d9cb8f2ddc0b3cb68173987a0ba7, Reason: Invalid parameters.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 74, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:1664d9cb8f2ddc0b3cb68173987a0ba7,error_code:SecMaster.20030001,error_msg:Invalid parameters.,encoded_authorization_message:None }
+2025-04-03 15:05:48,433 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:1.20
+2025-04-03 15:14:43,532 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.44
+2025-04-03 15:14:43,825 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 15:14:44,612 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 15:14:45,049 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.52
+2025-04-03 15:15:12,406 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 15:15:12,778 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 15:15:13,693 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.29
+2025-04-03 16:53:10,814 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.47
+2025-04-03 16:53:11,667 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: 4bf043d6ce308da552ab63713b5e3a72, Reason: The built-in playbook cannot be modified.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 77, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:4bf043d6ce308da552ab63713b5e3a72,error_code:SecMaster.20048035,error_msg:The built-in playbook cannot be modified.,encoded_authorization_message:None }
+2025-04-03 16:53:13,620 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: 844b3867c5187b2528e196ec940c2224, Reason: The built-in playbook cannot be modified.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 77, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:844b3867c5187b2528e196ec940c2224,error_code:SecMaster.20048035,error_msg:The built-in playbook cannot be modified.,encoded_authorization_message:None }
+2025-04-03 16:53:13,622 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:2.81
+2025-04-03 16:54:26,608 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 16:54:37,169 - custodian.huaweicloud.resources.secmaster - INFO - {"name": "Automatic notification of high-risk alerts", "enabled": true, "active_version_id": "2f1bc639-c493-303d-b82d-cd97ea9e0cf3"}
+2025-04-03 16:54:37,263 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - f5a5afc8-38a9-472d-885b-fd9854aa05de RequestId: 1af7d0ecd591994b62ecae69c0174528, Reason: The built-in playbook cannot be modified.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/f5a5afc8-38a9-472d-885b-fd9854aa05de/soc/playbooks/0d70cab5-cd2d-3196-ab68-a4110a06e069
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 78, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:1af7d0ecd591994b62ecae69c0174528,error_code:SecMaster.20048035,error_msg:The built-in playbook cannot be modified.,encoded_authorization_message:None }
+2025-04-03 16:54:37,806 - custodian.huaweicloud.resources.secmaster - INFO - {"name": "Automatic notification of high-risk alerts", "enabled": true, "active_version_id": "33d07cfd-e38e-3a65-b6e4-64517a0e25e6"}
+2025-04-03 16:54:37,927 - custodian.huaweicloud.actions.base - ERROR - Unable to submit action against the resource - 095f2ec9-099c-4b9b-ad2e-f784afa34217 RequestId: c8ddebec04785e072e32fe53007c4755, Reason: The built-in playbook cannot be modified.
+Traceback (most recent call last):
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 127, in response_hook
+    resp.raise_for_status()
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error:  for url: https://secmaster.cn-north-4.myhuaweicloud.com/v1/06ff15244b2748b49e69c2140b319e9e/workspaces/095f2ec9-099c-4b9b-ad2e-f784afa34217/soc/playbooks/6835ee2c-e446-30a0-9968-fdfeb4c45a4d
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/actions/base.py", line 34, in process
+    self.perform_action(resource)
+  File "/home/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/resources/secmaster.py", line 78, in perform_action
+    response = client.update_playbook(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4659, in update_playbook
+    return self._call_api(**http_info)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdksecmaster/v2/secmaster_client.py", line 4937, in _call_api
+    return self.do_http_request(**kwargs)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 480, in do_http_request
+    response = self._do_http_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/client.py", line 531, in _do_http_request_sync
+    response = self._http_client.do_request_sync(request)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 100, in do_request_sync
+    self.response_error_hook_factory()(response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/http/http_client.py", line 129, in response_hook
+    self._exception_handler.handle_exception(httpError.request, httpError.response)
+  File "/home/cloud-custodian/.venv/lib/python3.8/site-packages/huaweicloudsdkcore/exceptions/exception_handler.py", line 75, in handle_exception
+    raise exceptions.ClientRequestException(response.status_code, sdk_error) if response.status_code < 500 \
+huaweicloudsdkcore.exceptions.exceptions.ClientRequestException: ClientRequestException - {status_code:400,request_id:c8ddebec04785e072e32fe53007c4755,error_code:SecMaster.20048035,error_msg:The built-in playbook cannot be modified.,encoded_authorization_message:None }
+2025-04-03 16:54:37,929 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:3 execution_time:11.32
+2025-04-03 16:55:01,789 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 16:55:18,836 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:17.05
+2025-04-03 16:56:37,407 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 16:56:46,822 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:9.41
+2025-04-03 16:58:58,732 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 16:59:02,899 - custodian.huaweicloud.resources.secmaster - INFO - True
+2025-04-03 16:59:02,900 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 16:59:04,785 - custodian.huaweicloud.resources.secmaster - INFO - True
+2025-04-03 16:59:04,785 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 16:59:10,043 - custodian.huaweicloud.resources.secmaster - INFO - True
+2025-04-03 16:59:10,043 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 16:59:12,386 - custodian.huaweicloud.resources.secmaster - INFO - True
+2025-04-03 16:59:12,387 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 16:59:12,387 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:13.65
+2025-04-03 17:00:07,739 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 17:00:11,274 - custodian.huaweicloud.resources.secmaster - INFO - True
+2025-04-03 17:00:11,274 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 17:00:11,274 - custodian.huaweicloud.resources.secmaster - INFO - f5a5afc8-38a9-472d-885b-fd9854aa05de
+2025-04-03 17:00:11,561 - custodian.huaweicloud.resources.secmaster - INFO - True
+2025-04-03 17:00:11,561 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 17:00:11,561 - custodian.huaweicloud.resources.secmaster - INFO - 2d6db5f8-56d0-48a4-aeae-92c88615a0d0
+2025-04-03 17:00:13,539 - custodian.huaweicloud.resources.secmaster - INFO - True
+2025-04-03 17:00:13,539 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 17:00:13,539 - custodian.huaweicloud.resources.secmaster - INFO - 095f2ec9-099c-4b9b-ad2e-f784afa34217
+2025-04-03 17:00:16,637 - custodian.huaweicloud.resources.secmaster - INFO - True
+2025-04-03 17:00:16,638 - custodian.huaweicloud.resources.secmaster - INFO - Automatic notification of high-risk alerts
+2025-04-03 17:00:16,638 - custodian.huaweicloud.resources.secmaster - INFO - b09f02ca-c876-4b76-a026-2692c3852e91
+2025-04-03 17:00:16,638 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:8.90
+2025-04-03 17:01:27,745 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-03 17:01:29,060 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.31
+2025-04-07 11:38:41,038 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.55
+2025-04-07 11:38:42,371 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.33
+2025-04-07 19:43:13,598 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.61
+2025-04-07 19:43:15,096 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:1.50
+2025-04-07 19:45:03,020 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook resource:huaweicloud.secmaster region: count:5 time:0.00
+2025-04-07 19:45:05,533 - custodian.policy - INFO - policy:enable-high-risk-alert-playbook action:enableplaybook resources:5 execution_time:2.51

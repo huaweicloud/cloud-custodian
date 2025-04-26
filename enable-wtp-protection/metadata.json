@@ -1,0 +1,93 @@
+{
+  "policy": {
+    "name": "enable-wtp-protection",
+    "resource": "huaweicloud.hss",
+    "filters": [
+      {
+        "type": "value",
+        "key": "agent_status",
+        "value": "online"
+      },
+      {
+        "type": "value",
+        "key": "protect_status",
+        "value": "closed"
+      }
+    ],
+    "actions": [
+      {
+        "type": "set-wtp-protection-status",
+        "status": "disabled"
+      }
+    ]
+  },
+  "version": "0.9.43",
+  "execution": {
+    "id": "d597764f-b29e-4622-94b3-9f1307690219",
+    "start": 1745635566.5138307,
+    "end_time": 1745635567.9086223,
+    "duration": 1.394791603088379
+  },
+  "config": {
+    "region": "",
+    "regions": [],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": null,
+    "assume_role": null,
+    "session_policy": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": ".",
+    "cache_period": 15,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "hss.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": null,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 1.3948466777801514,
+    "num_fds": 2,
+    "cpu_user": 0.050000000000000266,
+    "cpu_system": 0.009999999999999787,
+    "rss": 192512,
+    "vms": 143360,
+    "shared": -974848,
+    "data": 143360
+  },
+  "api-stats": {},
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2025-04-26T10:46:06.516592",
+      "Value": 10,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2025-04-26T10:46:06.516602",
+      "Value": 0.0019202232360839844,
+      "Unit": "Seconds"
+    },
+    {
+      "MetricName": "ActionTime",
+      "Timestamp": "2025-04-26T10:46:07.908592",
+      "Value": 1.3909454345703125,
+      "Unit": "Seconds"
+    }
+  ]
+}
