@@ -93,6 +93,8 @@ from huaweicloudsdkantiddos.v1 import AntiDDoSClient, ListDDosStatusRequest
 from huaweicloudsdkantiddos.v1.region.antiddos_region import AntiDDoSRegion
 from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
 from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
+from huaweicloudsdkhss.v5 import ListHostStatusRequest, HssClient
+from huaweicloudsdkhss.v5.region.hss_region import HssRegion
 from huaweicloudsdkram.v1 import (
     RamClient,
     SearchResourceShareAssociationsRequest,
