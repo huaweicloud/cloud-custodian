@@ -38,9 +38,9 @@ def run(event, context=None):
     if 'output_dir' not in options_overrides:
         options_overrides['output_dir'] = get_tmp_output_dir()
 
-    options_overrides['SecurityAccessKey'] = context.getSecurityAccessKey()
-    options_overrides['SecuritySecretKey'] = context.getSecuritySecretKey()
-    options_overrides['SecurityToken'] = context.getSecurityToken()
+    options_overrides['access_key_id'] = context.getSecurityAccessKey()
+    options_overrides['secret_access_key'] = context.getSecuritySecretKey()
+    options_overrides['security_token'] = context.getSecurityToken()
 
     # merge all our options in
     options = Config.empty(**options_overrides)

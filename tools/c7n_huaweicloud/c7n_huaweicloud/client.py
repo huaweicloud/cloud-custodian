@@ -40,6 +40,8 @@ from huaweicloudsdker.v3.region.er_region import ErRegion
 from obs import ObsClient
 from huaweicloudsdkces.v2 import CesClient, ListAlarmRulesRequest
 from huaweicloudsdkces.v2.region.ces_region import CesRegion
+from huaweicloudsdkkafka.v2 import KafkaClient, ListInstancesRequest
+from huaweicloudsdkkafka.v2.region.kafka_region import KafkaRegion
 from huaweicloudsdkkms.v2 import KmsClient, ListKeysRequest, ListKeysRequestBody
 from huaweicloudsdkkms.v2.region.kms_region import KmsRegion
 from huaweicloudsdkeg.v1 import EgClient
@@ -91,16 +93,12 @@ from huaweicloudsdkantiddos.v1 import AntiDDoSClient, ListDDosStatusRequest
 from huaweicloudsdkantiddos.v1.region.antiddos_region import AntiDDoSRegion
 from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
 from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
-from huaweicloudsdkhss.v5 import ListHostStatusRequest, HssClient
-from huaweicloudsdkhss.v5.region.hss_region import HssRegion
-
 from huaweicloudsdkram.v1 import (
     RamClient,
     SearchResourceShareAssociationsRequest,
     SearchResourceShareAssociationsReqBody,
 )
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
-
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -109,21 +107,25 @@ class Session:
     """Session"""
 
     def __init__(self, options=None):
-        self.region = os.getenv("HUAWEI_DEFAULT_REGION")
         self.token = None
+        self.domain_id = None
+
+        if options is not None:
+            self.ak = options.get("access_key_id")
+            self.sk = options.get("secret_access_key")
+            self.token = options.get("security_token")
+            self.domain_id = options.get("account_id")
+            self.region = options.get("region")
+
+        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
+        self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
+        self.region = os.getenv("HUAWEI_DEFAULT_REGION") or self.region
+
         if not self.region:
             log.error(
                 "No default region set. Specify a default via HUAWEI_DEFAULT_REGION"
             )
             sys.exit(1)
-
-        if options is not None:
-            self.ak = options.get("SecurityAccessKey")
-            self.sk = options.get("SecuritySecretKey")
-            self.token = options.get("SecurityToken")
-
-        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
-        self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
 
     def client(self, service):
         if self.ak is None or self.sk is None:
@@ -142,9 +144,8 @@ class Session:
             credentials = BasicCredentials(
                 self.ak, self.sk, os.getenv("HUAWEI_PROJECT_ID")
             ).with_security_token(self.token)
-            globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(
-                self.token
-            )
+            globalCredentials = (GlobalCredentials(self.ak, self.sk, self.domain_id)
+                                 .with_security_token(self.token))
 
         if service == "vpc":
             client = (
@@ -296,7 +297,7 @@ class Session:
                 .build()
             )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -395,6 +396,13 @@ class Session:
                 .with_region(AntiDDoSRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'kafka':
+            client = (
+                KafkaClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(KafkaRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -435,7 +443,7 @@ class Session:
             request = ShowTrackerConfigRequest()
         elif service == "ecs":
             request = ListServersDetailsRequest(
-                not_tags="__type_baremetal%2C__type_lcs%2C_sys_type_hcss_l"
+                not_tags="__type_baremetal"
             )
         elif service == "deh":
             request = ListDedicatedHostsRequest()
@@ -501,5 +509,7 @@ class Session:
             )
         elif service == "antiddos":
             request = ListDDosStatusRequest()
+        elif service == 'kafka':
+            request = ListInstancesRequest()
 
         return request
