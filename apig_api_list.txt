@@ -1,0 +1,7 @@
+
+查询API列表-https://support.huaweicloud.com/api-apig/ListApisV2.html
+修改环境-https://support.huaweicloud.com/api-apig/UpdateEnvironmentV2.html
+删除环境-https://support.huaweicloud.com/api-apig/DeleteEnvironmentV2.html
+修改域名-https://support.huaweicloud.com/api-apig/UpdateDomainV2.html
+查询项目下所有实例标签-https://support.huaweicloud.com/api-apig/ListProjectInstanceTags.html
+批量添加或删除单个实例的标签-https://support.huaweicloud.com/api-apig/BatchCreateOrDeleteInstanceTags.html

@@ -1,0 +1,123 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - apig.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Auth-Token:
+      - MIIPagYJKoZIhvcNAQcCoIIPWzCCD1cCAQExDTALBglghkgBZQMEAgEwgg
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250428T095413Z
+    method: GET
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/cc371c55cc9141558ccd76b86903e78b/apis?limit=100
+  response:
+    body:
+      string: '{"total": 1, "size": 1, "apis": [{"id": "5f918d104dc84480a75166ba99efff21", 
+        "name": "test-api", "group_id": "c77f5e81d9cb4424bf704ef2b0ac7600", 
+        "instance_id": "cc371c55cc9141558ccd76b86903e78b",
+        "group_name": "api_group_001", "group_version": "V1", "match_mode": "NORMAL", 
+        "req_protocol": "HTTPS", "req_method": "GET", "req_uri": "/test/http", 
+        "auth_type": "AUTHORIZER", "auth_opt": {"app_code_auth_type": "DISABLE"}, 
+        "backend_type": "HTTP", "cors": false, "status": 1, "type": 1, 
+        "version": "V0.0.1", "register_time": "2020-07-31T12:42:51Z", 
+        "update_time": "2020-08-02T16:32:47.046289Z", "remark": "Test API"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Apr 2025 09:54:13 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=d45b6735b9212c7744; path=/
+      - HWWAFSESTIME=1745831053879; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 42c75739984cd915b00441cd0be480bf
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body:
+      string: '{"name":"updated-test-env","remark":"Updated test environment"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '63'
+      Content-Type:
+      - application/json
+      Host:
+      - apig.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Auth-Token:
+      - MIIPagYJKoZIhvcNAQcCoIIPWzCCD1cCAQExDTALBglghkgBZQMEAgEwgg
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250428T095520Z
+    method: PUT
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/cc371c55cc9141558ccd76b86903e78b/envs/7a1ad0c350844ee69435ab297c1e6d18
+  response:
+    body:
+      string: '{"id":"7a1ad0c350844ee69435ab297c1e6d18","name":"updated-test-env","remark":"Updated test environment","create_time":"2020-07-31T12:42:51Z","update_time":"2025-04-28T09:55:20Z"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Apr 2025 09:55:20 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=d45b6735b9212c7744; path=/
+      - HWWAFSESTIME=1745831053879; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 82c75739984cd915b00441cd0be480bf
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1 
