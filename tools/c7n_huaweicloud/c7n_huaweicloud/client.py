@@ -103,6 +103,9 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
+from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailRequest
+from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
+
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -300,6 +303,13 @@ class Session:
                 .with_region(ImsRegion.value_of(self.region))
                 .build()
             )
+        elif service == "workspace":
+            client = (
+                WorkspaceClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(WorkspaceRegion.value_of(self.region))
+                .build()
+            )
         elif (
             service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
@@ -474,7 +484,8 @@ class Session:
             request = ListOrganizationalUnitsRequest()
         elif service == "org-account":
             request = ListAccountsRequest()
-
+        elif service == "workspace":
+            request = ListDesktopsDetailRequest()
         elif service == "kms":
             request = ListKeysRequest()
             request.body = ListKeysRequestBody(key_spec="ALL")
