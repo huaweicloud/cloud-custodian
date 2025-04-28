@@ -42,7 +42,7 @@ ResourceMap = {
     "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
     "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
     "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
-    "huaweicloud.rds": "c7n_huaweicloud.resources.rds_mysql.RDS",
+    "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS",
     "huaweicloud.rds-mysql-database": "c7n_huaweicloud.resources.rds_mysql.RDSMySQLDatabase",
     "huaweicloud.rds-mysql-user": "c7n_huaweicloud.resources.rds_mysql.RDSMySQLUser"
 }
