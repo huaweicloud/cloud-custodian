@@ -29,6 +29,15 @@ class DC(QueryResourceManager):
     
     This class manages Huawei Cloud Direct Connect service resources,
     allowing for querying, filtering, and operations on direct connect connections.
+    
+    :example:
+    Query all Direct Connect resources in the current project:
+    
+    .. code-block:: yaml
+    
+        policies:
+          - name: dc-query
+            resource: huaweicloud.dc
     """
     
     class resource_type(TypeInfo):
