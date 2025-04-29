@@ -103,6 +103,8 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
+from huaweicloudsdkcdn.v2 import CdnClient, ListDomainsRequest
+from huaweicloudsdkcdn.v2.region.cdn_region import CdnRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -414,6 +416,13 @@ class Session:
                 .with_region(CcRegion.CN_NORTH_4)
                 .build()
             )
+        elif service == "cdn":
+            client = (
+                CdnClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CdnRegion.CN_NORTH_1)
+                .build()
+            )
 
         return client
 
@@ -524,5 +533,7 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == "cdn":
+            request = ListDomainsRequest()
 
         return request
