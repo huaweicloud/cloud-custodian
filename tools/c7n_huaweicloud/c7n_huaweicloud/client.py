@@ -107,6 +107,9 @@ from huaweicloudsdkdns.v2 import (
 )
 from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
 
+from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
+from huaweicloudsdkdc.v3.region.dc_region import DcRegion
+
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -408,6 +411,13 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'dc':
+            client = (
+                DcClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DcRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -521,4 +531,6 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
+        elif service == 'dc':
+            request = ListDirectConnectsRequest()
         return request
