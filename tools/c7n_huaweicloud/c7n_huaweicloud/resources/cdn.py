@@ -129,18 +129,6 @@ class DeleteCdnDomain(HuaweiCloudBaseAction):
         if self.data.get('enterprise_project_id'):
             request.enterprise_project_id = self.data.get('enterprise_project_id')
         
-        # Perform disable operation
-        try:
-            client.disable_domain(request)
-            log.info(f"CDN domain disabled successfully: id={domain_id}")
-        except exceptions.ClientRequestException as e:
-            log.error(
-                f"CDN domain disable failed: id={domain_id}, RequestId={e.request_id}, "
-                f"StatusCode={e.status_code}, ErrorCode={e.error_code}, "
-                f"ErrorMsg={e.error_msg}"
-            )
-            raise
-
         # Perform delete operation
         try:
             client.delete_domain(request)
