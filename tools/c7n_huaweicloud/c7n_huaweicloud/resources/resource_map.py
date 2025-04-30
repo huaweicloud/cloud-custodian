@@ -44,5 +44,7 @@ ResourceMap = {
     "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
     "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
     "huaweicloud.dns-privatezone": "c7n_huaweicloud.resources.dns.PrivateZone",
-    "huaweicloud.dns-recordset": "c7n_huaweicloud.resources.dns.RecordSet"
+    "huaweicloud.dns-recordset": "c7n_huaweicloud.resources.dns.RecordSet",
+    "huaweicloud.swr": "c7n_huaweicloud.resources.swr.Swr",
+    "huaweicloud.swr-image": "c7n_huaweicloud.resources.swr.SwrImage"
 }
