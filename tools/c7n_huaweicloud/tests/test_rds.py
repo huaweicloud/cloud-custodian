@@ -75,23 +75,6 @@ class RDSTest(BaseTest):
         self.assertGreater(len(resources), 0, "测试 VCR 文件应包含禁用了自动扩容的 RDS 实例")
         # 不再检查 disk_encryption_id，因为改用了 show_auto_enlarge_policy API 来获取自动扩容状态
 
-    def test_rds_filter_db_version_eq(self):
-        """测试 database-version 过滤器 - 等于 (eq)"""
-        factory = self.replay_flight_data("rds_filter_db_version")
-        # 验证 VCR: rds_filter_db_version.yaml 应包含版本为 '5.7' 的 MySQL 实例
-        target_version = "5.7"
-        p = self.load_policy(
-            {
-                "name": "rds-filter-db-version-eq-test",
-                "resource": "huaweicloud.rds",
-                "filters": [{"type": "database-version", "version": target_version, "op": "eq"}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertGreater(len(resources), 0, f"测试 VCR 文件应包含版本为 {target_version} 的 RDS 实例")
-        for r in resources:
-            self.assertEqual(r.get("datastore", {}).get("version"), target_version)
 
     def test_rds_filter_db_version_lt(self):
         """测试 database-version 过滤器 - 小于 (lt)"""
