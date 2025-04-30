@@ -17,24 +17,30 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250422T115639Z
-    method: DELETE
-    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/instance-12345678
+      - 20250429T123800Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
   response:
     body:
-      string: '{"job_id": "job-9876543210", "instance": {"id": "instance-12345678"}}'
+      string: '{"instances": [{"id": "rds-instance-for-sg-test", "name": "rds-sg-test",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-10-15T08:00:00+0000",
+        "updated": "2023-10-16T10:30:00+0000", "private_ips": ["192.168.0.30"], "public_ips":
+        [], "vpc_id": "vpc-sg-id", "subnet_id": "subnet-sg-id", "security_group_id":
+        "old-security-group-id", "volume": {"type": "ULTRAHIGH", "size": 40}}],
+        "total_count": 1}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Tue, 22 Apr 2025 11:56:39 GMT
+      - Tue, 29 Apr 2025 12:38:00 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=1aa4173be847417d50; path=/
-      - HWWAFSESTIME=1745322999663; path=/
+      - HWWAFSESID=3a80988c8265e41e59; path=/
+      - HWWAFSESTIME=1745929080026; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -46,14 +52,15 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - de9cbbde00844bd141545d1d7bc9f730
+      - 27f842fa5e3d0a0b0c68aa5a69c61dff
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
       message: success
+
 - request:
-    body: null
+    body: '{"security_group_id": "new-security-group-id"}'
     headers:
       Accept:
       - '*/*'
@@ -61,6 +68,8 @@ interactions:
       - gzip, deflate
       Connection:
       - keep-alive
+      Content-Length:
+      - '44'
       Content-Type:
       - application/json
       Host:
@@ -70,24 +79,24 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250423T021032Z
-    method: GET
-    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+      - 20250429T123801Z
+    method: PUT
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-for-sg-test/security-group
   response:
     body:
-      string: '{"instances": [], "total_count": 0}'
+      string: '{"job_id": "ff8080818257e8c701827162dbc0001d", "workflowId": "666"}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Wed, 23 Apr 2025 02:10:32 GMT
+      - Tue, 29 Apr 2025 12:38:01 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESTIME=1745374232439; path=/
-      - HWWAFSESID=27a2073b5698de8d12; path=/
+      - HWWAFSESID=3a80989c9266e41f60; path=/
+      - HWWAFSESTIME=1745929081027; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -99,7 +108,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 0d5067ae77cb3befda63eed2a6a370d1
+      - 38053b0b6f4e1b1c1d79bb6b7ad72e00
       X-XSS-Protection:
       - 1; mode=block;
     status:

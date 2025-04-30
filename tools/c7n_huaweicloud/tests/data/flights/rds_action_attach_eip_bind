@@ -17,27 +17,26 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250424T015008Z
+      - 20250429T103921Z
     method: GET
     uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
   response:
     body:
-      string: '{"instances": [{"id": "instance-12345678", "name": "mysql-instance-test", 
-        "status": "ACTIVE", "type": "MySQL", "vpc_id": "vpc-12345678", 
-        "subnet_id": "subnet-12345678", "security_group_id": "sg-12345678", 
-        "flavor_ref": "rds.mysql.m1.large"}], "total_count": 1}'
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"1e8602c3a6a7dbee3878a50d9a8a5af0"}
+
+        '
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Thu, 24 Apr 2025 01:50:08 GMT
+      - Tue, 29 Apr 2025 10:39:22 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESTIME=1745459408742; path=/
-      - HWWAFSESID=8517c73870edd4cd21; path=/
+      - HWWAFSESID=64b0e7353e0eb1c619; path=/
+      - HWWAFSESTIME=1745923162023; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -49,10 +48,10 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 81b2ef7ead87bcb3c259ff3d73b605a8
+      - 1e8602c3a6a7dbee3878a50d9a8a5af0
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 200
-      message: success
+      code: 401
+      message: Unauthorized
 version: 1

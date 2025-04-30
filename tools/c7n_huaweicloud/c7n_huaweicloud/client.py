@@ -390,7 +390,7 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
-        elif service in ['rds', 'rds-mysql-database', 'rds-mysql-user']:
+        elif service in ['rds', 'rds-mysql', 'rds-mysql-database', 'rds-mysql-user']:
             client = (
                 RdsClient.new_builder()
                 .with_credentials(credentials)
@@ -499,7 +499,7 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
-        elif service == 'rds':
+        elif service == 'rds' or service == 'rds-mysql':
             request = RdsListInstancesRequest()
         elif service == 'rds-mysql-database':
             request = ListDatabasesRequest()
