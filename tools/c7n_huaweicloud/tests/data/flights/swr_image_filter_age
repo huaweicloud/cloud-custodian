@@ -22,7 +22,7 @@ interactions:
     uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/tags
   response:
     body:
-      string: '[{"id":123,"Tag":"latest","image_id":"sha256:1234567890abcdef","digest":"sha256:abcdef1234567890","path":"swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo:latest","created":"2023-01-01T00:00:00Z","updated":"2023-01-01T00:00:00Z","is_trusted":false,"namespace":"test-namespace","repository":"test-repo"}]'
+      string: '[{"id":124,"Tag":"v1.0.0","image_id":"sha256:1234567890abcdef","digest":"sha256:abcdef1234567890","path":"swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo:v1.0.0","created":"2022-01-01T00:00:00Z","updated":"2022-01-01T00:00:00Z","is_trusted":false,"namespace":"test-namespace","repository":"test-repo"}]'
     headers:
       Connection:
       - keep-alive

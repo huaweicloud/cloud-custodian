@@ -1,0 +1,30 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.29.0
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/tags
+  response:
+    body:
+      string: '[{"digest":"sha256:abc123def456","image_id":"sha256:abc123def456","size":15678901,"architecture":"amd64","os":"linux","path":"swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo:latest","Tag":"latest","pull_times":10,"created":"2023-05-15T12:00:00Z"}]'
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 10 May 2024 08:35:00 GMT
+      Server:
+      - OpenResty
+      X-Request-Id:
+      - 6e0a977e12b3ba641c4db24a76f32cc6
+    status:
+      code: 200
+      message: OK
+version: 1 

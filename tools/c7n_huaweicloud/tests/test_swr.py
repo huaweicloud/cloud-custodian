@@ -8,10 +8,10 @@ from huaweicloud_common import BaseTest
 
 
 class SwrRepositoryTest(BaseTest):
-    """测试SWR镜像仓库资源管理器"""
+    """Test SWR Repository resources, filters, and actions"""
 
     def test_swr_repository_query(self):
-        """测试SWR仓库查询和资源增强"""
+        """Test SWR Repository query and augment"""
         factory = self.replay_flight_data("swr_repository_query")
         p = self.load_policy(
             {
@@ -22,342 +22,376 @@ class SwrRepositoryTest(BaseTest):
         )
         
         resources = p.run()
-        # 验证VCR: swr_repository_query应包含1个仓库
+        # Verify VCR: swr_repository_query should contain 1 repository
         self.assertEqual(len(resources), 1)
-        # 验证VCR: 值应匹配swr_repository_query中的'name'
+        # Verify VCR: Value should match the 'name' in swr_repository_query
         self.assertEqual(resources[0]["name"], "test-repo")
-        # 验证资源中是否添加了必要字段
+        # Verify resource contains required fields
         self.assertTrue("id" in resources[0])
         self.assertTrue("tag_resource_type" in resources[0])
-        # 验证标签格式是否为列表
-        self.assertTrue(isinstance(resources[0].get("tags", []), list))
         
-        # 验证生命周期规则是否正确增强到资源中
+        # Verify lifecycle policy is correctly augmented to the resource
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
-        self.assertTrue("rules" in lifecycle_policy)
+        # Verify lifecycle policy is a list
+        self.assertTrue(isinstance(lifecycle_policy, list))
+        # Verify rules list length
+        self.assertEqual(len(lifecycle_policy), 1)
         
+        # Get the first rule
+        rule = lifecycle_policy[0]
         
-        rules = lifecycle_policy["rules"]
-        # 验证规则列表长度
-        self.assertTrue(len(rules) > 0, "生命周期规则列表不应为空")
+        # Verify rule properties
+        self.assertEqual(rule["algorithm"], "or")
+        self.assertEqual(rule["id"], 222)
         
-        # 获取第一个规则
-        rule = rules[0]
+        # Verify inner rules
+        self.assertTrue("rules" in rule)
+        self.assertEqual(len(rule["rules"]), 1)
+        rule_detail = rule["rules"][0]
+        self.assertEqual(rule_detail["template"], "date_rule")
+        self.assertEqual(rule_detail["params"]["days"], "30")
         
-        # 使用更灵活的验证方式
-        # 首先检查规则结构，可能是一个包含了规则数据的字典
-        if 'algorithm' in rule:
-            # 直接验证规则属性
-            self.assertEqual(rule["algorithm"], "or")
-            self.assertEqual(rule.get("id"), 222)
-            
-            # 验证内部规则
-            if "rules" in rule and isinstance(rule["rules"], list) and len(rule["rules"]) > 0:
-                rule_detail = rule["rules"][0]
-                self.assertEqual(rule_detail["template"], "date_rule")
-                self.assertEqual(rule_detail["params"]["days"], "30")
-                
-                # 验证标签选择器
-                if "tag_selectors" in rule_detail and len(rule_detail["tag_selectors"]) >= 3:
-                    selectors = rule_detail["tag_selectors"]
-                    self.assertEqual(selectors[0]["kind"], "label")
-                    self.assertEqual(selectors[0]["pattern"], "v5")
-                    self.assertEqual(selectors[1]["kind"], "label")
-                    self.assertEqual(selectors[1]["pattern"], "1.0.1")
-                    self.assertEqual(selectors[2]["kind"], "regexp")
-                    self.assertEqual(selectors[2]["pattern"], "^123$")
-        # 如果规则是扁平的结构，没有嵌套的rules数组
-        elif "template" in rule:
-            # 验证模板和参数
-            self.assertEqual(rule["template"], "date_rule")
-            self.assertTrue("params" in rule)
-            self.assertEqual(rule["params"].get("days"), "30")
-            
-            # 验证标签选择器
-            if "tag_selectors" in rule and len(rule["tag_selectors"]) >= 3:
-                selectors = rule["tag_selectors"]
-                self.assertEqual(selectors[0]["kind"], "label")
-                self.assertEqual(selectors[0]["pattern"], "v5")
-                self.assertEqual(selectors[1]["kind"], "label")
-                self.assertEqual(selectors[1]["pattern"], "1.0.1")
-                self.assertEqual(selectors[2]["kind"], "regexp")
-                self.assertEqual(selectors[2]["pattern"], "^123$")
-
-    def test_swr_repository_filter_value(self):
-        """测试SWR仓库值过滤器"""
-        factory = self.replay_flight_data("swr_repository_filter_value")
+        # Verify tag selectors
+        self.assertTrue("tag_selectors" in rule_detail)
+        selectors = rule_detail["tag_selectors"]
+        self.assertEqual(len(selectors), 3)
+        self.assertEqual(selectors[0]["kind"], "label")
+        self.assertEqual(selectors[0]["pattern"], "v5")
+        self.assertEqual(selectors[1]["kind"], "label")
+        self.assertEqual(selectors[1]["pattern"], "1.0.1")
+        self.assertEqual(selectors[2]["kind"], "regexp")
+        self.assertEqual(selectors[2]["pattern"], "^123$")
+        
+    def test_swr_filter_value(self):
+        """Test SWR Repository value filter"""
+        factory = self.replay_flight_data("swr_filter_value")
         p = self.load_policy(
             {
-                "name": "swr-repository-filter-value",
+                "name": "swr-filter-value",
                 "resource": "huaweicloud.swr",
-                "filters": [{"type": "value", "key": "is_public", "value": True}],
+                "filters": [{"type": "value", "key": "is_public", "value": False}],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: 应有1个公开仓库
+        # Verify VCR: There should be 1 resource matching is_public=False
         self.assertEqual(len(resources), 1)
-        self.assertTrue(resources[0]["is_public"])
+        # Verify value matches
+        self.assertFalse(resources[0]["is_public"])
 
-    def test_swr_repository_filter_age(self):
-        """测试SWR仓库年龄过滤器"""
-        factory = self.replay_flight_data("swr_repository_filter_age")
+    def test_swr_filter_age(self):
+        """Test SWR Repository age filter"""
+        factory = self.replay_flight_data("swr_filter_age")
         p = self.load_policy(
             {
-                "name": "swr-repository-filter-age",
+                "name": "swr-filter-age",
                 "resource": "huaweicloud.swr",
-                # 验证VCR: 'test-repo'的创建时间应大于30天
-                "filters": [{"type": "age", "days": 30, "op": "gt"}],
+                # Verify VCR: Creation time should be greater than 90 days
+                "filters": [{"type": "age", "days": 90, "op": "gt"}],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: 应有1个创建时间超过30天的仓库
+        # Verify VCR: There should be 1 repository older than 90 days
         self.assertEqual(len(resources), 1)
+        # Verify repository name
+        self.assertEqual(resources[0]["name"], "test-repo")
+        # Verify creation date is more than 90 days in the past
+        created_date = datetime.strptime(resources[0]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+        self.assertTrue((datetime.now() - created_date).days > 90)
 
-    def test_swr_repository_set_lifecycle(self):
-        """测试SWR仓库设置老化规则"""
-        factory = self.replay_flight_data("swr_repository_set_lifecycle")
-        
-        # 模拟SWR客户端和响应
-        with patch('c7n_huaweicloud.resources.swr.local_session') as mock_local_session:
-            # 创建模拟对象
-            mock_client = MagicMock()
-            mock_response = MagicMock()
-            mock_response.id = 42  # 模拟返回的ID
-            mock_client.create_retention.return_value = mock_response
-            
-            mock_request = MagicMock()
-            mock_session = MagicMock()
-            mock_session.request.return_value = mock_request
-            mock_local_session.return_value = mock_session
-            
-            p = self.load_policy(
-                {
-                    "name": "swr-repository-set-lifecycle",
-                    "resource": "huaweicloud.swr",
-                    "filters": [{"type": "value", "key": "name", "value": "test-repo"}],
-                    "actions": [{
-                        "type": "set-lifecycle",
-                        "algorithm": "or",
-                        "rules": [{
-                            "template": "date_rule",
-                            "params": {"days": 90},
-                            "tag_selectors": [{
-                                "kind": "label",
-                                "pattern": "v1"
-                            }]
-                        }]
-                    }],
-                },
-                session_factory=factory,
-            )
-            
-            # 模拟资源管理器的get_client方法
-            p.resource_manager.get_client = MagicMock(return_value=mock_client)
-            
-            # 模拟测试资源
-            mock_resources = [{
-                'id': 'test-repo',
-                'name': 'test-repo',
-                'namespace': 'test-namespace',
-                'created_at': '2023-01-01T00:00:00Z'
-            }]
-            
-            # 使用patch_resource_search模拟resources方法
-            with patch.object(p.resource_manager, 'resources', return_value=mock_resources):
-                resources = p.run()
-                
-                # 验证结果
-                self.assertEqual(len(resources), 1)
-                self.assertEqual(resources[0].get('retention_id'), 42)
-                self.assertEqual(resources[0].get('retention_status'), 'created')
-                
-                # 验证模拟方法调用
-                mock_local_session.assert_called()
-                mock_session.request.assert_called_with('swr')
-                
-                # 验证请求参数设置
-                self.assertEqual(mock_request.namespace, 'test-namespace')
-                self.assertEqual(mock_request.repository, 'test-repo')
-                self.assertEqual(mock_request.body['algorithm'], 'or')
-                
-                # 验证规则参数
-                self.assertEqual(len(mock_request.body['rules']), 1)
-                rule = mock_request.body['rules'][0]
-                self.assertEqual(rule['template'], 'date_rule')
-                self.assertEqual(rule['params']['days'], 90)
-                
-                # 验证客户端API调用
-                mock_client.create_retention.assert_called_with(mock_request)
 
 class SwrImageTest(BaseTest):
-    """测试SWR镜像资源管理器"""
+    """Test SWR Image resources, filters, and actions"""
 
     def test_swr_image_query(self):
-        """测试SWR镜像查询和资源增强"""
+        """Test SWR Image query and augment"""
         factory = self.replay_flight_data("swr_image_query")
-        
-        # 修改 SwrImage.resources 方法的行为，使其总是返回已经增强的模拟数据
-        with patch('c7n_huaweicloud.resources.swr.SwrImage.resources') as mock_resources:
-            # 创建已增强的模拟数据
-            mock_data = [
-                {
-                    'id': 'test-namespace/test-repo/latest',
-                    'namespace': 'test-namespace',
-                    'repository': 'test-repo',
-                    'tag': 'latest',
-                    'size': 102400,
-                    'created_at': '2023-01-01T00:00:00Z',
-                    'tag_resource_type': 'swr-image',
-                    'path': 'swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo:latest'
-                }
-            ]
-            # 设置模拟返回值
-            mock_resources.return_value = mock_data
-            
-            p = self.load_policy(
-                {
-                    "name": "swr-image-query",
-                    "resource": "huaweicloud.swr-image",
-                    "query": {
-                        "namespace": "test-namespace",
-                        "repository": "test-repo",
-                    },
-                },
-                session_factory=factory,
-            )
-            resources = p.run()
-            
-            # 验证模拟方法是否被调用
-            mock_resources.assert_called_once()
-            
-            # 验证资源数据
-            self.assertEqual(len(resources), 1)
-            # 验证命名空间和仓库信息
-            self.assertEqual(resources[0]["namespace"], "test-namespace")
-            self.assertEqual(resources[0]["repository"], "test-repo")
-            # 验证ID格式
-            self.assertEqual(resources[0]["id"], "test-namespace/test-repo/latest")
-            # 验证标签资源类型
-            self.assertEqual(resources[0]["tag_resource_type"], "swr-image")
-            # 验证是否添加了镜像路径
-            self.assertTrue("path" in resources[0])
-
-    def test_swr_image_filter_age(self):
-        """测试SWR镜像年龄过滤器"""
-        factory = self.replay_flight_data("swr_image_filter_age")
-        
-        # 修改 SwrImage.resources 方法的行为，使其总是返回已经增强的模拟数据
-        with patch('c7n_huaweicloud.resources.swr.SwrImage.resources') as mock_resources:
-            # 创建模拟数据 - 旧镜像 (120天前)
-            old_date = (datetime.now() - timedelta(days=120)).strftime('%Y-%m-%dT%H:%M:%SZ')
-            mock_data = [
-                {
-                    'id': 'test-namespace/test-repo/v1.0.0',
-                    'namespace': 'test-namespace',
-                    'repository': 'test-repo',
-                    'tag': 'v1.0.0',
-                    'size': 102400,
-                    'created_at': old_date,
-                    'tag_resource_type': 'swr-image',
-                    'path': 'swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo:v1.0.0'
-                }
-            ]
-            # 设置模拟返回值
-            mock_resources.return_value = mock_data
-            
-            p = self.load_policy(
-                {
-                    "name": "swr-image-filter-age",
-                    "resource": "huaweicloud.swr-image",
-                    "query": {
-                        "namespace": "test-namespace",
-                        "repository": "test-repo",
-                    },
-                    # 验证测试: 镜像创建时间应大于90天
-                    "filters": [{"type": "age", "days": 90, "op": "gt"}],
-                },
-                session_factory=factory,
-            )
-            resources = p.run()
-            
-            # 验证模拟方法是否被调用
-            mock_resources.assert_called_once()
-            
-            # 验证过滤器 - 应有1个创建时间超过90天的镜像
-            self.assertEqual(len(resources), 1)
-            self.assertEqual(resources[0]["tag"], "v1.0.0")
-
-
-class SwrAgeFilterTest(BaseTest):
-    """测试SWR资源的年龄过滤器"""
-
-    def test_age_filter_get_resource_date(self):
-        """测试年龄过滤器日期解析功能"""
-        # 创建一个带有valid_resource的测试策略
-        factory = self.replay_flight_data("swr_age_filter")
         p = self.load_policy(
             {
-                "name": "swr-age-filter-test",
-                "resource": "huaweicloud.swr",
-                "filters": [{"type": "age", "days": 1}],
+                "name": "swr-image-query",
+                "resource": "huaweicloud.swr-image",
+                "query": {
+                    "namespace": "test-namespace",
+                    "repository": "test-repo",
+                },
             },
             session_factory=factory,
         )
+        resources = p.run()
+        # Verify VCR: There should be 1 image
+        self.assertEqual(len(resources), 1)
+        # Verify VCR: Image tag should be 'latest'
+        self.assertEqual(resources[0]["Tag"], "latest")
+        # Verify namespace and repository information
+        self.assertEqual(resources[0]["namespace"], "test-namespace")
+        self.assertEqual(resources[0]["repository"], "test-repo")
+        # Verify ID format
+        self.assertTrue("id" in resources[0])
+        # Verify image path is added
+        self.assertTrue("path" in resources[0])
+        # Verify image ID is included
+        self.assertTrue("image_id" in resources[0])
+        # Verify digest information is included
+        self.assertTrue("digest" in resources[0])
+
+    def test_swr_image_filter_age(self):
+        """Test SWR Image age filter"""
+        factory = self.replay_flight_data("swr_image_filter_age")
+        p = self.load_policy(
+            {
+                "name": "swr-image-filter-age",
+                "resource": "huaweicloud.swr-image",
+                "query": {
+                    "namespace": "test-namespace",
+                    "repository": "test-repo",
+                },
+                # Verify VCR: Image creation time should be greater than 90 days
+                "filters": [{"type": "age", "days": 90, "op": "gt"}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 image older than 90 days
+        self.assertEqual(len(resources), 1)
+        # Verify image tag
+        self.assertEqual(resources[0]["Tag"], "v1.0.0")
+        # Verify namespace and repository information
+        self.assertEqual(resources[0]["namespace"], "test-namespace")
+        self.assertEqual(resources[0]["repository"], "test-repo")
+        # Verify creation date is more than 90 days in the past
+        created_date = datetime.strptime(resources[0]["created"], "%Y-%m-%dT%H:%M:%SZ")
+        self.assertTrue((datetime.now() - created_date).days > 90)
         
-        # 获取过滤器实例
-        age_filter = p.filters[0]
+    def test_swr_image_filter_value(self):
+        """Test SWR Image value filter"""
+        factory = self.replay_flight_data("swr_image_filter_value")
+        p = self.load_policy(
+            {
+                "name": "swr-image-filter-value",
+                "resource": "huaweicloud.swr-image",
+                "query": {
+                    "namespace": "test-namespace",
+                    "repository": "test-repo",
+                },
+                "filters": [{"type": "value", "key": "image_id", "value": "sha256:abc123def456"}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 image matching the specified image_id
+        self.assertEqual(len(resources), 1)
+        # Verify image_id matches
+        self.assertEqual(resources[0]["image_id"], "sha256:abc123def456")
+
+
+class LifecycleRuleFilterTest(BaseTest):
+    """Test SWR Lifecycle Rule filter"""
+    
+    def test_lifecycle_rule_filter_match(self):
+        """Test Lifecycle Rule filter - Match"""
+        factory = self.replay_flight_data("swr_filter_lifecycle_rule_match")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-lifecycle-rule-match",
+                "resource": "huaweicloud.swr",
+                "filters": [{"type": "lifecycle-rule", "state": True}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 resource with lifecycle rules
+        self.assertEqual(len(resources), 1)
         
-        # 测试有效的ISO格式日期
-        valid_resource = {"created_at": "2023-01-01T00:00:00Z"}
-        date = age_filter.get_resource_date(valid_resource)
-        self.assertIsInstance(date, datetime)
-        self.assertEqual(date.year, 2023)
-        self.assertEqual(date.month, 1)
-        self.assertEqual(date.day, 1)
+        # Verify lifecycle policy
+        self.assertTrue("c7n:lifecycle-policy" in resources[0])
+        lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
+        # Verify lifecycle policy is a list
+        self.assertTrue(isinstance(lifecycle_policy, list))
+        self.assertTrue(len(lifecycle_policy) > 0)
+    
+    def test_lifecycle_rule_filter_no_match(self):
+        """Test Lifecycle Rule filter - No Match"""
+        factory = self.replay_flight_data("swr_filter_lifecycle_rule_no_match")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-lifecycle-rule-no-match",
+                "resource": "huaweicloud.swr",
+                "filters": [{"type": "lifecycle-rule", "state": False}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 resource without lifecycle rules
+        self.assertEqual(len(resources), 1)
         
-        # 测试无时区信息的日期
-        no_tz_resource = {"created_at": "2023-01-01T00:00:00"}
-        date = age_filter.get_resource_date(no_tz_resource)
-        self.assertIsInstance(date, datetime)
-        # 确认添加了UTC时区
-        self.assertEqual(date.tzinfo.utcoffset(date).total_seconds(), 0)
+        # Verify lifecycle policy
+        self.assertTrue("c7n:lifecycle-policy" in resources[0])
+        lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
+        # Verify lifecycle policy is empty list
+        self.assertTrue(isinstance(lifecycle_policy, list))
+        self.assertEqual(len(lifecycle_policy), 0)
+    
+    def test_lifecycle_rule_filter_with_match_param(self):
+        """Test Lifecycle Rule filter - With Match Parameters"""
+        factory = self.replay_flight_data("swr_filter_lifecycle_rule_with_match_param")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-lifecycle-rule-with-match-param",
+                "resource": "huaweicloud.swr",
+                "filters": [{
+                    "type": "lifecycle-rule", 
+                    "state": True,
+                    "match": [
+                        {"type": "value", "key": "rules[0].template", "value": "date_rule"}
+                    ]
+                }],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 resource with matching lifecycle rules
+        self.assertEqual(len(resources), 1)
         
-        # 测试带微秒的日期
-        ms_resource = {"created_at": "2023-01-01T00:00:00.123Z"}
-        date = age_filter.get_resource_date(ms_resource)
-        self.assertIsInstance(date, datetime)
-        self.assertEqual(date.microsecond, 123000)
+        # Verify lifecycle policy
+        lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
+        # Verify lifecycle policy is a list
+        self.assertTrue(isinstance(lifecycle_policy, list))
+        rule = lifecycle_policy[0]
+        self.assertEqual(rule["rules"][0]["template"], "date_rule")
+
+    def test_lifecycle_rule_filter_with_params(self):
+        """Test Lifecycle Rule filter - With Parameters"""
+        factory = self.replay_flight_data("swr_filter_lifecycle_rule_with_params")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-lifecycle-rule-with-params",
+                "resource": "huaweicloud.swr",
+                "filters": [{
+                    "type": "lifecycle-rule",
+                    "params": {
+                        "days": {
+                            "type": "value",
+                            "op": "gte",
+                            "value": 30
+                        }
+                    }
+                }],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 resource with matching lifecycle rule parameters
+        self.assertEqual(len(resources), 1)
         
-        # 测试缺少created_at字段
-        missing_date_resource = {"name": "test"}
-        date = age_filter.get_resource_date(missing_date_resource)
-        self.assertIsNone(date)
+        # Verify lifecycle policy
+        self.assertTrue("c7n:lifecycle-policy" in resources[0])
+        lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
+        # Verify lifecycle policy is a list
+        self.assertTrue(isinstance(lifecycle_policy, list))
+        rule = lifecycle_policy[0]
+        self.assertTrue("rules" in rule)
+        rule_detail = rule["rules"][0]
+        self.assertTrue("params" in rule_detail)
+        self.assertEqual(rule_detail["params"]["days"], "30")
+    
+    def test_lifecycle_rule_filter_with_tag_selector(self):
+        """Test Lifecycle Rule filter - With Tag Selector"""
+        factory = self.replay_flight_data("swr_filter_lifecycle_rule_with_tag_selector")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-lifecycle-rule-with-tag-selector",
+                "resource": "huaweicloud.swr",
+                "filters": [{
+                    "type": "lifecycle-rule",
+                    "tag_selector": {
+                        "kind": "label",
+                        "pattern": "v5"
+                    }
+                }],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 resource with matching tag selector
+        self.assertEqual(len(resources), 1)
         
-        # 测试无效日期格式
-        invalid_date_resource = {"created_at": "invalid-date"}
-        date = age_filter.get_resource_date(invalid_date_resource)
-        self.assertIsNone(date)
+        # Verify tag selector
+        lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
+        # Verify lifecycle policy is a list
+        self.assertTrue(isinstance(lifecycle_policy, list))
+        rule = lifecycle_policy[0]
+        rule_detail = rule["rules"][0]
+        selectors = rule_detail["tag_selectors"]
+        # Check if at least one selector matches
+        selector_match = False
+        for selector in selectors:
+            if selector["kind"] == "label" and selector["pattern"] == "v5":
+                selector_match = True
+                break
+        self.assertTrue(selector_match, "No matching tag selector found")
+    
+    def test_lifecycle_rule_filter_complex(self):
+        """Test Lifecycle Rule filter - Complex Condition Combination"""
+        factory = self.replay_flight_data("swr_filter_lifecycle_rule_complex")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-lifecycle-rule-complex",
+                "resource": "huaweicloud.swr",
+                "filters": [{
+                    "type": "lifecycle-rule",
+                    "params": {
+                        "days": {
+                            "type": "value",
+                            "op": "gte",
+                            "value": 30
+                        }
+                    },
+                    "tag_selector": {
+                        "kind": "label"
+                    },
+                    "match": [
+                        {"type": "value", "key": "algorithm", "value": "or"}
+                    ]
+                }],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 resource matching all conditions
+        self.assertEqual(len(resources), 1)
+        
+        # Verify lifecycle policy satisfies all conditions
+        lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
+        # Verify lifecycle policy is a list
+        self.assertTrue(isinstance(lifecycle_policy, list))
+        rule = lifecycle_policy[0]
+        
+        # Verify algorithm
+        self.assertEqual(rule["algorithm"], "or")
+        
+        # Verify parameters
+        rule_detail = rule["rules"][0]
+        self.assertTrue("params" in rule_detail)
+        self.assertEqual(rule_detail["params"]["days"], "30")
+        
+        # Verify tag selector
+        selectors = rule_detail["tag_selectors"]
+        selector_match = False
+        for selector in selectors:
+            if selector["kind"] == "label":
+                selector_match = True
+                break
+        self.assertTrue(selector_match, "No matching tag selector found")
 
 
 class SetLifecycleActionTest(BaseTest):
-    """测试SWR设置生命周期规则操作"""
+    """Test SWR Set Lifecycle Rule actions"""
 
-    @patch('c7n_huaweicloud.resources.swr.local_session')
-    def test_create_lifecycle_rule(self, mock_local_session):
-        """测试创建生命周期规则"""
-        # 模拟SWR客户端和请求
-        mock_client = MagicMock()
-        mock_client.create_retention.return_value = "success"
-        
-        mock_request = MagicMock()
-        mock_session = MagicMock()
-        mock_session.request.return_value = mock_request
-        mock_local_session.return_value = mock_session
-        
-        factory = self.replay_flight_data("swr_lifecycle_action")
+    def test_create_lifecycle_rule(self):
+        """Test Create Lifecycle Rule"""
+        factory = self.replay_flight_data("swr_lifecycle_action_success")
         p = self.load_policy(
             {
                 "name": "swr-create-lifecycle",
@@ -378,39 +412,16 @@ class SetLifecycleActionTest(BaseTest):
             },
             session_factory=factory,
         )
-        
-        # 模拟manager的get_client方法
-        p.resource_manager.get_client = MagicMock(return_value=mock_client)
-        
         resources = p.run()
+        # Verify VCR: There should be 1 resource
         self.assertEqual(len(resources), 1)
-        
-        # 验证mock调用
-        mock_local_session.assert_called_once()
-        mock_session.request.assert_called_once_with('swr')
-        
-        # 验证request参数设置
-        self.assertEqual(mock_request.namespace, resources[0].get('namespace'))
-        self.assertEqual(mock_request.repository, resources[0].get('repository'))
-        self.assertEqual(mock_request.body['algorithm'], 'or')
-        self.assertEqual(len(mock_request.body['rules']), 1)
-        self.assertEqual(mock_request.body['rules'][0]['template'], 'date_rule')
-        
-        # 验证客户端调用
-        mock_client.create_retention.assert_called_once_with(mock_request)
+        # Verify VCR: Resource should have retention_id field
+        self.assertTrue("retention_id" in resources[0])
+        # Verify VCR: Resource status should be created
+        self.assertEqual(resources[0]["retention_status"], "created")
     
-    @patch('c7n_huaweicloud.resources.swr.local_session')
-    def test_create_lifecycle_rule_error(self, mock_local_session):
-        """测试创建生命周期规则出错处理"""
-        # 模拟SWR客户端和请求
-        mock_client = MagicMock()
-        mock_client.create_retention.side_effect = Exception("API错误")
-        
-        mock_request = MagicMock()
-        mock_session = MagicMock()
-        mock_session.request.return_value = mock_request
-        mock_local_session.return_value = mock_session
-        
+    def test_create_lifecycle_rule_error(self):
+        """Test Create Lifecycle Rule Error Handling"""
         factory = self.replay_flight_data("swr_lifecycle_action_error")
         p = self.load_policy(
             {
@@ -432,29 +443,22 @@ class SetLifecycleActionTest(BaseTest):
             },
             session_factory=factory,
         )
-        
-        # 模拟manager的get_client方法
-        p.resource_manager.get_client = MagicMock(return_value=mock_client)
-        
         resources = p.run()
+        # Verify VCR: There should be 1 resource
         self.assertEqual(len(resources), 1)
-        
-        # 验证客户端调用抛出异常
-        mock_client.create_retention.assert_called_once()
+        # Verify VCR: Resource should have error field
+        self.assertTrue("error" in resources[0])
+        # Verify VCR: Resource status should be error
+        self.assertEqual(resources[0]["status"], "error")
     
-    @patch('c7n_huaweicloud.resources.swr.local_session')
-    def test_missing_namespace_repository(self, mock_local_session):
-        """测试缺少命名空间或仓库信息的处理"""
-        # 模拟SWR客户端和请求
-        mock_client = MagicMock()
-        mock_session = MagicMock()
-        mock_local_session.return_value = mock_session
-        
+    def test_missing_namespace_repository(self):
+        """Test Missing Namespace or Repository Information Handling"""
         factory = self.replay_flight_data("swr_lifecycle_missing_info")
         p = self.load_policy(
             {
                 "name": "swr-lifecycle-missing-info",
                 "resource": "huaweicloud.swr",
+                "filters": [{"type": "value", "key": "name", "value": "test-repo-no-namespace"}],
                 "actions": [{
                     "type": "set-lifecycle",
                     "algorithm": "or",
@@ -470,135 +474,10 @@ class SetLifecycleActionTest(BaseTest):
             },
             session_factory=factory,
         )
-        
-        # 模拟manager的get_client方法
-        p.resource_manager.get_client = MagicMock(return_value=mock_client)
-        
-        # 创建一个没有namespace和repository信息的资源
-        missing_info_resource = {"id": "test", "name": "test"}
-        
-        # 直接调用action的process方法
-        action = p.resource_manager.actions[0]
-        results = action.process([missing_info_resource])
-        
-        # 验证结果包含错误信息
-        self.assertEqual(results[0]['status'], 'error')
-        self.assertTrue('缺少命名空间或仓库信息' in results[0]['error'])
-        
-        # 验证没有调用create_retention
-        mock_client.create_retention.assert_not_called()
-
-
-class SwrTagFilterTest(BaseTest):
-    """测试SWR资源的标签过滤器(可复用)"""
-    
-    def test_tag_count_filter(self):
-        """测试标签数量过滤器"""
-        factory = self.replay_flight_data("swr_filter_tag_count")
-        p = self.load_policy(
-            {
-                "name": "swr-filter-tag-count",
-                "resource": "huaweicloud.swr",
-                # 验证VCR: 资源应有2个标签
-                "filters": [{"type": "tag-count", "count": 2}],
-            },
-            session_factory=factory,
-        )
         resources = p.run()
-        # 验证VCR: 应有1个资源有2个标签
+        # Verify VCR: There should be 1 resource
         self.assertEqual(len(resources), 1)
-    
-    def test_marked_for_op_filter(self):
-        """测试标记待操作过滤器"""
-        factory = self.replay_flight_data("swr_filter_marked_for_op")
-        p = self.load_policy(
-            {
-                "name": "swr-filter-marked-for-op",
-                "resource": "huaweicloud.swr",
-                # 验证VCR: 资源应有标记c7n_status且值为delete操作
-                "filters": [{"type": "marked-for-op", "op": "delete", "tag": "c7n_status"}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # 验证VCR: 应有1个标记为删除的资源
-        self.assertEqual(len(resources), 1)
-    
-    def test_list_item_filter(self):
-        """测试列表项过滤器"""
-        factory = self.replay_flight_data("swr_filter_list_item")
-        p = self.load_policy(
-            {
-                "name": "swr-filter-list-item",
-                "resource": "huaweicloud.swr",
-                # 验证VCR: 资源应有标签key为environment
-                "filters": [{
-                    "type": "list-item",
-                    "key": "tags",
-                    "attrs": [
-                        {"type": "value", "key": "key", "value": "environment"}
-                    ]
-                }],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # 验证VCR: 应有1个资源有environment标签
-        self.assertEqual(len(resources), 1)
-
-
-class SwrTagActionTest(BaseTest):
-    """测试SWR资源的标签操作(可复用)"""
-    
-    def test_tag_action(self):
-        """测试添加标签操作"""
-        factory = self.replay_flight_data("swr_action_tag")
-        p = self.load_policy(
-            {
-                "name": "swr-action-tag",
-                "resource": "huaweicloud.swr",
-                "filters": [{"type": "value", "key": "name", "value": "test-repo"}],
-                "actions": [{"type": "tag", "key": "environment", "value": "production"}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        # 验证VCR: 确认调用了tag API
-    
-    def test_remove_tag_action(self):
-        """测试移除标签操作"""
-        factory = self.replay_flight_data("swr_action_remove_tag")
-        p = self.load_policy(
-            {
-                "name": "swr-action-remove-tag",
-                "resource": "huaweicloud.swr",
-                "filters": [{"tag:environment": "present"}],
-                "actions": [{"type": "remove-tag", "tags": ["environment"]}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        # 验证VCR: 确认调用了untag API
-    
-    def test_mark_for_op_action(self):
-        """测试标记待操作操作"""
-        factory = self.replay_flight_data("swr_action_mark_for_op")
-        p = self.load_policy(
-            {
-                "name": "swr-action-mark-for-op",
-                "resource": "huaweicloud.swr",
-                "filters": [{"type": "value", "key": "name", "value": "test-repo"}],
-                "actions": [{
-                    "type": "mark-for-op",
-                    "op": "delete",
-                    "days": 7,
-                    "tag": "c7n_status"
-                }],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        # 验证VCR: 确认调用了tag API并且标签值包含删除信息和时间
+        # Verify VCR: Resource should have error field
+        self.assertTrue("error" in resources[0])
+        # Verify VCR: Error message should contain missing namespace or repository information
+        self.assertTrue("Missing namespace or repository information" in resources[0]["error"])

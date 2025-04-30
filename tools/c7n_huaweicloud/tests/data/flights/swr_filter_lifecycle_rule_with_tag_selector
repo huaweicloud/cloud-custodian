@@ -68,10 +68,7 @@ interactions:
     uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/retentions
   response:
     body:
-      string: '[{"algorithm": "or", "id": 222, "rules": [{"params": {"days": "30"},
-        "tag_selectors": [{"kind": "label", "pattern": "v5"}, {"kind": "label", "pattern":
-        "1.0.1"}, {"kind": "regexp", "pattern": "^123$"}], "template": "date_rule"}],
-        "scope": ""}]'
+      string: '[{"algorithm": "or", "id": 222, "rules": [{"params": {"days": "30"}, "tag_selectors": [{"kind": "label", "pattern": "v5"}, {"kind": "label", "pattern": "1.0.1"}, {"kind": "regexp", "pattern": "^123$"}], "template": "date_rule"}], "scope": ""}]'
     headers:
       Connection:
       - keep-alive
@@ -86,4 +83,4 @@ interactions:
     status:
       code: 200
       message: OK
-version: 1
+version: 1 
