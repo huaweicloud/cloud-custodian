@@ -116,7 +116,8 @@ class DiskAutoExpansionFilter(Filter):
                 # GET /v3/{project_id}/instances/{instance_id}/disk-auto-expansion
                 # 直接调用API路径，不使用SDK中的预定义请求对象
 
-                response = client.show_auto_enlarge_policy(ShowAutoEnlargePolicyRequest(instance_id=instance_id))
+                request = ShowAutoEnlargePolicyRequest(instance_id=instance_id)
+                response = client.show_auto_enlarge_policy(request)
                 
                 # 根据API响应判断是否启用了自动扩容
                 auto_expansion_enabled = response.switch_option
@@ -124,6 +125,7 @@ class DiskAutoExpansionFilter(Filter):
                 if auto_expansion_enabled == enabled:
                     matched_resources.append(resource)
             except Exception as e:
+                print(e)
                 self.log.error(f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的自动扩容策略失败: {e}")
                 # 如果无法获取自动扩容策略，假设其未开启
                 if not enabled:

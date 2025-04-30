@@ -85,9 +85,8 @@ interactions:
     uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-auto-expansion-on-id/disk-auto-expansion
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"9af5bb269038b2abab8ae6e45ddbba9c"}
-
-        '
+      string: '{ "switch_option" : true, "limit_size" : 4000, "trigger_threshold"
+        : 10 }'
     headers:
       Connection:
       - keep-alive
@@ -102,8 +101,6 @@ interactions:
       - HWWAFSESTIME=1745994096966; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -115,8 +112,8 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: success
 - request:
     body: null
     headers:
@@ -137,12 +134,12 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250430T062136Z
+      - 20250430T083612Z
     method: GET
     uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-auto-expansion-off-id/disk-auto-expansion
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"94cfaeebb91d13dbdbec699c00b737b7"}
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"1e17f3c35cf54950c81e94467969db4c"}
 
         '
     headers:
@@ -151,7 +148,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Apr 2025 06:21:37 GMT
+      - Wed, 30 Apr 2025 08:36:12 GMT
       Server:
       - CloudWAF
       Strict-Transport-Security:
@@ -165,7 +162,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 94cfaeebb91d13dbdbec699c00b737b7
+      - 1e17f3c35cf54950c81e94467969db4c
       X-XSS-Protection:
       - 1; mode=block;
     status:
