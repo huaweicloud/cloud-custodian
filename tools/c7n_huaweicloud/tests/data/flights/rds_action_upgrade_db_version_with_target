@@ -22,9 +22,12 @@ interactions:
     uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"550c7d3ef0f5faccdd4deb483174488c"}
-
-        '
+      string: '{"instances": [{"id": "rds-instance-for-upgrade-target", "name": "rds-upgrade-target",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-04-15T08:00:00+0000",
+        "updated": "2023-04-16T10:30:00+0000", "private_ips": ["192.168.4.30"], "public_ips": [],
+        "vpc_id": "vpc-test-id", "subnet_id": "subnet-test-id", "security_group_id":
+        "sg-test-id"}], "total_count": 1}'
     headers:
       Connection:
       - keep-alive
@@ -52,6 +55,59 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: success
+- request:
+    body: '{"target_version": "MySQL-8.0", "force_upgrade": false, "scheduled_time": "immediate"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T022526Z
+    method: POST
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-for-upgrade-target/action
+  response:
+    body:
+      string: '{"job_id": "ff8080818257e8c701827162dbc00027", "workflowId": "762"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 02:25:26 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=d04b2778e7156d9ab7; path=/
+      - HWWAFSESTIME=1745979923033; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 650c7d3ef0f5faccdd4deb483174488e
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
 version: 1
