@@ -10,7 +10,7 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 from huaweicloudsdkrds.v3 import (
-     SetSecurityGroupRequest, SwitchSslRequest,
+    SetSecurityGroupRequest, SwitchSslRequest,
     UpdatePortRequest, CustomerModifyAutoEnlargePolicyReq, AttachEipRequest,
     CustomerUpgradeDatabaseVersionReq,
     SetAuditlogPolicyRequest, ShowAuditlogPolicyRequest, ListDatastoresRequest,
@@ -22,6 +22,7 @@ from huaweicloudsdkrds.v3 import (
 from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger("custodian.huaweicloud.resources.rds")
+
 
 # Define a local TagEntity class to simplify tag operations
 class TagEntity:
@@ -35,6 +36,7 @@ class TagEntity:
         """
         self.key = key
         self.value = value
+
 
 @resources.register('rds')
 class RDS(QueryResourceManager):
@@ -54,6 +56,7 @@ class RDS(QueryResourceManager):
                 key: status
                 value: ACTIVE
     """
+
     class resource_type(TypeInfo):
         service = 'rds'
         enum_spec = ('list_instances', 'instances', 'offset')
@@ -64,7 +67,6 @@ class RDS(QueryResourceManager):
         date = 'created'
         taggable = True
         tag_resource_type = 'rds'
-
 
 
 @RDS.filter_registry.register('rds-list')
@@ -131,19 +133,20 @@ class DiskAutoExpansionFilter(Filter):
 
                 request = ShowAutoEnlargePolicyRequest(instance_id=instance_id)
                 response = client.show_auto_enlarge_policy(request)
-                
+
                 # 根据API响应判断是否启用了自动扩容
                 auto_expansion_enabled = response.switch_option
-                
+
                 if auto_expansion_enabled == enabled:
                     matched_resources.append(resource)
             except Exception as e:
                 print(e)
-                self.log.error(f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的自动扩容策略失败: {e}")
+                self.log.error(
+                    f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的自动扩容策略失败: {e}")
                 # 如果无法获取自动扩容策略，假设其未开启
                 if not enabled:
                     matched_resources.append(resource)
-                
+
         return matched_resources
 
 
@@ -170,7 +173,7 @@ class DatabaseVersionFilter(Filter):
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client("rds")
         database_name = self.data.get('database_name', 'mysql').lower()
-        
+
         # 获取所有数据库版本的最新小版本信息
         try:
             # 调用API获取指定数据库引擎可用的版本列表
@@ -187,9 +190,10 @@ class DatabaseVersionFilter(Filter):
                 if len(version_parts) >= 2:
                     # 提取主版本号，如 5.7, 8.0 等
                     major_version = '.'.join(version_parts[:2])
-                    
+
                     # 如果该主版本尚未记录或当前版本更新，则更新记录
-                    if major_version not in latest_versions or self._compare_versions(datastore.name, latest_versions[major_version]) > 0:
+                    if major_version not in latest_versions or self._compare_versions(
+                            datastore.name, latest_versions[major_version]) > 0:
                         latest_versions[major_version] = datastore.name
 
             self.log.debug(f"获取到 {database_name} 引擎各主版本的最新小版本: {latest_versions}")
@@ -202,36 +206,39 @@ class DatabaseVersionFilter(Filter):
         for resource in resources:
             datastore = resource.get('datastore', {})
             resource_type = datastore.get('type', '').lower()
-            
+
             # 跳过不匹配的数据库类型
             if resource_type != database_name:
                 continue
-                
+
             # 从完整版本号中获取主版本号
             complete_version = datastore.get('complete_version', datastore.get('version', ''))
             if not complete_version:
                 continue
-                
+
             version_parts = complete_version.split('.')
             if len(version_parts) < 2:
                 continue
-                
+
             # 提取主版本号
             major_version = '.'.join(version_parts[:2])
-            
+
             # 检查主版本是否有对应的最新小版本
             if major_version in latest_versions:
                 latest_version = latest_versions[major_version]
-                
+
                 # 如果实例版本不是最新的小版本，添加到结果中
                 if complete_version != latest_version:
-                    self.log.debug(f"实例 {resource['name']} 的版本 {complete_version} 不是最新小版本 {latest_version}")
+                    self.log.debug(
+                        f"实例 {resource['name']} "
+                        f"的版本 {complete_version} 不是最新小版本 {latest_version}")
                     outdated_resources.append(resource)
             else:
-                self.log.debug(f"找不到实例 {resource['name']} 的主版本 {major_version} 对应的最新小版本")
-                
+                self.log.debug(
+                    f"找不到实例 {resource['name']} 的主版本 {major_version} 对应的最新小版本")
+
         return outdated_resources
-        
+
     def _compare_versions(self, version1, version2):
         """比较两个版本号的大小
         
@@ -242,17 +249,17 @@ class DatabaseVersionFilter(Filter):
         """
         v1_parts = version1.split('.')
         v2_parts = version2.split('.')
-        
+
         for i in range(max(len(v1_parts), len(v2_parts))):
             # 如果一个版本号部分不存在，则视为0
             v1 = int(v1_parts[i]) if i < len(v1_parts) else 0
             v2 = int(v2_parts[i]) if i < len(v2_parts) else 0
-            
+
             if v1 < v2:
                 return -1
             elif v1 > v2:
                 return 1
-                
+
         return 0
 
 
@@ -280,7 +287,8 @@ class EIPFilter(Filter):
         exists = self.data.get('exists', True)
         matched = []
         for resource in resources:
-            has_eip = resource.get('public_ips') is not None and len(resource.get('public_ips', [])) > 0
+            has_eip = resource.get('public_ips') is not None and len(
+                resource.get('public_ips', [])) > 0
             if has_eip == exists:
                 matched.append(resource)
         return matched
@@ -312,15 +320,16 @@ class AuditLogDisabledFilter(Filter):
                 request = ShowAuditlogPolicyRequest()
                 request.instance_id = instance_id
                 response = client.show_auditlog_policy(request)
-                
+
                 # keep_days为0表示审计日志策略关闭
                 if response.keep_days == 0:
                     matched_resources.append(resource)
             except Exception as e:
-                self.log.error(f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的审计日志策略失败: {e}")
+                self.log.error(
+                    f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的审计日志策略失败: {e}")
                 # 如果无法获取审计日志策略，假设其未开启
                 matched_resources.append(resource)
-                
+
         return matched_resources
 
 
@@ -353,19 +362,20 @@ class BackupPolicyDisabledFilter(Filter):
                 request = ShowBackupPolicyRequest()
                 request.instance_id = instance_id
                 response = client.show_backup_policy(request)
-                
+
                 # 检查是否启用了自动备份
                 # 如果keep_days为0或者backup_type为空，则认为未开启自动备份
                 keep_days = response.backup_policy.keep_days
                 backup_type = getattr(response.backup_policy, 'backup_type', '')
-                
+
                 if keep_days == 0 or not backup_type:
                     matched_resources.append(resource)
             except Exception as e:
-                self.log.error(f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的备份策略失败: {e}")
+                self.log.error(
+                    f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的备份策略失败: {e}")
                 # 如果无法获取备份策略，假设其未开启
                 matched_resources.append(resource)
-                
+
         return matched_resources
 
 
@@ -404,9 +414,9 @@ class InstanceParameterFilter(Filter):
         param_value = self.data.get('value')
         op_name = self.data.get('op', 'eq')
         op = OPERATORS.get(op_name)
-        
+
         matched_resources = []
-        
+
         for resource in resources:
             instance_id = resource['id']
             try:
@@ -416,7 +426,7 @@ class InstanceParameterFilter(Filter):
                 request = ShowInstanceConfigurationRequest()
                 request.instance_id = instance_id
                 response = client.show_instance_configuration(request)
-                
+
                 # 在参数列表中查找目标参数
                 found = False
                 for param in response.configuration_parameters:
@@ -428,19 +438,20 @@ class InstanceParameterFilter(Filter):
                             current_value = int(current_value)
                         elif param.type == 'boolean':
                             current_value = (current_value.lower() == 'true')
-                        
+
                         # 对参数值应用操作符进行比较
                         if op(current_value, param_value):
                             matched_resources.append(resource)
                         break
-                
-                if not found:
-                    self.log.debug(f"RDS实例 {resource['name']} (ID: {instance_id}) 没有参数 {param_name}")
-            except Exception as e:
-                self.log.error(f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的参数模板失败: {e}")
-                
-        return matched_resources
 
+                if not found:
+                    self.log.debug(
+                        f"RDS实例 {resource['name']} (ID: {instance_id}) 没有参数 {param_name}")
+            except Exception as e:
+                self.log.error(
+                    f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的参数模板失败: {e}")
+
+        return matched_resources
 
 
 @RDS.action_registry.register('set-security-group')
@@ -472,7 +483,7 @@ class SetSecurityGroupAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         instance_id = resource['id']
         security_group_id = self.data['security_group_id']
-        
+
         try:
             request = SetSecurityGroupRequest()
             request.instance_id = instance_id
@@ -513,16 +524,20 @@ class SwitchSSLAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         instance_id = resource['id']
         ssl_enable = self.data['ssl_enable']
-        
+
         try:
             request = SwitchSslRequest()
             request.instance_id = instance_id
             request.ssl_option = "on" if ssl_enable else "off"
             response = client.switch_ssl(request)
-            self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) {'启用' if ssl_enable else '禁用'}SSL加密")
+            self.log.info(
+                f"成功为RDS实例 {resource['name']} (ID: {instance_id}) "
+                f"{'启用' if ssl_enable else '禁用'}SSL加密")
             return response
         except exceptions.ClientRequestException as e:
-            self.log.error(f"无法为RDS实例 {resource['name']} (ID: {instance_id}) {'启用' if ssl_enable else '禁用'}SSL加密: {e}")
+            self.log.error(
+                f"无法为RDS实例 {resource['name']} (ID: {instance_id}) "
+                f"{'启用' if ssl_enable else '禁用'}SSL加密: {e}")
             raise
 
 
@@ -554,7 +569,7 @@ class UpdatePortAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         instance_id = resource['id']
         port = self.data['port']
-        
+
         try:
             request = UpdatePortRequest()
             request.instance_id = instance_id
@@ -602,10 +617,6 @@ class SetAutoEnlargePolicyAction(HuaweiCloudBaseAction):
         instance_id = resource['id']
         switch_option = self.data['switch_option']
 
-        limit_size = switch_option
-        CustomerModifyAutoEnlargePolicyReq()
-
-        body = ''
         if switch_option:
             body = CustomerModifyAutoEnlargePolicyReq(
                 switch_option=switch_option,
@@ -622,10 +633,13 @@ class SetAutoEnlargePolicyAction(HuaweiCloudBaseAction):
 
         try:
             response = client.set_auto_enlarge_policy(request)
-            self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) {'启用' if switch_option else '禁用'}自动扩容策略")
+            self.log.info(
+                f"成功为RDS实例 {resource['name']} (ID: {instance_id}) "
+                f"{'启用' if switch_option else '禁用'}自动扩容策略")
             return response
         except exceptions.ClientRequestException as e:
-            self.log.error(f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 设置自动扩容策略: {e}")
+            self.log.error(
+                f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 设置自动扩容策略: {e}")
             raise
 
 
@@ -660,23 +674,27 @@ class AttachEIPAction(HuaweiCloudBaseAction):
         instance_id = resource['id']
         bind_type = self.data['bind_type']
         public_ip = self.data.get('public_ip')
-        
+
         if bind_type == 'bind' and not public_ip:
             self.log.error(f"绑定弹性公网IP时必须提供 public_ip 参数")
             return
-            
+
         try:
             request = AttachEipRequest()
             request.instance_id = instance_id
             request.bind_type = bind_type
             if bind_type == 'bind':
                 request.public_ip = public_ip
-            
+
             response = client.attach_eip(request)
-            self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) {'绑定' if bind_type == 'bind' else '解绑'}弹性公网IP")
+            self.log.info(
+                f"成功为RDS实例 {resource['name']} (ID: {instance_id}) "
+                f"{'绑定' if bind_type == 'bind' else '解绑'}弹性公网IP")
             return response
         except exceptions.ClientRequestException as e:
-            self.log.error(f"无法为RDS实例 {resource['name']} (ID: {instance_id}) {'绑定' if bind_type == 'bind' else '解绑'}弹性公网IP: {e}")
+            self.log.error(
+                f"无法为RDS实例 {resource['name']} (ID: {instance_id}) "
+                f"{'绑定' if bind_type == 'bind' else '解绑'}弹性公网IP: {e}")
             raise
 
 
@@ -714,30 +732,30 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
         is_delayed = self.data.get('is_delayed', False)
         target_version = self.data.get('target_version')
         set_backup = self.data.get('set_backup', False)
-        
+
         try:
             # 构建版本升级请求
             # API文档: https://support.huaweicloud.com/api-rds/rds_05_0041.html
             # POST /v3/{project_id}/instances/{instance_id}
             request = UpgradeDbVersionNewRequest()
             request.instance_id = instance_id
-            
+
             # 设置升级参数
             upgrade_req = CustomerUpgradeDatabaseVersionReq()
             upgrade_req.delay = is_delayed
-            
+
             # 如果指定了目标版本，则设置目标版本
             if target_version:
                 # 先获取可用版本列表
                 try:
                     datastore = resource.get('datastore', {})
                     database_name = datastore.get('type', 'mysql').lower()
-                    
+
                     # 获取可用版本列表
                     datastores_request = ListDatastoresRequest()
                     datastores_request.database_name = database_name
                     datastores_response = client.list_datastores(datastores_request)
-                    
+
                     # 验证目标版本是否有效
                     valid_version = False
                     for datastore_info in datastores_response.data_stores:
@@ -746,26 +764,29 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
                             self.log.info(f"找到目标版本 {target_version}, ID: {datastore_info.id}")
                             valid_version = True
                             break
-                            
+
                     if not valid_version:
-                        self.log.warning(f"找不到指定的目标版本 {target_version}，将使用默认版本升级")
+                        self.log.warning(
+                            f"找不到指定的目标版本 {target_version}，将使用默认版本升级")
                 except Exception as e:
                     self.log.error(f"获取可用版本列表失败: {e}")
-            
+
             # 是否设置备份
             if set_backup:
                 upgrade_req.with_backup = True
-            
+
             # 设置请求体
             request.body = upgrade_req
-            
+
             # 执行升级请求
             response = client.upgrade_db_version_new(request)
-            self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) 提交数据库版本升级请求")
-            
+            self.log.info(
+                f"成功为RDS实例 {resource['name']} (ID: {instance_id}) 提交数据库版本升级请求")
+
             return response
         except exceptions.ClientRequestException as e:
-            self.log.error(f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 升级数据库版本: {e}")
+            self.log.error(
+                f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 升级数据库版本: {e}")
             raise
 
 
@@ -805,23 +826,26 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
         keep_days = self.data['keep_days']
         reserve_auditlogs = self.data.get('reserve_auditlogs', True)
         audit_types = self.data.get('audit_types', [])
-        
+
         try:
             request = SetAuditlogPolicyRequest()
             request.instance_id = instance_id
             request.keep_days = keep_days
-            
+
             if keep_days == 0:
                 request.reserve_auditlogs = reserve_auditlogs
-            
+
             if audit_types and keep_days > 0:
                 request.audit_types = audit_types
-            
+
             response = client.set_auditlog_policy(request)
-            self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) {'启用' if keep_days > 0 else '禁用'}审计日志策略")
+            self.log.info(
+                f"成功为RDS实例 {resource['name']} (ID: {instance_id}) "
+                f"{'启用' if keep_days > 0 else '禁用'}审计日志策略")
             return response
         except Exception as e:
-            self.log.error(f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 设置审计日志策略: {e}")
+            self.log.error(
+                f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 设置审计日志策略: {e}")
             raise
 
 
@@ -861,7 +885,7 @@ class SetBackupPolicyAction(HuaweiCloudBaseAction):
         start_time = self.data['start_time']
         period = self.data['period']
         reserve_backups = self.data.get('reserve_backups', 'true')
-        
+
         try:
             # 设置备份策略
             # API文档: https://support.huaweicloud.com/api-rds/rds_09_0002.html
@@ -870,8 +894,8 @@ class SetBackupPolicyAction(HuaweiCloudBaseAction):
             request.instance_id = instance_id
 
             backupPolicyBody = BackupPolicy(keep_days=keep_days,
-                start_time=start_time,
-                period=period)
+                                            start_time=start_time,
+                                            period=period)
 
             # 构建请求体
             request_body = SetBackupPolicyRequestBody(
@@ -879,12 +903,13 @@ class SetBackupPolicyAction(HuaweiCloudBaseAction):
                 reserve_backups=reserve_backups
             )
             request.body = request_body
-            
+
             response = client.set_backup_policy(request)
             self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) 设置自动备份策略")
             return response
         except exceptions.ClientRequestException as e:
-            self.log.error(f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 设置自动备份策略: {e}")
+            self.log.error(
+                f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 设置自动备份策略: {e}")
             raise
 
 
@@ -927,27 +952,28 @@ class UpdateInstanceParameterAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         instance_id = resource['id']
         parameters = self.data['parameters']
-        
+
         try:
             # 修改实例参数
             # API文档: https://support.huaweicloud.com/api-rds/rds_09_0303.html
             # PUT /v3/{project_id}/instances/{instance_id}/configurations
             request = UpdateInstanceConfigurationRequest()
             request.instance_id = instance_id
-            
+
             # 构建请求体
             request_body = UpdateInstanceConfigurationRequestBody(
                 values={}
             )
-            
+
             for param in parameters:
                 request_body.values[param['name']] = param['value']
-            
+
             request.body = request_body
-            
+
             response = client.update_instance_configuration(request)
             self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) 修改参数配置")
             return response
         except exceptions.ClientRequestException as e:
-            self.log.error(f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 修改参数配置: {e}")
+            self.log.error(
+                f"无法为RDS实例 {resource['name']} (ID: {instance_id}) 修改参数配置: {e}")
             raise
