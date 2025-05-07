@@ -95,8 +95,6 @@ interactions:
       - HWWAFSESID=9ca277357f11cd7bd7; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -128,12 +126,12 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250430T060806Z
+      - 20250506T055700Z
     method: GET
     uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-for-backup-policy/backups/policy
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"7de5fbdf94329e2918a7b04a4bdcabaa"}
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"d5083bf231645a6903cddaaa85beb739"}
 
         '
     headers:
@@ -142,12 +140,12 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Apr 2025 06:08:06 GMT
+      - Tue, 06 May 2025 05:57:00 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=f2a337686c667b6406; path=/
-      - HWWAFSESTIME=1745993286879; path=/
+      - HWWAFSESID=a017773607e38d900d; path=/
+      - HWWAFSESTIME=1746511020126; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -159,7 +157,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 7de5fbdf94329e2918a7b04a4bdcabaa
+      - d5083bf231645a6903cddaaa85beb739
       X-XSS-Protection:
       - 1; mode=block;
     status:

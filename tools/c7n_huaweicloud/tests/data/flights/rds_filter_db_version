@@ -24,18 +24,18 @@ interactions:
     body:
       string: '{"instances": [{"id": "rds-mysql56-id", "name": "rds-mysql56", "status":
         "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1", "datastore":
-        {"type": "MySQL", "version": "5.6"}, "created": "2023-07-15T08:00:00+0000",
+        {"type": "MySQL", "version": "5.6","complete_version":"5.6.0.3"}, "created": "2023-07-15T08:00:00+0000",
         "updated": "2023-07-16T10:30:00+0000", "private_ips": ["192.168.0.23"], "public_ips":
         [], "vpc_id": "vpc-version-id", "subnet_id": "subnet-version-id", "security_group_id":
         "sg-version-id", "volume": {"type": "ULTRAHIGH", "size": 40}}, {"id": "rds-mysql57-id",
         "name": "rds-mysql57", "status": "ACTIVE", "port": 3306, "type": "Single",
-        "region": "ap-southeast-1", "datastore": {"type": "MySQL", "version": "5.7"},
+        "region": "ap-southeast-1", "datastore": {"type": "MySQL", "version": "5.7","complete_version":"5.7.2.4"},
         "created": "2023-07-15T09:00:00+0000", "updated": "2023-07-16T11:30:00+0000",
         "private_ips": ["192.168.0.24"], "public_ips": [], "vpc_id": "vpc-version-id",
         "subnet_id": "subnet-version-id", "security_group_id": "sg-version-id", "volume":
         {"type": "ULTRAHIGH", "size": 40}}, {"id": "rds-mysql80-id", "name": "rds-mysql80",
         "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
-        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-07-15T10:00:00+0000",
+        "datastore": {"type": "MySQL", "version": "5.7","complete_version":"5.7.3.3"}, "created": "2023-07-15T10:00:00+0000",
         "updated": "2023-07-16T12:30:00+0000", "private_ips": ["192.168.0.25"], "public_ips":
         [], "vpc_id": "vpc-version-id", "subnet_id": "subnet-version-id", "security_group_id":
         "sg-version-id", "volume": {"type": "ULTRAHIGH", "size": 40}}], "total_count":
@@ -85,13 +85,21 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250430T062136Z
+      - 20250506T081255Z
     method: GET
     uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/datastores/mysql
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"2433f1342f9636f48170fc3b908c6e7d"}
-
+      string: '{"dataStores": [{
+		"id": "87620726-6802-46c0-9028-a8785e1f1921",
+		"name": "8.0.21"
+	}, {
+		"id": "87620726-6802-46c0-9028-a8785e1f1922",
+		"name": "5.7.33"
+	}, {
+		"id": "e8a8b8cc-63f8-4fb5-8d4a-24c502317a62",
+		"name": "5.6.51"
+	}]}
         '
     headers:
       Connection:
@@ -99,12 +107,12 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Apr 2025 06:21:36 GMT
+      - Tue, 06 May 2025 08:12:56 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=f9f1973de650db3306; path=/
-      - HWWAFSESTIME=1745994096530; path=/
+      - HWWAFSESID=f0c3a7353d3f5ac270; path=/
+      - HWWAFSESTIME=1746519175997; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -116,10 +124,10 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 2433f1342f9636f48170fc3b908c6e7d
+      - 79d847fa6185eb268bf0e5f63b397ad8
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: success
 version: 1

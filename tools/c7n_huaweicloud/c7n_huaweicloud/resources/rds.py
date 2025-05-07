@@ -6,23 +6,37 @@ from c7n.filters import Filter, ValueFilter, AgeFilter
 from c7n.filters.core import OPERATORS, type_schema
 from c7n.utils import local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from c7n_huaweicloud.actions.tms import register_tms_actions
+from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
-from dateutil.parser import parse
 from huaweicloudsdkrds.v3 import (
-    ListInstancesRequest, SetSecurityGroupRequest, SwitchSslRequest,
+     SetSecurityGroupRequest, SwitchSslRequest,
     UpdatePortRequest, CustomerModifyAutoEnlargePolicyReq, AttachEipRequest,
-    UpgradeDbVersionRequest, CustomerUpgradeDatabaseVersionReq,
+    CustomerUpgradeDatabaseVersionReq,
     SetAuditlogPolicyRequest, ShowAuditlogPolicyRequest, ListDatastoresRequest,
     ShowAutoEnlargePolicyRequest, ShowBackupPolicyRequest, SetBackupPolicyRequest,
-    SetBackupPolicyRequestBody, ShowInstanceConfigurationRequest, 
-    UpdateInstanceConfigurationRequest, UpdateInstanceConfigurationRequestBody
+    SetBackupPolicyRequestBody, ShowInstanceConfigurationRequest,
+    UpdateInstanceConfigurationRequest, UpdateInstanceConfigurationRequestBody, BackupPolicy,
+    SetAutoEnlargePolicyRequest, UpgradeDbVersionNewRequest
 )
 from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger("custodian.huaweicloud.resources.rds")
 
+# Define a local TagEntity class to simplify tag operations
+class TagEntity:
+    """Simple tag structure to represent key-value pairs"""
+
+    def __init__(self, key, value=None):
+        """
+        Initialize a tag entity
+        :param key: Tag key (required)
+        :param value: Tag value (optional)
+        """
+        self.key = key
+        self.value = value
 
 @resources.register('rds')
 class RDS(QueryResourceManager):
@@ -51,7 +65,8 @@ class RDS(QueryResourceManager):
         filter_type = 'scalar'
         date = 'created'
         taggable = True
-        tag_resource_type = 'instances'
+        tag_resource_type = 'rds'
+
 
 
 @RDS.filter_registry.register('rds-list')
@@ -136,37 +151,29 @@ class DiskAutoExpansionFilter(Filter):
 
 @RDS.filter_registry.register('database-version')
 class DatabaseVersionFilter(Filter):
-    """过滤数据库版本的RDS实例
+    """过滤不是最新小版本的RDS实例
 
     :example:
 
     .. code-block:: yaml
 
         policies:
-          - name: rds-old-version
+          - name: rds-outdated-version
             resource: huaweicloud.rds
             filters:
               - type: database-version
-                version: 5.7
-                op: lt
                 database_name: mysql  # 可选，指定数据库引擎类型
     """
     schema = type_schema(
         'database-version',
-        required=['version'],
-        version={'type': 'string'},
-        op={'enum': list(OPERATORS.keys()), 'default': 'eq'},
         database_name={'enum': ['mysql', 'postgresql', 'sqlserver'], 'default': 'mysql'}
     )
 
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client("rds")
-        version = self.data.get('version')
-        op_name = self.data.get('op', 'eq')
-        op = OPERATORS.get(op_name)
         database_name = self.data.get('database_name', 'mysql').lower()
         
-        # 获取可用的数据库版本列表
+        # 获取所有数据库版本的最新小版本信息
         try:
             # 调用API获取指定数据库引擎可用的版本列表
             # API文档: https://support.huaweicloud.com/api-rds/rds_06_0001.html
@@ -174,38 +181,81 @@ class DatabaseVersionFilter(Filter):
             request = ListDatastoresRequest()
             request.database_name = database_name
             response = client.list_datastores(request)
-            
-            available_versions = {}
+
+            # 存储每个主版本的最新小版本号
+            latest_versions = {}
             for datastore in response.data_stores:
-                available_versions[datastore.name] = datastore.id
-                
-            self.log.debug(f"获取到 {database_name} 引擎的可用版本: {available_versions}")
+                version_parts = datastore.name.split('.')
+                if len(version_parts) >= 2:
+                    # 提取主版本号，如 5.7, 8.0 等
+                    major_version = '.'.join(version_parts[:2])
+                    
+                    # 如果该主版本尚未记录或当前版本更新，则更新记录
+                    if major_version not in latest_versions or self._compare_versions(datastore.name, latest_versions[major_version]) > 0:
+                        latest_versions[major_version] = datastore.name
+
+            self.log.debug(f"获取到 {database_name} 引擎各主版本的最新小版本: {latest_versions}")
         except Exception as e:
             self.log.error(f"获取数据库引擎 {database_name} 的版本列表失败: {e}")
-            # 如果无法获取版本列表，则回退到原始的过滤逻辑
-            matched = []
-            for resource in resources:
-                datastore = resource.get('datastore', {})
-                resource_version = datastore.get('name', '')
-                if op(resource_version, version):
-                    matched.append(resource)
-            return matched
-            
-        # 使用获取的版本信息过滤资源
-        matched = []
+            return []
+
+        # 筛选出不是最新小版本的实例
+        outdated_resources = []
         for resource in resources:
             datastore = resource.get('datastore', {})
-            resource_version = datastore.get('version', '')
-            
-            # 检查资源的数据库引擎类型是否与请求的一致
             resource_type = datastore.get('type', '').lower()
+            
+            # 跳过不匹配的数据库类型
             if resource_type != database_name:
                 continue
                 
-            if op(resource_version, version):
-                matched.append(resource)
+            # 从完整版本号中获取主版本号
+            complete_version = datastore.get('complete_version', datastore.get('version', ''))
+            if not complete_version:
+                continue
                 
-        return matched
+            version_parts = complete_version.split('.')
+            if len(version_parts) < 2:
+                continue
+                
+            # 提取主版本号
+            major_version = '.'.join(version_parts[:2])
+            
+            # 检查主版本是否有对应的最新小版本
+            if major_version in latest_versions:
+                latest_version = latest_versions[major_version]
+                
+                # 如果实例版本不是最新的小版本，添加到结果中
+                if complete_version != latest_version:
+                    self.log.debug(f"实例 {resource['name']} 的版本 {complete_version} 不是最新小版本 {latest_version}")
+                    outdated_resources.append(resource)
+            else:
+                self.log.debug(f"找不到实例 {resource['name']} 的主版本 {major_version} 对应的最新小版本")
+                
+        return outdated_resources
+        
+    def _compare_versions(self, version1, version2):
+        """比较两个版本号的大小
+        
+        返回值:
+            -1: version1 < version2
+             0: version1 = version2
+             1: version1 > version2
+        """
+        v1_parts = version1.split('.')
+        v2_parts = version2.split('.')
+        
+        for i in range(max(len(v1_parts), len(v2_parts))):
+            # 如果一个版本号部分不存在，则视为0
+            v1 = int(v1_parts[i]) if i < len(v1_parts) else 0
+            v2 = int(v2_parts[i]) if i < len(v2_parts) else 0
+            
+            if v1 < v2:
+                return -1
+            elif v1 > v2:
+                return 1
+                
+        return 0
 
 
 @RDS.filter_registry.register('eip')
@@ -394,6 +444,7 @@ class InstanceParameterFilter(Filter):
         return matched_resources
 
 
+
 @RDS.action_registry.register('set-security-group')
 class SetSecurityGroupAction(HuaweiCloudBaseAction):
     """修改RDS实例安全组
@@ -552,26 +603,27 @@ class SetAutoEnlargePolicyAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         instance_id = resource['id']
         switch_option = self.data['switch_option']
-        
+
+        limit_size = switch_option
+        CustomerModifyAutoEnlargePolicyReq()
+
+        body = ''
+        if switch_option:
+            body = CustomerModifyAutoEnlargePolicyReq(
+                switch_option=switch_option,
+                limit_size=self.data['limit_size'],
+                trigger_threshold=self.data['trigger_threshold'],
+                step_percent=self.data['step_percent'],
+            )
+        else:
+            body = CustomerModifyAutoEnlargePolicyReq(
+                switch_option=switch_option,
+            )
+
+        request = SetAutoEnlargePolicyRequest(instance_id=instance_id, body=body)
+
         try:
-            # 通过API直接构建请求
-            # API文档: https://support.huaweicloud.com/api-rds/rds_05_0028.html
-            # POST /v3/{project_id}/instances/{instance_id}/disk-auto-expansion
-            body = {
-                "switch_option": switch_option
-            }
-            
-            if switch_option:
-                # 当开启自动扩容时，需要设置相关参数
-                if 'limit_size' in self.data:
-                    body["limit_size"] = self.data['limit_size']
-                if 'trigger_threshold' in self.data:
-                    body["trigger_threshold"] = self.data['trigger_threshold']
-                if 'step_percent' in self.data:
-                    body["step_percent"] = self.data['step_percent']
-            
-            # 由于SDK中可能没有直接的请求类，使用客户端直接调用API
-            response = client.set_disk_auto_expansion(instance_id, body)
+            response = client.set_auto_enlarge_policy(request)
             self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) {'启用' if switch_option else '禁用'}自动扩容策略")
             return response
         except exceptions.ClientRequestException as e:
@@ -647,7 +699,7 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
                 op: lt
             actions:
               - type: upgrade-db-version
-                is_immediately: false
+                is_delayed: false
                 target_version: 5.7.41  # 可选参数，指定目标版本
                 set_backup: true  # 可选参数，是否设置自动备份
     """
@@ -661,20 +713,20 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         client = self.manager.get_client()
         instance_id = resource['id']
-        is_immediately = self.data.get('is_immediately', False)
+        is_delayed = self.data.get('is_delayed', False)
         target_version = self.data.get('target_version')
         set_backup = self.data.get('set_backup', False)
         
         try:
             # 构建版本升级请求
             # API文档: https://support.huaweicloud.com/api-rds/rds_05_0041.html
-            # POST /v3/{project_id}/instances/{instance_id}/action
-            request = UpgradeDbVersionRequest()
+            # POST /v3/{project_id}/instances/{instance_id}
+            request = UpgradeDbVersionNewRequest()
             request.instance_id = instance_id
             
             # 设置升级参数
             upgrade_req = CustomerUpgradeDatabaseVersionReq()
-            upgrade_req.is_immediately = is_immediately
+            upgrade_req.delay = is_delayed
             
             # 如果指定了目标版本，则设置目标版本
             if target_version:
@@ -710,7 +762,7 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
             request.body = upgrade_req
             
             # 执行升级请求
-            response = client.upgrade_db_version(request)
+            response = client.upgrade_db_version_new(request)
             self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) 提交数据库版本升级请求")
             
             return response
@@ -793,7 +845,7 @@ class SetBackupPolicyAction(HuaweiCloudBaseAction):
                 keep_days: 7
                 start_time: "01:00-02:00"
                 period: "1,2,3,4,5,6,7"
-                backup_type: "auto"
+                reserve_backups: "true"
     """
     schema = type_schema(
         'set-backup-policy',
@@ -801,7 +853,7 @@ class SetBackupPolicyAction(HuaweiCloudBaseAction):
         keep_days={'type': 'integer', 'minimum': 1, 'maximum': 732},
         start_time={'type': 'string'},
         period={'type': 'string'},
-        backup_type={'enum': ['auto', 'manual'], 'default': 'auto'}
+        reserve_backups={'enum': ['true', 'false'], 'default': 'true'}
     )
 
     def perform_action(self, resource):
@@ -810,7 +862,7 @@ class SetBackupPolicyAction(HuaweiCloudBaseAction):
         keep_days = self.data['keep_days']
         start_time = self.data['start_time']
         period = self.data['period']
-        backup_type = self.data.get('backup_type', 'auto')
+        reserve_backups = self.data.get('reserve_backups', 'true')
         
         try:
             # 设置备份策略
@@ -818,13 +870,15 @@ class SetBackupPolicyAction(HuaweiCloudBaseAction):
             # PUT /v3/{project_id}/instances/{instance_id}/backups/policy
             request = SetBackupPolicyRequest()
             request.instance_id = instance_id
-            
+
+            backupPolicyBody = BackupPolicy(keep_days=keep_days,
+                start_time=start_time,
+                period=period)
+
             # 构建请求体
             request_body = SetBackupPolicyRequestBody(
-                keep_days=keep_days,
-                start_time=start_time,
-                period=period,
-                backup_type=backup_type
+                backup_policy=backupPolicyBody,
+                reserve_backups=reserve_backups
             )
             request.body = request_body
             
