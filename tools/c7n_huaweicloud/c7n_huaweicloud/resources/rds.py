@@ -234,7 +234,6 @@ class DatabaseVersionFilter(Filter):
 
     def _compare_versions(self, version1, version2):
         """比较两个版本号的大小
-        
         返回值:
             -1: version1 < version2
              0: version1 = version2
