@@ -25,10 +25,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.rds")
 
 # Define a local TagEntity class to simplify tag operations
 class TagEntity:
-
-
     """Simple tag structure to represent key-value pairs"""
-
     def __init__(self, key, value=None):
         """
         Initialize a tag entity
@@ -671,7 +668,7 @@ class AttachEIPAction(HuaweiCloudBaseAction):
         public_ip = self.data.get('public_ip')
 
         if bind_type == 'bind' and not public_ip:
-            self.log.error(f"绑定弹性公网IP时必须提供 public_ip 参数")
+            self.log.error(f"绑定弹性公网IP时必须提供public_ip参数")
             return
 
         try:
