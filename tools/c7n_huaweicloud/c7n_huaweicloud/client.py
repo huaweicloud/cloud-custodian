@@ -106,6 +106,8 @@ from huaweicloudsdkdns.v2 import (
     DnsClient
 )
 from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
+from huaweicloudsdkccm.v1 import CcmClient, ListCertificateRequest
+from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
 
 
 log = logging.getLogger("custodian.huaweicloud.client")
@@ -408,6 +410,13 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'ccm':
+            client = (
+                CcmClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CcmRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -521,4 +530,6 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
+        elif service == 'ccm':
+            request = ListCertificateRequest()
         return request
