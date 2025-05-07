@@ -25,6 +25,8 @@ log = logging.getLogger("custodian.huaweicloud.resources.rds")
 
 # Define a local TagEntity class to simplify tag operations
 class TagEntity:
+
+
     """Simple tag structure to represent key-value pairs"""
 
     def __init__(self, key, value=None):
@@ -35,6 +37,7 @@ class TagEntity:
         """
         self.key = key
         self.value = value
+
 
 @resources.register('rds')
 class RDS(QueryResourceManager):
@@ -65,6 +68,7 @@ class RDS(QueryResourceManager):
         date = 'created'
         taggable = True
         tag_resource_type = 'rds'
+
 
 @RDS.filter_registry.register('rds-list')
 class RDSListFilter(Filter):
