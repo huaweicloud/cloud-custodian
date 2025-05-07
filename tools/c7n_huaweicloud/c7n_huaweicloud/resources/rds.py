@@ -23,7 +23,6 @@ from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger("custodian.huaweicloud.resources.rds")
 
-
 # Define a local TagEntity class to simplify tag operations
 class TagEntity:
     """Simple tag structure to represent key-value pairs"""
@@ -36,7 +35,6 @@ class TagEntity:
         """
         self.key = key
         self.value = value
-
 
 @resources.register('rds')
 class RDS(QueryResourceManager):
@@ -68,15 +66,11 @@ class RDS(QueryResourceManager):
         taggable = True
         tag_resource_type = 'rds'
 
-
 @RDS.filter_registry.register('rds-list')
 class RDSListFilter(Filter):
     """过滤特定实例ID的RDS实例
-
     :example:
-
     .. code-block:: yaml
-
         policies:
           - name: rds-list-filter
             resource: huaweicloud.rds
@@ -146,7 +140,6 @@ class DiskAutoExpansionFilter(Filter):
                 # 如果无法获取自动扩容策略，假设其未开启
                 if not enabled:
                     matched_resources.append(resource)
-
         return matched_resources
 
 
@@ -249,7 +242,6 @@ class DatabaseVersionFilter(Filter):
         """
         v1_parts = version1.split('.')
         v2_parts = version2.split('.')
-
         for i in range(max(len(v1_parts), len(v2_parts))):
             # 如果一个版本号部分不存在，则视为0
             v1 = int(v1_parts[i]) if i < len(v1_parts) else 0

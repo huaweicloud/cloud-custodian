@@ -6,9 +6,9 @@ from huaweicloud_common import BaseTest
 # 注意：实际测试需要对应的 VCR 文件 (例如 rds_query.yaml, rds_filter_*.yaml, rds_action_*.yaml)
 # 这些文件应包含测试所需的 RDS 实例数据和 API 交互记录。
 
+
 class RDSTest(BaseTest):
     """测试华为云 RDS 资源、过滤器和操作"""
-
     # =========================
     # Resource Query Test
     # =========================
@@ -246,7 +246,8 @@ class RDSTest(BaseTest):
                 "name": "rds-action-ssl-on-test",
                 "resource": "huaweicloud.rds",
                 "filters": [
-                    {"type": "value", "key": "id", "value": target_instance_id}    # 确保只对未开启的实例操作
+                    {"type": "value",
+                     "key": "id", "value": target_instance_id}    # 确保只对未开启的实例操作
                 ],
                 "actions": [{"type": "switch-ssl", "ssl_enable": True}],
             },
@@ -562,6 +563,7 @@ class RDSTest(BaseTest):
 # Reusable Feature Tests
 # =========================
 
+
 class ReusableRDSTests(BaseTest):
     """测试可复用的 Filters 和 Actions (以 RDS 为例)"""
 
@@ -651,7 +653,8 @@ class ReusableRDSTests(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)    # Assuming there is 1 instance that meets all conditions
+        self.assertEqual(len(resources), 1)
+        # Assuming there is 1 instance that meets all conditions
 
     # --- 可复用操作测试 ---
 
