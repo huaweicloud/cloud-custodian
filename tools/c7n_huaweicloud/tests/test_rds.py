@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from huaweicloud_common import BaseTest
+
 # 注意：实际测试需要对应的 VCR 文件 (例如 rds_query.yaml, rds_filter_*.yaml, rds_action_*.yaml)
 # 这些文件应包含测试所需的 RDS 实例数据和 API 交互记录。
 
@@ -29,19 +30,21 @@ class RDSTest(BaseTest):
         self.assertTrue("id" in instance)
         self.assertTrue("name" in instance)
         self.assertTrue("status" in instance)
-        self.assertTrue("created" in instance) # 验证 'created' 字段存在 (用于 AgeFilter)
-        self.assertTrue("datastore" in instance) # 验证 'datastore' 字段存在 (用于 DatabaseVersionFilter)
-        self.assertTrue("port" in instance) # 验证 'port' 字段存在 (用于 DatabasePortFilter)
-        self.assertTrue("enable_ssl" in instance) # 验证 'ssl_enable' 字段存在 (用于 SSLInstanceFilter)
+        self.assertTrue("created" in instance)    # 验证 'created' 字段存在 (用于 AgeFilter)
+        # 验证 'datastore' 字段存在 (用于 DatabaseVersionFilter)
+        self.assertTrue("datastore" in instance)
+        self.assertTrue("port" in instance)    # 验证 'port' 字段存在 (用于 DatabasePortFilter)
+        # 验证 'ssl_enable' 字段存在 (用于 SSLInstanceFilter)
+        self.assertTrue("enable_ssl" in instance)
         # 验证 'disk_encryption_id' 是否存在（或不存在），用于 DiskAutoExpansionFilter
-        self.assertTrue("disk_encryption_id" in instance or instance.get("disk_encryption_id") is None)
+        self.assertTrue(
+            "disk_encryption_id" in instance or instance.get("disk_encryption_id") is None)
         # 验证 'public_ips' 是否存在，用于 EIPFilter
         self.assertTrue("public_ips" in instance)
 
     # =========================
     # Filter Tests
     # =========================
-
 
     def test_rds_filter_disk_auto_expansion_enabled(self):
         """测试 disk-auto-expansion 过滤器 - 启用状态匹配"""
@@ -61,7 +64,7 @@ class RDSTest(BaseTest):
 
     def test_rds_filter_disk_auto_expansion_disabled(self):
         """测试 disk-auto-expansion 过滤器 - 禁用状态匹配"""
-        factory = self.replay_flight_data("rds_filter_disk_auto_expansion") # 复用 VCR
+        factory = self.replay_flight_data("rds_filter_disk_auto_expansion")    # 复用 VCR
         # 验证 VCR: rds_filter_disk_auto_expansion.yaml 应包含至少一个禁用了自动扩容的实例
         p = self.load_policy(
             {
@@ -75,10 +78,9 @@ class RDSTest(BaseTest):
         self.assertGreater(len(resources), 0, "测试 VCR 文件应包含禁用了自动扩容的 RDS 实例")
         # 不再检查 disk_encryption_id，因为改用了 show_auto_enlarge_policy API 来获取自动扩容状态
 
-
     def test_rds_filter_db_version_lt(self):
         """测试 database-version 过滤器 - 检测不是最新小版本的实例"""
-        factory = self.replay_flight_data("rds_filter_db_version") # 复用 VCR
+        factory = self.replay_flight_data("rds_filter_db_version")    # 复用 VCR
         # 验证 VCR: rds_filter_db_version.yaml 应包含不是最新小版本的数据库实例
         p = self.load_policy(
             {
@@ -90,17 +92,18 @@ class RDSTest(BaseTest):
         )
         resources = p.run()
         self.assertGreater(len(resources), 0, "测试 VCR 文件应包含不是最新小版本的 RDS 实例")
-        
+
         # 验证过滤出的实例都是需要升级的
         # 注意：由于我们不能直接获取真实的最新版本进行对比，
         # 所以这里只能验证筛选逻辑正常运行并返回了结果
         # 实际测试时需确保 VCR 文件中包含最新小版本的信息供过滤器比较
-        
+
         # 检查过滤后的实例包含数据库引擎和版本信息
         for resource in resources:
             self.assertTrue("datastore" in resource)
             self.assertTrue("type" in resource["datastore"])
-            self.assertTrue("complete_version" in resource["datastore"] or "version" in resource["datastore"])
+            self.assertTrue("complete_version" in resource["datastore"]
+                            or "version" in resource["datastore"])
 
     def test_rds_filter_eip_exists(self):
         """测试 eip 过滤器 - 存在 EIP"""
@@ -121,7 +124,7 @@ class RDSTest(BaseTest):
 
     def test_rds_filter_eip_not_exists(self):
         """测试 eip 过滤器 - 不存在 EIP"""
-        factory = self.replay_flight_data("rds_filter_eip") # 复用 VCR
+        factory = self.replay_flight_data("rds_filter_eip")    # 复用 VCR
         # 验证 VCR: rds_filter_eip.yaml 应包含未绑定 EIP 的实例 (public_ips 列表为空或为 None)
         p = self.load_policy(
             {
@@ -191,7 +194,7 @@ class RDSTest(BaseTest):
 
     def test_rds_filter_instance_parameter_lt(self):
         """测试 instance-parameter 过滤器 - 小于 (lt)"""
-        factory = self.replay_flight_data("rds_filter_instance_parameter")  # 复用 VCR
+        factory = self.replay_flight_data("rds_filter_instance_parameter")    # 复用 VCR
         param_name = "max_connections"
         upper_bound = 1000
         p = self.load_policy(
@@ -220,13 +223,14 @@ class RDSTest(BaseTest):
             {
                 "name": "rds-action-set-sg-test",
                 "resource": "huaweicloud.rds",
-                "filters": [{"type": "value", "key": "id", "value": target_instance_id}], # 使用 value 过滤器更佳
+                "filters": [{"type": "value",
+                             "key": "id", "value": target_instance_id}],    # 使用 value 过滤器更佳
                 "actions": [{"type": "set-security-group", "security_group_id": new_sg_id}],
             },
             session_factory=factory,
         )
         resources = p.run()
-        self.assertEqual(len(resources), 1) # 确认策略过滤到了目标资源
+        self.assertEqual(len(resources), 1)    # 确认策略过滤到了目标资源
         self.assertEqual(resources[0]["id"], target_instance_id)
         # 验证操作: 需要手动检查 VCR 文件 rds_action_set_sg.yaml
         # 确认调用了 POST /v3/{project_id}/instances/{instance_id}/security-group
@@ -242,7 +246,7 @@ class RDSTest(BaseTest):
                 "name": "rds-action-ssl-on-test",
                 "resource": "huaweicloud.rds",
                 "filters": [
-                    {"type": "value", "key": "id","value":target_instance_id} # 确保只对未开启的实例操作
+                    {"type": "value", "key": "id", "value": target_instance_id}    # 确保只对未开启的实例操作
                 ],
                 "actions": [{"type": "switch-ssl", "ssl_enable": True}],
             },
@@ -251,7 +255,7 @@ class RDSTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], target_instance_id)
-        self.assertFalse(resources[0]["enable_ssl"]) # 确认操作前的状态
+        self.assertFalse(resources[0]["enable_ssl"])    # 确认操作前的状态
         # 验证操作: 需要手动检查 VCR 文件 rds_action_switch_ssl_on.yaml
         # 确认调用了 POST /v3/{project_id}/instances/{instance_id}/ssl
         # 并且请求体包含 {"ssl_option": "on"}
@@ -266,7 +270,8 @@ class RDSTest(BaseTest):
                 "name": "rds-action-ssl-off-test",
                 "resource": "huaweicloud.rds",
                 "filters": [
-                    {"type": "value", "key": "id","value":target_instance_id}  # 确保只对已开启的实例操作
+                    {"type": "value",
+                     "key": "id", "value": target_instance_id}    # 确保只对已开启的实例操作
                 ],
                 "actions": [{"type": "switch-ssl", "ssl_enable": False}],
             },
@@ -275,7 +280,7 @@ class RDSTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], target_instance_id)
-        self.assertTrue(resources[0]["enable_ssl"]) # 确认操作前的状态
+        self.assertTrue(resources[0]["enable_ssl"])    # 确认操作前的状态
         # 验证操作: 需要手动检查 VCR 文件 rds_action_switch_ssl_off.yaml
         # 确认调用了 POST /v3/{project_id}/instances/{instance_id}/ssl
         # 并且请求体包含 {"ssl_option": "off"}
@@ -285,7 +290,7 @@ class RDSTest(BaseTest):
         factory = self.replay_flight_data("rds_action_update_port")
         # 验证 VCR: rds_action_update_port.yaml 包含要修改端口的实例
         target_instance_id = "rds-instance-for-port-update"
-        original_port = 3306 # 假设 VCR 中实例原始端口是 3306
+        original_port = 3306    # 假设 VCR 中实例原始端口是 3306
         new_port = 3307
         p = self.load_policy(
             {
@@ -298,7 +303,7 @@ class RDSTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], target_instance_id)
-        self.assertEqual(resources[0]["port"], original_port) # 确认操作前的端口
+        self.assertEqual(resources[0]["port"], original_port)    # 确认操作前的端口
         # 验证操作: 需要手动检查 VCR 文件 rds_action_update_port.yaml
         # 确认调用了 PUT /v3/{project_id}/instances/{instance_id}/port
         # 并且请求体包含 {"port": 3307}
@@ -312,8 +317,8 @@ class RDSTest(BaseTest):
             {
                 "name": "rds-action-auto-enlarge-policy-test",
                 "resource": "huaweicloud.rds",
-                "filters": [{#"id": target_instance_id
-                             "type": "value", "key": "id", "value": target_instance_id}],
+                "filters": [{    # "id": target_instance_id
+                    "type": "value", "key": "id", "value": target_instance_id}],
                 "actions": [{
                     "type": "set-auto-enlarge-policy",
                     "switch_option": True,
@@ -335,13 +340,14 @@ class RDSTest(BaseTest):
         factory = self.replay_flight_data("rds_action_attach_eip_bind")
         # 验证 VCR: rds_action_attach_eip_bind.yaml 包含要绑定 EIP 的实例 (无 public_ips)
         target_instance_id = "rds-instance-id-for-eip"
-        public_ip_to_bind = "123.123.123.123" # 替换为 VCR 中准备好的 EIP
+        public_ip_to_bind = "123.123.123.123"    # 替换为 VCR 中准备好的 EIP
         p = self.load_policy(
             {
                 "name": "rds-action-eip-bind-test",
                 "resource": "huaweicloud.rds",
                 "filters": [
-                    {"type": "value", "key": "id", "value": target_instance_id} # 确保只对没有 EIP 的实例操作
+                    {"type": "value",
+                     "key": "id", "value": target_instance_id}    # 确保只对没有 EIP 的实例操作
                 ],
                 "actions": [{
                     "type": "attach-eip",
@@ -368,7 +374,8 @@ class RDSTest(BaseTest):
                 "name": "rds-action-eip-unbind-test",
                 "resource": "huaweicloud.rds",
                 "filters": [
-                    {"type": "value", "key": "id","value":target_instance_id} # 确保只对有 EIP 的实例操作
+                    {"type": "value",
+                     "key": "id", "value": target_instance_id}    # 确保只对有 EIP 的实例操作
                 ],
                 "actions": [{"type": "attach-eip", "bind_type": "unbind"}],
             },
@@ -391,9 +398,9 @@ class RDSTest(BaseTest):
                 "name": "rds-action-upgrade-immediate-test",
                 "resource": "huaweicloud.rds",
                 "filters": [
-                    #{"id": target_instance_id},
+                    # {"id": target_instance_id},
                     # 过滤特定版本的数据库实例
-                    #{"type": "database-version", "version": "5.7.37", "op": "lt"}
+                    # {"type": "database-version", "version": "5.7.37", "op": "lt"}
                     {"type": "value", "key": "id", "value": target_instance_id}
                 ],
                 "actions": [{"type": "upgrade-db-version", "is_delayed": False}],
@@ -468,7 +475,7 @@ class RDSTest(BaseTest):
                 "name": "rds-action-audit-log-disable-test",
                 "resource": "huaweicloud.rds",
                 "filters": [
-                    #{"id": target_instance_id},
+                    # {"id": target_instance_id},
                     {"type": "value", "key": "id", "value": target_instance_id}
                     # 此处不使用 audit-log-disabled 过滤器，因为我们要找的是已开启审计日志的实例
                 ],
@@ -487,7 +494,7 @@ class RDSTest(BaseTest):
         # 确认调用了 PUT /v3/{project_id}/instances/{instance_id}/auditlog-policy
         # 并且请求体包含 {"keep_days": 0, "reserve_auditlogs": true}
 
-# 可以添加更多测试用例来覆盖边界条件和错误场景
+    # 可以添加更多测试用例来覆盖边界条件和错误场景
     def test_rds_action_set_backup_policy(self):
         """测试 set-backup-policy 操作"""
         factory = self.replay_flight_data("rds_action_set_backup_policy")
@@ -499,13 +506,13 @@ class RDSTest(BaseTest):
                 "resource": "huaweicloud.rds",
                 "filters": [
                     {"id": target_instance_id},
-                    {"type": "backup-policy-disabled"}  # 确保只对未开启备份的实例操作
+                    {"type": "backup-policy-disabled"}    # 确保只对未开启备份的实例操作
                 ],
                 "actions": [{
                     "type": "set-backup-policy",
                     "keep_days": 7,
                     "start_time": "01:00-02:00",
-                    "period": "1,2,3,4,5,6,7",
+                    "period": "1, 2, 3, 4, 5, 6, 7",
                     "backup_type": "auto"
                 }],
             },
@@ -573,13 +580,14 @@ class ReusableRDSTests(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        self.assertGreater(len(resources), 0, f"测试 VCR 文件应包含 status 为 {target_status} 的 RDS 实例")
+        self.assertGreater(len(resources), 0,
+                           f"测试 VCR 文件应包含 status 为 {target_status} 的 RDS 实例")
         for r in resources:
             self.assertEqual(r.get("status"), target_status)
 
     def test_rds_filter_value_no_match(self):
         """测试 value 过滤器 - 不匹配"""
-        factory = self.replay_flight_data("rds_reusable_filter_value") # 复用 VCR
+        factory = self.replay_flight_data("rds_reusable_filter_value")    # 复用 VCR
         non_existent_status = "NON_EXISTENT_STATUS"
         p = self.load_policy(
             {
@@ -643,9 +651,7 @@ class ReusableRDSTests(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources),
-                         1)  # Assuming there is 1 instance that meets all conditions
-
+        self.assertEqual(len(resources), 1)    # Assuming there is 1 instance that meets all conditions
 
     # --- 可复用操作测试 ---
 
@@ -693,7 +699,7 @@ class ReusableRDSTests(BaseTest):
         p = self.load_policy({
             'name': 'rds-rename-tag-test',
             'resource': 'huaweicloud.rds',
-            'filters': [{'tag:env': 'present'}],  # Ensure old tag exists
+            'filters': [{'tag:env': 'present'}],    # Ensure old tag exists
             'actions': [{
                 'type': 'rename-tag',
                 'old_key': 'env',
@@ -701,7 +707,7 @@ class ReusableRDSTests(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Assuming there is 1 instance to rename tag
+        self.assertEqual(len(resources), 1)    # Assuming there is 1 instance to rename tag
 
         # Verification: Check VCR recording to confirm two batch tag API calls First:
         # batch_tag_add_action adding new tag {'key': 'Environment', 'value': 'original env tag

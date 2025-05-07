@@ -2,12 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from c7n.filters import Filter, ValueFilter, AgeFilter
+from c7n.filters import Filter
 from c7n.filters.core import OPERATORS, type_schema
 from c7n.utils import local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from c7n_huaweicloud.actions.tms import register_tms_actions
-from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
