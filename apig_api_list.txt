@@ -1,5 +1,6 @@
 
 查询API列表-https://support.huaweicloud.com/api-apig/ListApisV2.html
+查询环境列表-https://support.huaweicloud.com/api-apig/ListEnvironmentsV2.html
 修改环境-https://support.huaweicloud.com/api-apig/UpdateEnvironmentV2.html
 删除环境-https://support.huaweicloud.com/api-apig/DeleteEnvironmentV2.html
 修改域名-https://support.huaweicloud.com/api-apig/UpdateDomainV2.html
