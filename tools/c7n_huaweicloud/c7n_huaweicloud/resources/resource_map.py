@@ -45,7 +45,5 @@ ResourceMap = {
     "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
     "huaweicloud.dns-privatezone": "c7n_huaweicloud.resources.dns.PrivateZone",
     "huaweicloud.dns-recordset": "c7n_huaweicloud.resources.dns.RecordSet",
-    "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS",
-    "huaweicloud.rds-mysql-database": "c7n_huaweicloud.resources.rds_mysql.RDSMySQLDatabase",
-    "huaweicloud.rds-mysql-user": "c7n_huaweicloud.resources.rds_mysql.RDSMySQLUser"
+    "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS"
 }
