@@ -17,30 +17,28 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250428T084235Z
+      - 20250508T065506Z
     method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/%7Binstance_id%7D/apis?limit=100
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/%7Binstance_id%7D/envs?limit=100&offset=0
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"01f4329ee46cb7058f83890732e61824"}
-
-        '
+      string: '{"total": 1, "size": 1, "envs": [{"id": "7a1ad0c350844ee69479b47df9a881cb",
+        "name": "TEST", "remark": "Original description", "create_time": "2020-07-31T06:41:43Z",
+        "enable_metrics": false, "is_waf_enabled": false, "is_client_certificate_required": false}]}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Mon, 28 Apr 2025 08:42:35 GMT
+      - Thu, 08 May 2025 06:55:06 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=5240973c7f16fc1b0e; path=/
-      - HWWAFSESTIME=1745829755383; path=/
+      - HWWAFSESID=05c59737c5f630c38c; path=/
+      - HWWAFSESTIME=1746687306553; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -48,10 +46,10 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 01f4329ee46cb7058f83890732e61824
+      - 2f32778ccf6c6d71bb8f7a279e3bb061
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: OK
 version: 1

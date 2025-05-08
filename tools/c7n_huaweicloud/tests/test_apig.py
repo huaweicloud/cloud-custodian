@@ -1,53 +1,56 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from unittest.mock import patch
-
 from huaweicloud_common import BaseTest
 
 
-class APIGTest(BaseTest):
-    """测试 API 网关(APIG)资源、过滤器和操作"""
+class ApiResourceTest(BaseTest):
+    """测试API网关API资源，过滤器和操作"""
 
-    def test_apig_query(self):
-        """测试 APIG 资源查询"""
-        factory = self.replay_flight_data("apig_query")
+    def test_api_query(self):
+        """测试API资源查询和增强"""
+        factory = self.replay_flight_data("apig_api_query")
         p = self.load_policy(
             {
-                "name": "apig-query",
-                "resource": "huaweicloud.apig",
+                "name": "apig-api-query",
+                "resource": "huaweicloud.rest-api",
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证 VCR: apig_query 应包含 1 个 API
+        # 验证VCR: apig_api_query应包含1个API
         self.assertEqual(len(resources), 1)
-        # 验证 VCR: 值应匹配 apig_query 中的 'name'
+        # 验证VCR: 值应与apig_api_query中的'name'匹配
         self.assertEqual(resources[0]["name"], "test-api")
+        # 验证VCR: 值应与apig_api_query中的'req_method'匹配
+        self.assertEqual(resources[0]["req_method"], "GET")
+        self.assertTrue("backend_type" in resources[0])  # 验证增强添加了信息
 
-    def test_apig_filter_age_match(self):
-        """测试 APIG API 创建时间过滤器 - 匹配"""
-        factory = self.replay_flight_data("apig_filter_age")
+    def test_api_filter_age_match(self):
+        """测试API年龄过滤器 - 匹配"""
+        factory = self.replay_flight_data("apig_api_filter_age")
         p = self.load_policy(
             {
-                "name": "apig-filter-age-match",
-                "resource": "huaweicloud.apig",
-                # 验证 VCR: 在 apig_filter_age 中 API 的创建时间应该 >= 30 天
-                "filters": [{"type": "age", "days": 30, "op": "ge"}],
+                "name": "apig-api-filter-age-match",
+                "resource": "huaweicloud.rest-api",
+                # 验证VCR: 'test-old-api'的创建时间在apig_api_filter_age中
+                # 应该 >= 90天
+                "filters": [{"type": "age", "days": 90, "op": "ge"}],
             },
             session_factory=factory,
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
-    def test_apig_filter_age_no_match(self):
-        """测试 APIG API 创建时间过滤器 - 不匹配"""
-        factory = self.replay_flight_data("apig_filter_age")  # 复用录像带
+    def test_api_filter_age_no_match(self):
+        """测试API年龄过滤器 - 不匹配"""
+        factory = self.replay_flight_data("apig_api_filter_age")  # 重用cassette
         p = self.load_policy(
             {
-                "name": "apig-filter-age-no-match",
-                "resource": "huaweicloud.apig",
-                # 验证 VCR: 在 apig_filter_age 中 API 的创建时间不应该 < 1 天
+                "name": "apig-api-filter-age-no-match",
+                "resource": "huaweicloud.rest-api",
+                # 验证VCR: 'test-old-api'的创建时间在apig_api_filter_age中
+                # 不应该 < 1天
                 "filters": [{"type": "age", "days": 1, "op": "lt"}],
             },
             session_factory=factory,
@@ -55,239 +58,281 @@ class APIGTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 0)
 
-    def test_apig_action_delete(self):
-        """测试 删除 API 操作"""
-        factory = self.replay_flight_data("apig_action_delete")
-        # 获取要删除的 API ID
-        api_id_to_delete = "5f918d104dc84480a75166ba99efff21"
+    def test_api_action_delete(self):
+        """测试删除API操作"""
+        factory = self.replay_flight_data("apig_api_action_delete")
+        # 从apig_api_action_delete获取要删除的API ID和名称
+        # 验证VCR: 匹配apig_api_action_delete中的'id'
+        api_id_to_delete = "2c9eb1538a138432018a13uuuuu00001"
+        # 验证VCR: 匹配apig_api_action_delete中的'name'
+        api_name_to_delete = "api-to-delete"
         p = self.load_policy(
             {
-                "name": "apig-action-delete",
-                "resource": "huaweicloud.apig",
+                "name": "apig-api-action-delete",
+                "resource": "huaweicloud.rest-api",
+                # 使用值过滤器以提高清晰度
                 "filters": [{"type": "value", "key": "id", "value": api_id_to_delete}],
                 "actions": ["delete"],
             },
             session_factory=factory,
         )
-        
-        # 模拟API资源，因为我们的flight数据是固定的
-        with patch.object(p.resource_manager, 'resources', return_value=[
-            {'id': api_id_to_delete, 'name': 'test-api'}
-        ]):
-            resources = p.run()
-            self.assertEqual(len(resources), 1)
-            # 主要断言验证策略是否正确过滤了目标资源
-            self.assertEqual(resources[0]['id'], api_id_to_delete)
-            # 验证操作成功: 手动检查 VCR 录像带 apig_action_delete 确认
-            # 调用了 DeleteApiV2 API 并且获得了 204 No Content 的响应
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        # 断言主要验证策略是否正确过滤目标资源
+        self.assertEqual(resources[0]['id'], api_id_to_delete)
+        self.assertEqual(resources[0]['name'], api_name_to_delete)
+        # 验证操作成功: 手动检查VCR cassette
+        # apig_api_action_delete以确认
+        # DELETE /v2/{project_id}/apigw/instances/{instance_id}/apis/{api_id}被调用
 
-    def test_apig_action_update_environment(self):
-        """测试 更新环境信息操作"""
-        factory = self.replay_flight_data("apig_action_update_environment")
-        # 获取要更新的环境 ID
-        environment_id = "7a1ad0c350844ee69435ab297c1e6d18"
+
+class StageResourceTest(BaseTest):
+    """测试API网关环境资源，过滤器和操作"""
+
+    def test_stage_query(self):
+        """测试环境资源查询和增强"""
+        factory = self.replay_flight_data("apig_stage_query")
+        p = self.load_policy(
+            {
+                "name": "apig-stage-query",
+                "resource": "huaweicloud.rest-stage",
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # 验证VCR: apig_stage_query应包含1个环境
+        self.assertEqual(len(resources), 1)
+        # 验证VCR: 值应与apig_stage_query中的'name'匹配
+        self.assertEqual(resources[0]["name"], "TEST")
+
+    def test_stage_action_update(self):
+        """测试更新环境操作"""
+        factory = self.replay_flight_data("apig_stage_action_update")
+        # 从apig_stage_action_update获取要更新的环境ID
+        # 验证VCR: 匹配apig_stage_action_update中的'id'
+        stage_id_to_update = "2c9eb1538a138432018a13zzzzz00001"
         new_name = "updated-test-env"
-        new_description = "Updated test environment"
+        new_description = "Updated by Cloud Custodian"  # 更新后的描述
         p = self.load_policy(
             {
-                "name": "apig-action-update-environment",
-                "resource": "huaweicloud.apig",
+                "name": "apig-stage-action-update",
+                "resource": "huaweicloud.rest-stage",
+                "filters": [{"type": "value", "key": "id", "value": stage_id_to_update}],
                 "actions": [{
-                    "type": "update-environment",
-                    "environment_id": environment_id,
+                    "type": "update",
                     "name": new_name,
-                    "description": new_description
-                }],
-            },
-            session_factory=factory,
-        )
-        
-        # 模拟API资源，因为我们的flight数据是固定的
-        with patch.object(p.resource_manager, 'resources', return_value=[
-            {'id': '5f918d104dc84480a75166ba99efff21', 'name': 'test-api', 'instance_id': 'cc371c55cc9141558ccd76b86903e78b'}
-        ]):
-            resources = p.run()
-            self.assertEqual(len(resources), 1)
-            # 验证操作成功: 手动检查 VCR 录像带 apig_action_update_environment 确认
-            # 调用了 UpdateEnvironmentV2 API 并且提供了正确的请求体
-            # (包含 name 和 remark)
-
-    def test_apig_action_delete_environment(self):
-        """测试 删除环境操作"""
-        factory = self.replay_flight_data("apig_action_delete_environment")
-        # 获取要删除的环境 ID
-        environment_id = "7a1ad0c350844ee69435ab297c1e6d18"
-        p = self.load_policy(
-            {
-                "name": "apig-action-delete-environment",
-                "resource": "huaweicloud.apig",
-                "actions": [{
-                    "type": "delete-environment",
-                    "environment_id": environment_id
+                    "reamrk": new_description,
                 }],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证操作成功: 手动检查 VCR 录像带 apig_action_delete_environment 确认
-        # 调用了 DeleteEnvironmentV2 API
+        self.assertEqual(len(resources), 1)
+        # 断言主要验证策略是否正确过滤目标资源
+        self.assertEqual(resources[0]['id'], stage_id_to_update)
 
-    def test_apig_action_update_domain(self):
-        """测试 更新自定义域名信息操作"""
-        factory = self.replay_flight_data("apig_action_update_domain")
-        # 获取要更新的域名 ID
-        domain_id = "7a1ad0c350844ee69435ab297c1e6d18"
-        min_ssl_version = "TLSv1.2"
+    def test_stage_action_delete(self):
+        """测试删除环境操作"""
+        factory = self.replay_flight_data("apig_stage_action_delete")
+        # 从apig_stage_action_delete获取要删除的环境ID
+        # 验证VCR: 匹配apig_stage_action_delete中的'id'
+        stage_id_to_delete = "2c9eb1538a138432018a13xxxxx00001"
         p = self.load_policy(
             {
-                "name": "apig-action-update-domain",
-                "resource": "huaweicloud.apig",
+                "name": "apig-stage-action-delete",
+                "resource": "huaweicloud.rest-stage",
+                "filters": [{"type": "value", "key": "id", "value": stage_id_to_delete}],
+                "actions": ["delete"],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        # 断言主要验证策略是否正确过滤目标资源
+        self.assertEqual(resources[0]['id'], stage_id_to_delete)
+        # 验证操作成功: 手动检查VCR cassette
+        # apig_stage_action_delete以确认
+        # DELETE /v2/{project_id}/apigw/instances/{instance_id}/envs/{env_id}被调用
+
+
+class DomainNameResourceTest(BaseTest):
+    """测试API网关域名资源，过滤器和操作"""
+
+    def test_domain_name_query(self):
+        """测试域名资源查询和增强"""
+        factory = self.replay_flight_data("apig_domain_name_query")
+        p = self.load_policy(
+            {
+                "name": "apig-domain-name-query",
+                "resource": "huaweicloud.apigw-domain-name",
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # 验证VCR: apig_domain_name_query应包含1个域名
+        self.assertEqual(len(resources), 1)
+        # 验证VCR: 值应与apig_domain_name_query中的'name'匹配
+        self.assertEqual(resources[0]["name"], "example.com")
+        self.assertTrue("url_domain" in resources[0])  # 验证增强添加了信息
+
+    def test_domain_name_action_update_security(self):
+        """测试更新域名安全策略操作"""
+        factory = self.replay_flight_data("apig_domain_name_action_update_security")
+        # 从apig_domain_name_action_update_security获取要更新的域名ID
+        # 验证VCR: 匹配apig_domain_name_action_update_security中的'id'
+        domain_id_to_update = "2c9eb1538a138432018a13ccccc00001"
+        # 验证VCR: 匹配apig_domain_name_action_update_security中的初始'min_ssl_version'
+        original_min_ssl_version = "TLSv1.1"
+        new_min_ssl_version = "TLSv1.2"  # 更新后的TLS版本
+        p = self.load_policy(
+            {
+                "name": "apig-domain-name-action-update-security",
+                "resource": "huaweicloud.apigw-domain-name",
                 "actions": [{
-                    "type": "update-domain",
-                    "domain_id": domain_id,
-                    "min_ssl_version": min_ssl_version
+                    "type": "update-security",
+                    "min_ssl_version": new_min_ssl_version,
                 }],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证操作成功: 手动检查 VCR 录像带 apig_action_update_domain 确认
-        # 调用了 UpdateDomainV2 API 并且提供了正确的请求体
-        # (包含 min_ssl_version)
-
+        self.assertEqual(len(resources), 1)
+        # 断言主要验证策略是否正确过滤目标资源
+        self.assertEqual(resources[0]['id'], domain_id_to_update)
+        self.assertEqual(resources[0]['min_ssl_version'], original_min_ssl_version)  # 验证更新前的TLS版本
+        # 验证操作成功: 手动检查VCR cassette
+        # apig_domain_name_action_update_security以确认
+        # PATCH /v2/{project_id}/apigw/instances/{instance_id}/domains/{domain_id}被调用，
+        # 并包含正确的body(min_ssl_version)
 
 
 # =========================
-# 可复用特性测试 (以 APIG 为例)
+# 可复用功能测试（使用API资源作为示例）
 # =========================
 
 class ReusableFeaturesTest(BaseTest):
-    """测试可复用的过滤器和操作"""
+    """测试在API网关资源上可复用的过滤器和操作"""
 
     def test_filter_value_match(self):
-        """测试 value 过滤器 - 匹配"""
-        factory = self.replay_flight_data("apig_filter_value_name")
-        # 获取要匹配的 API 名称
-        target_name = "test-api"
+        """测试值过滤器 - 匹配"""
+        factory = self.replay_flight_data("apig_api_filter_value_method")
+        # 从apig_api_filter_value_method获取方法值
+        # 验证VCR: 匹配'method-get.example.com'的方法在apig_api_filter_value_method中
+        target_method = "GET"
         p = self.load_policy(
             {
-                "name": "apig-filter-value-name-match",
-                "resource": "huaweicloud.apig",
-                "filters": [{"type": "value", "key": "name", "value": target_name}],
+                "name": "apig-filter-value-method-match",
+                "resource": "huaweicloud.rest-api",
+                "filters": [{"type": "value", "key": "req_method", "value": target_method}],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证 VCR: 只有一个 API 名称匹配
+        # 验证VCR: 只有一个API在apig_api_filter_value_method匹配此方法
         self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0]['name'], target_name)
+        self.assertEqual(resources[0]['req_method'], target_method)
 
     def test_filter_value_no_match(self):
-        """测试 value 过滤器 - 不匹配"""
-        factory = self.replay_flight_data("apig_filter_value_name")  # 复用
-        wrong_name = "non-existent-api"
+        """测试值过滤器 - 不匹配"""
+        factory = self.replay_flight_data("apig_api_filter_value_method")  # 重用
+        wrong_method = "DELETE"
         p = self.load_policy(
             {
-                "name": "apig-filter-value-name-no-match",
-                "resource": "huaweicloud.apig",
-                "filters": [{"type": "value", "key": "name", "value": wrong_name}],
+                "name": "apig-filter-value-method-no-match",
+                "resource": "huaweicloud.rest-api",
+                "filters": [{"type": "value", "key": "req_method", "value": wrong_method}],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证 VCR: 没有 API 名称匹配
+        # 验证VCR: 没有API在apig_api_filter_value_method匹配此方法
         self.assertEqual(len(resources), 0)
 
-    def test_filter_list_item_match(self):
-        """测试 list-item 过滤器 - 匹配 (标签列表)"""
-        factory = self.replay_flight_data("apig_filter_list_item_tag")
-        # 要匹配的标签键和值
-        target_tag_key = "filtertag"
-        target_tag_value = "filtervalue"
-        p = self.load_policy(
-            {
-                "name": "apig-filter-list-item-tag-match",
-                "resource": "huaweicloud.apig",
-                "filters": [
-                    {
-                        "type": "list-item",
-                        "key": "Tags",
-                        "attrs": [
-                            {"type": "value", "key": "Key", "value": target_tag_key},
-                            {"type": "value", "key": "Value", "value": target_tag_value}
-                        ]
-                    }
-                ],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # 验证 VCR: 只有一个 API 标签匹配
-        self.assertEqual(len(resources), 1)
-
-    def test_filter_marked_for_op_match(self):
-        """测试 marked-for-op 过滤器 - 匹配"""
-        factory = self.replay_flight_data("apig_filter_marked_for_op")
-        op = "delete"
-        tag = "c7n_status"
-        p = self.load_policy(
-            {
-                "name": f"apig-filter-marked-for-op-{op}-match",
-                "resource": "huaweicloud.apig",
-                "filters": [{"type": "marked-for-op", "op": op, "tag": tag}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # 验证 VCR: 只有一个 API 满足标记条件
-        # (需根据当前时间手动检查过期情况)
-        self.assertEqual(len(resources), 1)
-
     def test_filter_tag_count_match(self):
-        """测试 tag-count 过滤器 - 匹配"""
-        factory = self.replay_flight_data("apig_filter_tag_count")
-        # 预期标签数量
+        """测试标签计数过滤器 - 匹配"""
+        # 验证VCR: API 'api-two-tags.example.com'在apig_api_filter_tag_count应有2个标签
+        factory = self.replay_flight_data("apig_api_filter_tag_count")
+        # 验证VCR: 匹配'api-two-tags.example.com'的标签计数在apig_api_filter_tag_count中
         expected_tag_count = 2
         p = self.load_policy(
             {
                 "name": "apig-filter-tag-count-match",
-                "resource": "huaweicloud.apig",
+                "resource": "huaweicloud.rest-api",
                 "filters": [{"type": "tag-count", "count": expected_tag_count}],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证 VCR: 只有一个 API 有正好 2 个标签
+        # 验证VCR: 只有一个API在apig_api_filter_tag_count具有恰好2个标签
         self.assertEqual(len(resources), 1)
 
-    @patch('c7n_huaweicloud.actions.tms.Tag.process')
-    def test_action_tag(self, mock_tag_process):
-        """测试标签添加操作 (使用 mock 避免实际 API 调用)"""
-        factory = self.replay_flight_data("apig_action_tag")
+    def test_action_tag_and_remove_tag(self):
+        """测试标签添加和删除操作"""
+        factory = self.replay_flight_data("apig_api_action_tag")
+        # 从apig_api_action_tag获取API ID
+        # 验证VCR: 匹配apig_api_action_tag中的'id'
+        api_id_to_tag = "2c9eb1538a138432018a13ddddd00001"
+        tag_key = "environment"
+        tag_value = "test"
+        
+        # 添加标签策略
         p = self.load_policy(
             {
-                "name": "apig-action-tag",
-                "resource": "huaweicloud.apig",
-                "actions": [{"type": "tag", "key": "Environment", "value": "Production"}],
+                "name": "apig-api-tag",
+                "resource": "huaweicloud.rest-api",
+                "filters": [{"type": "value", "key": "id", "value": api_id_to_tag}],
+                "actions": [{
+                    "type": "tag",
+                    "key": tag_key,
+                    "value": tag_value
+                }],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证 mock 是否被正确调用
-        mock_tag_process.assert_called_once()
+        self.assertEqual(len(resources), 1)
+        
+        # 移除标签策略
+        p = self.load_policy(
+            {
+                "name": "apig-api-remove-tag",
+                "resource": "huaweicloud.rest-api",
+                "filters": [{"type": "value", "key": "id", "value": api_id_to_tag}],
+                "actions": [{
+                    "type": "remove-tag",
+                    "tags": [tag_key]
+                }],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        
+        # 验证操作成功: 手动检查VCR cassette
+        # apig_api_action_tag以确认标签API调用
 
-    @patch('c7n_huaweicloud.actions.tms.RemoveTag.process')
-    def test_action_remove_tag(self, mock_remove_tag_process):
-        """测试标签移除操作 (使用 mock 避免实际 API 调用)"""
-        factory = self.replay_flight_data("apig_action_remove_tag")
+    def test_action_mark_for_op(self):
+        """测试标记操作"""
+        factory = self.replay_flight_data("apig_api_action_mark_for_op")
+        # 从apig_api_action_mark_for_op获取API ID
+        # 验证VCR: 匹配apig_api_action_mark_for_op中的'id'
+        api_id_to_mark = "2c9eb1538a138432018a13eeeee00001"
+        
         p = self.load_policy(
             {
-                "name": "apig-action-remove-tag",
-                "resource": "huaweicloud.apig",
-                "actions": [{"type": "remove-tag", "tags": ["Temporary"]}],
+                "name": "apig-api-mark-for-delete",
+                "resource": "huaweicloud.rest-api",
+                "filters": [{"type": "value", "key": "id", "value": api_id_to_mark}],
+                "actions": [{
+                    "type": "mark-for-op",
+                    "op": "delete",
+                    "days": 7
+                }],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # 验证 mock 是否被正确调用
-        mock_remove_tag_process.assert_called_once()
+        self.assertEqual(len(resources), 1)
+        
+        # 验证操作成功: 手动检查VCR cassette
+        # apig_api_action_mark_for_op以确认标签API调用

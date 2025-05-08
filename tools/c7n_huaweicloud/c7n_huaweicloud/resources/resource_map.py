@@ -45,5 +45,7 @@ ResourceMap = {
     "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
     "huaweicloud.dns-privatezone": "c7n_huaweicloud.resources.dns.PrivateZone",
     "huaweicloud.dns-recordset": "c7n_huaweicloud.resources.dns.RecordSet",
-    "huaweicloud.apig": "c7n_huaweicloud.resources.apig.APIG"
+    "huaweicloud.rest-api": "c7n_huaweicloud.resources.apig.ApiResource",
+    "huaweicloud.rest-stage": "c7n_huaweicloud.resources.apig.StageResource",
+    "huaweicloud.apigw-domain-name": "c7n_huaweicloud.resources.apig.DomainNameResource",
 }

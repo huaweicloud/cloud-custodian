@@ -106,9 +106,12 @@ from huaweicloudsdkdns.v2 import (
     DnsClient
 )
 from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
-from huaweicloudsdkapig.v2 import ApigClient
+from huaweicloudsdkapig.v2 import (
+    ApigClient, 
+    ListApisV2Request,
+    ListEnvironmentsV2Request,
+)
 from huaweicloudsdkapig.v2.region.apig_region import ApigRegion
-from huaweicloudsdkapig.v2 import ListApisV2Request
 
 
 log = logging.getLogger("custodian.huaweicloud.client")
@@ -411,7 +414,7 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'apig':
+        elif service == 'apig' or service in ['rest-api', 'rest-stage', 'apigw-domain-name']:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)
@@ -531,6 +534,10 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
-        elif service == 'apig':
+        elif service in ['rest-api', 'apigw-domain-name']:
             request = ListApisV2Request()
+        elif service == 'rest-stage':
+            request = ListEnvironmentsV2Request()
+        # elif service == 'apigw-domain-name':
+        #     request = ListDomainV2Request()
         return request
