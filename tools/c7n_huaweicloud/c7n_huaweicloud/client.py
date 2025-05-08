@@ -106,6 +106,8 @@ from huaweicloudsdkdns.v2 import (
     DnsClient
 )
 from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
+from huaweicloudsdkrocketmq.v2 import RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
+from huaweicloudsdkrocketmq.v2.region.rocketmq_region import RocketMQRegion
 
 
 log = logging.getLogger("custodian.huaweicloud.client")
@@ -408,6 +410,13 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'reliabilitys':
+            client = (
+                RocketMQClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RocketMQRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -521,4 +530,6 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
+        elif service == 'reliabilitys':
+            request = RocketMQListInstancesRequest()
         return request
