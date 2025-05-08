@@ -11,7 +11,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - rocketmq.ap-southeast-1.myhuaweicloud.com
+      - dms.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
@@ -19,7 +19,7 @@ interactions:
       X-Sdk-Date:
       - 20250507T123445Z
     method: GET
-    uri: https://rocketmq.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
   response:
     body:
       string: '{

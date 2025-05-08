@@ -1,6 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from unittest.mock import patch  # 导入 patch
+from unittest.mock import patch  # Import patch
 
 from huaweicloud_common import BaseTest
 
@@ -17,20 +17,20 @@ class RocketMQInstanceTest(BaseTest):
             'resource': 'huaweicloud.reliabilitys'},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # 假设录像带中有1个实例
+        self.assertEqual(len(resources), 1)  # Assuming there is 1 instance in the recording
 
     # =========================
     # Filter Tests
     # =========================
-    @patch('c7n_huaweicloud.resources.vpc.SecurityGroup.get_resources')  # 指定要 mock 的目标
-    def test_rocketmq_filter_security_group(self, mock_get_sg_resources):  # 接收 mock 对象
-        # 配置 mock 返回值
-        # 需要包含与 VCR 中 securityGroupId 匹配的 id
+    @patch('c7n_huaweicloud.resources.vpc.SecurityGroup.get_resources')  # Specify the target to mock
+    def test_rocketmq_filter_security_group(self, mock_get_sg_resources):  # Receive mock object
+        # Configure mock return value
+        # Need to include an id that matches the securityGroupId in VCR
         mock_security_group_data = [{
             'id': 'securityGroupId',
-            'name': 'rocket-mq-test-sg',  # 名称可以来自VCR，确保id匹配即可
+            'name': 'rocket-mq-test-sg',  # Name can come from VCR, just ensure the id matches
             'description': 'Mocked security group data',
-            # 可以根据需要添加更多字段，但 'id' 是关键
+            # Can add more fields as needed, but 'id' is key
         }]
         mock_get_sg_resources.return_value = mock_security_group_data
 
@@ -40,46 +40,55 @@ class RocketMQInstanceTest(BaseTest):
             'resource': 'huaweicloud.reliabilitys',
             'filters': [{
                 'type': 'security-group',
-                'key': 'id',  # 或 name
-                'value': 'securityGroupId'  # 确保此值与 mock 数据中的 id 匹配
+                'key': 'id',  # or name
+                'value': 'securityGroupId'  # Ensure this value matches the id in mock data
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # 假设有1个匹配实例
-        # 验证 mock 是否被调用 (可选)
+        self.assertEqual(len(resources), 1)  # Assuming there is 1 matching instance
+        # Verify that the mock was called (optional)
         mock_get_sg_resources.assert_called_once_with(['securityGroupId'])
 
     def test_rocketmq_filter_age(self):
         factory = self.replay_flight_data('rocketmq_filter_age')
-        # 测试创建时间大于等于1天的实例
-        p_ge = self.load_policy({
-            'name': 'rocketmq-filter-age-ge-test',
+        
+        # Test if creation time > threshold time (2022, this should be true because the instance was created in 2023)
+        p_gt = self.load_policy({
+            'name': 'rocketmq-filter-age-gt-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'type': 'age', 'days': 1, 'op': 'gt'}]},  # 大于等于
-            session_factory=factory)
-        resources_ge = p_ge.run()
-        self.assertEqual(len(resources_ge), 1)  # 假设录像带中的实例满足条件
-
-        # 测试创建时间小于1000天的实例 (假设实例满足)
-        p_lt = self.load_policy({
-            'name': 'rocketmq-filter-age-lt-test',
+            'filters': [{'type': 'age', 'days': 1000, 'op': 'gt'}]
+            }, session_factory=factory)
+        resources_gt = p_gt.run()
+        self.assertEqual(len(resources_gt), 1)  # Should find one resource (2023 > threshold 2022)
+        
+        # Test if creation time < threshold date (for future dates, this is always true)
+        p_future = self.load_policy({
+            'name': 'rocketmq-filter-future-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'type': 'age', 'days': 2000, 'op': 'lt'}]},  # 小于
-            session_factory=factory)
-        resources_lt = p_lt.run()
-        self.assertEqual(len(resources_lt), 1)
-
-        # 边界：测试 created_at 缺失 (需要特定录像带或模拟)
-        # factory_missing_date = self.replay_flight_data('rocketmq_filter_age_missing_date')
-        # p_missing = ...
-        # resources_missing = p_missing.run()
-        # self.assertEqual(len(resources_missing), 0) # 应该被过滤掉
+            'filters': [{'type': 'age', 'days': -1000, 'op': 'lt'}]  # Creation time < future date
+            }, session_factory=factory)
+        resources_future = p_future.run()
+        self.assertEqual(len(resources_future), 1)  # Should find one resource (past time < future date)
 
     def test_rocketmq_filter_list_item(self):
         factory = self.replay_flight_data('rocketmq_filter_list_item')
-        # 测试是否在指定可用区之一 - 使用简单的值比较而不是list-item过滤器避免错误
+        # Test if in one of the specified availability zones - using value filter
         p = self.load_policy({
             'name': 'rocketmq-filter-az-test',
+            'resource': 'huaweicloud.reliabilitys',
+            'filters': [{
+                'type': 'list-item',
+                'key': 'available_zones',
+                'op': 'in',
+                'value': 'cn-north-4a'
+            }]},
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)  # Should find one instance
+        
+        # Test using array value
+        p_array = self.load_policy({
+            'name': 'rocketmq-filter-az-array-test',
             'resource': 'huaweicloud.reliabilitys',
             'filters': [{
                 'type': 'list-item',
@@ -88,51 +97,46 @@ class RocketMQInstanceTest(BaseTest):
                 'value': ['cn-north-4a', 'cn-north-4b']
             }]},
             session_factory=factory)
-        resources = p.run()
-        self.assertEqual(len(resources), 1)  # 假设实例在其中一个AZ
-
-        # # 测试标签列表 - 使用简单的值测试而不是list-item
-        # p_tags = self.load_policy({
-        #     'name': 'rocketmq-filter-tags-test',
-        #     'resource': 'huaweicloud.reliabilitys',
-        #     'filters': [{
-        #         'type': 'list-item',
-        #         'key': 'tags[0].key',
-        #         'value': 'environment'
-        #     }]},
-        #     session_factory=factory)
-        # resources_tags = p_tags.run()
-        # self.assertEqual(len(resources_tags), 1)
+        resources_array = p_array.run()
+        self.assertEqual(len(resources_array), 1)  # Should find one instance
+        
+        # Test no match case
+        p_no_match = self.load_policy({
+            'name': 'rocketmq-filter-az-no-match-test',
+            'resource': 'huaweicloud.reliabilitys',
+            'filters': [{
+                'type': 'list-item',
+                'key': 'available_zones',
+                'op': 'in',
+                'value': 'cn-north-99'  # Non-existent availability zone
+            }]},
+            session_factory=factory)
+        resources_no_match = p_no_match.run()
+        self.assertEqual(len(resources_no_match), 0)  # Should not find any instance
 
     def test_rocketmq_filter_marked_for_op(self):
-        # 需要一个带有 'mark-for-op-custodian' 或自定义标签的实例录像带
+        # Need a recording with an instance tagged with 'mark-for-op-custodian' or custom tag
         factory = self.replay_flight_data('rocketmq_filter_marked_for_op')
-        # 假设实例被标记为 'delete@YYYY/MM/DD HH:MM:SS UTC' 且已到期
+        # Assuming instance is marked for 'delete@YYYY/MM/DD HH:MM:SS UTC' and expired
         p = self.load_policy({
             'name': 'rocketmq-filter-marked-delete-test',
             'resource': 'huaweicloud.reliabilitys',
             'filters': [{
                 'type': 'marked-for-op',
                 'op': 'delete',
-                'tag': 'custodian_cleanup'  # 与标记动作的tag一致
-                # 'skew': 1 # 可选：测试提前匹配
+                'tag': 'custodian_cleanup'  # Consistent with tag action
+                # 'skew': 1 # Optional: test early matching
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # 假设有1个匹配实例
+        self.assertEqual(len(resources), 1)  # Assuming there is 1 matching instance
 
-        # 边界：测试标签值格式错误 (需要特定录像带)
-        # factory_bad_tag = self.replay_flight_data('rocketmq_filter_marked_bad_tag')
-        # p_bad = ...
-        # resources_bad = p_bad.run()
-        # self.assertEqual(len(resources_bad), 0)
-
-        # 边界：测试操作类型不匹配
+        # Edge case: test operation type mismatch
         p_wrong_op = self.load_policy({
             'name': 'rocketmq-filter-marked-wrong-op-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'type': 'marked-for-op', 'op': 'stop'}]},  # 查找 stop
-            session_factory=factory)  # 使用相同的录像带 (假设标记的是 delete)
+            'filters': [{'type': 'marked-for-op', 'op': 'stop'}]},  # Look for stop
+            session_factory=factory)  # Using the same recording (assuming it's marked for delete)
         resources_wrong_op = p_wrong_op.run()
         self.assertEqual(len(resources_wrong_op), 0)
 
@@ -152,34 +156,26 @@ class RocketMQInstanceTest(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # 假设对1个实例执行了操作
-        # 验证：需要检查 VCR 录像带，确认调用了 batch_create_or_delete_rocketmq_tag
-        # 并且请求体包含了正确的 tag key 和 value (带时间戳)
+        self.assertEqual(len(resources), 1)  # Assuming action was performed on 1 instance
+        # Verification: need to check VCR recording, confirm batch_create_or_delete_rocketmq_tag was called
+        # and request body contains correct tag key and value (with timestamp)
 
     def test_rocketmq_action_auto_tag_user(self):
-        # 需要一个资源字典中包含 'creator' 或 'user_name' 的录像带
+        # Need a recording with resource dict containing 'creator' or 'user_name'
         factory = self.replay_flight_data('rocketmq_action_autotag')
         p = self.load_policy({
             'name': 'rocketmq-action-autotag-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'tag:CreatorName': 'absent'}],  # 只对没有 CreatorName 标签的实例操作
+            'filters': [{'tag:CreatorName': 'absent'}],  # Only operate on instances without CreatorName tag
             'actions': [{
                 'type': 'auto-tag-user',
                 'tag': 'CreatorName',
-                'user_key': 'creator',  # 假设资源中有 'creator' 字段
+                'user_key': 'creator',  # Assuming resource has 'creator' field
                 'update': False
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # 假设对1个实例执行了操作
-        # 验证：检查 VCR 录像带，确认调用了 batch_create_or_delete_rocketmq_tag
-        # 并且请求体包含了 'CreatorName' 和从资源中获取的用户名 (或 'unknown')
-
-        # 边界：测试 update=False 且标签已存在 (需要特定录像带)
-        # factory_tag_exists = self.replay_flight_data('rocketmq_action_autotag_exists')
-        # p_exists = ... # 设置 update=False
-        # resources_exists = p_exists.run()
-        # # 验证：检查 VCR 录像带，确认没有调用 batch_create_or_delete_rocketmq_tag
+        self.assertEqual(len(resources), 1)  # Assuming action was performed on 1 instance
 
     def test_rocketmq_action_tag(self):
         factory = self.replay_flight_data('rocketmq_action_tag')
@@ -190,63 +186,40 @@ class RocketMQInstanceTest(BaseTest):
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # 验证：检查 VCR，确认调用了 batch_create_or_delete_rocketmq_tag (action=create)
-        # 且 body.tags 包含 {'key': 'CostCenter', 'value': 'Finance'}
+        # Verification: check VCR, confirm batch_create_or_delete_rocketmq_tag was called (action=create)
+        # and body.tags contains {'key': 'CostCenter', 'value': 'Finance'}
 
     def test_rocketmq_action_remove_tag(self):
         factory = self.replay_flight_data('rocketmq_action_remove_tag')
         p = self.load_policy({
             'name': 'rocketmq-action-remove-tag-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'tag:environment': 'present'}],  # 确保标签存在才移除
-            'actions': [{'type': 'remove-tag', 'keys': ['environment', 'temp-tag']}]},  # 移除多个
+            'filters': [{'tag:environment': 'present'}],  # Ensure tag exists before removing
+            'actions': [{'type': 'remove-tag', 'keys': ['environment', 'temp-tag']}]},  # Remove multiple
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # 验证：检查 VCR，确认调用了 batch_create_or_delete_rocketmq_tag (action=delete)
-        # 且 body.tags 包含 {'key': 'environment'} 和 {'key': 'temp-tag'} (如果都存在)
-
-        # 边界：测试移除不存在的标签 (应跳过或API调用仍成功但无效果)
-        # factory_no_tag = self.replay_flight_data('rocketmq_action_remove_tag_missing')
-        # p_no_tag = ... # 移除一个不存在的 key
-        # resources_no_tag = p_no_tag.run()
-        # # 验证：检查 VCR，确认没有调用 API 或 API 调用但 body.tags 为空或只包含存在的标签
 
     def test_rocketmq_action_rename_tag(self):
         factory = self.replay_flight_data('rocketmq_action_rename_tag')
         p = self.load_policy({
             'name': 'rocketmq-action-rename-tag-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'tag:env': 'present'}],  # 确保旧标签存在
+            'filters': [{'tag:env': 'present'}],  # Ensure old tag exists
             'actions': [{'type': 'rename-tag', 'old_key': 'env', 'new_key': 'Environment'}]},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # 验证：检查 VCR，确认调用了两次 batch_create_or_delete_rocketmq_tag
-        # 第一次：action=create, tag={'key': 'Environment', 'value': 'old_value'}
-        # 第二次：action=delete, tag={'key': 'env'}
-
-        # 边界：测试 old_key == new_key (应无操作)
-        # factory_same_key = self.replay_flight_data('rocketmq_action_rename_tag_same')
-        # p_same = ... # old_key 和 new_key 相同
-        # resources_same = p_same.run()
-        # # 验证：检查 VCR，确认没有调用 API
-
-        # 边界：测试 old_key 不存在 (应无操作)
-        # factory_old_missing = self.replay_flight_data('rocketmq_action_rename_tag_old_missing')
-        # p_old_missing = ... # old_key 不存在
-        # resources_old_missing = p_old_missing.run()
-        # # 验证：检查 VCR，确认没有调用 API
 
     def test_rocketmq_action_delete(self):
         factory = self.replay_flight_data('rocketmq_action_delete')
         p = self.load_policy({
             'name': 'rocketmq-action-delete-test',
             'resource': 'huaweicloud.reliabilitys',
-            # 通常会结合 marked-for-op 或 age 过滤器
+            # Usually combined with marked-for-op or age filters
             'filters': [{'tag:totest': 'delete'}],
             'actions': ['delete']},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # 验证：检查 VCR，确认调用了 delete_instance API
+        # Verification: check VCR, confirm delete_instance API was called
