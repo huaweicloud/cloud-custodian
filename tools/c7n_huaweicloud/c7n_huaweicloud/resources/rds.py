@@ -12,7 +12,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkrds.v3 import (
     SetSecurityGroupRequest, SwitchSslRequest,
     UpdatePortRequest, CustomerModifyAutoEnlargePolicyReq, AttachEipRequest,
-    CustomerUpgradeDatabaseVersionReq,
+    CustomerUpgradeDatabaseVersionReq, SslOptionRequest,
     SetAuditlogPolicyRequest, ShowAuditlogPolicyRequest, ListDatastoresRequest,
     ShowAutoEnlargePolicyRequest, ShowBackupPolicyRequest, SetBackupPolicyRequest,
     SetBackupPolicyRequestBody, ShowInstanceConfigurationRequest,
@@ -136,14 +136,13 @@ class DiskAutoExpansionFilter(Filter):
                 if auto_expansion_enabled == enabled:
                     matched_resources.append(resource)
             except Exception as e:
-                print(e)
                 self.log.error(
                     f"获取RDS实例 {resource['name']} (ID: {instance_id}) 的自动扩容策略失败: {e}")
                 # 如果无法获取自动扩容策略，假设其未开启
                 if not enabled:
                     matched_resources.append(resource)
         return matched_resources
-
+    
 
 @RDS.filter_registry.register('database-version')
 class DatabaseVersionFilter(Filter):
@@ -359,9 +358,8 @@ class BackupPolicyDisabledFilter(Filter):
                 # 检查是否启用了自动备份
                 # 如果keep_days为0或者backup_type为空，则认为未开启自动备份
                 keep_days = response.backup_policy.keep_days
-                backup_type = getattr(response.backup_policy, 'backup_type', '')
 
-                if keep_days == 0 or not backup_type:
+                if keep_days == 0:
                     matched_resources.append(resource)
             except Exception as e:
                 self.log.error(
@@ -480,7 +478,10 @@ class SetSecurityGroupAction(HuaweiCloudBaseAction):
         try:
             request = SetSecurityGroupRequest()
             request.instance_id = instance_id
-            request.security_group_id = security_group_id
+            request_body = {
+                'security_group_id': security_group_id
+            }
+            request.body = request_body
             response = client.set_security_group(request)
             self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) 设置安全组")
             return response
@@ -491,7 +492,7 @@ class SetSecurityGroupAction(HuaweiCloudBaseAction):
 
 @RDS.action_registry.register('switch-ssl')
 class SwitchSSLAction(HuaweiCloudBaseAction):
-    """开启或关闭RDS实例的SSL加密
+    """开启或关闭RDS实例的SSL加密,只支持MySQL,pg通过修改参数控制
 
     :example:
 
@@ -501,36 +502,42 @@ class SwitchSSLAction(HuaweiCloudBaseAction):
           - name: rds-enable-ssl
             resource: huaweicloud.rds
             filters:
-              - type: ssl-instance
-                enabled: false
+            - type: value
+                key: enable_ssl
+                value: true
             actions:
               - type: switch-ssl
-                ssl_enable: true
+                ssl_option: false 
+                
     """
     schema = type_schema(
         'switch-ssl',
-        required=['ssl_enable'],
-        ssl_enable={'type': 'boolean'}
+        required=['ssl_option'],
+        ssl_option={'type': 'boolean'}
     )
 
     def perform_action(self, resource):
         client = self.manager.get_client()
         instance_id = resource['id']
-        ssl_enable = self.data['ssl_enable']
+        ssl_option = self.data['ssl_option']
 
         try:
             request = SwitchSslRequest()
             request.instance_id = instance_id
-            request.ssl_option = "on" if ssl_enable else "off"
+            ssl_option = "true" if ssl_option else "false"
+            request_body = {
+                'ssl_option':ssl_option
+            }
+            request.body = request_body
             response = client.switch_ssl(request)
             self.log.info(
                 f"成功为RDS实例 {resource['name']} (ID: {instance_id}) "
-                f"{'启用' if ssl_enable else '禁用'}SSL加密")
+                f"{'启用' if ssl_option else '禁用'}SSL加密")
             return response
         except exceptions.ClientRequestException as e:
             self.log.error(
                 f"无法为RDS实例 {resource['name']} (ID: {instance_id}) "
-                f"{'启用' if ssl_enable else '禁用'}SSL加密: {e}")
+                f"{'启用' if ssl_option else '禁用'}SSL加密: {e}")
             raise
 
 
@@ -546,7 +553,8 @@ class UpdatePortAction(HuaweiCloudBaseAction):
           - name: rds-update-port
             resource: huaweicloud.rds
             filters:
-              - type: database-port
+              - type: value
+                key: name
                 value: 3306
             actions:
               - type: update-port
@@ -562,11 +570,17 @@ class UpdatePortAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         instance_id = resource['id']
         port = self.data['port']
-
+        # if not port:
+        #     self.log.error("修改RDS实例的数据库端口时必须提供port参数")
+        #     return
         try:
             request = UpdatePortRequest()
+            # 构建请求体
+            request_body = {
+                'port': port
+            }
             request.instance_id = instance_id
-            request.port = port
+            request.body = request_body
             response = client.update_port(request)
             self.log.info(f"成功为RDS实例 {resource['name']} (ID: {instance_id}) 修改端口为 {port}")
             return response
@@ -648,46 +662,53 @@ class AttachEIPAction(HuaweiCloudBaseAction):
           - name: rds-bind-eip
             resource: huaweicloud.rds
             filters:
-              - type: eip
-                exists: false
+              - type: rds-list
+                ids:
+                  - 926dfdb3ff654c6e9506ca91e0b403b3in03
             actions:
               - type: attach-eip
-                public_ip: 122.112.244.240
-                bind_type: bind
+                is_bind: true
+                public_ip: 1.178.45.199
+                public_ip_id: 1bf25cb6-13ef-4a71-a85f-e4da190c016d
     """
     schema = type_schema(
         'attach-eip',
-        required=['bind_type'],
-        bind_type={'enum': ['bind', 'unbind']},
-        public_ip={'type': 'string'}
+        required=['is_bind'],
+        is_bind={'type': 'boolean'},
+        public_ip={'type': 'string'},
+        public_ip_id={'type': 'string'}
     )
 
     def perform_action(self, resource):
         client = self.manager.get_client()
         instance_id = resource['id']
-        bind_type = self.data['bind_type']
+        is_bind = self.data['is_bind']
         public_ip = self.data.get('public_ip')
+        public_ip_id = self.data.get('public_ip_id')
 
-        if bind_type == 'bind' and not public_ip:
-            self.log.error("绑定弹性公网IP时必须提供public_ip参数")
+        if is_bind == 'bind' and (not public_ip or not public_ip_id):
+            self.log.error("绑定弹性公网IP时必须提供public_ip和public_ip_id参数")
             return
 
         try:
             request = AttachEipRequest()
             request.instance_id = instance_id
-            request.bind_type = bind_type
-            if bind_type == 'bind':
-                request.public_ip = public_ip
-
+            request_body = {
+                'is_bind': is_bind
+            }
+            if is_bind:
+                request_body['public_ip'] = public_ip
+                request_body['public_ip_id'] = public_ip_id
+            request.body = request_body
             response = client.attach_eip(request)
             self.log.info(
                 f"成功为RDS实例 {resource['name']} (ID: {instance_id}) "
-                f"{'绑定' if bind_type == 'bind' else '解绑'}弹性公网IP")
+                f"{'绑定' if is_bind else '解绑'}弹性公网IP")
             return response
         except exceptions.ClientRequestException as e:
             self.log.error(
                 f"无法为RDS实例 {resource['name']} (ID: {instance_id}) "
-                f"{'绑定' if bind_type == 'bind' else '解绑'}弹性公网IP: {e}")
+                f"{'绑定' if is_bind else '解绑'}弹性公网IP: {e}")
             raise
 
 
@@ -714,7 +735,7 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
     """
     schema = type_schema(
         'upgrade-db-version',
-        is_immediately={'type': 'boolean'},
+        is_delayed={'type': 'boolean'},
         target_version={'type': 'string'},
         set_backup={'type': 'boolean'}
     )
@@ -822,14 +843,15 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
 
         try:
             request = SetAuditlogPolicyRequest()
+            request.body = {}
             request.instance_id = instance_id
-            request.keep_days = keep_days
+            request.body['keep_days'] = keep_days
 
             if keep_days == 0:
-                request.reserve_auditlogs = reserve_auditlogs
+                request.body['reserve_auditlogs'] = reserve_auditlogs
 
             if audit_types and keep_days > 0:
-                request.audit_types = audit_types
+                request.body['audit_types'] = audit_types
 
             response = client.set_auditlog_policy(request)
             self.log.info(
@@ -857,9 +879,9 @@ class SetBackupPolicyAction(HuaweiCloudBaseAction):
               - type: backup-policy-disabled
             actions:
               - type: set-backup-policy
-                keep_days: 7
+                keep_days: 3
                 start_time: "01:00-02:00"
-                period: "1,2,3,4,5,6,7"
+                period: "1,2,3,4"
                 reserve_backups: "true"
     """
     schema = type_schema(
