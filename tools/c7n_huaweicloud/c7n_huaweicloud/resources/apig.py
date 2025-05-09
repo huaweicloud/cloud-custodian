@@ -5,23 +5,23 @@ import logging
 from datetime import datetime
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkapig.v2 import (
-    # API接口相关
+    # API interface related
     ListApisV2Request,
     DeleteApiV2Request,
     UpdateApiV2Request,
 
-    # 环境相关
+    # Environment related
     ListEnvironmentsV2Request,
     UpdateEnvironmentV2Request,
     DeleteEnvironmentV2Request,
 
-    # 域名相关
+    # Domain related
     UpdateDomainV2Request,
 
-    # 分组相关
+    # Group related
     ListApiGroupsV2Request,
 
-    # 标签相关
+    # Tag related
     ListProjectInstanceTagsRequest,
     BatchCreateOrDeleteInstanceTagsRequest,
 )
@@ -36,12 +36,12 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 log = logging.getLogger('custodian.huaweicloud.apig')
 
 
-# API资源管理
+# API Resource Management
 @resources.register('rest-api')
 class ApiResource(QueryResourceManager):
-    """华为云API网关API资源管理
+    """Huawei Cloud API Gateway API Resource Management
 
-    :示例:
+    :example:
 
     .. code-block:: yaml
 
@@ -65,17 +65,17 @@ class ApiResource(QueryResourceManager):
         tag_resource_type = 'apig'
 
     def _get_instance_id(self):
-        """获取APIG实例ID"""
+        """Get APIG instance ID"""
         session = local_session(self.session_factory)
         return session.get_apig_instance_id()
 
 
-# API资源过滤器
+# API Resource Filters
 @ApiResource.filter_registry.register('age')
 class ApiAgeFilter(AgeFilter):
-    """API创建时间过滤器
+    """API creation time filter
 
-    :示例:
+    :example:
 
     .. code-block:: yaml
 
@@ -100,12 +100,12 @@ class ApiAgeFilter(AgeFilter):
     date_attribute = "register_time"
 
 
-# API资源操作
+# API Resource Actions
 @ApiResource.action_registry.register('delete')
 class DeleteApiAction(HuaweiCloudBaseAction):
-    """删除API操作
+    """Delete API action
 
-    :示例:
+    :example:
 
     .. code-block:: yaml
 
@@ -128,9 +128,9 @@ class DeleteApiAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            # 当资源中没有实例ID时，使用默认实例ID
+            # When resource doesn't have instance ID, use default instance ID
             instance_id = 'cc371c55cc9141558ccd76b86903e78b'
-            log.info(f"API {api_id} 未找到实例ID，使用默认实例ID: {instance_id}")
+            log.info(f"API {api_id} instance ID not found, using default instance ID: {instance_id}")
 
         try:
             request = DeleteApiV2Request(
@@ -138,17 +138,17 @@ class DeleteApiAction(HuaweiCloudBaseAction):
                 api_id=api_id
             )
             client.delete_api_v2(request)
-            self.log.info(f"成功删除API: {resource.get('name')} (ID: {api_id})")
+            self.log.info(f"Successfully deleted API: {resource.get('name')} (ID: {api_id})")
         except exceptions.ClientRequestException as e:
-            self.log.error(f"删除API失败 {resource.get('name')} (ID: {api_id}): {e}")
+            self.log.error(f"Failed to delete API {resource.get('name')} (ID: {api_id}): {e}")
             raise
 
-# 环境资源管理
+# Environment Resource Management
 @resources.register('rest-stage')
 class StageResource(QueryResourceManager):
-    """华为云API网关环境资源管理
+    """Huawei Cloud API Gateway Environment Resource Management
 
-    :示例:
+    :example:
 
     .. code-block:: yaml
 
@@ -172,16 +172,16 @@ class StageResource(QueryResourceManager):
         tag_resource_type = 'apig'
 
     def _get_instance_id(self):
-        """获取APIG实例ID"""
+        """Get APIG instance ID"""
         session = local_session(self.session_factory)
         return session.get_apig_instance_id()
 
-# 更新环境资源
+# Update Environment Resource
 @StageResource.action_registry.register('update')
 class UpdateStageAction(HuaweiCloudBaseAction):
-    """更新环境操作
+    """Update environment action
 
-    :示例:
+    :example:
 
     .. code-block:: yaml
 
@@ -212,12 +212,12 @@ class UpdateStageAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
         
         if not instance_id:
-            # 当资源中没有实例ID时，使用默认实例ID
+            # When resource doesn't have instance ID, use default instance ID
             instance_id = 'cc371c55cc9141558ccd76b86903e78b'
-            log.info(f"API {env_id} 未找到实例ID，使用默认实例ID: {instance_id}")
+            log.info(f"API {env_id} instance ID not found, using default instance ID: {instance_id}")
 
         try:
-            # 准备更新参数
+            # Prepare update parameters
             update_info = {}
             
             if 'name' in self.data:
@@ -231,17 +231,17 @@ class UpdateStageAction(HuaweiCloudBaseAction):
                 body=update_info
             )
             client.update_environment_v2(request)
-            self.log.info(f"成功更新环境: {resource.get('name')} (ID: {env_id})")
+            self.log.info(f"Successfully updated environment: {resource.get('name')} (ID: {env_id})")
         except exceptions.ClientRequestException as e:
-            self.log.error(f"更新环境失败 {resource.get('name')} (ID: {env_id}): {e}")
+            self.log.error(f"Failed to update environment {resource.get('name')} (ID: {env_id}): {e}")
             raise
 
-# 删除环境操作
+# Delete Environment Action
 @StageResource.action_registry.register('delete')
 class DeleteStageAction(HuaweiCloudBaseAction):
-    """删除环境操作
+    """Delete environment action
 
-    :示例:
+    :example:
 
     .. code-block:: yaml
 
@@ -264,9 +264,9 @@ class DeleteStageAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
         
         if not instance_id:
-            # 当资源中没有实例ID时，使用默认实例ID
+            # When resource doesn't have instance ID, use default instance ID
             instance_id = 'cc371c55cc9141558ccd76b86903e78b'
-            log.info(f"API {env_id} 未找到实例ID，使用默认实例ID: {instance_id}")
+            log.info(f"API {env_id} instance ID not found, using default instance ID: {instance_id}")
 
         try:
             request = DeleteEnvironmentV2Request(
@@ -274,17 +274,17 @@ class DeleteStageAction(HuaweiCloudBaseAction):
                 env_id=env_id
             )
             client.delete_environment_v2(request)
-            self.log.info(f"成功删除环境: {resource.get('name')} (ID: {env_id})")
+            self.log.info(f"Successfully deleted environment: {resource.get('name')} (ID: {env_id})")
         except exceptions.ClientRequestException as e:
-            self.log.error(f"删除环境失败 {resource.get('name')} (ID: {env_id}): {e}")
+            self.log.error(f"Failed to delete environment {resource.get('name')} (ID: {env_id}): {e}")
             raise
 
-# API分组资源管理
+# API Group Resource Management
 @resources.register('api-groups')
 class ApiGroupResource(QueryResourceManager):
-    """华为云API网关分组资源管理
+    """Huawei Cloud API Gateway Group Resource Management
 
-    :示例:
+    :example:
 
     .. code-block:: yaml
 
@@ -307,12 +307,12 @@ class ApiGroupResource(QueryResourceManager):
         taggable = True
         tag_resource_type = 'apig'
 
-# 更新域名
+# Update Domain
 @ApiGroupResource.action_registry.register('update-security')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
-    """更新域名安全策略操作
+    """Update domain security policy action
 
-    :示例:
+    :example:
 
     .. code-block:: yaml
 
@@ -342,22 +342,22 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
         domain_id = self.data.get('domain_id')
 
         if not domain_id:
-            self.log.error(f"未指定需要更新的域名ID，无法执行操作，分组ID: {group_id}")
+            self.log.error(f"Domain ID not specified, cannot execute operation, group ID: {group_id}")
             return
 
         if not instance_id:
-            # 当资源中没有实例ID时，使用默认实例ID
+            # When resource doesn't have instance ID, use default instance ID
             instance_id = 'cc371c55cc9141558ccd76b86903e78b'
-            log.info(f"分组 {group_id} 未找到实例ID，使用默认实例ID: {instance_id}")
+            log.info(f"Group {group_id} instance ID not found, using default instance ID: {instance_id}")
 
         try:
-            # 准备更新参数
+            # Prepare update parameters
             update_info = {}
             
             if 'min_ssl_version' in self.data:
                 update_info['min_ssl_version'] = self.data['min_ssl_version']
             
-            # 检查URL域名列表，获取域名信息
+            # Check URL domain list, get domain information
             domain_info = None
             if 'url_domains' in resource:
                 for domain in resource['url_domains']:
@@ -372,7 +372,7 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
                 body=update_info
             )
             client.update_domain_v2(request)
-            self.log.info(f"成功更新域名安全策略: 分组 {resource.get('name')} (ID: {group_id})，域名ID: {domain_id}")
+            self.log.info(f"Successfully updated domain security policy: Group {resource.get('name')} (ID: {group_id}), Domain ID: {domain_id}")
         except exceptions.ClientRequestException as e:
-            self.log.error(f"更新域名安全策略失败 分组 {resource.get('name')} (ID: {group_id})，域名ID: {domain_id}: {e}")
+            self.log.error(f"Failed to update domain security policy Group {resource.get('name')} (ID: {group_id}), Domain ID: {domain_id}: {e}")
             raise

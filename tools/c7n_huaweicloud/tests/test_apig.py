@@ -5,10 +5,10 @@ from huaweicloud_common import BaseTest
 
 
 class ApiResourceTest(BaseTest):
-    """测试API网关API资源，过滤器和操作"""
+    """Test API Gateway API resources, filters and actions"""
 
     def test_api_query(self):
-        """测试API资源查询和增强"""
+        """Test API resource query and augmentation"""
         factory = self.replay_flight_data("apig_api_query")
         p = self.load_policy(
             {
@@ -18,23 +18,23 @@ class ApiResourceTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: apig_api_query应包含1个API
+        # Validate VCR: apig_api_query should contain 1 API
         self.assertEqual(len(resources), 1)
-        # 验证VCR: 值应与apig_api_query中的'name'匹配
+        # Validate VCR: value should match 'name' in apig_api_query
         self.assertEqual(resources[0]["name"], "test-api")
-        # 验证VCR: 值应与apig_api_query中的'req_method'匹配
+        # Validate VCR: value should match 'req_method' in apig_api_query
         self.assertEqual(resources[0]["req_method"], "GET")
-        self.assertTrue("backend_type" in resources[0])  # 验证增强添加了信息
+        self.assertTrue("backend_type" in resources[0])  # Verify augmentation added information
 
     def test_api_filter_age_match(self):
-        """测试API年龄过滤器 - 匹配"""
+        """Test API age filter - match"""
         factory = self.replay_flight_data("apig_api_filter_age")
         p = self.load_policy(
             {
                 "name": "apig-api-filter-age-match",
                 "resource": "huaweicloud.rest-api",
-                # 验证VCR: 'test-old-api'的创建时间在apig_api_filter_age中
-                # 应该 >= 90天
+                # Validate VCR: 'test-old-api' creation time in apig_api_filter_age
+                # should be >= 90 days
                 "filters": [{"type": "age", "days": 90, "op": "ge"}],
             },
             session_factory=factory,
@@ -43,14 +43,14 @@ class ApiResourceTest(BaseTest):
         self.assertEqual(len(resources), 1)
 
     def test_api_filter_age_no_match(self):
-        """测试API年龄过滤器 - 不匹配"""
-        factory = self.replay_flight_data("apig_api_filter_age")  # 重用cassette
+        """Test API age filter - no match"""
+        factory = self.replay_flight_data("apig_api_filter_age")  # Reuse cassette
         p = self.load_policy(
             {
                 "name": "apig-api-filter-age-no-match",
                 "resource": "huaweicloud.rest-api",
-                # 验证VCR: 'test-old-api'的创建时间在apig_api_filter_age中
-                # 不应该 < 1天
+                # Validate VCR: 'test-old-api' creation time in apig_api_filter_age
+                # should not be < 1 day
                 "filters": [{"type": "age", "days": 1, "op": "lt"}],
             },
             session_factory=factory,
@@ -59,18 +59,18 @@ class ApiResourceTest(BaseTest):
         self.assertEqual(len(resources), 0)
 
     def test_api_action_delete(self):
-        """测试删除API操作"""
+        """Test delete API action"""
         factory = self.replay_flight_data("apig_api_action_delete")
-        # 从apig_api_action_delete获取要删除的API ID和名称
-        # 验证VCR: 匹配apig_api_action_delete中的'id'
+        # Get API ID and name to delete from apig_api_action_delete
+        # Validate VCR: match 'id' in apig_api_action_delete
         api_id_to_delete = "2c9eb1538a138432018a13uuuuu00001"
-        # 验证VCR: 匹配apig_api_action_delete中的'name'
+        # Validate VCR: match 'name' in apig_api_action_delete
         api_name_to_delete = "api-to-delete"
         p = self.load_policy(
             {
                 "name": "apig-api-action-delete",
                 "resource": "huaweicloud.rest-api",
-                # 使用值过滤器以提高清晰度
+                # Use value filter for clarity
                 "filters": [{"type": "value", "key": "id", "value": api_id_to_delete}],
                 "actions": ["delete"],
             },
@@ -78,19 +78,19 @@ class ApiResourceTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # 断言主要验证策略是否正确过滤目标资源
+        # Assertions mainly verify that the policy correctly filters the target resource
         self.assertEqual(resources[0]['id'], api_id_to_delete)
         self.assertEqual(resources[0]['name'], api_name_to_delete)
-        # 验证操作成功: 手动检查VCR cassette
-        # apig_api_action_delete以确认
-        # DELETE /v2/{project_id}/apigw/instances/{instance_id}/apis/{api_id}被调用
+        # Verify action success: manually check VCR cassette
+        # apig_api_action_delete to confirm that
+        # DELETE /v2/{project_id}/apigw/instances/{instance_id}/apis/{api_id} was called
 
 
 class StageResourceTest(BaseTest):
-    """测试API网关环境资源，过滤器和操作"""
+    """Test API Gateway environment resources, filters and actions"""
 
     def test_stage_query(self):
-        """测试环境资源查询和增强"""
+        """Test environment resource query and augmentation"""
         factory = self.replay_flight_data("apig_stage_query")
         p = self.load_policy(
             {
@@ -100,19 +100,19 @@ class StageResourceTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: apig_stage_query应包含1个环境
+        # Validate VCR: apig_stage_query should contain 1 environment
         self.assertEqual(len(resources), 1)
-        # 验证VCR: 值应与apig_stage_query中的'name'匹配
+        # Validate VCR: value should match 'name' in apig_stage_query
         self.assertEqual(resources[0]["name"], "TEST")
 
     def test_stage_action_update(self):
-        """测试更新环境操作"""
+        """Test update environment action"""
         factory = self.replay_flight_data("apig_stage_action_update")
-        # 从apig_stage_action_update获取要更新的环境ID
-        # 验证VCR: 匹配apig_stage_action_update中的'id'
+        # Get environment ID to update from apig_stage_action_update
+        # Validate VCR: match 'id' in apig_stage_action_update
         stage_id_to_update = "2c9eb1538a138432018a13zzzzz00001"
         new_name = "updated-test-env"
-        new_description = "Updated by Cloud Custodian"  # 更新后的描述
+        new_description = "Updated by Cloud Custodian"  # Updated description
         p = self.load_policy(
             {
                 "name": "apig-stage-action-update",
@@ -128,14 +128,14 @@ class StageResourceTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # 断言主要验证策略是否正确过滤目标资源
+        # Assertions mainly verify that the policy correctly filters the target resource
         self.assertEqual(resources[0]['id'], stage_id_to_update)
 
     def test_stage_action_delete(self):
-        """测试删除环境操作"""
+        """Test delete environment action"""
         factory = self.replay_flight_data("apig_stage_action_delete")
-        # 从apig_stage_action_delete获取要删除的环境ID
-        # 验证VCR: 匹配apig_stage_action_delete中的'id'
+        # Get environment ID to delete from apig_stage_action_delete
+        # Validate VCR: match 'id' in apig_stage_action_delete
         stage_id_to_delete = "2c9eb1538a138432018a13xxxxx00001"
         p = self.load_policy(
             {
@@ -148,18 +148,18 @@ class StageResourceTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # 断言主要验证策略是否正确过滤目标资源
+        # Assertions mainly verify that the policy correctly filters the target resource
         self.assertEqual(resources[0]['id'], stage_id_to_delete)
-        # 验证操作成功: 手动检查VCR cassette
-        # apig_stage_action_delete以确认
-        # DELETE /v2/{project_id}/apigw/instances/{instance_id}/envs/{env_id}被调用
+        # Verify action success: manually check VCR cassette
+        # apig_stage_action_delete to confirm that
+        # DELETE /v2/{project_id}/apigw/instances/{instance_id}/envs/{env_id} was called
 
 
 class ApiGroupResourceTest(BaseTest):
-    """测试API网关分组资源，过滤器和操作"""
+    """Test API Gateway group resources, filters and actions"""
 
     def test_api_group_query(self):
-        """测试API分组资源查询和增强"""
+        """Test API group resource query and augmentation"""
         factory = self.replay_flight_data("apig_group_query")
         p = self.load_policy(
             {
@@ -169,23 +169,23 @@ class ApiGroupResourceTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: apig_group_query应包含API分组
+        # Validate VCR: apig_group_query should contain API groups
         self.assertEqual(len(resources), 1)
-        # 验证VCR: 值应与apig_group_query中的'name'匹配
+        # Validate VCR: value should match 'name' in apig_group_query
         self.assertEqual(resources[0]["name"], "api_group_001")
-        self.assertTrue("status" in resources[0])  # 验证增强添加了信息
+        self.assertTrue("status" in resources[0])  # Verify augmentation added information
 
     def test_api_group_action_update_security(self):
-        """测试更新域名安全策略操作"""
+        """Test update domain security policy action"""
         factory = self.replay_flight_data("apig_group_action_update_security")
-        # 从apig_group_action_update_security获取分组ID和域名ID
-        # 验证VCR: 匹配apig_group_action_update_security中的分组'id'
+        # Get group ID and domain ID from apig_group_action_update_security
+        # Validate VCR: match group 'id' in apig_group_action_update_security
         group_id_to_update = "c77f5e81d9cb4424bf704ef2b0ac7600"
-        # 验证VCR: 匹配apig_group_action_update_security中的域名'id'
+        # Validate VCR: match domain 'id' in apig_group_action_update_security
         domain_id_to_update = "2c9eb1538a138432018a13ccccc00001"
-        # 验证VCR: 匹配apig_group_action_update_security中的初始'min_ssl_version'
+        # Validate VCR: match initial 'min_ssl_version' in apig_group_action_update_security
         original_min_ssl_version = "TLSv1.1"
-        new_min_ssl_version = "TLSv1.2"  # 更新后的TLS版本
+        new_min_ssl_version = "TLSv1.2"  # Updated TLS version
         p = self.load_policy(
             {
                 "name": "apig-group-action-update-security",
@@ -201,9 +201,9 @@ class ApiGroupResourceTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # 断言主要验证策略是否正确过滤目标资源
+        # Assertions mainly verify that the policy correctly filters the target resource
         self.assertEqual(resources[0]['id'], group_id_to_update)
-        # 验证域名数据是否正确
+        # Verify domain data is correct
         url_domains = resources[0].get('url_domains', [])
         self.assertTrue(len(url_domains) > 0)
         domain_found = False
@@ -212,26 +212,26 @@ class ApiGroupResourceTest(BaseTest):
                 domain_found = True
                 self.assertEqual(domain['min_ssl_version'], original_min_ssl_version)
                 break
-        self.assertTrue(domain_found, "未在分组中找到指定域名")
-        # 验证操作成功: 手动检查VCR cassette
-        # apig_group_action_update_security以确认
-        # PUT /v2/{project_id}/apigw/instances/{instance_id}/api-groups/{group_id}/domains/{domain_id}被调用，
-        # 并包含正确的body(min_ssl_version)
+        self.assertTrue(domain_found, "Domain not found in group")
+        # Verify action success: manually check VCR cassette
+        # apig_group_action_update_security to confirm that
+        # PUT /v2/{project_id}/apigw/instances/{instance_id}/api-groups/{group_id}/domains/{domain_id} was called,
+        # with correct body(min_ssl_version)
 
 
 
 # =========================
-# 可复用功能测试（使用API资源作为示例）
+# Reusable Features Tests (Using API resource as example)
 # =========================
 
 class ReusableFeaturesTest(BaseTest):
-    """测试在API网关资源上可复用的过滤器和操作"""
+    """Test reusable filters and actions on API Gateway resources"""
 
     def test_filter_value_match(self):
-        """测试值过滤器 - 匹配"""
+        """Test value filter - match"""
         factory = self.replay_flight_data("apig_api_filter_value_method")
-        # 从apig_api_filter_value_method获取方法值
-        # 验证VCR: 匹配'method-get.example.com'的方法在apig_api_filter_value_method中
+        # Get method value from apig_api_filter_value_method
+        # Validate VCR: method for 'method-get.example.com' in apig_api_filter_value_method
         target_method = "GET"
         p = self.load_policy(
             {
@@ -242,13 +242,13 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: 只有一个API在apig_api_filter_value_method匹配此方法
+        # Validate VCR: only one API in apig_api_filter_value_method matches this method
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['req_method'], target_method)
 
     def test_filter_value_no_match(self):
-        """测试值过滤器 - 不匹配"""
-        factory = self.replay_flight_data("apig_api_filter_value_method")  # 重用
+        """Test value filter - no match"""
+        factory = self.replay_flight_data("apig_api_filter_value_method")  # Reuse
         wrong_method = "DELETE"
         p = self.load_policy(
             {
@@ -259,15 +259,15 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: 没有API在apig_api_filter_value_method匹配此方法
+        # Validate VCR: no API in apig_api_filter_value_method matches this method
         self.assertEqual(len(resources), 0)
 
     def test_filter_list_item_match(self):
-        """测试列表项过滤器 - 匹配（标签列表）"""
-        # 由于标签格式问题，我们使用名称过滤器来模拟列表项过滤器
-        # 我们会测试名称中包含"tagged"的资源
+        """Test list item filter - match (tag list)"""
+        # Due to tag format issues, we use a name filter to simulate list item filter
+        # We'll test for resources with "tagged" in their name
         factory = self.replay_flight_data("apig_api_filter_list_item_tag")
-        # 验证VCR: 匹配api-tagged.example.com的API ID
+        # Validate VCR: match API ID for api-tagged.example.com
         target_api_id = "5f918d104dc84480a75166ba99efff24"
         p = self.load_policy(
             {
@@ -278,17 +278,17 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: 在apig_api_filter_list_item_tag中只有一个API匹配此名称
+        # Validate VCR: only one API in apig_api_filter_list_item_tag matches this name
         self.assertEqual(len(resources), 1)
-        # 验证匹配的API是具有该名称的API
+        # Verify the matching API is the one with that name
         self.assertEqual(resources[0]['id'], target_api_id)
 
     def test_filter_marked_for_op_match(self):
-        """测试标记操作过滤器 - 匹配"""
-        # 由于标签格式问题，我们使用名称过滤器来模拟标记操作过滤器
-        # 我们会测试名称中包含"marked"的资源
+        """Test marked for operation filter - match"""
+        # Due to tag format issues, we use a name filter to simulate marked for op filter
+        # We'll test for resources with "marked" in their name
         factory = self.replay_flight_data("apig_api_filter_marked_for_op")
-        # 验证VCR: 匹配api-marked.example.com的API ID
+        # Validate VCR: match API ID for api-marked.example.com
         target_api_id = "5f918d104dc84480a75166ba99efff26"
         p = self.load_policy(
             {
@@ -299,17 +299,17 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: 在apig_api_filter_marked_for_op中只有一个API匹配此名称
+        # Validate VCR: only one API in apig_api_filter_marked_for_op matches this name
         self.assertEqual(len(resources), 1)
-        # 验证匹配的API是具有该名称的API
+        # Verify the matching API is the one with that name
         self.assertEqual(resources[0]['id'], target_api_id)
 
     def test_filter_tag_count_match(self):
-        """测试标签计数过滤器 - 匹配"""
-        # 由于标签格式问题，我们使用名称过滤来模拟标签数量过滤
-        # 我们会测试名称中包含"two-tags"的资源
+        """Test tag count filter - match"""
+        # Due to tag format issues, we use name filtering to simulate tag count filtering
+        # We'll test for resources with "two-tags" in their name
         factory = self.replay_flight_data("apig_api_filter_tag_count")
-        # 验证VCR: 匹配'api-two-tags.example.com'的标签计数在apig_api_filter_tag_count中
+        # Validate VCR: tag count for 'api-two-tags.example.com' in apig_api_filter_tag_count
         p = self.load_policy(
             {
                 "name": "apig-filter-name-match",
@@ -319,7 +319,7 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: 只有一个API在apig_api_filter_tag_count具有恰好2个标签
+        # Validate VCR: only one API in apig_api_filter_tag_count has exactly 2 tags
         self.assertEqual(len(resources), 1)
         self.assertIn("two-tags", resources[0]["name"])
 
