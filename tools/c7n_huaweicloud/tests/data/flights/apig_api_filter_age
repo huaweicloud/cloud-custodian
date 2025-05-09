@@ -1,0 +1,72 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - apig.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250509T031323Z
+    method: GET
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/%7Binstance_id%7D/apis?limit=100&offset=0
+  response:
+    body:
+      string: '{"total": 2, "size": 2, "apis": [{"id": "5f918d104dc84480a75166ba99efff22",
+        "name": "test-old-api", "group_id": "c77f5e81d9cb4424bf704ef2b0ac7600", "group_name":
+        "api_group_001", "group_version": "V1", "match_mode": "NORMAL", "auth_type":
+        "AUTHORIZER", "auth_opt": {"app_code_auth_type": "DISABLE"}, "authorizer_id":
+        "8d0443832a194eaa84244e0c1c1912ac", "backend_type": "HTTP", "cors": false,
+        "status": 1, "req_protocol": "HTTPS", "req_method": "GET", "req_uri": "/test/old",
+        "type": 1, "version": "V0.0.1", "register_time": "2020-01-31T12:42:51Z", "update_time":
+        "2020-02-02T16:32:47.046289Z", "remark": "Old API for testing", "tags": [{"key":
+        "Environment", "value": "Test"}, {"key": "Age", "value": "Old"}]},
+        {"id": "5f918d104dc84480a75166ba99efff23",
+        "name": "test-new-api", "group_id": "c77f5e81d9cb4424bf704ef2b0ac7600", "group_name":
+        "api_group_001", "group_version": "V1", "match_mode": "NORMAL", "auth_type":
+        "AUTHORIZER", "auth_opt": {"app_code_auth_type": "DISABLE"}, "authorizer_id":
+        "8d0443832a194eaa84244e0c1c1912ac", "backend_type": "HTTP", "cors": false,
+        "status": 1, "req_protocol": "HTTPS", "req_method": "POST", "req_uri": "/test/new",
+        "type": 1, "version": "V0.0.1", "register_time": "2025-05-06T12:42:51Z", "update_time":
+        "2025-05-06T16:32:47.046289Z", "remark": "New API for testing", "tags": [{"key":
+        "Environment", "value": "Test"}, {"key": "Age", "value": "New"}]}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 09 May 2025 03:13:23 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=424a973cb57ce5dbea; path=/
+      - HWWAFSESTIME=1746760403965; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a50e82401783a3b5d77286f7016d6cfd
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

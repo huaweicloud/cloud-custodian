@@ -143,7 +143,6 @@ class DeleteApiAction(HuaweiCloudBaseAction):
             self.log.error(f"删除API失败 {resource.get('name')} (ID: {api_id}): {e}")
             raise
 
-
 # 环境资源管理
 @resources.register('rest-stage')
 class StageResource(QueryResourceManager):
@@ -177,7 +176,7 @@ class StageResource(QueryResourceManager):
         session = local_session(self.session_factory)
         return session.get_apig_instance_id()
 
-# 环境资源操作
+# 更新环境资源
 @StageResource.action_registry.register('update')
 class UpdateStageAction(HuaweiCloudBaseAction):
     """更新环境操作
@@ -237,7 +236,7 @@ class UpdateStageAction(HuaweiCloudBaseAction):
             self.log.error(f"更新环境失败 {resource.get('name')} (ID: {env_id}): {e}")
             raise
 
-
+# 删除环境操作
 @StageResource.action_registry.register('delete')
 class DeleteStageAction(HuaweiCloudBaseAction):
     """删除环境操作
@@ -279,41 +278,6 @@ class DeleteStageAction(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
             self.log.error(f"删除环境失败 {resource.get('name')} (ID: {env_id}): {e}")
             raise
-
-
-# 域名资源管理
-@resources.register('apigw-domain-name')
-class DomainNameResource(QueryResourceManager):
-    """华为云API网关域名资源管理
-
-    :示例:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-domain-list
-            resource: huaweicloud.apigw-domain-name
-            filters:
-              - type: value
-                key: status
-                value: 1
-    """
-
-    class resource_type(TypeInfo):
-        service = 'apigw-domain-name'
-        enum_spec = ('list_domain_v2', 'domains', 'offset')
-        id = 'id'
-        name = 'name'
-        filter_name = 'name'
-        filter_type = 'scalar'
-        taggable = True
-        tag_resource_type = 'apig'
-
-    def _get_instance_id(self):
-        """获取APIG实例ID"""
-        session = local_session(self.session_factory)
-        return session.get_apig_instance_id()
-
 
 # API分组资源管理
 @resources.register('api-groups')
