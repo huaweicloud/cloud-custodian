@@ -110,6 +110,7 @@ from huaweicloudsdkapig.v2 import (
     ApigClient, 
     ListApisV2Request,
     ListEnvironmentsV2Request,
+    ListApiGroupsV2Request,
 )
 from huaweicloudsdkapig.v2.region.apig_region import ApigRegion
 
@@ -136,6 +137,21 @@ class Session:
 
         self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
         self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
+
+    def get_apig_instance_id(self):
+        """获取APIG实例ID，如果未配置则返回默认值
+        
+        默认值是为了测试目的，实际使用时应该从环境变量或配置中获取
+        """
+        # 从环境变量或配置中获取实例ID
+        instance_id = os.getenv("HUAWEI_APIG_INSTANCE_ID")
+        
+        # 如果未配置，返回默认值
+        if not instance_id:
+            instance_id = 'cc371c55cc9141558ccd76b86903e78b'
+            log.info(f"未找到APIG实例ID配置，使用默认实例ID: {instance_id}")
+            
+        return instance_id
 
     def client(self, service):
         if self.ak is None or self.sk is None:
@@ -414,7 +430,7 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'apig' or service in ['rest-api', 'rest-stage', 'apigw-domain-name']:
+        elif service == 'apig' or service in ['rest-api', 'rest-stage', 'apigw-domain-name', 'api-groups']:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)
@@ -534,10 +550,13 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
-        elif service in ['rest-api', 'apigw-domain-name']:
+        elif service == 'rest-api':
             request = ListApisV2Request()
         elif service == 'rest-stage':
             request = ListEnvironmentsV2Request()
+        elif service == 'api-groups':
+            request = ListApiGroupsV2Request()
         # elif service == 'apigw-domain-name':
         #     request = ListDomainV2Request()
+        #     request.instance_id = self.get_apig_instance_id()
         return request

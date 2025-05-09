@@ -175,22 +175,49 @@ class DomainNameResourceTest(BaseTest):
         self.assertEqual(resources[0]["name"], "example.com")
         self.assertTrue("url_domain" in resources[0])  # 验证增强添加了信息
 
-    def test_domain_name_action_update_security(self):
+   
+
+
+class ApiGroupResourceTest(BaseTest):
+    """测试API网关分组资源，过滤器和操作"""
+
+    def test_api_group_query(self):
+        """测试API分组资源查询和增强"""
+        factory = self.replay_flight_data("apig_group_query")
+        p = self.load_policy(
+            {
+                "name": "apig-group-query",
+                "resource": "huaweicloud.api-groups",
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # 验证VCR: apig_group_query应包含API分组
+        self.assertEqual(len(resources), 1)
+        # 验证VCR: 值应与apig_group_query中的'name'匹配
+        self.assertEqual(resources[0]["name"], "api_group_001")
+        self.assertTrue("status" in resources[0])  # 验证增强添加了信息
+
+    def test_api_group_action_update_security(self):
         """测试更新域名安全策略操作"""
-        factory = self.replay_flight_data("apig_domain_name_action_update_security")
-        # 从apig_domain_name_action_update_security获取要更新的域名ID
-        # 验证VCR: 匹配apig_domain_name_action_update_security中的'id'
+        factory = self.replay_flight_data("apig_group_action_update_security")
+        # 从apig_group_action_update_security获取分组ID和域名ID
+        # 验证VCR: 匹配apig_group_action_update_security中的分组'id'
+        group_id_to_update = "c77f5e81d9cb4424bf704ef2b0ac7600"
+        # 验证VCR: 匹配apig_group_action_update_security中的域名'id'
         domain_id_to_update = "2c9eb1538a138432018a13ccccc00001"
-        # 验证VCR: 匹配apig_domain_name_action_update_security中的初始'min_ssl_version'
+        # 验证VCR: 匹配apig_group_action_update_security中的初始'min_ssl_version'
         original_min_ssl_version = "TLSv1.1"
         new_min_ssl_version = "TLSv1.2"  # 更新后的TLS版本
         p = self.load_policy(
             {
-                "name": "apig-domain-name-action-update-security",
-                "resource": "huaweicloud.apigw-domain-name",
+                "name": "apig-group-action-update-security",
+                "resource": "huaweicloud.api-groups",
+                "filters": [{"type": "value", "key": "id", "value": group_id_to_update}],
                 "actions": [{
                     "type": "update-security",
                     "min_ssl_version": new_min_ssl_version,
+                    "domain_id": domain_id_to_update
                 }],
             },
             session_factory=factory,
@@ -198,12 +225,22 @@ class DomainNameResourceTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         # 断言主要验证策略是否正确过滤目标资源
-        self.assertEqual(resources[0]['id'], domain_id_to_update)
-        self.assertEqual(resources[0]['min_ssl_version'], original_min_ssl_version)  # 验证更新前的TLS版本
+        self.assertEqual(resources[0]['id'], group_id_to_update)
+        # 验证域名数据是否正确
+        url_domains = resources[0].get('url_domains', [])
+        self.assertTrue(len(url_domains) > 0)
+        domain_found = False
+        for domain in url_domains:
+            if domain['id'] == domain_id_to_update:
+                domain_found = True
+                self.assertEqual(domain['min_ssl_version'], original_min_ssl_version)
+                break
+        self.assertTrue(domain_found, "未在分组中找到指定域名")
         # 验证操作成功: 手动检查VCR cassette
-        # apig_domain_name_action_update_security以确认
-        # PATCH /v2/{project_id}/apigw/instances/{instance_id}/domains/{domain_id}被调用，
+        # apig_group_action_update_security以确认
+        # PUT /v2/{project_id}/apigw/instances/{instance_id}/api-groups/{group_id}/domains/{domain_id}被调用，
         # 并包含正确的body(min_ssl_version)
+
 
 
 # =========================
@@ -336,3 +373,4 @@ class ReusableFeaturesTest(BaseTest):
         
         # 验证操作成功: 手动检查VCR cassette
         # apig_api_action_mark_for_op以确认标签API调用
+

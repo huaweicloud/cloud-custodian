@@ -18,6 +18,9 @@ from huaweicloudsdkapig.v2 import (
     # 域名相关
     UpdateDomainV2Request,
 
+    # 分组相关
+    ListApiGroupsV2Request,
+
     # 标签相关
     ListProjectInstanceTagsRequest,
     BatchCreateOrDeleteInstanceTagsRequest,
@@ -298,7 +301,7 @@ class DomainNameResource(QueryResourceManager):
 
     class resource_type(TypeInfo):
         service = 'apigw-domain-name'
-        enum_spec = ('list_apis_v2', 'apis', 'offset')
+        enum_spec = ('list_domain_v2', 'domains', 'offset')
         id = 'id'
         name = 'name'
         filter_name = 'name'
@@ -312,8 +315,36 @@ class DomainNameResource(QueryResourceManager):
         return session.get_apig_instance_id()
 
 
-# 域名资源操作
-@DomainNameResource.action_registry.register('update-security')
+# API分组资源管理
+@resources.register('api-groups')
+class ApiGroupResource(QueryResourceManager):
+    """华为云API网关分组资源管理
+
+    :示例:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-group-list
+            resource: huaweicloud.api-groups
+            filters:
+              - type: value
+                key: status
+                value: 1
+    """
+
+    class resource_type(TypeInfo):
+        service = 'api-groups'
+        enum_spec = ('list_api_groups_v2', 'groups', 'offset')
+        id = 'id'
+        name = 'name'
+        filter_name = 'name'
+        filter_type = 'scalar'
+        taggable = True
+        tag_resource_type = 'apig'
+
+# 更新域名
+@ApiGroupResource.action_registry.register('update-security')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
     """更新域名安全策略操作
 
@@ -323,52 +354,61 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
 
         policies:
           - name: apig-domain-update-security
-            resource: huaweicloud.apigw-domain-name
+            resource: huaweicloud.api-groups
             filters:
               - type: value
-                key: name
-                value: example.com
+                key: id
+                value: c77f5e81d9cb4424bf704ef2b0ac7600
             actions:
               - type: update-security
+                domain_id: 2c9eb1538a138432018a13ccccc00001
                 min_ssl_version: TLSv1.2
     """
 
     schema = type_schema(
         'update-security',
+        domain_id={'type': 'string'},
         min_ssl_version={'type': 'string', 'enum': ['TLSv1.1', 'TLSv1.2']}
     )
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        domain_id = resource['id']
+        group_id = resource['id']
         instance_id = resource.get('instance_id')
+        domain_id = self.data.get('domain_id')
+
+        if not domain_id:
+            self.log.error(f"未指定需要更新的域名ID，无法执行操作，分组ID: {group_id}")
+            return
 
         if not instance_id:
             # 当资源中没有实例ID时，使用默认实例ID
             instance_id = 'cc371c55cc9141558ccd76b86903e78b'
-            log.info(f"API {domain_id} 未找到实例ID，使用默认实例ID: {instance_id}")
+            log.info(f"分组 {group_id} 未找到实例ID，使用默认实例ID: {instance_id}")
 
         try:
             # 准备更新参数
             update_info = {}
             
             if 'min_ssl_version' in self.data:
-                update_info.min_ssl_version = self.data['min_ssl_version']
+                update_info['min_ssl_version'] = self.data['min_ssl_version']
             
-            # 保留原有属性
-            if 'name' in resource:
-                update_info.name = resource['name']
-            if 'url_domain' in resource:
-                update_info.url_domain = resource['url_domain']
+            # 检查URL域名列表，获取域名信息
+            domain_info = None
+            if 'url_domains' in resource:
+                for domain in resource['url_domains']:
+                    if domain['id'] == domain_id:
+                        domain_info = domain
+                        break
             
             request = UpdateDomainV2Request(
                 instance_id=instance_id,
+                group_id=group_id,
                 domain_id=domain_id,
                 body=update_info
             )
             client.update_domain_v2(request)
-            self.log.info(f"成功更新域名安全策略: {resource.get('name')} (ID: {domain_id})")
+            self.log.info(f"成功更新域名安全策略: 分组 {resource.get('name')} (ID: {group_id})，域名ID: {domain_id}")
         except exceptions.ClientRequestException as e:
-            self.log.error(f"更新域名安全策略失败 {resource.get('name')} (ID: {domain_id}): {e}")
+            self.log.error(f"更新域名安全策略失败 分组 {resource.get('name')} (ID: {group_id})，域名ID: {domain_id}: {e}")
             raise
-
