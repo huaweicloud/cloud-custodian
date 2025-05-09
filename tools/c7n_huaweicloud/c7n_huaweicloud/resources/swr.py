@@ -43,7 +43,7 @@ class Swr(QueryResourceManager):
 
     class resource_type(TypeInfo):
         service = 'swr'
-        enum_spec = ('list_repos_details', 'body', 'offset')
+        enum_spec = ('list_repos_details', 'body', None)
         id = 'name'
         name = 'name'
         filter_name = 'name'
@@ -610,14 +610,25 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 value: test-repo
             actions:
               - type: set-lifecycle
-                algorithm: or
+                algorithm: or  # Matching policy for recycling rules, fixed as "or"
                 rules:
-                  - template: date_rule
+                  # Date Rule - Keep images from the last 90 days
+                  - template: date_rule  # Recycling type, date_rule indicates aging by date
                     params:
-                      days: 90  # Retain images within 90 days
-                    tag_selectors:
+                      days: 90  # Retain images from the past 90 days, older images will be deleted
+                    tag_selectors:  # Exception images, specified images will not be aged
+                      - kind: label  # label means exact match of image version, regexp means regular match
+                        pattern: v1.0  # Indicates v1.0 version image will not be aged
+                      - kind: regexp  # Use regular expression matching
+                        pattern: ^release-.*$  # Indicates images starting with release- will not be aged
+                  
+                  # Number Rule - Keep the newest 10 images
+                  - template: tag_rule  # Recycling type, tag_rule indicates aging by number
+                    params:
+                      num: 10  # Keep the newest 10 images, excess will be deleted
+                    tag_selectors:  # Exception images, specified images will not be aged
                       - kind: label
-                        pattern: v1  # Match images with tag v1, won't be aged
+                        pattern: latest  # Indicates latest version image will not be aged
     """
 
     schema = type_schema(
