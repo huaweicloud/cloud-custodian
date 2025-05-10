@@ -45,4 +45,5 @@ ResourceMap = {
     "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
     "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
     "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
+    "huaweicloud.bms": "c7n_huaweicloud.resources.bms.Bms",
 }

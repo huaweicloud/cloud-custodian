@@ -51,6 +51,7 @@ huaweicloudsdkram = "^3.1.138"
 huaweicloudsdkantiddos = "^3.1.138"
 huaweicloudsdkcc = "^3.1.138"
 huaweicloudsdkhss = "^3.1.145"
+huaweicloudsdkbms = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"

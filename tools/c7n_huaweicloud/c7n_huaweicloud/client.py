@@ -11,6 +11,8 @@ from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredenti
 from huaweicloudsdkcore.auth.provider import MetadataCredentialProvider
 from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
+from huaweicloudsdkbms.v1 import BmsClient, ListBareMetalServerDetailsRequest
+from huaweicloudsdkbms.v1.region.bms_region import BmsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v5 import (
@@ -417,6 +419,13 @@ class Session:
                 .with_region(CcRegion.CN_NORTH_4)
                 .build()
             )
+        elif service == "bms":
+            client = (
+                BmsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(BmsRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -527,5 +536,7 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == "bms":
+            request = ListBareMetalServerDetailsRequest()
 
         return request
