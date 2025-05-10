@@ -9,10 +9,10 @@ from huaweicloudsdkcore.utils import time_utils
 
 from c7n.registry import PluginRegistry
 from c7n.provider import Provider, clouds
-from .apig_sdk import signer
-from .client import Session
+from c7n_huaweicloud.client import Session
 
-from .resources.resource_map import ResourceMap
+from c7n_huaweicloud.resources.resource_map import ResourceMap
+from c7n_huaweicloud.utils.signer import Signer, HttpRequest
 
 log = logging.getLogger("custodian.huaweicloud.provider")
 
@@ -54,11 +54,11 @@ class HuaweiSessionFactory:
     def _get_assumed_credentials(self):
         try:
             ecs_ak, ecs_sk, ecs_token = get_credentials()
-            sig = signer.Signer()
+            sig = Signer()
             sig.Key = ecs_ak
             sig.Secret = ecs_sk
             url = f"https://sts.{self.options.region}.myhuaweicloud.com/v5/agencies/assume"
-            request = signer.HttpRequest("POST", url)
+            request = HttpRequest("POST", url)
             request.headers = {"Content-Type": "application/json", "X-Security-Token": ecs_token}
             request.body = json.dumps({
                 "duration_seconds": getattr(self.options, 'duration_seconds', 3600),

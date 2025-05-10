@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import click
-import jmespath
 from huaweicloudsdkorganizations.v1 import ListAccountsRequest
 
 from c7n.utils import yaml_dump
@@ -12,10 +11,13 @@ from c7n_huaweicloud.client import Session
 def get_next_page_params(response=None):
     if not response:
         return None
-    page_info = jmespath.search("page_info", response)
+    page_info = response.page_info
     if not page_info:
         return None
-    return page_info.get("next_marker")
+    next_marker = page_info.next_marker
+    if not next_marker:
+        return None
+    return next_marker
 
 
 @click.command()
@@ -24,9 +26,21 @@ def get_next_page_params(response=None):
     type=click.File('w'), default='accounts.yml',
     help="File to store the generated config. default: ./accounts.yml")
 @click.option(
-    '-n', '--agency_name',
+    '-a', '--agency_name',
     type=str, default='custodian_agency',
     help="trust agency name. default:custodian_agency")
+@click.option(
+'-n', '--name',
+    multiple=True, type=str,
+    help="The account name specified for the query")
+@click.option(
+'-o', '--ou_ids',
+    multiple=True, type=str,
+    help="The Organizational Unit id specified for the query")
+@click.option(
+'-s', '--status',
+    multiple=True, type=str,
+    help="The account status specified for the query")
 @click.option(
     '-d', '--duration_seconds',
     default=900, type=int,
@@ -35,23 +49,36 @@ def get_next_page_params(response=None):
 '-r', '--regions',
     multiple=True, type=str, default=('cn-north-4',),
     help="huaweicloud region for executing policy. default:cn-north-4")
-def main(output, agency_name, duration_seconds, regions):
+def main(output, agency_name, name, ou_ids, status, duration_seconds, regions):
     """
     Generate a c7n-org huawei cloud accounts config file
     """
-    options = {"region": 'cn-north-4'}
     accounts = []
     marker = None
+    index = 0
+    ou_id_len = len(ou_ids)
+    options = {"region": 'cn-north-4'}
     session = Session(options)
     client = session.client("org-account")
     while True:
-        request = ListAccountsRequest(limit=1000, marker=marker)
-        response = client.list_accounts(request)
-        marker = get_next_page_params(response)
-        for account in response.accounts:
-            accounts.append(account)
-        if not marker:
+        while True:
+            parent_id = None if ou_id_len == 0 else ou_ids[index]
+            request = ListAccountsRequest(parent_id=parent_id, limit=1000, marker=marker)
+            response = client.list_accounts(request)
+            marker = get_next_page_params(response)
+            for account in response.accounts:
+                if name and account.name not in name:
+                    continue
+                if status and account.status not in status:
+                    continue
+                accounts.append(account)
+
+            if not marker:
+                break
+        index += 1
+        if ou_id_len - index <= 0:
             break
+
     results = []
     for account in accounts:
         acc_info = {
