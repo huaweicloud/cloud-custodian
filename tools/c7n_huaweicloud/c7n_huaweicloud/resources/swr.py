@@ -475,6 +475,8 @@ class SwrImage(QueryResourceManager):
             except Exception as e:
                 self.log.error(f"Failed to query SWR repository list: {e}")
         
+        with self.ctx.tracer.subsegment('filter'):
+            resources = self.filter_resources(resources)
         return self.augment(resources)
     
     def _get_repository_tags(self, client, namespace, repository, additional_params=None):
