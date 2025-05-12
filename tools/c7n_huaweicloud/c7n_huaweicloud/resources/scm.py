@@ -45,6 +45,7 @@ class Certificate(QueryResourceManager):
         # Set tag resource type for TMS operations
         tag_resource_type = 'scm_cert'
 
+
 @Certificate.action_registry.register('delete')
 class DeleteCertificateAction(HuaweiCloudBaseAction):
     """Delete Certificate Action
@@ -69,7 +70,7 @@ class DeleteCertificateAction(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         client = self.manager.get_client()
         certificate_id = resource['id']
-        
+
         try:
             request = DeleteCertificateRequest(certificate_id=certificate_id)
             client.delete_certificate(request)
@@ -81,4 +82,4 @@ class DeleteCertificateAction(HuaweiCloudBaseAction):
                 f"Failed to delete certificate {resource.get('name')} (ID: {certificate_id}): "
                 f"RequestId: {e.request_id}, Error: {e.error_msg}"
             )
-            raise 
+            raise

@@ -414,7 +414,7 @@ class Session:
             client = (
                 ScmClient.new_builder()
                 .with_credentials(GlobalCredentials(
-                    self.ak, 
+                    self.ak,
                     self.sk,
                     domain_id=os.getenv("HUAWEI_DOMAIN_ID"))
                     .with_security_token(self.token))

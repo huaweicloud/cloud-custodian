@@ -9,6 +9,11 @@ from huaweicloud_common import BaseTest
 
 
 class CertificateTest(BaseTest):
+    """Huawei Cloud SSL Certificate Management Service Test Class
+    
+    This test class covers basic functionality tests for the Certificate resource type,
+    including resource queries, filters, and operations.
+    """
 
     def setUp(self):
         """Set up test environment."""
@@ -23,15 +28,9 @@ class CertificateTest(BaseTest):
         os.environ['HUAWEI_PROJECT_ID'] = 'ap-southeat-1'
         os.environ['HUAWEI_DOMAIN_ID'] = 'mock-domain-id'
 
-    """Huawei Cloud SSL Certificate Management Service Test Class
-    
-    This test class covers basic functionality tests for the Certificate resource type,
-    including resource queries, filters, and operations.
-    """
-
     def test_certificate_query(self):
         """Test certificate resource query functionality
-        
+
         Verify that certificate resource query works correctly and returns the expected certificate list.
         """
         factory = self.replay_flight_data('certificate-query')
@@ -45,10 +44,10 @@ class CertificateTest(BaseTest):
         resources = p.run()
         # Verify resource query results
         self.assertEqual(len(resources), 1)
-    
+
     def test_tag_count_filter(self):
         """Test tag count filter
-        
+
         Verify if the tag-count filter can correctly filter certificates with specified tag count.
         """
         factory = self.replay_flight_data('certificate-tag-count')
@@ -74,19 +73,22 @@ class CertificateTest(BaseTest):
 
     def test_marked_for_op_filter(self):
         """Test marked-for-operation filter
-        
+
         Verify if the marked-for-op filter can correctly filter certificates marked for operation.
         """
         factory = self.replay_flight_data('certificate-marked-for-op')
         # Get certificate ID to identify from certificate-marked-for-op mock data
         # Verify VCR: Match certificate ID with mark in certificate-marked-for-op
         cert_id_marked = "scs1554192131150"
-        
+
         # Mock tag parsing to solve tag format mismatch issues
-        with mock.patch('c7n_huaweicloud.filters.tms.TagActionFilter.get_tags_from_resource') as mock_get_tags:
+        with mock.patch(
+            'c7n_huaweicloud.filters.tms.TagActionFilter.get_tags_from_resource'
+        ) as mock_get_tags:
             # Return a dictionary containing correctly formatted tags
-            mock_get_tags.return_value = {'custodian_cleanup': 'delete_2025/04/25'}
-            
+            mock_get_tags.return_value = {
+                'custodian_cleanup': 'delete_2025/04/25'}
+
             p = self.load_policy(
                 {
                     "name": "certificate-marked-for-op-filter",
@@ -109,13 +111,13 @@ class CertificateTest(BaseTest):
             self.assertEqual(resources[0]['id'], cert_id_marked)
             # Verify if the certificate status is expired
             self.assertEqual(resources[0]['status'], 'EXPIRED')
-            
+
             # Verify if the mock method was called
             mock_get_tags.assert_called()
 
     def test_filter_list_item_match(self):
         """Test list-item filter - tag matching
-        
+
         Verify if list-item filter can correctly filter certificates with specific tags.
         """
         # Verify VCR: certificate-filter-list-item-tag with tag
@@ -127,7 +129,7 @@ class CertificateTest(BaseTest):
         target_tag_value = "production"
         # Verify VCR: Match certificate ID with this tag in certificate-filter-list-item-tag
         target_cert_id = "scs1554192131150"
-        
+
         # Fully mock list-item filter behavior
         with mock.patch('c7n.filters.core.ListItemFilter.process') as mock_filter_process:
             # Mock filter processing results - return a resource list containing the target certificate
@@ -138,14 +140,14 @@ class CertificateTest(BaseTest):
                     if r.get('id') == target_cert_id:
                         target_resource = r
                         break
-                
+
                 # If target resource is found, return a list containing only that resource
                 if target_resource:
                     return [target_resource]
                 return []
-                
+
             mock_filter_process.side_effect = side_effect
-            
+
             p = self.load_policy(
                 {
                     "name": "certificate-filter-list-item-match",
@@ -169,13 +171,13 @@ class CertificateTest(BaseTest):
             self.assertEqual(len(resources), 1)
             # Verify if the matching certificate is the expected certificate
             self.assertEqual(resources[0]['id'], target_cert_id)
-            
+
             # Verify if the mock method was called
             mock_filter_process.assert_called()
 
     def test_delete_action(self):
         """Test delete certificate operation
-        
+
         Verify if delete operation can correctly delete the specified certificate.
         """
         factory = self.replay_flight_data('certificate-delete')
@@ -196,5 +198,5 @@ class CertificateTest(BaseTest):
         self.assertEqual(len(resources), 1)
         # Main assertion to verify if policy correctly filtered the target resource
         self.assertEqual(resources[0]['id'], cert_id_to_delete)
-        # Verify operation success: manually check VCR recording file certificate-delete to confirm call to
-        # DELETE /v3/scm/certificates/{cert_id}
+        # Verify operation success: manually check VCR recording file certificate-delete to confirm 
+        # call to DELETE /v3/scm/certificates/{cert_id}
