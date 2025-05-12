@@ -92,7 +92,7 @@ class LifecycleRule(Filter):
     
     Filter repositories with or without specific lifecycle rules based on parameters
     such as days, tag selectors (kind, pattern), etc.
-    
+
     :example:
     
     .. code-block:: yaml
