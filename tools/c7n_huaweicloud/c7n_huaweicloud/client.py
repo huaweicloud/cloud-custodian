@@ -102,6 +102,8 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsRequest,
     SearchResourceShareAssociationsReqBody,
 )
+from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
+from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
@@ -437,6 +439,13 @@ class Session:
                 .with_region(BmsRegion.value_of(self.region))
                 .build()
             )
+        elif service == "rds":
+            client = (
+                RdsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RdsRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -551,4 +560,7 @@ class Session:
             request = ListDirectConnectsRequest()
         elif service == "bms":
             request = ListBareMetalServerDetailsRequest()
+        elif service == 'rds':
+            request = RdsListInstancesRequest()
+
         return request

@@ -1,0 +1,133 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T103923Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "rds-mysql56-id", "name": "rds-mysql56", "status":
+        "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1", "datastore":
+        {"type": "MySQL", "version": "5.6","complete_version":"5.6.0.3"}, "created": "2023-07-15T08:00:00+0000",
+        "updated": "2023-07-16T10:30:00+0000", "private_ips": ["192.168.0.23"], "public_ips":
+        [], "vpc_id": "vpc-version-id", "subnet_id": "subnet-version-id", "security_group_id":
+        "sg-version-id", "volume": {"type": "ULTRAHIGH", "size": 40}}, {"id": "rds-mysql57-id",
+        "name": "rds-mysql57", "status": "ACTIVE", "port": 3306, "type": "Single",
+        "region": "ap-southeast-1", "datastore": {"type": "MySQL", "version": "5.7","complete_version":"5.7.2.4"},
+        "created": "2023-07-15T09:00:00+0000", "updated": "2023-07-16T11:30:00+0000",
+        "private_ips": ["192.168.0.24"], "public_ips": [], "vpc_id": "vpc-version-id",
+        "subnet_id": "subnet-version-id", "security_group_id": "sg-version-id", "volume":
+        {"type": "ULTRAHIGH", "size": 40}}, {"id": "rds-mysql80-id", "name": "rds-mysql80",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7","complete_version":"5.7.3.3"}, "created": "2023-07-15T10:00:00+0000",
+        "updated": "2023-07-16T12:30:00+0000", "private_ips": ["192.168.0.25"], "public_ips":
+        [], "vpc_id": "vpc-version-id", "subnet_id": "subnet-version-id", "security_group_id":
+        "sg-version-id", "volume": {"type": "ULTRAHIGH", "size": 40}}], "total_count":
+        3}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 10:39:23 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=63d3d760c57e6fac46; path=/
+      - HWWAFSESTIME=1745923162736; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 25808c8fdaa750d12473968b77aaa5c0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250506T081255Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/datastores/mysql
+  response:
+    body:
+      string: '{"dataStores": [{
+		"id": "87620726-6802-46c0-9028-a8785e1f1921",
+		"name": "8.0.21"
+	}, {
+		"id": "87620726-6802-46c0-9028-a8785e1f1922",
+		"name": "5.7.33"
+	}, {
+		"id": "e8a8b8cc-63f8-4fb5-8d4a-24c502317a62",
+		"name": "5.6.51"
+	}]}
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 06 May 2025 08:12:56 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=f0c3a7353d3f5ac270; path=/
+      - HWWAFSESTIME=1746519175997; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 79d847fa6185eb268bf0e5f63b397ad8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

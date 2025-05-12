@@ -47,4 +47,5 @@ ResourceMap = {
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
     "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
     "huaweicloud.bms": "c7n_huaweicloud.resources.bms.Bms",
+    "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS",
 }

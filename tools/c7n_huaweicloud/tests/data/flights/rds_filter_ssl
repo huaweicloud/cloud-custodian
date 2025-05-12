@@ -1,0 +1,68 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T103924Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "rds-ssl-enabled-id", "name": "rds-ssl-enabled",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-04-15T08:00:00+0000",
+        "updated": "2023-04-16T10:30:00+0000", "private_ips": ["192.168.0.16"], "public_ips":
+        [], "vpc_id": "vpc-ssl-id", "subnet_id": "subnet-ssl-id", "security_group_id":
+        "sg-ssl-id", "volume": {"type": "ULTRAHIGH", "size": 40}, "enable_ssl": true,
+        "disk_encryption_id": "kms-ssl-id"},
+        {"id": "rds-ssl-disabled-id", "name": "rds-ssl-disabled",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-04-15T09:00:00+0000",
+        "updated": "2023-04-16T11:30:00+0000", "private_ips": ["192.168.0.17"], "public_ips":
+        [], "vpc_id": "vpc-ssl-id", "subnet_id": "subnet-ssl-id", "security_group_id":
+        "sg-ssl-id", "volume": {"type": "ULTRAHIGH", "size": 40}, "enable_ssl": false,
+        "disk_encryption_id": "kms-ssl-id"}], "total_count": 2}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 10:39:24 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=64b0e8553e0eb1c619; path=/
+      - HWWAFSESTIME=1745923162023; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6520ef2e3805ca4a732959bf377f4bc1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
