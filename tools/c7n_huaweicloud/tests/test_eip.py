@@ -22,7 +22,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertTrue("id" in resources[0])
-        
+
     def test_associate_instance_type_filter_elb(self):
         """
         测试EIP关联ELB实例类型过滤器
@@ -46,7 +46,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["associate_instance_type"], "ELB")
-        
+
     def test_associate_instance_type_filter_natgw(self):
         """
         测试EIP关联NATGW实例类型过滤器
@@ -70,7 +70,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["associate_instance_type"], "NATGW")
-        
+
     def test_associate_instance_type_filter_port(self):
         """
         测试EIP关联PORT实例类型过滤器
@@ -94,7 +94,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["associate_instance_type"], "PORT")
-        
+
     def test_associate_instance_type_filter_none(self):
         """
         测试EIP无关联实例类型过滤器
@@ -118,7 +118,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0].get("associate_instance_type", ""), "")
-        
+
     def test_delete_eip(self):
         """
         测试EIP删除功能
@@ -144,7 +144,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], "eip-12345678-1234-1234-1234-123456789012")
-        
+
     def test_delete_eip_failure(self):
         """
         测试EIP删除失败场景
@@ -170,7 +170,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], "eip-12345678-1234-1234-1234-123456789012")
-        
+
     def test_disassociate_eip(self):
         """
         测试EIP解绑功能
@@ -202,7 +202,7 @@ class EipTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], "eip-12345678-1234-1234-1234-123456789012")
         self.assertEqual(resources[0]["status"], "ACTIVE")
-        
+
     def test_disassociate_eip_inactive(self):
         """
         测试对未绑定实例的EIP执行解绑操作
@@ -234,7 +234,7 @@ class EipTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], "eip-12345678-1234-1234-1234-123456789012")
         self.assertEqual(resources[0]["status"], "DOWN")
-        
+
     def test_disassociate_eip_failure(self):
         """
         测试EIP解绑失败场景
@@ -266,7 +266,7 @@ class EipTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], "eip-12345678-1234-1234-1234-123456789012")
         self.assertEqual(resources[0]["status"], "ACTIVE")
-        
+
     def test_value_filter_by_status(self):
         """
         测试使用值过滤器筛选EIP资源
@@ -291,7 +291,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["status"], "DOWN")
-        
+
     def test_value_filter_by_name(self):
         """
         测试使用值过滤器筛选EIP资源
@@ -316,7 +316,7 @@ class EipTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["alias"], "test-eip")
-        
+
     def test_mixed_filters(self):
         """
         测试混合使用多个过滤器

@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import json
-from typing import List
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkeip.v2 import DeletePublicipRequest
@@ -34,6 +32,7 @@ class EIP(QueryResourceManager):
                 key: status
                 value: DOWN
     """
+
     class resource_type(TypeInfo):
         service = "eip"
         enum_spec = ("list_publicips", "publicips", "marker")
@@ -71,13 +70,13 @@ class AssociateInstanceTypeFilter(Filter):
         for resource in resources:
             # 检查associate_instance_type是否为空（未关联任何实例）
             resource_instance_type = resource.get("associate_instance_type", "")
-            
+
             if not resource_instance_type:
                 # 未关联任何实例
                 if instance_type == "NONE":
                     results.append(resource)
                 continue
-            
+
             # 直接根据API返回的associate_instance_type进行匹配
             if resource_instance_type == instance_type:
                 results.append(resource)
@@ -154,7 +153,7 @@ class EIPDisassociate(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         # 筛选状态为ACTIVE（已绑定）的EIP
         active_resources = [r for r in resources if r.get("status") == "ACTIVE"]
-        
+
         for resource in active_resources:
             try:
                 request = DisassociatePublicipsRequest()
