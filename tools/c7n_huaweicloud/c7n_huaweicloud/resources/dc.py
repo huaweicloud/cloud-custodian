@@ -214,11 +214,15 @@ class DCTag(HuaweiCloudBaseAction):
             
         # Get Huawei Cloud DC service client
         client = self.manager.get_client()
+        project_id = client._credentials.project_id
         
         try:
             # Build create tag request
             request = CreateResourceTagRequest()
             request.direct_connect_id = resource_id
+            request.project_id = project_id
+            request.resource_type = "dc-directconnect"  # Direct connect physical connection resource type
+            request.resource_id = resource_id
             # Set request body, including tag key-value pair
             request.body = {"tag": {"key": key, "value": value}}
             
