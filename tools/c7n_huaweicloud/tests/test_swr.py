@@ -19,7 +19,7 @@ class SwrRepositoryTest(BaseTest):
             },
             session_factory=factory,
         )
-    
+
         resources = p.run()
         # Verify VCR: swr_repository_query should contain 1 repository
         self.assertEqual(len(resources), 1)
@@ -28,7 +28,7 @@ class SwrRepositoryTest(BaseTest):
         # Verify resource contains required fields
         self.assertTrue("id" in resources[0])
         self.assertTrue("tag_resource_type" in resources[0])
-    
+
         # Verify lifecycle policy is correctly augmented to the resource
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
@@ -36,21 +36,21 @@ class SwrRepositoryTest(BaseTest):
         self.assertTrue(isinstance(lifecycle_policy, list))
         # Verify rules list length
         self.assertEqual(len(lifecycle_policy), 1)
-    
+
         # Get the first rule
         rule = lifecycle_policy[0]
-    
+
         # Verify rule properties
         self.assertEqual(rule["algorithm"], "or")
         self.assertEqual(rule["id"], 222)
-    
+
         # Verify inner rules
         self.assertTrue("rules" in rule)
         self.assertEqual(len(rule["rules"]), 1)
         rule_detail = rule["rules"][0]
         self.assertEqual(rule_detail["template"], "date_rule")
         self.assertEqual(rule_detail["params"]["days"], "30")
-    
+
         # Verify tag selectors
         self.assertTrue("tag_selectors" in rule_detail)
         selectors = rule_detail["tag_selectors"]
@@ -61,7 +61,7 @@ class SwrRepositoryTest(BaseTest):
         self.assertEqual(selectors[1]["pattern"], "1.0.1")
         self.assertEqual(selectors[2]["kind"], "regexp")
         self.assertEqual(selectors[2]["pattern"], "^123$")
-    
+
     def test_swr_filter_value(self):
         """Test SWR Repository value filter"""
         factory = self.replay_flight_data("swr_filter_value")
@@ -97,7 +97,8 @@ class SwrRepositoryTest(BaseTest):
         # Verify repository name
         self.assertEqual(resources[0]["name"], "test-repo")
         # Verify creation date is more than 90 days in the past
-        created_date = datetime.strptime(resources[0]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+        created_date = datetime.strptime(
+            resources[0]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
         self.assertTrue((datetime.now() - created_date).days > 90)
 
 
@@ -160,9 +161,10 @@ class SwrImageTest(BaseTest):
         self.assertEqual(resources[0]["namespace"], "test-namespace")
         self.assertEqual(resources[0]["repository"], "test-repo")
         # Verify creation date is more than 90 days in the past
-        created_date = datetime.strptime(resources[0]["created"], "%Y-%m-%dT%H:%M:%SZ")
+        created_date = datetime.strptime(
+            resources[0]["created"], "%Y-%m-%dT%H:%M:%SZ")
         self.assertTrue((datetime.now() - created_date).days > 90)
-    
+
     def test_swr_image_filter_value(self):
         """Test SWR Image value filter"""
         factory = self.replay_flight_data("swr_image_filter_value")
@@ -202,7 +204,7 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource with lifecycle rules
         self.assertEqual(len(resources), 1)
-    
+
         # Verify lifecycle policy
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
@@ -224,7 +226,7 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource without lifecycle rules
         self.assertEqual(len(resources), 1)
-    
+
         # Verify lifecycle policy
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
@@ -234,16 +236,18 @@ class LifecycleRuleFilterTest(BaseTest):
 
     def test_lifecycle_rule_filter_with_match_param(self):
         """Test Lifecycle Rule filter - With Match Parameters"""
-        factory = self.replay_flight_data("swr_filter_lifecycle_rule_with_match_param")
+        factory = self.replay_flight_data(
+            "swr_filter_lifecycle_rule_with_match_param")
         p = self.load_policy(
             {
                 "name": "swr-filter-lifecycle-rule-with-match-param",
                 "resource": "huaweicloud.swr",
                 "filters": [{
-                    "type": "lifecycle-rule", 
+                    "type": "lifecycle-rule",
                     "state": True,
                     "match": [
-                        {"type": "value", "key": "rules[0].template", "value": "date_rule"}
+                        {"type": "value",
+                            "key": "rules[0].template", "value": "date_rule"}
                     ]
                 }],
             },
@@ -252,7 +256,7 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource with matching lifecycle rules
         self.assertEqual(len(resources), 1)
-    
+
         # Verify lifecycle policy
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
@@ -262,7 +266,8 @@ class LifecycleRuleFilterTest(BaseTest):
 
     def test_lifecycle_rule_filter_with_params(self):
         """Test Lifecycle Rule filter - With Parameters"""
-        factory = self.replay_flight_data("swr_filter_lifecycle_rule_with_params")
+        factory = self.replay_flight_data(
+            "swr_filter_lifecycle_rule_with_params")
         p = self.load_policy(
             {
                 "name": "swr-filter-lifecycle-rule-with-params",
@@ -283,7 +288,7 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource with matching lifecycle rule parameters
         self.assertEqual(len(resources), 1)
-    
+
         # Verify lifecycle policy
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
@@ -297,7 +302,8 @@ class LifecycleRuleFilterTest(BaseTest):
 
     def test_lifecycle_rule_filter_with_tag_selector(self):
         """Test Lifecycle Rule filter - With Tag Selector"""
-        factory = self.replay_flight_data("swr_filter_lifecycle_rule_with_tag_selector")
+        factory = self.replay_flight_data(
+            "swr_filter_lifecycle_rule_with_tag_selector")
         p = self.load_policy(
             {
                 "name": "swr-filter-lifecycle-rule-with-tag-selector",
@@ -315,7 +321,7 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource with matching tag selector
         self.assertEqual(len(resources), 1)
-    
+
         # Verify tag selector
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
@@ -360,21 +366,21 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource matching all conditions
         self.assertEqual(len(resources), 1)
-    
+
         # Verify lifecycle policy satisfies all conditions
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
         self.assertTrue(isinstance(lifecycle_policy, list))
         rule = lifecycle_policy[0]
-    
+
         # Verify algorithm
         self.assertEqual(rule["algorithm"], "or")
-    
+
         # Verify parameters
         rule_detail = rule["rules"][0]
         self.assertTrue("params" in rule_detail)
         self.assertEqual(rule_detail["params"]["days"], "30")
-    
+
         # Verify tag selector
         selectors = rule_detail["tag_selectors"]
         selector_match = False
@@ -479,4 +485,5 @@ class SetLifecycleActionTest(BaseTest):
         # Verify VCR: Resource should have error field
         self.assertTrue("error" in resources[0])
         # Verify VCR: Error message should contain missing namespace or repository information
-        self.assertTrue("Missing namespace or repository information" in resources[0]["error"])
+        self.assertTrue(
+            "Missing namespace or repository information" in resources[0]["error"])

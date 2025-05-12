@@ -89,14 +89,14 @@ class Swr(QueryResourceManager):
 @Swr.filter_registry.register('lifecycle-rule')
 class LifecycleRule(Filter):
     """SWR repository lifecycle rule filter.
-    
+
     Filter repositories with or without specific lifecycle rules based on parameters
     such as days, tag selectors (kind, pattern), etc.
 
     :example:
-    
+
     .. code-block:: yaml
-    
+
        policies:
         # Filter repositories without lifecycle rules
         - name: swr-no-lifecycle-rules
@@ -104,9 +104,9 @@ class LifecycleRule(Filter):
           filters:
             - type: lifecycle-rule
               state: False  # Repositories without lifecycle rules
-    
+
     .. code-block:: yaml
-    
+
        policies:
         # Filter repositories with specific lifecycle rules (path matching specific properties)
         - name: swr-with-specific-rule
@@ -118,9 +118,9 @@ class LifecycleRule(Filter):
                 - type: value
                   key: rules[0].template
                   value: date_rule
-    
+
     .. code-block:: yaml
-    
+
        policies:
         # Filter repositories with retention period greater than 30 days
         - name: swr-with-long-retention
@@ -133,9 +133,9 @@ class LifecycleRule(Filter):
                   value_type: integer
                   op: gte
                   value: 30
-    
+
     .. code-block:: yaml
-    
+
        policies:
         # Filter repositories using specific tag selector
         - name: swr-with-specific-tag-selector
@@ -145,9 +145,9 @@ class LifecycleRule(Filter):
               tag_selector:
                 kind: label
                 pattern: v5
-                
+
     .. code-block:: yaml
-    
+
        policies:
         # Combined filter conditions: match both parameters and tag selector
         - name: swr-with-combined-filters
@@ -374,7 +374,8 @@ class SwrImage(QueryResourceManager):
 
                 result.append(resource)
             except Exception as e:
-                self.log.warning(f"Failed to enhance resource information: {e}")
+                self.log.warning(
+                    f"Failed to enhance resource information: {e}")
 
         return result
 
@@ -449,7 +450,8 @@ class SwrImage(QueryResourceManager):
             # If specific repository information is provided, directly query the repository's image tags
             namespace = query_params['namespace']
             repository = query_params['repository']
-            resources.extend(self._get_repository_tags(client, namespace, repository, query_params))
+            resources.extend(self._get_repository_tags(
+                client, namespace, repository, query_params))
         else:
             # Otherwise, first get all repository list
             from huaweicloudsdkswr.v2.model.list_repos_details_request import ListReposDetailsRequest
@@ -470,7 +472,8 @@ class SwrImage(QueryResourceManager):
 
                         if namespace and repository:
                             # Get all image tags for this repository
-                            repo_tags = self._get_repository_tags(client, namespace, repository, {})
+                            repo_tags = self._get_repository_tags(
+                                client, namespace, repository, {})
                             resources.extend(repo_tags)
             except Exception as e:
                 self.log.error(f"Failed to query SWR repository list: {e}")
@@ -532,10 +535,12 @@ class SwrImage(QueryResourceManager):
 
             # If no results are returned, may be using old API version
             if not tags and not additional_params:
-                self.log.debug(f"No image tags found for repository {namespace}/{repository}, trying legacy API")
+                self.log.debug(
+                    f"No image tags found for repository {namespace}/{repository}, trying legacy API")
 
         except Exception as e:
-            self.log.error(f"Failed to query repository {namespace}/{repository} tags: {e}")
+            self.log.error(
+                f"Failed to query repository {namespace}/{repository} tags: {e}")
 
         return tags
 
@@ -630,7 +635,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
         'set-lifecycle',
         algorithm={'type': 'string', 'enum': ['or'], 'default': 'or'},
         rules={
-            'type': 'array', 
+            'type': 'array',
             'items': {
                 'type': 'object',
                 'required': ['template', 'params', 'tag_selectors'],
@@ -661,37 +666,40 @@ class SetLifecycle(HuaweiCloudBaseAction):
         if 'rules' not in self.data or not self.data['rules']:
             self.log.error("Missing required lifecycle rule configuration")
             return []
-        
+
         # Call parent's process method to process resources
         return super(SetLifecycle, self).process(resources)
 
     def perform_action(self, resource):
         """Implement abstract method, perform action for a single resource."""
         client = self.manager.get_client()
-        
+
         # Get repository information
         namespace = resource.get('namespace')
         repository = resource.get('name')
-        
+
         if not namespace or not repository:
-            self.log.error(f"Incomplete repository information: {resource.get('name', 'unknown')}")
+            self.log.error(
+                f"Incomplete repository information: {resource.get('name', 'unknown')}")
             resource['status'] = 'error'
             resource['error'] = 'Missing namespace or repository information'
             return resource
 
         try:
             # Log original configuration for debugging
-            self.log.debug(f"Original rule configuration: {self.data.get('rules')}")
-            
+            self.log.debug(
+                f"Original rule configuration: {self.data.get('rules')}")
+
             # Create rule objects
             rules = []
             for rule_data in self.data.get('rules', []):
                 # Get template type and validate
                 template = rule_data.get('template')
                 if template not in ['date_rule', 'tag_rule']:
-                    self.log.warning(f"Unsupported template type: {template}, will use date_rule instead")
+                    self.log.warning(
+                        f"Unsupported template type: {template}, will use date_rule instead")
                     template = 'date_rule'
-                
+
                 # Special handling for params parameter, ensure correct data format
                 param_obj = {}
                 if template == 'date_rule':
@@ -702,36 +710,38 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     # Get number value from rule configuration and ensure it's a string
                     num_value = rule_data.get('params', {}).get('num', '10')
                     param_obj['num'] = str(num_value)
-                
+
                 # Log processed parameters
                 self.log.debug(f"Processed params parameter: {param_obj}")
-                
+
                 # Create tag selectors
                 tag_selectors = []
                 for selector_data in rule_data.get('tag_selectors', []):
                     # Ensure kind and pattern are string type
                     kind = selector_data.get('kind')
                     pattern = selector_data.get('pattern')
-                    
+
                     if not kind or not pattern:
-                        self.log.warning(f"Skipping invalid tag_selector: {selector_data}")
+                        self.log.warning(
+                            f"Skipping invalid tag_selector: {selector_data}")
                         continue
-                        
+
                     selector = TagSelector(
                         kind=kind,
                         pattern=pattern
                     )
                     tag_selectors.append(selector)
-                
+
                 # Ensure there are tag selectors
                 if not tag_selectors:
-                    self.log.warning("No valid tag_selectors, will use default empty tag selector")
+                    self.log.warning(
+                        "No valid tag_selectors, will use default empty tag selector")
                     # Add a default tag selector to avoid API error
                     tag_selectors.append(TagSelector(
                         kind="label",
                         pattern="latest"
                     ))
-                
+
                 # Create rule object
                 try:
                     # Create rule directly using dictionary
@@ -741,7 +751,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
                         tag_selectors=tag_selectors
                     )
                     rules.append(rule)
-                    self.log.debug(f"Successfully created rule: template={template}, params={param_obj}")
+                    self.log.debug(
+                        f"Successfully created rule: template={template}, params={param_obj}")
                 except Exception as rule_err:
                     self.log.error(f"Failed to create rule object: {rule_err}")
                     # Try using serialized parameters
@@ -757,63 +768,67 @@ class SetLifecycle(HuaweiCloudBaseAction):
                             f"Successfully created rule with serialized params: {json.dumps(param_obj)}"
                         )
                     except Exception as json_err:
-                        self.log.error(f"Failed to create rule with serialized params: {json_err}")
-            
+                        self.log.error(
+                            f"Failed to create rule with serialized params: {json_err}")
+
             # Ensure there is at least one rule
             if not rules:
                 self.log.error("No valid rule configuration")
                 resource['status'] = 'error'
                 resource['error'] = 'No valid rules configured'
                 return resource
-            
+
             # Log final generated rules
             self.log.debug(f"Final generated rules: {rules}")
-            
+
             # Create request body
             body = CreateRetentionRequestBody(
                 algorithm=self.data.get('algorithm', 'or'),
                 rules=rules
             )
-            
+
             # Log request body
             if hasattr(body, 'to_dict'):
                 self.log.debug(f"Request body: {body.to_dict()}")
             else:
                 self.log.debug(f"Request body: {body}")
-            
+
             # Create request
             request = CreateRetentionRequest(
                 namespace=namespace,
                 repository=repository,
                 body=body
             )
-            
+
             # Output complete request content for debugging
             if hasattr(request, 'to_dict'):
                 self.log.debug(f"Complete request: {request.to_dict()}")
-            
+
             # Send request
-            self.log.info(f"Sending create lifecycle rule request: namespace={namespace}, repository={repository}")
+            self.log.info(
+                f"Sending create lifecycle rule request: namespace={namespace}, repository={repository}")
             response = client.create_retention(request)
-            
+
             # Process response
             retention_id = response.id
-            
-            self.log.info(f"Successfully created lifecycle rule: {namespace}/{repository}, ID: {retention_id}")
-            
+
+            self.log.info(
+                f"Successfully created lifecycle rule: {namespace}/{repository}, ID: {retention_id}")
+
             # Add processing result information to resource
             resource['retention_id'] = retention_id
             resource['retention_status'] = 'created'
-            
+
             return resource
         except Exception as e:
             # Record detailed exception information
             import traceback
             error_msg = str(e)
             error_detail = traceback.format_exc()
-            self.log.error(f"Failed to create lifecycle rule: {namespace}/{repository}: {error_msg}")
+            self.log.error(
+                f"Failed to create lifecycle rule: {namespace}/{repository}: {error_msg}")
             self.log.debug(f"Exception details: {error_detail}")
-            
+
             resource['status'] = 'error'
             resource['error'] = error_msg
             return resource
