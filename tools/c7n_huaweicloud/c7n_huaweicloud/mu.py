@@ -12,6 +12,7 @@ import os
 
 from c7n.mu import get_exec_options, custodian_archive as base_archive
 from c7n.utils import local_session
+from c7n.exceptions import PolicyExecutionError
 
 from huaweicloudsdkfunctiongraph.v2 import (
     ListFunctionsRequest,
@@ -227,7 +228,7 @@ class FunctionGraphManager:
             "log_config", "network_controller", "is_stateful_function", "enable_dynamic_memory",
             "enable_auth_in_header", "domain_names", "restore_hook_handler",
             "restore_hook_timeout", "heartbeat_handler", "enable_class_isolation",
-            "enable_lts_log", "lts_custom_tag"
+            "enable_lts_log", "lts_custom_tag", "user_data_encrypt_kms_key_id",
         ]
         request = UpdateFunctionConfigRequest(function_urn=old_config["func_urn"])
         request_body = UpdateFunctionConfigRequestBody(
@@ -264,7 +265,8 @@ class FunctionGraphManager:
             func_code=FuncCode(
                 file=base64_str
             ),
-            depend_version_list=self.get_custodian_depend_version_id(func.runtime)
+            depend_version_list=self.get_custodian_depend_version_id(func.runtime),
+            code_encrypt_kms_key_id=func.code_encrypt_kms_key_id,
         )
         try:
             response = self.client.update_function_code(request)
@@ -291,7 +293,10 @@ class FunctionGraphManager:
         return response.body
 
     def publish(self, func, role=None):
-        result, changed, _ = self._create_or_update(func, role)
+        try:
+            result, changed, _ = self._create_or_update(func, role)
+        except PolicyExecutionError:
+            return
         func.func_urn = result.func_urn
 
         if changed:
@@ -346,6 +351,8 @@ class FunctionGraphManager:
 
         if result:
             self.process_async_invoke_config(func, result.func_urn)
+        else:
+            raise PolicyExecutionError("Create or update failed.")
 
         return result, changed, existing
 
@@ -549,6 +556,16 @@ class AbstractFunctionGraph:
     def async_invoke_config(self):
         """Async invoke config"""
 
+    @property
+    @abc.abstractmethod
+    def user_data_encrypt_kms_key_id(self):
+        """KMS key id for encrypt user data"""
+
+    @property
+    @abc.abstractmethod
+    def code_encrypt_kms_key_id(self):
+        """KMS key id for encrypt function code"""
+
     @abc.abstractmethod
     def get_events(self, session_factory):
         """ """
@@ -572,6 +589,8 @@ class AbstractFunctionGraph:
             'enable_lts_log': self.enable_lts_log,
             'log_config': self.log_config,
             'async_invoke_config': self.async_invoke_config,
+            'user_data_encrypt_kms_key_id': self.user_data_encrypt_kms_key_id,
+            'code_encrypt_kms_key_id': self.code_encrypt_kms_key_id,
         }
 
         return conf
@@ -645,7 +664,15 @@ class FunctionGraph(AbstractFunctionGraph):
     def async_invoke_config(self):
         return self.func_data.get('async_invoke_config', None)
 
-    def get_events(self, ssession_factory):
+    @property
+    def user_data_encrypt_kms_key_id(self):
+        return self.func_data.get('user_data_encrypt_kms_key_id', "")
+
+    @property
+    def code_encrypt_kms_key_id(self):
+        return self.func_data.get('code_encrypt_kms_key_id', "")
+
+    def get_events(self, session_factory):
         return self.func_data.get('events', ())
 
     def get_archive(self):
@@ -736,6 +763,14 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     @property
     def async_invoke_config(self):
         return self.policy.data['mode'].get('async_invoke_config', None)
+
+    @property
+    def user_data_encrypt_kms_key_id(self):
+        return self.policy.data['mode'].get('user_data_encrypt_kms_key_id', "")
+
+    @property
+    def code_encrypt_kms_key_id(self):
+        return self.policy.data['mode'].get('code_encrypt_kms_key_id', "")
 
     def get_events(self, session_factory):
         events = []
