@@ -691,7 +691,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 if template not in ['date_rule', 'tag_rule']:
                     self.log.warning(f"Unsupported template type: {template}, will use date_rule instead")
                     template = 'date_rule'
-                
+
                 # Special handling for params parameter, ensure correct data format
                 param_obj = {}
                 if template == 'date_rule':
@@ -702,21 +702,21 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     # Get number value from rule configuration and ensure it's a string
                     num_value = rule_data.get('params', {}).get('num', '10')
                     param_obj['num'] = str(num_value)
-                
+
                 # Log processed parameters
                 self.log.debug(f"Processed params parameter: {param_obj}")
-                
+
                 # Create tag selectors
                 tag_selectors = []
                 for selector_data in rule_data.get('tag_selectors', []):
                     # Ensure kind and pattern are string type
                     kind = selector_data.get('kind')
                     pattern = selector_data.get('pattern')
-                    
+
                     if not kind or not pattern:
                         self.log.warning(f"Skipping invalid tag_selector: {selector_data}")
                         continue
-                        
+
                     selector = TagSelector(
                         kind=kind,
                         pattern=pattern
@@ -731,7 +731,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                         kind="label",
                         pattern="latest"
                     ))
-                
+
                 # Create rule object
                 try:
                     # Create rule directly using dictionary
@@ -763,10 +763,10 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 resource['status'] = 'error'
                 resource['error'] = 'No valid rules configured'
                 return resource
-            
+
             # Log final generated rules
             self.log.debug(f"Final generated rules: {rules}")
-            
+
             # Create request body
             body = CreateRetentionRequestBody(
                 algorithm=self.data.get('algorithm', 'or'),
@@ -778,7 +778,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 self.log.debug(f"Request body: {body.to_dict()}")
             else:
                 self.log.debug(f"Request body: {body}")
-            
+
             # Create request
             request = CreateRetentionRequest(
                 namespace=namespace,
@@ -789,7 +789,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
             # Output complete request content for debugging
             if hasattr(request, 'to_dict'):
                 self.log.debug(f"Complete request: {request.to_dict()}")
-            
+
             # Send request
             self.log.info(f"Sending create lifecycle rule request: namespace={namespace}, repository={repository}")
             response = client.create_retention(request)
@@ -812,7 +812,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
             error_detail = traceback.format_exc()
             self.log.error(f"Failed to create lifecycle rule: {namespace}/{repository}: {error_msg}")
             self.log.debug(f"Exception details: {error_detail}")
-            
+
             resource['status'] = 'error'
             resource['error'] = error_msg
             return resource
