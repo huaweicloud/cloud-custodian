@@ -17,13 +17,16 @@ class RocketMQInstanceTest(BaseTest):
             'resource': 'huaweicloud.reliabilitys'},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Assuming there is 1 instance in the recording
+        # Assuming there is 1 instance in the recording
+        self.assertEqual(len(resources), 1)
 
     # =========================
     # Filter Tests
     # =========================
-    @patch('c7n_huaweicloud.resources.vpc.SecurityGroup.get_resources')  # Specify the target to mock
-    def test_rocketmq_filter_security_group(self, mock_get_sg_resources):  # Receive mock object
+    # Specify the target to mock
+    @patch('c7n_huaweicloud.resources.vpc.SecurityGroup.get_resources')
+    # Receive mock object
+    def test_rocketmq_filter_security_group(self, mock_get_sg_resources):
         # Configure mock return value
         # Need to include an id that matches the securityGroupId in VCR
         mock_security_group_data = [{
@@ -45,30 +48,34 @@ class RocketMQInstanceTest(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Assuming there is 1 matching instance
+        # Assuming there is 1 matching instance
+        self.assertEqual(len(resources), 1)
         # Verify that the mock was called (optional)
         mock_get_sg_resources.assert_called_once_with(['securityGroupId'])
 
     def test_rocketmq_filter_age(self):
         factory = self.replay_flight_data('rocketmq_filter_age')
-        
+
         # Test if creation time > threshold time (2022, this should be true because the instance was created in 2023)
         p_gt = self.load_policy({
             'name': 'rocketmq-filter-age-gt-test',
             'resource': 'huaweicloud.reliabilitys',
             'filters': [{'type': 'age', 'days': 1000, 'op': 'gt'}]
-            }, session_factory=factory)
+        }, session_factory=factory)
         resources_gt = p_gt.run()
-        self.assertEqual(len(resources_gt), 1)  # Should find one resource (2023 > threshold 2022)
-        
+        # Should find one resource (2023 > threshold 2022)
+        self.assertEqual(len(resources_gt), 1)
+
         # Test if creation time < threshold date (for future dates, this is always true)
         p_future = self.load_policy({
             'name': 'rocketmq-filter-future-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'type': 'age', 'days': -1000, 'op': 'lt'}]  # Creation time < future date
-            }, session_factory=factory)
+            # Creation time < future date
+            'filters': [{'type': 'age', 'days': -1000, 'op': 'lt'}]
+        }, session_factory=factory)
         resources_future = p_future.run()
-        self.assertEqual(len(resources_future), 1)  # Should find one resource (past time < future date)
+        # Should find one resource (past time < future date)
+        self.assertEqual(len(resources_future), 1)
 
     def test_rocketmq_filter_list_item(self):
         factory = self.replay_flight_data('rocketmq_filter_list_item')
@@ -85,7 +92,7 @@ class RocketMQInstanceTest(BaseTest):
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)  # Should find one instance
-        
+
         # Test using array value
         p_array = self.load_policy({
             'name': 'rocketmq-filter-az-array-test',
@@ -99,7 +106,7 @@ class RocketMQInstanceTest(BaseTest):
             session_factory=factory)
         resources_array = p_array.run()
         self.assertEqual(len(resources_array), 1)  # Should find one instance
-        
+
         # Test no match case
         p_no_match = self.load_policy({
             'name': 'rocketmq-filter-az-no-match-test',
@@ -112,7 +119,8 @@ class RocketMQInstanceTest(BaseTest):
             }]},
             session_factory=factory)
         resources_no_match = p_no_match.run()
-        self.assertEqual(len(resources_no_match), 0)  # Should not find any instance
+        # Should not find any instance
+        self.assertEqual(len(resources_no_match), 0)
 
     def test_rocketmq_filter_marked_for_op(self):
         # Need a recording with an instance tagged with 'mark-for-op-custodian' or custom tag
@@ -129,7 +137,8 @@ class RocketMQInstanceTest(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Assuming there is 1 matching instance
+        # Assuming there is 1 matching instance
+        self.assertEqual(len(resources), 1)
 
         # Edge case: test operation type mismatch
         p_wrong_op = self.load_policy({
@@ -156,7 +165,8 @@ class RocketMQInstanceTest(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Assuming action was performed on 1 instance
+        # Assuming action was performed on 1 instance
+        self.assertEqual(len(resources), 1)
         # Verification: need to check VCR recording, confirm batch_create_or_delete_rocketmq_tag was called
         # and request body contains correct tag key and value (with timestamp)
 
@@ -166,7 +176,8 @@ class RocketMQInstanceTest(BaseTest):
         p = self.load_policy({
             'name': 'rocketmq-action-autotag-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'tag:CreatorName': 'absent'}],  # Only operate on instances without CreatorName tag
+            # Only operate on instances without CreatorName tag
+            'filters': [{'tag:CreatorName': 'absent'}],
             'actions': [{
                 'type': 'auto-tag-user',
                 'tag': 'CreatorName',
@@ -175,7 +186,8 @@ class RocketMQInstanceTest(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Assuming action was performed on 1 instance
+        # Assuming action was performed on 1 instance
+        self.assertEqual(len(resources), 1)
 
     def test_rocketmq_action_tag(self):
         factory = self.replay_flight_data('rocketmq_action_tag')
@@ -194,7 +206,8 @@ class RocketMQInstanceTest(BaseTest):
         p = self.load_policy({
             'name': 'rocketmq-action-remove-tag-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'tag:environment': 'present'}],  # Ensure tag exists before removing
+            # Ensure tag exists before removing
+            'filters': [{'tag:environment': 'present'}],
             'actions': [{'type': 'remove-tag', 'keys': ['environment', 'temp-tag']}]},  # Remove multiple
             session_factory=factory)
         resources = p.run()

@@ -25,13 +25,13 @@ log = logging.getLogger("custodian.huaweicloud.resources.rocketmq")
 @resources.register('reliabilitys')
 class RocketMQ(QueryResourceManager):
     """HuaweiCloud RocketMQ Instance Resource Manager.
-    
+
     Responsible for discovering, filtering, and managing RocketMQ instance resources on HuaweiCloud.
     Inherits from QueryResourceManager to utilize its capabilities for querying and processing resource lists.
-    
+
     :example:
     Define a simple policy to get all RocketMQ instances:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -57,13 +57,13 @@ class RocketMQ(QueryResourceManager):
     def augment(self, resources):
         """
         Enhance the raw resource data obtained from the API.
-        
+
         Primarily used to convert the tag list format returned by HuaweiCloud API
         (usually a list of dictionaries with 'key' and 'value' fields)
         to AWS-compatible format used internally by Cloud Custodian 
         (a list of dictionaries with 'Key' and 'Value' fields).
         This improves consistency of cross-cloud provider policies.
-        
+
         :param resources: List of raw resource dictionaries from the API
         :return: Enhanced resource dictionary list with tags converted to AWS-compatible format under the 'Tags' key
         """
@@ -75,9 +75,88 @@ class RocketMQ(QueryResourceManager):
             # Iterate through the original tag list
             for tag_entity in r['tags']:
                 # Convert each tag to {'Key': ..., 'Value': ...} format
-                tags.append({'Key': tag_entity.get('key'), 'Value': tag_entity.get('value')})
+                tags.append({'Key': tag_entity.get('key'),
+                            'Value': tag_entity.get('value')})
             # Add the converted tag list to the resource dictionary with the key 'Tags'
             r['Tags'] = tags
+        return resources
+
+    def query(self, **params):
+        """
+        Override query method to add better error handling and debugging.
+
+        :param params: Parameters to pass to the API client
+        :return: List of resources
+        """
+        client = self.get_client()
+        resources = []
+
+        enum_op, enum_path, pagination_key, pagination_batch = self.get_enum_op_config()
+
+        try:
+            # Check how many total resources we have to establish expected count
+            log.info(
+                f"Querying RocketMQ resources with config: op={enum_op}, path={enum_path}")
+
+            # Perform API call with initial parameters
+            params_copy = params.copy()
+            if pagination_key:
+                params_copy[pagination_key] = 0  # Start at offset 0
+
+            page = 1
+            total_items = 0
+            while True:
+                try:
+                    log.debug(f"API call {enum_op} with params: {params_copy}")
+                    response = getattr(client, enum_op)(**params_copy)
+
+                    if response is None:
+                        log.warning(f"API call {enum_op} returned None")
+                        break
+
+                    # Extract data from the response
+                    data = response
+                    if hasattr(response, 'to_dict'):
+                        data = response.to_dict()
+
+                    # Navigate to the correct response path
+                    path_parts = enum_path.split('.')
+                    for part in path_parts:
+                        if part and data:
+                            data = data.get(part, [])
+
+                    if not data:
+                        log.debug(
+                            f"No data found at path {enum_path} in response")
+                        break
+
+                    # Add resources from this page
+                    item_count = len(data)
+                    resources.extend(data)
+                    total_items += item_count
+                    log.debug(
+                        f"Retrieved page {page} with {item_count} resources, total now: {total_items}")
+
+                    # Check if we need to paginate
+                    if pagination_key and item_count >= pagination_batch:
+                        # Move to next page
+                        params_copy[pagination_key] = params_copy.get(
+                            pagination_key, 0) + pagination_batch
+                        page += 1
+                    else:
+                        # No more pages
+                        break
+
+                except Exception as e:
+                    log.error(
+                        f"Error during API call {enum_op} (page {page}): {e}")
+                    break
+
+            log.info(f"Total RocketMQ resources retrieved: {len(resources)}")
+
+        except Exception as e:
+            log.error(f"Failed to query RocketMQ resources: {e}")
+
         return resources
 
 
@@ -85,14 +164,14 @@ class RocketMQ(QueryResourceManager):
 class RocketMQSecurityGroupFilter(SecurityGroupFilter):
     """
     Filter RocketMQ instances based on associated security groups.
-    
+
     Allows users to filter instances based on properties of the security groups (such as name, ID)
     used by the RocketMQ instance.
     Inherits from the generic `SecurityGroupFilter`.
-    
+
     :example:
     Find RocketMQ instances using a security_group_id '0e3310ef-6477-4830-b802-12ee99e4fc70':
-    
+
     .. code-block:: yaml
 
         policies:
@@ -111,12 +190,12 @@ class RocketMQSecurityGroupFilter(SecurityGroupFilter):
 class RocketMQAgeFilter(Filter):
     """
     Filter RocketMQ instances based on creation time (age).
-    
+
     Allows users to filter instances created earlier or later than a specified time.
-    
+
     :example:
     Find RocketMQ instances created more than 30 days ago:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -147,71 +226,114 @@ class RocketMQAgeFilter(Filter):
         return self
 
     def process(self, resources, event=None):
+        """
+        Filter resources based on age.
+
+        :param resources: List of resources to filter
+        :param event: Optional event context
+        :return: Filtered resource list
+        """
         # Get operator and time
         op = self.data.get('op', 'greater-than')
         if op not in OPERATORS:
             raise ValueError(f"Invalid operator: {op}")
         operator = OPERATORS[op]
-        
+
         # Calculate comparison date
         from datetime import datetime, timedelta
         from dateutil.tz import tzutc
-        
+
         days = self.data.get('days', 0)
         hours = self.data.get('hours', 0)
         minutes = self.data.get('minutes', 0)
-        
+
         now = datetime.now(tz=tzutc())
-        threshold_date = now - timedelta(days=days, hours=hours, minutes=minutes)
-        
-        log.debug(f"Age filter: now={now}, threshold_date={threshold_date}, op={op}, days={days}")
-        
+        threshold_date = now - \
+            timedelta(days=days, hours=hours, minutes=minutes)
+
+        log.info(
+            f"Age filter: filtering resources created {op} {days} days, {hours} hours, {minutes} minutes ago")
+        log.info(f"Age filter: now={now}, threshold_date={threshold_date}")
+        log.info(f"Total resources before age filtering: {len(resources)}")
+
         # Filter resources
         matched = []
         for resource in resources:
+            instance_id = resource.get('instance_id', 'unknown')
+            name = resource.get('name', 'unknown')
             created_str = resource.get(self.date_attribute)
+
             if not created_str:
-                log.debug(f"Resource {resource.get('instance_id', 'unknown')} has no {self.date_attribute}")
+                log.debug(
+                    f"Resource {instance_id} ({name}) has no {self.date_attribute}")
                 continue
-                
+
             # Convert creation time
             try:
+                created_date = None
                 # If it's a millisecond timestamp, convert to seconds then create datetime
                 if isinstance(created_str, (int, float)) or (isinstance(created_str, str) and created_str.isdigit()):
                     try:
                         # Ensure conversion to integer
                         timestamp_ms = int(float(created_str))
-                        timestamp_s = timestamp_ms / 1000.0
-                        log.debug(f"Converting timestamp: {created_str} ms -> {timestamp_s} s")
+                        # Check if timestamp is in milliseconds (13 digits) or seconds (10 digits)
+                        if len(str(timestamp_ms)) >= 13:
+                            timestamp_s = timestamp_ms / 1000.0
+                        else:
+                            timestamp_s = timestamp_ms
+                        log.debug(
+                            f"Resource {instance_id}: Converting timestamp: {created_str} -> {timestamp_s} s")
                         # Create datetime object from timestamp (UTC)
-                        created_date = datetime.utcfromtimestamp(timestamp_s).replace(tzinfo=tzutc())
-                        log.debug(f"Converted to datetime: {created_date}")
+                        created_date = datetime.utcfromtimestamp(
+                            timestamp_s).replace(tzinfo=tzutc())
                     except (ValueError, TypeError, OverflowError) as e:
                         log.debug(
-                            f"Unable to parse value '{created_str}' as millisecond timestamp: {e}")
+                            f"Resource {instance_id}: Unable to parse value '{created_str}' as timestamp: {e}")
                         # If parsing fails, continue trying with dateutil.parser
                         created_date = parse(str(created_str))
                 else:
-                    # If not a pure number or failed to parse millisecond timestamp, try using dateutil.parser to parse generic time string
+                    # If not a pure number, try using dateutil.parser to parse generic time string
                     created_date = parse(str(created_str))
-                
+
                 # Ensure datetime has timezone information
                 if not created_date.tzinfo:
                     created_date = created_date.replace(tzinfo=tzutc())
-                
-                log.debug(f"Resource {resource.get('instance_id', 'unknown')} created_date={created_date}")
-                    
-                # Compare dates
-                result = operator(created_date, threshold_date)
-                log.debug(f"Compare: {created_date} {op} {threshold_date} = {result}")
-                
+
+                # Calculate age in days
+                age_timedelta = now - created_date
+                age_days = age_timedelta.total_seconds() / 86400
+
+                log.debug(
+                    f"Resource {instance_id} ({name}) created_date={created_date}, age={age_days:.2f} days")
+
+                # Handle the 'gt' (greater than) case specifically to ensure correctness
+                if op == 'greater-than' or op == 'gt':
+                    # A resource is older than N days if its creation date is earlier than (now - N days)
+                    result = created_date < threshold_date
+                    log.debug(
+                        f"GT comparison: is {created_date} < {threshold_date}? {result}")
+                else:
+                    # For other operators, use the standard operator
+                    result = operator(created_date, threshold_date)
+                    log.debug(
+                        f"Standard comparison: {created_date} {op} {threshold_date} = {result}")
+
+                # If operation is 'gt', we only want resources older than threshold
+                # If creation date is earlier than threshold, resource is older
                 if result:
                     matched.append(resource)
+                    log.debug(
+                        f"Resource {instance_id} ({name}) matched age filter")
+                else:
+                    log.debug(
+                        f"Resource {instance_id} ({name}) did not match age filter")
             except Exception as e:
                 log.warning(
                     f"Unable to parse creation time '{created_str}' for RocketMQ instance "
-                    f"{resource.get('instance_id', 'unknown ID')}: {e}")
-                
+                    f"{instance_id} ({name}): {e}")
+
+        log.info(
+            f"Resources after age filtering: {len(matched)} (matched) / {len(resources)} (total)")
         return matched
 
 
@@ -219,16 +341,16 @@ class RocketMQAgeFilter(Filter):
 class RocketMQListItemFilter(ListItemFilter):
     """
     Filter items in resource attributes lists.
-    
+
     This filter allows checking values in a key of the resource dictionary (which must be a list)
     and filtering based on the items in that list.
     For example, it can check if an instance is deployed in a specific availability zone,
     or if it contains a specific tag.
     Inherits from core `ListItemFilter`.
-    
+
     :example:
     Find RocketMQ instances deployed in 'cn-north-4a' or 'cn-north-4b' availability zones:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -268,7 +390,8 @@ class RocketMQListItemFilter(ListItemFilter):
         # key: resource property key name to check, value must be a list
         key={'oneOf': [
             {'type': 'string'},
-            {'type': 'integer', 'minimum': 0},  # Key can also be an integer (if resource dictionary key is an integer)
+            # Key can also be an integer (if resource dictionary key is an integer)
+            {'type': 'integer', 'minimum': 0},
             {'type': 'array', 'items': {'type': 'string'}}  # Or list of path
         ]},
         # key_path: (Optional) JMESPath expression to extract comparison value from list items
@@ -276,11 +399,11 @@ class RocketMQListItemFilter(ListItemFilter):
         # Declare 'key' parameter as required
         required=['key']
     )
-    
+
     def process(self, resources, event=None):
         """
         Override list item filtering method to handle string list items
-        
+
         :param resources: List of resources to filter
         :param event: Optional event context
         :return: Filtered resource list
@@ -292,25 +415,25 @@ class RocketMQListItemFilter(ListItemFilter):
             if 'value' in self.data and 'op' in self.data:
                 op = OPERATORS[self.data.get('op', 'eq')]
                 value = self.data.get('value')
-                
+
                 for r in resources:
                     list_values = self.get_item_values(r)
                     if not list_values:
                         if self.check_count(0):
                             result.append(r)
                         continue
-                    
+
                     if not isinstance(list_values, list):
                         item_type = type(list_values)
                         raise ValueError(
                             f"list-item filter value {self.data['key']} is {item_type}, not a list")
-                    
+
                     # Check each item in the list
                     matches = []
                     for item in list_values:
                         if op(item, value):
                             matches.append(item)
-                    
+
                     # Decide whether to keep the resource based on count check or existence of matches
                     if 'count' in self.data:
                         if self.check_count(len(matches)):
@@ -318,23 +441,23 @@ class RocketMQListItemFilter(ListItemFilter):
                     elif matches:
                         result.append(r)
                 return result
-                
+
         # Use original parent class method for complex cases
         frm = ListItemResourceManager(
             self.manager.ctx, data={'filters': self.data.get('attrs', [])})
-        
+
         for r in resources:
             list_values = self.get_item_values(r)
             if not list_values:
                 if self.check_count(0):
                     result.append(r)
                 continue
-                
+
             if not isinstance(list_values, list):
                 item_type = type(list_values)
                 raise ValueError(
                     f"list-item filter value {self.data['key']} is {item_type}, not a list")
-            
+
             # Handle string and other simple type list items
             wrapped_values = []
             for idx, val in enumerate(list_values):
@@ -350,16 +473,16 @@ class RocketMQListItemFilter(ListItemFilter):
                     else:
                         # Other types also wrapped as dictionary
                         wrapped_values.append({'value': val, 'c7n:_id': idx})
-            
+
             # Process wrapped values with sub-filters
             list_resources = frm.filter_resources(wrapped_values, event)
-            
+
             # Extract matched indices
             matched_indices = []
             for matched in list_resources:
                 if 'c7n:_id' in matched:
                     matched_indices.append(matched['c7n:_id'])
-            
+
             # Process results
             if 'count' in self.data:
                 if self.check_count(len(list_resources)):
@@ -373,7 +496,7 @@ class RocketMQListItemFilter(ListItemFilter):
                     r.setdefault(self.item_annotation_key, [])
                     r[self.item_annotation_key].extend(annotations)
                 result.append(r)
-                
+
         return result
 
 
@@ -381,15 +504,15 @@ class RocketMQListItemFilter(ListItemFilter):
 class RocketMQMarkedForOpFilter(Filter):
     """
     Filter RocketMQ instances based on specific "marked-for-operation" tags.
-    
+
     This filter is used to find instances that have been marked by a `mark-for-op` action
     to execute a specific operation (like delete, stop) at a future time.
     It checks the specified tag key (`tag`), parses the operation type and scheduled
     execution time from the tag value, and compares it with the current time.
-    
+
     :example:
     Find all RocketMQ instances marked for deletion with the tag key 'custodian_cleanup':
-    
+
     .. code-block:: yaml
 
         policies:
@@ -470,13 +593,17 @@ class RocketMQMarkedForOpFilter(Filter):
             # If standard parsing fails, try using old format conversion logic
             try:
                 # Old time format conversion logic
-                modified_date_str = self._replace_nth_regex(action_date_str, "-", " ", 3)
-                modified_date_str = self._replace_nth_regex(modified_date_str, "-", ":", 3)
-                modified_date_str = self._replace_nth_regex(modified_date_str, "-", " ", 3)
+                modified_date_str = self._replace_nth_regex(
+                    action_date_str, "-", " ", 3)
+                modified_date_str = self._replace_nth_regex(
+                    modified_date_str, "-", ":", 3)
+                modified_date_str = self._replace_nth_regex(
+                    modified_date_str, "-", " ", 3)
 
                 action_date = parse(modified_date_str)
             except Exception as nested_e:
-                self.log.warning(f"Unable to parse tag value: {tag_value}, error: {str(nested_e)}")
+                self.log.warning(
+                    f"Unable to parse tag value: {tag_value}, error: {str(nested_e)}")
                 return False
 
         from datetime import datetime, timedelta
@@ -487,7 +614,7 @@ class RocketMQMarkedForOpFilter(Filter):
         else:
             current_date = datetime.now()
         return current_date >= (
-                action_date - timedelta(days=self.skew, hours=self.skew_hours))
+            action_date - timedelta(days=self.skew, hours=self.skew_hours))
 
     def _replace_nth_regex(self, s, old, new, n):
         """Replace the nth occurrence of old with new in string s"""
@@ -534,15 +661,15 @@ class RocketMQMarkedForOpFilter(Filter):
 class RocketMQMarkForOpAction(HuaweiCloudBaseAction):
     """
     Add a "mark-for-operation" tag to RocketMQ instances.
-    
+
     This action is used to mark resources so that other policies (using the `marked-for-op` filter)
     can identify and execute at a future time.
     It creates a tag on the resource with a value containing the specified operation (`op`)
     and execution timestamp.
-    
+
     :example:
     Mark RocketMQ instances created over 90 days ago to be deleted in 7 days:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -577,7 +704,7 @@ class RocketMQMarkForOpAction(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         """
         Perform the mark operation on a single resource.
-        
+
         :param resource: RocketMQ instance resource dictionary to mark
         :return: None or API response (but typically no specific result)
         """
@@ -617,7 +744,7 @@ class RocketMQMarkForOpAction(HuaweiCloudBaseAction):
     def _create_or_update_tag(self, resource, key, value):
         """
         Create or update a tag for the specified resource.
-        
+
         :param resource: Target resource dictionary
         :param key: Tag key
         :param value: Tag value
@@ -659,7 +786,7 @@ class RocketMQMarkForOpAction(HuaweiCloudBaseAction):
 class RocketMQAutoTagUser(HuaweiCloudBaseAction):
     """
     (Conceptual) Automatically add creator user tags to RocketMQ instances.
-    
+
     **Important Note:** This action depends on creator information being included in the resource data
     (e.g., the 'user_name' field here).
     RocketMQ instance information returned by HuaweiCloud API **typically does not directly include
@@ -667,11 +794,11 @@ class RocketMQAutoTagUser(HuaweiCloudBaseAction):
     Therefore, the effectiveness of this action depends on whether the `QueryResourceManager`
     or its `augment` method can obtain and populate the `user_name` field through other means
     (e.g., querying the CTS operation log service). If it cannot be obtained, the tag value will be 'unknown'.
-    
+
     :example:
     Add a 'Creator' tag with the creator's username (if available) to RocketMQ instances
     missing this tag:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -690,13 +817,15 @@ class RocketMQAutoTagUser(HuaweiCloudBaseAction):
         tag={'type': 'string', 'default': 'CreatorName'},
         # The pattern mode for this operation, default is 'resource'
         # Optional 'account' (may indicate the current account executing the policy, but has no practical meaning)
-        mode={'type': 'string', 'enum': ['resource', 'account'], 'default': 'resource'},
+        mode={'type': 'string', 'enum': [
+            'resource', 'account'], 'default': 'resource'},
         # If mode is 'resource', specify the resource dictionary key to get the username
         user_key={'type': 'string', 'default': 'creator'},
         # Changed to 'creator' which might be more general
         # Whether to update existing tags, default is True
         update={'type': 'boolean', 'default': True},
-        required=[]  # No required parameters (since all parameters have default values)
+        # No required parameters (since all parameters have default values)
+        required=[]
     )
 
     # Permission declaration (if getting user information requires specific permissions)
@@ -705,7 +834,7 @@ class RocketMQAutoTagUser(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         """
         Perform auto-tag user operation on a single resource.
-        
+
         :param resource: RocketMQ instance resource dictionary to tag
         :return: None
         """
@@ -717,7 +846,8 @@ class RocketMQAutoTagUser(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
         instance_name = resource.get('name', 'unknown name')
         if not instance_id:
-            log.error(f"Cannot tag RocketMQ resource missing 'instance_id': {instance_name}")
+            log.error(
+                f"Cannot tag RocketMQ resource missing 'instance_id': {instance_name}")
             return None
 
         # Check if update is needed and if the tag already exists
@@ -742,7 +872,8 @@ class RocketMQAutoTagUser(HuaweiCloudBaseAction):
                         f"(tried keys: '{user_key}', 'user_name'). "
                         f"Using 'unknown'.")
         elif mode == 'account':
-            log.warning("'account' mode in RocketMQAutoTagUser not fully implemented.")
+            log.warning(
+                "'account' mode in RocketMQAutoTagUser not fully implemented.")
             user_name = 'unknown'
 
         # Reuse RocketMQMarkForOpAction's helper method
@@ -756,13 +887,13 @@ class RocketMQAutoTagUser(HuaweiCloudBaseAction):
 class RocketMQTag(HuaweiCloudBaseAction):
     """
     Add or update a specified tag on RocketMQ instances.
-    
+
     This is a generic tag-adding action that allows users to directly specify tag keys and values.
     If a tag with the same key already exists, it will be overwritten by default.
-    
+
     :example:
     Add an 'Environment=Production' tag to all RocketMQ instances in the production environment:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -788,7 +919,7 @@ class RocketMQTag(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         """
         Perform add/update tag operation on a single resource.
-        
+
         :param resource: RocketMQ instance resource dictionary to tag
         :return: None
         """
@@ -813,12 +944,12 @@ class RocketMQTag(HuaweiCloudBaseAction):
 class RocketMQRemoveTag(HuaweiCloudBaseAction):
     """
     Remove one or more specified tags from RocketMQ instances.
-    
+
     Allows users to remove tags from instances based on tag keys.
-    
+
     :example:
     Remove the 'Temporary' tag from all RocketMQ instances:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -839,7 +970,8 @@ class RocketMQRemoveTag(HuaweiCloudBaseAction):
         'remove-tag',  # Action type name
         # Can specify a single key or a list of keys
         key={'type': 'string'},  # Single tag key to remove
-        keys={'type': 'array', 'items': {'type': 'string'}},  # List of tag keys to remove
+        # List of tag keys to remove
+        keys={'type': 'array', 'items': {'type': 'string'}},
         # required=['keys'] # At least need key or keys
         # Better approach would be using oneOf or anyOf, but Custodian's schema might not support
         # Temporarily allow key and keys optional, handle in code
@@ -848,7 +980,7 @@ class RocketMQRemoveTag(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         """
         Perform remove tag operation on a single resource.
-        
+
         :param resource: RocketMQ instance resource dictionary to remove tags from
         :return: None
         """
@@ -859,7 +991,8 @@ class RocketMQRemoveTag(HuaweiCloudBaseAction):
             tags_to_remove.append(single_key)
 
         if not tags_to_remove:
-            log.warning("No tag keys specified (key or keys) in remove-tag operation.")
+            log.warning(
+                "No tag keys specified (key or keys) in remove-tag operation.")
             return None
 
         instance_id = resource.get('instance_id')
@@ -888,7 +1021,7 @@ class RocketMQRemoveTag(HuaweiCloudBaseAction):
     def _remove_tags_internal(self, resource, keys_to_delete):
         """
         Internal helper method to call API to remove the specified list of tag keys.
-        
+
         :param resource: Target resource dictionary
         :param keys_to_delete: List of tag key strings to delete
         """
@@ -926,15 +1059,15 @@ class RocketMQRemoveTag(HuaweiCloudBaseAction):
 class RocketMQRenameTag(HuaweiCloudBaseAction):
     """
     Rename a tag key on RocketMQ instances.
-    
+
     This operation is actually "copy and delete":
     1. Read the value of the tag with the old key (`old_key`).
     2. Create a new tag with the new key (`new_key`) and the old value.
     3. Delete the tag with the old key (`old_key`).
-    
+
     :example:
     Rename the 'Env' tag to 'Environment' on all instances:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -959,7 +1092,7 @@ class RocketMQRenameTag(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         """
         Perform rename tag operation on a single resource.
-        
+
         :param resource: RocketMQ instance resource dictionary to rename tag on
         :return: None
         """
@@ -1023,13 +1156,13 @@ class RocketMQRenameTag(HuaweiCloudBaseAction):
 class DeleteRocketMQ(HuaweiCloudBaseAction):
     """
     Delete the specified RocketMQ instance.
-    
+
     **Warning:** This is a destructive operation that will permanently delete the RocketMQ instance
     and its data. Use with caution.
-    
+
     :example:
     Delete RocketMQ instances created more than 90 days ago and marked for deletion:
-    
+
     .. code-block:: yaml
 
         policies:
@@ -1058,14 +1191,15 @@ class DeleteRocketMQ(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         """
         Perform delete operation on a single resource.
-        
+
         :param resource: RocketMQ instance resource dictionary to delete
         :return: API call response (may contain task ID etc.) or None (if failed)
         """
         instance_id = resource.get('instance_id')
         instance_name = resource.get('name', 'unknown name')
         if not instance_id:
-            log.error(f"Cannot delete RocketMQ resource missing 'instance_id': {instance_name}")
+            log.error(
+                f"Cannot delete RocketMQ resource missing 'instance_id': {instance_name}")
             return None
 
         # Get HuaweiCloud RocketMQ client
@@ -1086,5 +1220,6 @@ class DeleteRocketMQ(HuaweiCloudBaseAction):
                 f"{e.error_msg} (status code: {e.status_code})")
             return None  # If delete fails, return None
         except Exception as e:
-            log.error(f"Unable to delete RocketMQ instance {instance_name} ({instance_id}): {str(e)}")
+            log.error(
+                f"Unable to delete RocketMQ instance {instance_name} ({instance_id}): {str(e)}")
             return None
