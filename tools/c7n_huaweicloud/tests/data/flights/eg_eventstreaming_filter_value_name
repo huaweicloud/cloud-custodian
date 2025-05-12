@@ -1,0 +1,109 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Auth-Token:
+      - MIIZGAYJKoZIhvcNAQcCoIIZCTCCGQUCAQExDTALBg...
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20240520T094011Z
+    method: GET
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/ap-southeat-1/eventstreamings?limit=100&offset=0
+  response:
+    body:
+      string: "{ \"total\": 2, \"size\": 2, \"items\": [ { \"id\": \"es-001-target\",
+        \"name\": \"es-001-target\", \"description\": \"\u76EE\u6807\u4E8B\u4EF6\u6D41\",
+        \"source\": { \"name\": \"SMN\", \"source_smn\": { \"topic_urn\": \"urn:smn:cn-north-4:test:test-topic\"
+        } }, \"sink\": { \"name\": \"OBS\", \"sink_obs\": { \"obs_bucket\": \"event-data\",
+        \"obs_path\": \"events/\", \"time_format\": \"yyyy/MM/dd\" } }, \"rule_config\":
+        {}, \"option\": { \"thread_num\": 1, \"batch_window\": { \"count\": 100, \"time\":
+        60 } }, \"status\": \"RUNNING\", \"created_time\": \"2023-05-01T10:00:00Z\",
+        \"updated_time\": \"2023-05-01T10:00:00Z\", \"tags\": [ { \"key\": \"department\",
+        \"value\": \"IT\" } ] }, { \"id\": \"es-002-other\", \"name\": \"es-002-other\",
+        \"description\": \"\u5176\u4ED6\u4E8B\u4EF6\u6D41\", \"source\": { \"name\":
+        \"DIS\", \"source_dis\": { \"stream_name\": \"test-stream\" } }, \"sink\":
+        { \"name\": \"DWS\", \"sink_dws\": { \"cluster_name\": \"test-cluster\", \"database_name\":
+        \"test-db\", \"schema_name\": \"test-schema\", \"table_name\": \"test-table\"
+        } }, \"rule_config\": {}, \"option\": { \"thread_num\": 2, \"batch_window\":
+        { \"count\": 200, \"time\": 120 } }, \"status\": \"RUNNING\", \"created_time\":
+        \"2023-07-01T10:00:00Z\", \"updated_time\": \"2023-07-01T10:00:00Z\", \"tags\":
+        [ { \"key\": \"environment\", \"value\": \"production\" } ] } ] }"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Mon, 20 May 2024 09:40:11 GMT
+      Server:
+      - API Gateway
+      X-Request-Id:
+      - c7f4ae0623b8212c621ed86293e52a3a
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250425T095311Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"425d64cb8abf9b24bfbf3e79559ade93"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 09:53:12 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=dc195765ad4bcd649d; path=/
+      - HWWAFSESTIME=1745574789710; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 425d64cb8abf9b24bfbf3e79559ade93
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1
