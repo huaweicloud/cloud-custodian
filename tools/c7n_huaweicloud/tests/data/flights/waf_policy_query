@@ -1,0 +1,103 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - waf.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T114046Z
+    method: GET
+    uri: https://waf.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/waf/policy?page=1
+  response:
+    body:
+      string: '{"total": 1, "items": [{"id": "policy-id-123456", "name": "policy-example",
+        "level": 2, "full_detection": true, "action": {"category": "block"}, "options":
+        {"webattack": true, "cc": true, "precise": false, "blacklist": true, "data_masking":
+        false, "antitamper": false, "antibot": false, "anticrawler": false, "geolocation_access_control":
+        false}, "hosts": ["domain-id-123456"], "bind_host": [{"id": "domain-id-123456",
+        "hostname": "example.com", "waf_type": "premium", "protect_status": 1}], "timestamp":
+        1619760096000}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 11:40:46 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e521a64f68ebbaea2c013d0806e0f8a1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - waf.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T115412Z
+    method: GET
+    uri: https://waf.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/waf/policy?page=2
+  response:
+    body:
+      string: '{"total": 1, "items": []}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 11:40:46 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e521a64f68ebbaea2c013d0806e0f8a1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success

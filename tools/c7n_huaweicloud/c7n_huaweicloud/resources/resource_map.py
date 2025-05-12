@@ -46,4 +46,6 @@ ResourceMap = {
     "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
     "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
     "huaweicloud.bms": "c7n_huaweicloud.resources.bms.Bms",
+    "huaweicloud.waf-policy": "c7n_huaweicloud.resources.waf.WafPolicy",
+    "huaweicloud.waf-log-config": "c7n_huaweicloud.resources.waf.WafLogConfig",
 }
