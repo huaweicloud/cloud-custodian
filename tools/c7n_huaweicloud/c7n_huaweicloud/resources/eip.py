@@ -88,6 +88,8 @@ class AssociateInstanceTypeFilter(Filter):
 class EIPDelete(HuaweiCloudBaseAction):
     """删除弹性公网IP
 
+    删除前会自动解绑已绑定的弹性公网IP
+
     :example:
 
     .. code-block:: yaml
@@ -106,13 +108,31 @@ class EIPDelete(HuaweiCloudBaseAction):
 
     def process(self, resources):
         session = local_session(self.manager.session_factory)
-        # 使用eip_v2客户端
-        client = session.client('eip_v2')
+        # 使用eip_v3客户端进行解绑操作
+        client_v3 = self.manager.get_client()
+        # 使用eip_v2客户端进行删除操作
+        client_v2 = session.client('eip_v2')
+        
         for resource in resources:
             try:
-                # 使用v2版本的DeletePublicipRequest
+                # 如果EIP状态为ACTIVE（已绑定），先进行解绑
+                if resource.get("status") == "ACTIVE":
+                    try:
+                        request = DisassociatePublicipsRequest()
+                        request.publicip_id = resource["id"]
+                        client_v3.disassociate_publicips(request)
+                        self.log.info(f"解绑弹性公网IP {resource['id']} 成功")
+                    except exceptions.ClientRequestException as e:
+                        self.log.error(
+                            f"解绑弹性公网IP {resource['id']} 失败，"
+                            f"请求ID: {e.request_id}, 错误码: {e.error_code}, 错误消息: {e.error_msg}"
+                        )
+                        self.handle_exception(resource, resources)
+                        continue
+
+                # 执行删除操作
                 request = DeletePublicipRequest(publicip_id=resource["id"])
-                client.delete_publicip(request)
+                client_v2.delete_publicip(request)
                 self.log.info(f"删除弹性公网IP {resource['id']} 成功")
             except exceptions.ClientRequestException as e:
                 self.log.error(
