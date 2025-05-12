@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import json
 
 from c7n.filters import Filter
 from c7n.filters.core import ValueFilter, AgeFilter
@@ -370,7 +371,8 @@ class SwrImage(QueryResourceManager):
                     tag_val = resource.get('Tag') or resource.get('tag')
                     if tag_val:
                         # Use Tag value to build ID
-                        resource['id'] = f"{resource['namespace']}/{resource['repository']}/{tag_val}"
+                        resource['id'] = (f"{resource['namespace']}/"
+                                          f"{resource['repository']}/{tag_val}")
 
                 result.append(resource)
             except Exception as e:
@@ -450,8 +452,9 @@ class SwrImage(QueryResourceManager):
             # If specific repository information is provided, directly query the repository's image tags
             namespace = query_params['namespace']
             repository = query_params['repository']
-            resources.extend(self._get_repository_tags(
-                client, namespace, repository, query_params))
+            resources.extend(
+                self._get_repository_tags(client, namespace, repository, query_params)
+            )
         else:
             # Otherwise, first get all repository list
             from huaweicloudsdkswr.v2.model.list_repos_details_request import ListReposDetailsRequest
@@ -465,6 +468,8 @@ class SwrImage(QueryResourceManager):
                         repo_dict = repo
                         if hasattr(repo, 'to_dict'):
                             repo_dict = repo.to_dict()
+                        else:
+                            repo_dict = repo
 
                         # Get repository's namespace and name
                         namespace = repo_dict.get('namespace')
@@ -483,7 +488,8 @@ class SwrImage(QueryResourceManager):
 
         return self.augment(resources)
 
-    def _get_repository_tags(self, client, namespace, repository, additional_params=None):
+    def _get_repository_tags(self, client, namespace, repository, 
+                             additional_params=None):
         """Get all image tags for the specified repository."""
         tags = []
         try:
@@ -528,6 +534,7 @@ class SwrImage(QueryResourceManager):
                         # If no Tag field, but path field exists, try to extract from path
                         if 'path' in image_dict and ':' in image_dict['path']:
                             tag_value = image_dict['path'].split(':')[-1]
+                            # Set both uppercase and lowercase tag fields
                             image_dict['Tag'] = tag_value
                             image_dict['tag'] = tag_value
 
@@ -618,17 +625,17 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 value: test-repo
             actions:
               - type: set-lifecycle
-                algorithm: or  
+                algorithm: or
                 rules:
-                  # Date Rule 
-                  - template: date_rule 
+                  # Date Rule
+                  - template: date_rule
                     params:
-                      days: 90 
-                    tag_selectors:  
-                      - kind: label 
-                        pattern: v1.0 
-                      - kind: regexp  
-                        pattern: ^release-.*$ 
+                      days: 90
+                    tag_selectors:
+                      - kind: label
+                        pattern: v1.0
+                      - kind: regexp
+                        pattern: ^release-.*$
     """
 
     schema = type_schema(
@@ -723,7 +730,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                     if not kind or not pattern:
                         self.log.warning(
-                            f"Skipping invalid tag_selector: {selector_data}")
+                            f"Skipping invalid tag_selector: {selector_data}"
+                        )
                         continue
 
                     selector = TagSelector(
@@ -757,7 +765,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     self.log.error(f"Failed to create rule object: {rule_err}")
                     # Try using serialized parameters
                     try:
-                        import json
                         rule = Rule(
                             template=template,
                             params=json.dumps(param_obj),
@@ -765,7 +772,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
                         )
                         rules.append(rule)
                         self.log.debug(
-                            f"Successfully created rule with serialized params: {json.dumps(param_obj)}"
+                            f"Successfully created rule with serialized params: "
+                            f"{json.dumps(param_obj)}"
                         )
                     except Exception as json_err:
                         self.log.error(
@@ -806,14 +814,18 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
             # Send request
             self.log.info(
-                f"Sending create lifecycle rule request: namespace={namespace}, repository={repository}")
+                f"Sending create lifecycle rule request: "
+                f"namespace={namespace}, repository={repository}"
+            )
             response = client.create_retention(request)
 
             # Process response
             retention_id = response.id
 
             self.log.info(
-                f"Successfully created lifecycle rule: {namespace}/{repository}, ID: {retention_id}")
+                f"Successfully created lifecycle rule: "
+                f"{namespace}/{repository}, ID: {retention_id}"
+            )
 
             # Add processing result information to resource
             resource['retention_id'] = retention_id
@@ -822,11 +834,12 @@ class SetLifecycle(HuaweiCloudBaseAction):
             return resource
         except Exception as e:
             # Record detailed exception information
-            import traceback
             error_msg = str(e)
             error_detail = traceback.format_exc()
             self.log.error(
-                f"Failed to create lifecycle rule: {namespace}/{repository}: {error_msg}")
+                f"Failed to create lifecycle rule: "
+                f"{namespace}/{repository}: {error_msg}"
+            )
             self.log.debug(f"Exception details: {error_detail}")
 
             resource['status'] = 'error'
