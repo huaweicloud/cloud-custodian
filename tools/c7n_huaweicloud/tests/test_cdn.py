@@ -86,3 +86,39 @@ class CdnDomainTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['id'], 'domain-id-123')
+
+    def test_domain_set_attributes(self):
+        """Test updating CDN domain configuration"""
+        factory = self.replay_flight_data('cdn_domain_set_attributes')
+        p = self.load_policy(
+            {
+                'name': 'update-cdn-domain-config',
+                'resource': 'huaweicloud.cdn-domain',
+                'filters': [
+                    {
+                        'type': 'value',
+                        'key': 'domain_name',
+                        'value': 'example.com'
+                    }
+                ],
+                'actions': [
+                    {
+                        'type': 'set-attributes',
+                        'attributes': {
+                            'configs': {
+                                'https': {
+                                    'https_status': 'on',
+                                    'certificate_type': 1,
+                                    'http2_status': 'on'
+                                },
+                                'origin_protocol': 'https'
+                            }
+                        }
+                    }
+                ]
+            },
+            session_factory=factory
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['domain_name'], 'example.com')

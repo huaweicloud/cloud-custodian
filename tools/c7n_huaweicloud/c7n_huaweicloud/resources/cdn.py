@@ -10,7 +10,8 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkcdn.v2.model import (
     DeleteDomainRequest, 
     EnableDomainRequest, 
-    DisableDomainRequest
+    DisableDomainRequest,
+    UpdateDomainFullConfigRequest,
 )
 from huaweicloudsdkcore.exceptions import exceptions
 
@@ -258,5 +259,111 @@ class DisableCdnDomain(HuaweiCloudBaseAction):
                 f"CDN domain disable failed: id={domain_id}, RequestId={e.request_id}, "
                 f"StatusCode={e.status_code}, ErrorCode={e.error_code}, "
                 f"ErrorMsg={e.error_msg}"
+            )
+            raise
+
+
+@CdnDomain.action_registry.register('set-attributes')
+class UpdateCdnDomainConfig(HuaweiCloudBaseAction):
+    """Update CDN domain configuration
+
+    This action allows updating various configuration settings of a CDN domain.
+    
+    The action supports modifying business type, service area, SSL settings, origin settings,
+    caching rules, HTTP headers, and other CDN domain configurations.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: enable-cdn-https
+            resource: huaweicloud.cdn-domain
+            filters:
+              - type: value
+                key: https_status
+                value: 0
+            actions:
+              - type: set-attributes
+                attributes:
+                  configs:
+                    https:
+                      certificate_type: 1  # Default certificate
+                      certificate_value: ""
+                      http2_status: "on"
+                      certificate_name: ""
+                      https_status: "on"
+
+          - name: update-origin-settings
+            resource: huaweicloud.cdn-domain
+            filters:
+              - type: value
+                key: domain_name
+                value: example.com
+            actions:
+              - type: set-attributes
+                attributes:
+                  configs:
+                    sources:
+                      - ip_or_domain: new-origin.example.com
+                        origin_type: domain
+                        active_standby: 1
+                    origin_protocol: https
+    """
+    
+    schema = type_schema(
+        'set-attributes',
+        required=['attributes'],
+        attributes={
+            'type': 'object',
+            'additionalProperties': True,
+            'properties': {
+                'configs': {'type': 'object'}
+            }
+        },
+        enterprise_project_id={'type': 'string'}
+    )
+    
+    def perform_action(self, resource):
+        """Perform update configuration operation
+
+        Args:
+            resource: resource info dict
+        """
+        client = self.manager.get_client()
+        domain_name = resource['domain_name']
+        attributes = self.data.get('attributes', {})
+        
+        log.info(f"Updating configuration for CDN domain: {domain_name}")
+        
+        # Build update domain full config request
+        request = UpdateDomainFullConfigRequest()
+        request.domain_name = domain_name
+        
+        # If enterprise project ID is needed
+        if self.data.get('enterprise_project_id'):
+            request.enterprise_project_id = self.data.get('enterprise_project_id')
+        
+        # Construct the request body
+        if 'configs' in attributes:
+            # Create a simple dict as the request body
+            request.body = {
+                "configs": attributes['configs']
+            }
+        else:
+            # For backward compatibility, support setting configs fields directly
+            request.body = {
+                "configs": attributes
+            }
+        
+        # Perform update operation
+        try:
+            client.update_domain_full_config(request)
+            log.info(f"CDN domain configuration updated successfully: domain_name={domain_name}")
+        except exceptions.ClientRequestException as e:
+            log.error(
+                f"CDN domain configuration update failed: domain_name={domain_name}, "
+                f"RequestId={e.request_id}, StatusCode={e.status_code}, "
+                f"ErrorCode={e.error_code}, ErrorMsg={e.error_msg}"
             )
             raise
