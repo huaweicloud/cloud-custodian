@@ -413,7 +413,11 @@ class Session:
         elif service == 'certificate':
             client = (
                 ScmClient.new_builder()
-                .with_credentials(globalCredentials)
+                .with_credentials(GlobalCredentials(
+                    self.ak, 
+                    self.sk,
+                    domain_id=os.getenv("HUAWEI_DOMAIN_ID"))
+                    .with_security_token(self.token))
                 .with_region(ScmRegion.value_of(self.region))
                 .build()
             )
