@@ -612,25 +612,17 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 value: test-repo
             actions:
               - type: set-lifecycle
-                algorithm: or  # Matching policy for recycling rules, fixed as "or"
+                algorithm: or  
                 rules:
-                  # Date Rule - Keep images from the last 90 days
-                  - template: date_rule  # Recycling type, date_rule indicates aging by date
+                  # Date Rule 
+                  - template: date_rule 
                     params:
-                      days: 90  # Retain images from the past 90 days, older images will be deleted
-                    tag_selectors:  # Exception images, specified images will not be aged
-                      - kind: label  # label means exact match of image version, regexp means regular match
-                        pattern: v1.0  # Indicates v1.0 version image will not be aged
-                      - kind: regexp  # Use regular expression matching
-                        pattern: ^release-.*$  # Indicates images starting with release- will not be aged
-                  
-                  # Number Rule - Keep the newest 10 images
-                  - template: tag_rule  # Recycling type, tag_rule indicates aging by number
-                    params:
-                      num: 10  # Keep the newest 10 images, excess will be deleted
-                    tag_selectors:  # Exception images, specified images will not be aged
-                      - kind: label
-                        pattern: latest  # Indicates latest version image will not be aged
+                      days: 90 
+                    tag_selectors:  
+                      - kind: label 
+                        pattern: v1.0 
+                      - kind: regexp  
+                        pattern: ^release-.*$ 
     """
 
     schema = type_schema(
@@ -687,33 +679,104 @@ class SetLifecycle(HuaweiCloudBaseAction):
             return resource
 
         try:
-            # Create request objects and request body
+            # Log original configuration for debugging
+            self.log.debug(f"Original rule configuration: {self.data.get('rules')}")
             
             # Create rule objects
             rules = []
             for rule_data in self.data.get('rules', []):
+                # Get template type and validate
+                template = rule_data.get('template')
+                if template not in ['date_rule', 'tag_rule']:
+                    self.log.warning(f"Unsupported template type: {template}, will use date_rule instead")
+                    template = 'date_rule'
+                
+                # Special handling for params parameter, ensure correct data format
+                param_obj = {}
+                if template == 'date_rule':
+                    # Get days value from rule configuration and ensure it's a string
+                    days_value = rule_data.get('params', {}).get('days', '30')
+                    param_obj['days'] = str(days_value)
+                elif template == 'tag_rule':
+                    # Get number value from rule configuration and ensure it's a string
+                    num_value = rule_data.get('params', {}).get('num', '10')
+                    param_obj['num'] = str(num_value)
+                
+                # Log processed parameters
+                self.log.debug(f"Processed params parameter: {param_obj}")
+                
                 # Create tag selectors
                 tag_selectors = []
                 for selector_data in rule_data.get('tag_selectors', []):
+                    # Ensure kind and pattern are string type
+                    kind = selector_data.get('kind')
+                    pattern = selector_data.get('pattern')
+                    
+                    if not kind or not pattern:
+                        self.log.warning(f"Skipping invalid tag_selector: {selector_data}")
+                        continue
+                        
                     selector = TagSelector(
-                        kind=selector_data.get('kind'),
-                        pattern=selector_data.get('pattern')
+                        kind=kind,
+                        pattern=pattern
                     )
                     tag_selectors.append(selector)
                 
-                # Create rule
-                rule = Rule(
-                    template=rule_data.get('template'),
-                    params=rule_data.get('params'),
-                    tag_selectors=tag_selectors
-                )
-                rules.append(rule)
+                # Ensure there are tag selectors
+                if not tag_selectors:
+                    self.log.warning("No valid tag_selectors, will use default empty tag selector")
+                    # Add a default tag selector to avoid API error
+                    tag_selectors.append(TagSelector(
+                        kind="label",
+                        pattern="latest"
+                    ))
+                
+                # Create rule object
+                try:
+                    # Create rule directly using dictionary
+                    rule = Rule(
+                        template=template,
+                        params=param_obj,
+                        tag_selectors=tag_selectors
+                    )
+                    rules.append(rule)
+                    self.log.debug(f"Successfully created rule: template={template}, params={param_obj}")
+                except Exception as rule_err:
+                    self.log.error(f"Failed to create rule object: {rule_err}")
+                    # Try using serialized parameters
+                    try:
+                        import json
+                        rule = Rule(
+                            template=template,
+                            params=json.dumps(param_obj),
+                            tag_selectors=tag_selectors
+                        )
+                        rules.append(rule)
+                        self.log.debug(f"Successfully created rule with serialized params: {json.dumps(param_obj)}")
+                    except Exception as json_err:
+                        self.log.error(f"Failed to create rule with serialized params: {json_err}")
+            
+            # Ensure there is at least one rule
+            if not rules:
+                self.log.error("No valid rule configuration")
+                resource['status'] = 'error'
+                resource['error'] = 'No valid rules configured'
+                return resource
+            
+            # Log final generated rules
+            self.log.debug(f"Final generated rules: {rules}")
             
             # Create request body
             body = CreateRetentionRequestBody(
                 algorithm=self.data.get('algorithm', 'or'),
                 rules=rules
             )
+            
+            # Log request body
+            if hasattr(body, 'to_dict'):
+                self.log.debug(f"Request body: {body.to_dict()}")
+            else:
+                self.log.debug(f"Request body: {body}")
             
             # Create request
             request = CreateRetentionRequest(
@@ -722,13 +785,18 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 body=body
             )
             
+            # Output complete request content for debugging
+            if hasattr(request, 'to_dict'):
+                self.log.debug(f"Complete request: {request.to_dict()}")
+            
             # Send request
+            self.log.info(f"Sending create lifecycle rule request: namespace={namespace}, repository={repository}")
             response = client.create_retention(request)
             
             # Process response
             retention_id = response.id
             
-            self.log.info(f"Successfully created lifecycle rule for repository {namespace}/{repository}, ID: {retention_id}")
+            self.log.info(f"Successfully created lifecycle rule: {namespace}/{repository}, ID: {retention_id}")
             
             # Add processing result information to resource
             resource['retention_id'] = retention_id
@@ -736,8 +804,14 @@ class SetLifecycle(HuaweiCloudBaseAction):
             
             return resource
         except Exception as e:
-            self.log.error(f"Failed to create lifecycle rule for repository {namespace}/{repository}: {str(e)}")
+            # Record detailed exception information
+            import traceback
+            error_msg = str(e)
+            error_detail = traceback.format_exc()
+            self.log.error(f"Failed to create lifecycle rule: {namespace}/{repository}: {error_msg}")
+            self.log.debug(f"Exception details: {error_detail}")
+            
             resource['status'] = 'error'
-            resource['error'] = str(e)
+            resource['error'] = error_msg
             return resource
 
