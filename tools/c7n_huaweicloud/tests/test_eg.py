@@ -19,12 +19,12 @@ class EventStreamingTest(BaseTest):
         # Override default region in environment variables
         os.environ['HUAWEI_DEFAULT_REGION'] = self.default_region
         
-    def test_eventstreaming_query(self):
+    def test_eg_subscriptions_query(self):
         """Test basic query functionality for event streaming."""
-        factory = self.replay_flight_data('eg_eventstreaming_query')
+        factory = self.replay_flight_data('eg_subscriptions_query')
         p = self.load_policy({
-            'name': 'eventstreaming-query-test',
-            'resource': 'huaweicloud.eventstreaming'
+            'name': 'subscriptions-query-test',
+            'resource': 'huaweicloud.eg-subscription'
         }, session_factory=factory)
         
         resources = p.run()
@@ -37,7 +37,7 @@ class EventStreamingTest(BaseTest):
         factory = self.replay_flight_data('eg_eventstreaming_age_filter')
         p = self.load_policy({
             'name': 'old-event-streaming',
-            'resource': 'huaweicloud.eventstreaming',
+            'resource': 'huaweicloud.eg-subscription',
             'filters': [{
                 'type': 'age',
                 'days': 180, # Filter for resources older than 180 days
@@ -53,7 +53,7 @@ class EventStreamingTest(BaseTest):
         factory = self.replay_flight_data('eg_eventstreaming_filter_tag_count')
         
         # Mock augment to simulate tag data, avoiding TMS client issues
-        with mock.patch('c7n_huaweicloud.resources.eg.EventStreaming.augment') as mock_augment:
+        with mock.patch('c7n_huaweicloud.resources.eg.Subscription.augment') as mock_augment:
             def mock_augment_implementation(resources):
                 for resource in resources:
                     if resource['id'] == 'es-005-two-tags':
@@ -74,7 +74,7 @@ class EventStreamingTest(BaseTest):
             expected_tag_count = 2
             p = self.load_policy({
                 'name': 'eventstreaming-tag-count-match',
-                'resource': 'huaweicloud.eventstreaming',
+                'resource': 'huaweicloud.eg-subscription',
                 'filters': [{'type': 'tag-count', 'count': expected_tag_count}]
             }, session_factory=factory)
             
@@ -87,7 +87,7 @@ class EventStreamingTest(BaseTest):
             # Test greater than operator
             p2 = self.load_policy({
                 'name': 'eventstreaming-tag-count-gt',
-                'resource': 'huaweicloud.eventstreaming',
+                'resource': 'huaweicloud.eg-subscription',
                 'filters': [{'type': 'tag-count', 'count': 1, 'op': 'gt'}]
             }, session_factory=factory)
             
@@ -101,7 +101,7 @@ class EventStreamingTest(BaseTest):
         factory = self.replay_flight_data('eg_eventstreaming_filter_list_item_tag')
         
         # Mock augment to simulate tag data in actual API responses
-        with mock.patch('c7n_huaweicloud.resources.eg.EventStreaming.augment') as mock_augment:
+        with mock.patch('c7n_huaweicloud.resources.eg.Subscription.augment') as mock_augment:
             def mock_augment_implementation(resources):
                 for resource in resources:
                     if resource['id'] == 'es-003-with-tags':
@@ -120,7 +120,7 @@ class EventStreamingTest(BaseTest):
             # Load policy to find event streams with specific tags
             p = self.load_policy({
                 'name': 'eventstreaming-list-item-tag-match',
-                'resource': 'huaweicloud.eventstreaming',
+                'resource': 'huaweicloud.eg-subscription',
                 'filters': [{
                     'type': 'list-item',
                     'key': 'tags',
@@ -143,7 +143,7 @@ class EventStreamingTest(BaseTest):
         factory = self.replay_flight_data('eg_eventstreaming_filter_marked_for_op')
         
         # Mock augment to simulate tag data in actual API responses
-        with mock.patch('c7n_huaweicloud.resources.eg.EventStreaming.augment') as mock_augment:
+        with mock.patch('c7n_huaweicloud.resources.eg.Subscription.augment') as mock_augment:
             def mock_augment_implementation(resources):
                 for resource in resources:
                     if resource['id'] == 'es-004-marked':
@@ -161,7 +161,7 @@ class EventStreamingTest(BaseTest):
             # Load policy to find event streams marked for webhook operation
             p = self.load_policy({
                 'name': 'eventstreaming-marked-for-op-webhook-match',
-                'resource': 'huaweicloud.eventstreaming',
+                'resource': 'huaweicloud.eg-subscription',
                 'filters': [{'type': 'marked-for-op', 'op': 'webhook', 'tag': 'c7n_status'}]
             }, session_factory=factory)
             
@@ -182,7 +182,7 @@ class EventStreamingTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "eventstreaming-filter-value-name-match",
-                "resource": "huaweicloud.eventstreaming",
+                "resource": "huaweicloud.eg-subscription",
                 "filters": [{"type": "value", "key": "name", "value": target_name}],
             },
             session_factory=factory,

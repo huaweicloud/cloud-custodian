@@ -14,8 +14,8 @@ from c7n.utils import local_session, type_schema
 
 log = logging.getLogger('custodian.huaweicloud.eg')
 
-@resources.register('eventstreaming')
-class EventStreaming(QueryResourceManager):
+@resources.register('eg-subscription')
+class Subscription(QueryResourceManager):
     """Huawei Cloud EventGrid EventStreaming Resource Manager.
 
     :example:
@@ -31,13 +31,13 @@ class EventStreaming(QueryResourceManager):
     
     class resource_type(TypeInfo):
         service = 'eg'
-        enum_spec = ('list_event_streaming', 'items', 'offset')
+        enum_spec = ('list_subscriptions', 'items', 'offset')
         id = 'id'
         name = 'name'
         filter_name = 'name'
         filter_type = 'scalar'
         taggable = True
-        tag_resource_type = 'EGS_EVENTSTREAMING'
+        tag_resource_type = 'EGS_SUBSCRIPTION'
 
     def augment(self, resources):
         """Augment resources with tag information.
@@ -84,8 +84,8 @@ class EventStreaming(QueryResourceManager):
         return resources
 
 
-@EventStreaming.filter_registry.register('age')
-class EventStreamingAgeFilter(AgeFilter):
+@Subscription.filter_registry.register('age')
+class SubscriptionAgeFilter(AgeFilter):
     """Filters EventStreaming resources based on their creation time.
     
     :example:

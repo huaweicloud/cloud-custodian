@@ -46,5 +46,5 @@ ResourceMap = {
     "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
     "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
     "huaweicloud.bms": "c7n_huaweicloud.resources.bms.Bms",
-    "huaweicloud.eventstreaming": "c7n_huaweicloud.resources.eg.EventStreaming",
+    "huaweicloud.eg-subscription": "c7n_huaweicloud.resources.eg.Subscription",
 }
