@@ -110,58 +110,6 @@ class DCAgeFilter(AgeFilter):
     # Specify the field name representing creation time in the resource dictionary
     date_attribute = "create_time"
 
-
-@DC.action_registry.register('mark-for-op')
-class DCMarkForOp(CreateResourceTagDelayedAction):
-    """Mark Direct Connect resources for delayed operations
-    
-    This operation adds tags to direct connect resources for future operations.
-    The tag format is "operation_date".
-    
-    :example:
-    Mark direct connect resources for deletion after 7 days:
-    
-    .. code-block:: yaml
-    
-        policies:
-          - name: dc-mark-for-delete
-            resource: huaweicloud.dc
-            filters:
-              - type: value
-                key: status
-                value: ACTIVE
-            actions:
-              - type: mark-for-op
-                op: delete            # Operation to execute in the future
-                tag: custodian_cleanup # Tag name
-                days: 7               # Delay in days
-    """
-    
-    def validate(self):
-        """Validate operation parameters
-        
-        Override parent validation method to allow delete operation for direct connect resources
-        """
-        op = self.data.get('op', 'stop')
-        
-        # For DC resources, need to support delete operation
-        allowed_ops = list(self.manager.action_registry.keys())
-        allowed_ops.append('delete')  # Explicitly allow delete operation even if not directly implemented
-        
-        if op not in allowed_ops:
-            raise PolicyValidationError(
-                f"mark-for-op specifies invalid op:{op}, allowed operations: {', '.join(allowed_ops)}")
-        
-        # Validate timezone
-        tz_name = self.data.get('tz', 'utc')
-        self.tz = tzutil.gettz(tz_name)
-        if not self.tz:
-            raise PolicyValidationError(
-                f"Invalid timezone specified {tz_name}")
-                
-        return self
-
-
 @DC.action_registry.register('tag')
 class DCTag(HuaweiCloudBaseAction):
     """
@@ -215,7 +163,7 @@ class DCTag(HuaweiCloudBaseAction):
         # Get Huawei Cloud DC service client
         client = self.manager.get_client()
         project_id = client._credentials.project_id
-        
+
         try:
             # Build create tag request
             request = CreateResourceTagRequest()
