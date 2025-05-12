@@ -1,8 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from datetime import datetime
 
 from huaweicloud_common import BaseTest
 
@@ -20,7 +19,7 @@ class SwrRepositoryTest(BaseTest):
             },
             session_factory=factory,
         )
-        
+    
         resources = p.run()
         # Verify VCR: swr_repository_query should contain 1 repository
         self.assertEqual(len(resources), 1)
@@ -29,7 +28,7 @@ class SwrRepositoryTest(BaseTest):
         # Verify resource contains required fields
         self.assertTrue("id" in resources[0])
         self.assertTrue("tag_resource_type" in resources[0])
-        
+    
         # Verify lifecycle policy is correctly augmented to the resource
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
@@ -37,21 +36,21 @@ class SwrRepositoryTest(BaseTest):
         self.assertTrue(isinstance(lifecycle_policy, list))
         # Verify rules list length
         self.assertEqual(len(lifecycle_policy), 1)
-        
+    
         # Get the first rule
         rule = lifecycle_policy[0]
-        
+    
         # Verify rule properties
         self.assertEqual(rule["algorithm"], "or")
         self.assertEqual(rule["id"], 222)
-        
+    
         # Verify inner rules
         self.assertTrue("rules" in rule)
         self.assertEqual(len(rule["rules"]), 1)
         rule_detail = rule["rules"][0]
         self.assertEqual(rule_detail["template"], "date_rule")
         self.assertEqual(rule_detail["params"]["days"], "30")
-        
+    
         # Verify tag selectors
         self.assertTrue("tag_selectors" in rule_detail)
         selectors = rule_detail["tag_selectors"]
@@ -62,7 +61,7 @@ class SwrRepositoryTest(BaseTest):
         self.assertEqual(selectors[1]["pattern"], "1.0.1")
         self.assertEqual(selectors[2]["kind"], "regexp")
         self.assertEqual(selectors[2]["pattern"], "^123$")
-        
+    
     def test_swr_filter_value(self):
         """Test SWR Repository value filter"""
         factory = self.replay_flight_data("swr_filter_value")
@@ -163,7 +162,7 @@ class SwrImageTest(BaseTest):
         # Verify creation date is more than 90 days in the past
         created_date = datetime.strptime(resources[0]["created"], "%Y-%m-%dT%H:%M:%SZ")
         self.assertTrue((datetime.now() - created_date).days > 90)
-        
+    
     def test_swr_image_filter_value(self):
         """Test SWR Image value filter"""
         factory = self.replay_flight_data("swr_image_filter_value")
@@ -188,7 +187,7 @@ class SwrImageTest(BaseTest):
 
 class LifecycleRuleFilterTest(BaseTest):
     """Test SWR Lifecycle Rule filter"""
-    
+
     def test_lifecycle_rule_filter_match(self):
         """Test Lifecycle Rule filter - Match"""
         factory = self.replay_flight_data("swr_filter_lifecycle_rule_match")
@@ -203,14 +202,14 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource with lifecycle rules
         self.assertEqual(len(resources), 1)
-        
+    
         # Verify lifecycle policy
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
         self.assertTrue(isinstance(lifecycle_policy, list))
         self.assertTrue(len(lifecycle_policy) > 0)
-    
+
     def test_lifecycle_rule_filter_no_match(self):
         """Test Lifecycle Rule filter - No Match"""
         factory = self.replay_flight_data("swr_filter_lifecycle_rule_no_match")
@@ -225,14 +224,14 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource without lifecycle rules
         self.assertEqual(len(resources), 1)
-        
+    
         # Verify lifecycle policy
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is empty list
         self.assertTrue(isinstance(lifecycle_policy, list))
         self.assertEqual(len(lifecycle_policy), 0)
-    
+
     def test_lifecycle_rule_filter_with_match_param(self):
         """Test Lifecycle Rule filter - With Match Parameters"""
         factory = self.replay_flight_data("swr_filter_lifecycle_rule_with_match_param")
@@ -253,7 +252,7 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource with matching lifecycle rules
         self.assertEqual(len(resources), 1)
-        
+    
         # Verify lifecycle policy
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
@@ -284,7 +283,7 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource with matching lifecycle rule parameters
         self.assertEqual(len(resources), 1)
-        
+    
         # Verify lifecycle policy
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
@@ -295,7 +294,7 @@ class LifecycleRuleFilterTest(BaseTest):
         rule_detail = rule["rules"][0]
         self.assertTrue("params" in rule_detail)
         self.assertEqual(rule_detail["params"]["days"], "30")
-    
+
     def test_lifecycle_rule_filter_with_tag_selector(self):
         """Test Lifecycle Rule filter - With Tag Selector"""
         factory = self.replay_flight_data("swr_filter_lifecycle_rule_with_tag_selector")
@@ -316,7 +315,7 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource with matching tag selector
         self.assertEqual(len(resources), 1)
-        
+    
         # Verify tag selector
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
@@ -331,7 +330,7 @@ class LifecycleRuleFilterTest(BaseTest):
                 selector_match = True
                 break
         self.assertTrue(selector_match, "No matching tag selector found")
-    
+
     def test_lifecycle_rule_filter_complex(self):
         """Test Lifecycle Rule filter - Complex Condition Combination"""
         factory = self.replay_flight_data("swr_filter_lifecycle_rule_complex")
@@ -361,21 +360,21 @@ class LifecycleRuleFilterTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 resource matching all conditions
         self.assertEqual(len(resources), 1)
-        
+    
         # Verify lifecycle policy satisfies all conditions
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
         self.assertTrue(isinstance(lifecycle_policy, list))
         rule = lifecycle_policy[0]
-        
+    
         # Verify algorithm
         self.assertEqual(rule["algorithm"], "or")
-        
+    
         # Verify parameters
         rule_detail = rule["rules"][0]
         self.assertTrue("params" in rule_detail)
         self.assertEqual(rule_detail["params"]["days"], "30")
-        
+    
         # Verify tag selector
         selectors = rule_detail["tag_selectors"]
         selector_match = False
@@ -419,7 +418,7 @@ class SetLifecycleActionTest(BaseTest):
         self.assertTrue("retention_id" in resources[0])
         # Verify VCR: Resource status should be created
         self.assertEqual(resources[0]["retention_status"], "created")
-    
+
     def test_create_lifecycle_rule_error(self):
         """Test Create Lifecycle Rule Error Handling"""
         factory = self.replay_flight_data("swr_lifecycle_action_error")
@@ -450,7 +449,7 @@ class SetLifecycleActionTest(BaseTest):
         self.assertTrue("error" in resources[0])
         # Verify VCR: Resource status should be error
         self.assertEqual(resources[0]["status"], "error")
-    
+
     def test_missing_namespace_repository(self):
         """Test Missing Namespace or Repository Information Handling"""
         factory = self.replay_flight_data("swr_lifecycle_missing_info")
