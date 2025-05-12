@@ -1,0 +1,57 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - bms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250508T015505Z
+    method: GET
+    uri: https://bms.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/baremetalservers/detail
+  response:
+    body:
+      string: '{"servers": [{"id": "bac642b0-a9ca-4a13-b6b9-9e41b35905b6", "user_id":
+        "user-test-id1", "name": "bms-test-name1", "status": "ACTIVE", "tenant_id":
+        "tenant-test-id1", "created": "2025-05-08T01:55:04Z", "updated": "2025-05-08T01:55:04Z",
+        "addresses": {"network1": [{"addr": "192.168.1.100", "version": 4}]}, "metadata":
+        {}, "tags": ["test-tag1"], "os_ext_st_stask_state": null, "os_ext_st_svm_state":
+        "active", "os_ext_st_spower_state": 1}], "count": 1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 08 May 2025 01:55:05 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - c7d9ad07455883c6359b6e5f0815b2ec
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
