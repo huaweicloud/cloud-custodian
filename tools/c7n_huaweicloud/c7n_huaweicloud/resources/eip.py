@@ -112,7 +112,6 @@ class EIPDelete(HuaweiCloudBaseAction):
         client_v3 = self.manager.get_client()
         # 使用eip_v2客户端进行删除操作
         client_v2 = session.client('eip_v2')
-        
         for resource in resources:
             try:
                 # 如果EIP状态为ACTIVE（已绑定），先进行解绑
@@ -125,7 +124,8 @@ class EIPDelete(HuaweiCloudBaseAction):
                     except exceptions.ClientRequestException as e:
                         self.log.error(
                             f"解绑弹性公网IP {resource['id']} 失败，"
-                            f"请求ID: {e.request_id}, 错误码: {e.error_code}, 错误消息: {e.error_msg}"
+                            f"请求ID: {e.request_id},"
+                            f" 错误码: {e.error_code}, 错误消息: {e.error_msg}"
                         )
                         self.handle_exception(resource, resources)
                         continue
