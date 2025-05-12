@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from datetime import datetime
 
 from c7n.filters import Filter
 from c7n.filters.core import ValueFilter, AgeFilter
@@ -20,6 +19,7 @@ from huaweicloudsdkswr.v2.model.rule import Rule
 from huaweicloudsdkswr.v2.model.tag_selector import TagSelector
 
 log = logging.getLogger('custodian.huaweicloud.swr')
+
 
 @resources.register('swr')
 class Swr(QueryResourceManager):
@@ -168,7 +168,7 @@ class LifecycleRule(Filter):
                   key: algorithm
                   value: or
     """
-    
+
     schema = type_schema(
         'lifecycle-rule',
         state={'type': 'boolean'},
@@ -181,53 +181,53 @@ class LifecycleRule(Filter):
         tag_selector={'type': 'object'}
     )
     policy_annotation = 'c7n:lifecycle-policy'
-    
+
     def process(self, resources, event=None):
         state = self.data.get('state', True)
         results = []
-        
+
         # Extract filter conditions
         params_filters = self.build_params_filters()
         tag_selector = self.data.get('tag_selector')
         matchers = self.build_matchers()
-        
+
         for resource in resources:
             policies = resource.get(self.policy_annotation, [])
-            
+
             # If there are no lifecycle rules but state is False, add the resource
             if not policies and not state:
                 results.append(resource)
                 continue
-            
+
             # If there are no lifecycle rules but state is True, skip the resource
             if not policies and state:
                 continue
-                
+
             # Check if each lifecycle rule matches all conditions
             rule_matches = False
             for policy in policies:
                 # Check with generic matchers
                 if not self.match_policy_with_matchers(policy, matchers):
                     continue
-                
+
                 # Check rule parameters
                 if params_filters and not self.match_policy_params(policy, params_filters):
                     continue
-                
+
                 # Check tag selector
                 if tag_selector and not self.match_tag_selector(policy, tag_selector):
                     continue
-                
+
                 # If passed all filters, mark as a match
                 rule_matches = True
                 break
-            
+
             # If the rule match status matches the required state, add the resource
             if rule_matches == state:
                 results.append(resource)
-                
+
         return results
-    
+
     def build_params_filters(self):
         """Build parameter filters."""
         params_filters = {}
@@ -252,7 +252,7 @@ class LifecycleRule(Filter):
                         'value_type': 'integer'
                     })
         return params_filters
-    
+
     def build_matchers(self):
         """Build generic matchers."""
         matchers = []
@@ -261,22 +261,22 @@ class LifecycleRule(Filter):
             vf.annotate = False
             matchers.append(vf)
         return matchers
-    
+
     def match_policy_with_matchers(self, policy, matchers):
         """Check if policy matches using generic matchers."""
         if not matchers:
             return True
-            
+
         for matcher in matchers:
             if not matcher(policy):
                 return False
         return True
-    
+
     def match_policy_params(self, policy, params_filters):
         """Check if policy parameters match filters."""
         for rule in policy.get('rules', []):
             rule_params = rule.get('params', {})
-            
+
             # Check if each parameter matches
             all_params_match = True
             for param_key, filter_instance in params_filters.items():
@@ -284,24 +284,24 @@ class LifecycleRule(Filter):
                 if param_key not in rule_params:
                     all_params_match = False
                     break
-                
+
                 # Create temporary object for filter check
                 param_value = rule_params[param_key]
                 # Ensure numeric parameters are converted to numbers
                 if isinstance(param_value, str) and param_value.isdigit():
                     param_value = int(param_value)
                 temp_obj = {param_key: param_value}
-                
+
                 if not filter_instance(temp_obj):
                     all_params_match = False
                     break
-            
+
             # If all parameters of current rule match, return True
             if all_params_match:
                 return True
-                
+
         return False
-    
+
     def match_tag_selector(self, policy, tag_selector):
         """Check if policy tag selector matches the filter."""
         for rule in policy.get('rules', []):
@@ -346,7 +346,7 @@ class SwrImage(QueryResourceManager):
         filter_type = 'scalar'
         taggable = False  # SWR images don't support tagging
         date = 'created'  # Creation time field
-        
+
     def augment(self, resources):
         """Enhance resource information."""
         result = []
@@ -358,49 +358,49 @@ class SwrImage(QueryResourceManager):
                     resource['namespace'] = query['namespace']
                 if 'repository' not in resource and 'repository' in query:
                     resource['repository'] = query['repository']
-                    
+
                 # Ensure Tag field exists and provide compatibility for lowercase tag field
                 if 'Tag' in resource and 'tag' not in resource:
                     resource['tag'] = resource['Tag']
                 elif 'tag' in resource and 'Tag' not in resource:
                     resource['Tag'] = resource['tag']
-                
+
                 # Build complete ID
                 if 'namespace' in resource and 'repository' in resource:
                     tag_val = resource.get('Tag') or resource.get('tag')
                     if tag_val:
                         # Use Tag value to build ID
                         resource['id'] = f"{resource['namespace']}/{resource['repository']}/{tag_val}"
-                
+
                 result.append(resource)
             except Exception as e:
                 self.log.warning(f"Failed to enhance resource information: {e}")
-                
+
         return result
 
     def get_resources(self, resource_ids):
         """Get specific resources by ID."""
         resources = []
-        
+
         if not resource_ids:
             return resources
-            
+
         client = self.get_client()
-        
+
         # Parse resource ID format: namespace/repository/tag
         for resource_id in resource_ids:
             try:
                 namespace, repository, tag = resource_id.split('/')
-                
+
                 request = ListRepositoryTagsRequest(
                     namespace=namespace,
                     repository=repository,
                     tag=tag  # Directly filter the specified tag
                 )
-                
+
                 # Send request
                 response = client.list_repository_tags(request)
-                
+
                 # Process response
                 if response.body:
                     for image in response.body:
@@ -409,40 +409,40 @@ class SwrImage(QueryResourceManager):
                             image_dict = image.to_dict()
                         else:
                             image_dict = image
-                            
+
                         # Add namespace and repository information
                         image_dict['namespace'] = namespace
                         image_dict['repository'] = repository
-                        
+
                         resources.append(image_dict)
             except Exception as e:
                 self.log.warning(f"Failed to get resource {resource_id}: {e}")
-                
+
         return self.augment(resources)
 
     def get_resource_query(self):
         """Build resource query parameters."""
         query = {}
         query_data = self.data.get('query', {})
-        
+
         # Ensure necessary query parameters exist
         if 'namespace' in query_data:
             query['namespace'] = query_data['namespace']
         if 'repository' in query_data:
             query['repository'] = query_data['repository']
-            
+
         # Add optional filter parameters
         for param in ['tag', 'limit', 'offset', 'order_column', 'order_type']:
             if param in query_data:
                 query[param] = query_data[param]
-                
+
         return query
-        
+
     def resources(self, query=None):
         """Get resource list."""
         resources = []
         client = self.get_client()
-        
+
         # First check if specific namespace and repository query is provided
         query_params = self.get_resource_query() if query is None else query
         if query_params and 'namespace' in query_params and 'repository' in query_params:
@@ -457,17 +457,17 @@ class SwrImage(QueryResourceManager):
                 # Query SWR repository list
                 repos_request = ListReposDetailsRequest(limit=100, offset=0)
                 repos_response = client.list_repos_details(repos_request)
-                
+
                 if repos_response.body:
                     for repo in repos_response.body:
                         repo_dict = repo
                         if hasattr(repo, 'to_dict'):
                             repo_dict = repo.to_dict()
-                        
+
                         # Get repository's namespace and name
                         namespace = repo_dict.get('namespace')
                         repository = repo_dict.get('name')
-                        
+
                         if namespace and repository:
                             # Get all image tags for this repository
                             repo_tags = self._get_repository_tags(client, namespace, repository, {})
@@ -479,29 +479,29 @@ class SwrImage(QueryResourceManager):
             resources = self.filter_resources(resources)
 
         return self.augment(resources)
-    
+
     def _get_repository_tags(self, client, namespace, repository, additional_params=None):
         """Get all image tags for the specified repository."""
         tags = []
         try:
             from huaweicloudsdkswr.v2.model.list_repository_tags_request import ListRepositoryTagsRequest
-            
+
             # Build request parameters
             request_kwargs = {
                 'namespace': namespace,
                 'repository': repository
             }
-            
+
             # Add additional query parameters
             if additional_params:
                 for param in ['tag', 'limit', 'offset', 'order_column', 'order_type']:
                     if param in additional_params:
                         request_kwargs[param] = additional_params[param]
-                    
+
             # Create and send request
             request = ListRepositoryTagsRequest(**request_kwargs)
             response = client.list_repository_tags(request)
-            
+
             # Process response
             if response.body:
                 for image in response.body:
@@ -510,11 +510,11 @@ class SwrImage(QueryResourceManager):
                         image_dict = image.to_dict()
                     else:
                         image_dict = image
-                    
+
                     # Ensure image tag has namespace and repository information
                     image_dict['namespace'] = namespace
                     image_dict['repository'] = repository
-                    
+
                     # Process Tag field - ensure Tag field exists
                     # HuaweiCloud API returns Tag field in uppercase
                     if 'Tag' in image_dict and not image_dict.get('tag'):
@@ -527,16 +527,16 @@ class SwrImage(QueryResourceManager):
                             tag_value = image_dict['path'].split(':')[-1]
                             image_dict['Tag'] = tag_value
                             image_dict['tag'] = tag_value
-                    
+
                     tags.append(image_dict)
-            
+
             # If no results are returned, may be using old API version
             if not tags and not additional_params:
                 self.log.debug(f"No image tags found for repository {namespace}/{repository}, trying legacy API")
-                
+
         except Exception as e:
             self.log.error(f"Failed to query repository {namespace}/{repository} tags: {e}")
-            
+
         return tags
 
 
@@ -564,7 +564,7 @@ class SwrImageAgeFilter(AgeFilter):
         hours={'type': 'number'},
         minutes={'type': 'number'}
     )
-    
+
     date_attribute = "created"
 
 
@@ -592,7 +592,7 @@ class SwrAgeFilter(AgeFilter):
         hours={'type': 'number'},
         minutes={'type': 'number'}
     )
-    
+
     date_attribute = "created_at"
 
 
@@ -638,7 +638,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
         'set-lifecycle',
         algorithm={'type': 'string', 'enum': ['or'], 'default': 'or'},
         rules={
-            'type': 'array', 
+            'type': 'array',
             'items': {
                 'type': 'object',
                 'required': ['template', 'params', 'tag_selectors'],
@@ -660,7 +660,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
             }
         }
     )
-    
+
     permissions = ('swr:*:*:*',)  # SWR related permissions
 
     def process(self, resources):
@@ -669,18 +669,18 @@ class SetLifecycle(HuaweiCloudBaseAction):
         if 'rules' not in self.data or not self.data['rules']:
             self.log.error("Missing required lifecycle rule configuration")
             return []
-        
+
         # Call parent's process method to process resources
         return super(SetLifecycle, self).process(resources)
 
     def perform_action(self, resource):
         """Implement abstract method, perform action for a single resource."""
         client = self.manager.get_client()
-        
+
         # Get repository information
         namespace = resource.get('namespace')
         repository = resource.get('name')
-        
+
         if not namespace or not repository:
             self.log.error(f"Incomplete repository information: {resource.get('name', 'unknown')}")
             resource['status'] = 'error'
@@ -689,7 +689,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
         try:
             # Create request objects and request body
-            
+
             # Create rule objects
             rules = []
             for rule_data in self.data.get('rules', []):
@@ -701,7 +701,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                         pattern=selector_data.get('pattern')
                     )
                     tag_selectors.append(selector)
-                
+
                 # Create rule
                 rule = Rule(
                     template=rule_data.get('template'),
@@ -709,36 +709,36 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     tag_selectors=tag_selectors
                 )
                 rules.append(rule)
-            
+
             # Create request body
             body = CreateRetentionRequestBody(
                 algorithm=self.data.get('algorithm', 'or'),
                 rules=rules
             )
-            
+
             # Create request
             request = CreateRetentionRequest(
                 namespace=namespace,
                 repository=repository,
                 body=body
             )
-            
+
             # Send request
             response = client.create_retention(request)
-            
+
             # Process response
             retention_id = response.id
-            
-            self.log.info(f"Successfully created lifecycle rule for repository {namespace}/{repository}, ID: {retention_id}")
-            
+
+            self.log.info(
+                f"Successfully created lifecycle rule for repository {namespace}/{repository}, ID: {retention_id}")
+
             # Add processing result information to resource
             resource['retention_id'] = retention_id
             resource['retention_status'] = 'created'
-            
+
             return resource
         except Exception as e:
             self.log.error(f"Failed to create lifecycle rule for repository {namespace}/{repository}: {str(e)}")
             resource['status'] = 'error'
             resource['error'] = str(e)
             return resource
-

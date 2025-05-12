@@ -106,9 +106,8 @@ from huaweicloudsdkdns.v2 import (
     DnsClient
 )
 from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
-from huaweicloudsdkswr.v2 import SwrClient ,ListReposDetailsRequest,ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
-
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -304,7 +303,7 @@ class Session:
                 .build()
             )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
