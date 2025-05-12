@@ -91,7 +91,7 @@ class RocketMQSecurityGroupFilter(SecurityGroupFilter):
     Inherits from the generic `SecurityGroupFilter`.
     
     :example:
-    Find RocketMQ instances using a security group named 'allow-public':
+    Find RocketMQ instances using a security_group_id '0e3310ef-6477-4830-b802-12ee99e4fc70':
     
     .. code-block:: yaml
 
@@ -99,9 +99,9 @@ class RocketMQSecurityGroupFilter(SecurityGroupFilter):
           - name: rocketmq-with-public-sg
             resource: huaweicloud.reliabilitys
             filters:
-              - type: security-group        # Filter type
-                key: name                   # Security group property to match (e.g., name, Id)
-                value: allow-public         # Value to match
+              - type: value       
+                key: security_group_id                  
+                value: 0e3310ef-6477-4830-b802-12ee99e4fc70       
     """
     # Specify the field name in the RocketMQ resource dictionary that contains the security group ID
     RelatedIdsExpression = "security_group_id"
