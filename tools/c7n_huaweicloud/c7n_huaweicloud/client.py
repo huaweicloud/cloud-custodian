@@ -105,6 +105,8 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
+from huaweicloudsdkwaf.v1 import WafClient, ListPolicyRequest, ShowLtsInfoConfigRequest
+from huaweicloudsdkwaf.v1.region.waf_region import WafRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -424,6 +426,12 @@ class Session:
                 BmsClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(BmsRegion.value_of(self.region))
+            )
+        elif service in ["waf", "waf-policy", "waf-log-config"]:
+            client = (
+                WafClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(WafRegion.value_of(self.region))
                 .build()
             )
 
@@ -538,5 +546,9 @@ class Session:
             request = ListInstancesRequest()
         elif service == "bms":
             request = ListBareMetalServerDetailsRequest()
+        elif service == 'waf-policy':
+            request = ListPolicyRequest()
+        elif service == 'waf-log-config':
+            request = ShowLtsInfoConfigRequest()
 
         return request

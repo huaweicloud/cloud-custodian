@@ -1,0 +1,104 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - waf.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T114219Z
+    method: GET
+    uri: https://waf.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/waf/config/lts
+  response:
+    body:
+      string: '{"id": "test-log-config-id", "enabled": true, "lts_id_info": {"lts_group_id": "group-id-12345", "lts_access_stream_id": "access-stream-id-12345", "lts_attack_stream_id": "attack-stream-id-12345"}, "created_at": 1619760096000, "updated_at": 1619760096000}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 11:42:19 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 1a5248fe225cc1cad44fe237290bee02
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"enabled": false}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '17'
+      Content-Type:
+      - application/json
+      Host:
+      - waf.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T114220Z
+    method: PUT
+    uri: https://waf.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/waf/config/lts/test-log-config-id
+  response:
+    body:
+      string: '{"id": "test-log-config-id", "enabled": false, "lts_id_info": {"lts_group_id": "group-id-12345", "lts_access_stream_id": "access-stream-id-12345", "lts_attack_stream_id": "attack-stream-id-12345"}, "created_at": 1619760096000, "updated_at": 1619760196000}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 11:42:20 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 9cd2a51e2bdc7f92a427b518d1238b73
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

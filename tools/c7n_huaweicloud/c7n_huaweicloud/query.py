@@ -62,6 +62,8 @@ class ResourceQuery:
             resources = self._non_pagination(m, enum_op, path)
         elif pagination == "page":
             resources = self._pagination_limit_page(m, enum_op, path)
+        elif pagination == "waf":
+            resources = self._pagination_waf(m, enum_op, path)
         else:
             log.exception(f"Unsupported pagination type: {pagination}")
             sys.exit(1)
@@ -309,6 +311,39 @@ class ResourceQuery:
                 if getattr(m, "tag_resource_type", None):
                     data["tag_resource_type"] = m.tag_resource_type
             resources.extend(res)
+        return resources
+    
+    def _pagination_waf(self, m, enum_op, path):
+        session = local_session(self.session_factory)
+        client = session.client(m.service)
+
+        page = 1
+        resources = []
+        while 1:
+            request = session.request(m.service)
+            request.page = page
+            response = self._invoke_client_enum(client, enum_op, request)
+            res = jmespath.search(
+                path,
+                eval(
+                    str(response)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                ),
+            )
+
+            if not res:
+                return resources
+
+            # replace id with the specified one
+            for data in res:
+                data["id"] = data[m.id]
+                data["tag_resource_type"] = m.tag_resource_type
+
+            resources = resources + res
+
+            page += 1
         return resources
 
     def _get_obs_account_id(self, response, manager, resources):
