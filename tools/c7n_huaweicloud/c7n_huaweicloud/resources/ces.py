@@ -5,6 +5,7 @@ import logging
 import os
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from c7n_huaweicloud.filters.ces import AlarmNameSpaceAndMetricFilter
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkces.v2 import UpdateAlarmNotificationsRequest, Notification, \
@@ -16,7 +17,6 @@ from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBod
 from c7n.actions import BaseAction
 from c7n.filters.missing import Missing
 from c7n.utils import type_schema, local_session
-from tools.c7n_huaweicloud.c7n_huaweicloud.filters.ces import AlarmNameSpaceAndMetricFilter
 
 log = logging.getLogger("custodian.huaweicloud.resources.ces-alarm")
 

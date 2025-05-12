@@ -1,0 +1,143 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - bms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250508T015507Z
+    method: GET
+    uri: https://bms.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/baremetalservers/detail
+  response:
+    body:
+      string: '{ "count": 1, "servers": [ { "id": "5849fdf1-9d79-4589-80c2-fe557990c417",
+        "name": "bms-test", "addresses": { "5849fdf1-9d79-4589-80c2-fe557990c417":
+        [ { "version": "4", "addr": "192.168.1.216", "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:25:56:c3",
+        "OS-EXT-IPS:port_id": "9e62503b-094e-4c6e-bc95-f10bbfb455d5", "OS-EXT-IPS:type":
+        "fixed" }, { "version": "4", "addr": "10.154.72.77", "OS-EXT-IPS-MAC:mac_addr":
+        "fa:16:3e:25:56:c3", "OS-EXT-IPS:port_id": "9e62503b-094e-4c6e-bc95-f10bbfb455d5",
+        "OS-EXT-IPS:type": "floating" } ] }, "flavor": { "disk": "9309", "vcpus":
+        "32", "ram": "193047", "id": "physical.o2.medium", "name": "physical.o2.medium",
+        "gpus": [{ "name":"Nvidia Tesla V100S 32GB", "count":8, "memory_mb":32768
+        }], "asic_accelerators": [] }, "accessIPv4": "", "accessIPv6": "", "status":
+        "ACTIVE", "progress": 0, "hostId": "cd243addb5d2c64e89218180b7a3ed95abe6882e81c337cc563137df",
+        "updated": "2018-09-18T09:29:44Z", "created": "2018-09-18T02:43:26Z", "metadata":
+        { "metering.order_id": "CS1809181040HCFC2", "metering.image_id": "8589958c-6bc7-40c6-b81b-3fe4cd2e3d85",
+        "baremetalPortIDList": "[9e62503b-094e-4c6e-bc95-f10bbfb455d5]", "metering.resourcespeccode":
+        "physical.o2.medium.linux",
+
+        "image_name": "redhat_7_2", "op_svc_userid": "745973c535ec4d4caba86f6f9419ff6d",
+        "metering.resourcetype": "__type_baremetal",
+
+        "metering.product_id": "00301-74069-0--0", "os_bit": "64", "vpc_id": "5849fdf1-9d79-4589-80c2-fe557990c417",
+        "os_type": "Linux", "chargingMode": "1" }, "tags": [ "__type_baremetal" ],
+        "description": "bms-6e18", "locked": false, "image": { "id": "8589958c-6bc7-40c6-b81b-3fe4cd2e3d85"
+        }, "config_drive": "", "tenant_id": "bbf1946d374b44a0a2a95533562ba954", "user_id":
+        "3fc5ab2b0c544979abcaafd86edd80e6", "OS-EXT-STS:power_state": 1, "OS-EXT-STS:vm_state":
+        "active", "OS-EXT-SRV-ATTR:host": "bms.dc1", "OS-EXT-SRV-ATTR:instance_name":
+        "instance-00154f94", "OS-EXT-SRV-ATTR:hypervisor_hostname": "nova002@2", "OS-DCF:diskConfig":
+        "MANUAL", "OS-EXT-AZ:availability_zone": "az-dc-1", "os:scheduler_hints":
+        { }, "OS-EXT-SRV-ATTR:root_device_name": "/dev/sda", "OS-EXT-SRV-ATTR:ramdisk_id":
+        "", "enterprise_project_id": "2c7b6d77-9013-4d74-a221-2f612fc56372", "OS-EXT-SRV-ATTR:user_data":
+        "$USER_DATA", "OS-SRV-USG:launched_at": "2018-09-18T02:46:07.954587", "OS-EXT-SRV-ATTR:kernel_id":
+        "", "OS-EXT-SRV-ATTR:launch_index": 0, "host_status": "UP", "OS-EXT-SRV-ATTR:reservation_id":
+        "r-08tuyo8v", "OS-EXT-SRV-ATTR:hostname": "bms-6e18", "sys_tags": [ { "key":
+        "_sys_enterprise_project_id", "value": "2c7b6d77-9013-4d74-a221-2f612fc56372"
+        } ] } ] }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 08 May 2025 01:55:07 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=dfcda799ee70638aac; path=/
+      - HWWAFSESTIME=1746669304761; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 555227e262abdd6fe60f708141904d61
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250508T055000Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/vpcs?limit=100
+  response:
+    body:
+      string: '{ "vpcs": [ { "id": "5849fdf1-9d79-4589-80c2-fe557990c417", "name":
+        "default", "description": "test", "cidr": "172.16.0.0/16", "status": "OK",
+        "enterprise_project_id": "0", "routes": [], "tenant_id": "087679f0aa80d32a2f4ec0172f5e902b",
+        "created_at": "2022-12-15T02:11:13", "updated_at": "2022-12-15T02:11:13" }
+        ] } '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 08 May 2025 05:50:00 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=87ccf8b71bb0e87209; path=/
+      - HWWAFSESTIME=1746683397680; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 28e5067548c0b8793b19337471429fd8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
