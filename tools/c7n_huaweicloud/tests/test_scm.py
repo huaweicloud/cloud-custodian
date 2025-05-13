@@ -132,7 +132,7 @@ class CertificateTest(BaseTest):
 
         # Fully mock list-item filter behavior
         with mock.patch('c7n.filters.core.ListItemFilter.process') as mock_filter_process:
-            # Mock filter processing results - 
+            # Mock filter processing results -
             # return a resource list containing the target certificate
             def side_effect(resources, event=None):
                 # Extract certificate resource from original response
