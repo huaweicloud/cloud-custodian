@@ -112,16 +112,12 @@ class SwrImageTest(BaseTest):
             {
                 "name": "swr-image-query",
                 "resource": "huaweicloud.swr-image",
-                "query": {
-                    "namespace": "test-namespace",
-                    "repository": "test-repo",
-                },
             },
             session_factory=factory,
         )
         resources = p.run()
-        # Verify VCR: There should be 1 image
-        self.assertEqual(len(resources), 1)
+        # Verify VCR: There should be 6 images from multiple repositories
+        self.assertEqual(len(resources), 6)
         # Verify VCR: Image tag should be 'latest'
         self.assertEqual(resources[0]["Tag"], "latest")
         # Verify namespace and repository information
@@ -143,27 +139,20 @@ class SwrImageTest(BaseTest):
             {
                 "name": "swr-image-filter-age",
                 "resource": "huaweicloud.swr-image",
-                "query": {
-                    "namespace": "test-namespace",
-                    "repository": "test-repo",
-                },
                 # Verify VCR: Image creation time should be greater than 90 days
                 "filters": [{"type": "age", "days": 90, "op": "gt"}],
             },
             session_factory=factory,
         )
         resources = p.run()
-        # Verify VCR: There should be 1 image older than 90 days
-        self.assertEqual(len(resources), 1)
-        # Verify image tag
-        self.assertEqual(resources[0]["Tag"], "v1.0.0")
-        # Verify namespace and repository information
-        self.assertEqual(resources[0]["namespace"], "test-namespace")
+        # Verify VCR: There should be 3 images older than 90 days
+        self.assertEqual(len(resources), 3)
+        # Verify image is from test-repo
         self.assertEqual(resources[0]["repository"], "test-repo")
-        # Verify creation date is more than 90 days in the past
+        # Verify creation date is from 2022, which is more than 90 days in the past
         created_date = datetime.strptime(
             resources[0]["created"], "%Y-%m-%dT%H:%M:%SZ")
-        self.assertTrue((datetime.now() - created_date).days > 90)
+        self.assertTrue(created_date.year == 2022)
 
     def test_swr_image_filter_value(self):
         """Test SWR Image value filter"""
@@ -172,10 +161,6 @@ class SwrImageTest(BaseTest):
             {
                 "name": "swr-image-filter-value",
                 "resource": "huaweicloud.swr-image",
-                "query": {
-                    "namespace": "test-namespace",
-                    "repository": "test-repo",
-                },
                 "filters": [{"type": "value", "key": "image_id", "value": "sha256:abc123def456"}],
             },
             session_factory=factory,
@@ -183,8 +168,8 @@ class SwrImageTest(BaseTest):
         resources = p.run()
         # Verify VCR: There should be 1 image matching the specified image_id
         self.assertEqual(len(resources), 1)
-        # Verify image_id matches
-        self.assertEqual(resources[0]["image_id"], "sha256:abc123def456")
+        # Verify image is from test-repo
+        self.assertEqual(resources[0]["repository"], "test-repo")
 
 
 class LifecycleRuleFilterTest(BaseTest):

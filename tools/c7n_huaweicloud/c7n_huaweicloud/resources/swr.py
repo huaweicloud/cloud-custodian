@@ -13,12 +13,15 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager
 from c7n_huaweicloud.query import TypeInfo
+
+# Centralized imports for HuaweiCloud SDK modules
 from huaweicloudsdkswr.v2.model.list_retentions_request import ListRetentionsRequest
 from huaweicloudsdkswr.v2.model.list_repository_tags_request import ListRepositoryTagsRequest
 from huaweicloudsdkswr.v2.model.create_retention_request import CreateRetentionRequest
 from huaweicloudsdkswr.v2.model.create_retention_request_body import CreateRetentionRequestBody
 from huaweicloudsdkswr.v2.model.rule import Rule
 from huaweicloudsdkswr.v2.model.tag_selector import TagSelector
+from huaweicloudsdkswr.v2.model.list_repos_details_request import ListReposDetailsRequest
 
 log = logging.getLogger('custodian.huaweicloud.swr')
 
@@ -354,13 +357,6 @@ class SwrImage(QueryResourceManager):
         result = []
         for resource in resources:
             try:
-                # Ensure namespace and repository information exists
-                query = self.get_resource_query()
-                if 'namespace' not in resource and 'namespace' in query:
-                    resource['namespace'] = query['namespace']
-                if 'repository' not in resource and 'repository' in query:
-                    resource['repository'] = query['repository']
-
                 # Ensure Tag field exists and provide compatibility for lowercase tag field
                 if 'Tag' in resource and 'tag' not in resource:
                     resource['tag'] = resource['Tag']
@@ -424,98 +420,55 @@ class SwrImage(QueryResourceManager):
 
         return self.augment(resources)
 
-    def get_resource_query(self):
-        """Build resource query parameters."""
-        query = {}
-        query_data = self.data.get('query', {})
-
-        # Ensure necessary query parameters exist
-        if 'namespace' in query_data:
-            query['namespace'] = query_data['namespace']
-        if 'repository' in query_data:
-            query['repository'] = query_data['repository']
-
-        # Add optional filter parameters
-        for param in ['tag', 'limit', 'offset', 'order_column', 'order_type']:
-            if param in query_data:
-                query[param] = query_data[param]
-
-        return query
-
     def resources(self, query=None):
-        """Get resource list."""
+        """Get resource list by querying all repositories first."""
         resources = []
         client = self.get_client()
 
-        # First check if specific namespace and repository query is provided
-        query_params = self.get_resource_query() if query is None else query
-        if query_params and 'namespace' in query_params and 'repository' in query_params:
-            # If specific repository information is provided,
-            # directly query the repository's image tags
-            namespace = query_params['namespace']
-            repository = query_params['repository']
-            resources.extend(
-                self._get_repository_tags(
-                    client, namespace, repository, query_params)
-            )
-        else:
-            # Otherwise, first get all repository list
-            from huaweicloudsdkswr.v2.model.list_repos_details_request import (
-                ListReposDetailsRequest
-            )
-            try:
-                # Query SWR repository list
-                repos_request = ListReposDetailsRequest(limit=100, offset=0)
-                repos_response = client.list_repos_details(repos_request)
+        # First get all repository list
+        try:
+            # Query SWR repository list
+            repos_request = ListReposDetailsRequest()
+            repos_response = client.list_repos_details(repos_request)
 
-                if repos_response.body:
-                    for repo in repos_response.body:
+            if repos_response.body:
+                for repo in repos_response.body:
+                    repo_dict = repo
+                    if hasattr(repo, 'to_dict'):
+                        repo_dict = repo.to_dict()
+                    else:
                         repo_dict = repo
-                        if hasattr(repo, 'to_dict'):
-                            repo_dict = repo.to_dict()
-                        else:
-                            repo_dict = repo
 
-                        # Get repository's namespace and name
-                        namespace = repo_dict.get('namespace')
-                        repository = repo_dict.get('name')
+                    # Get repository's namespace and name
+                    namespace = repo_dict.get('namespace')
+                    repository = repo_dict.get('name')
 
-                        if namespace and repository:
-                            # Get all image tags for this repository
-                            repo_tags = self._get_repository_tags(
-                                client, namespace, repository, {})
-                            resources.extend(repo_tags)
-            except Exception as e:
-                self.log.error(
-                    f"Failed to query SWR repository list: {e}")
+                    if namespace and repository:
+                        # Get all image tags for this repository
+                        repo_tags = self._get_repository_tags(
+                            client, namespace, repository)
+                        resources.extend(repo_tags)
+        except Exception as e:
+            self.log.error(
+                f"Failed to query SWR repository list: {e}")
 
         with self.ctx.tracer.subsegment('filter'):
             resources = self.filter_resources(resources)
 
         return self.augment(resources)
 
-    def _get_repository_tags(self, client, namespace, repository,
-                             additional_params=None):
+    def _get_repository_tags(self, client, namespace, repository):
         """Get all image tags for the specified repository.
 
         Fetches tag information for a SWR repository.
         """
         tags = []
         try:
-            from huaweicloudsdkswr.v2.model.list_repository_tags_request import (
-                ListRepositoryTagsRequest)
-
             # Build request parameters
             request_kwargs = {
                 'namespace': namespace,
                 'repository': repository
             }
-
-            # Add additional query parameters
-            if additional_params:
-                for param in ['tag', 'limit', 'offset', 'order_column', 'order_type']:
-                    if param in additional_params:
-                        request_kwargs[param] = additional_params[param]
 
             # Create and send request
             request = ListRepositoryTagsRequest(**request_kwargs)
@@ -549,12 +502,6 @@ class SwrImage(QueryResourceManager):
                             image_dict['tag'] = tag_value
 
                     tags.append(image_dict)
-
-            # If no results are returned, may be using old API version
-            if not tags and not additional_params:
-                self.log.debug(
-                    f"No image tags found for repository "
-                    f"{namespace}/{repository}, trying legacy API")
 
         except Exception as e:
             self.log.error(
