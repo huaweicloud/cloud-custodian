@@ -105,6 +105,8 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
+from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
+from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
 
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
@@ -418,6 +420,13 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'certificate':
+            client = (
+                ScmClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(ScmRegion.value_of(self.region))
+                .build()
+            )
         elif service == 'dc':
             client = (
                 DcClient.new_builder()
@@ -556,6 +565,8 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == 'certificate':
+            request = ListCertificatesRequest()
         elif service == 'dc':
             request = ListDirectConnectsRequest()
         elif service == "bms":
