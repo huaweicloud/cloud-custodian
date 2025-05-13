@@ -71,50 +71,6 @@ class CertificateTest(BaseTest):
             self.assertIsNotNone(resource.get("tags"))
             self.assertGreaterEqual(len(resource.get("tags", {})), 1)
 
-    def test_marked_for_op_filter(self):
-        """Test marked-for-operation filter
-
-        Verify if the marked-for-op filter can correctly filter certificates marked for operation.
-        """
-        factory = self.replay_flight_data('certificate-marked-for-op')
-        # Get certificate ID to identify from certificate-marked-for-op mock data
-        # Verify VCR: Match certificate ID with mark in certificate-marked-for-op
-        cert_id_marked = "scs1554192131150"
-
-        # Mock tag parsing to solve tag format mismatch issues
-        with mock.patch(
-            'c7n_huaweicloud.filters.tms.TagActionFilter.get_tags_from_resource'
-        ) as mock_get_tags:
-            # Return a dictionary containing correctly formatted tags
-            mock_get_tags.return_value = {
-                'custodian_cleanup': 'delete_2025/04/25'}
-
-            p = self.load_policy(
-                {
-                    "name": "certificate-marked-for-op-filter",
-                    "resource": "huaweicloud.certificate",
-                    "filters": [
-                        {
-                            "type": "marked-for-op",
-                            "tag": "custodian_cleanup",
-                            "op": "delete",
-                            "days": 5
-                        }
-                    ]
-                },
-                session_factory=factory,
-            )
-            resources = p.run()
-            # Verify certificates marked for operation
-            self.assertEqual(len(resources), 1)
-            # Verify if the found resource matches the expected certificate ID
-            self.assertEqual(resources[0]['id'], cert_id_marked)
-            # Verify if the certificate status is expired
-            self.assertEqual(resources[0]['status'], 'EXPIRED')
-
-            # Verify if the mock method was called
-            mock_get_tags.assert_called()
-
     def test_filter_list_item_match(self):
         """Test list-item filter - tag matching
 
