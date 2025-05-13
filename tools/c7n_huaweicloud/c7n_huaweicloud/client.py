@@ -103,13 +103,6 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsReqBody,
 )
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
-from huaweicloudsdkdns.v2 import (
-    ListPublicZonesRequest,
-    ListPrivateZonesRequest,
-    ListRecordSetsWithLineRequest,
-    DnsClient
-)
-from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
 
