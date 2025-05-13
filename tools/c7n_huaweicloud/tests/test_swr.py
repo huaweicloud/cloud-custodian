@@ -234,6 +234,7 @@ class LifecycleRuleFilterTest(BaseTest):
         self.assertTrue(isinstance(lifecycle_policy, list))
         self.assertEqual(len(lifecycle_policy), 0)
 
+
 class SetLifecycleActionTest(BaseTest):
     """Test SWR Set Lifecycle Rule actions"""
 
