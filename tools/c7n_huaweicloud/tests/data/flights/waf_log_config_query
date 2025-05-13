@@ -1,0 +1,52 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - waf.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T114219Z
+    method: GET
+    uri: https://waf.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/waf/config/lts
+  response:
+    body:
+      string: '{"id": "log-config-12345", "enabled": true, "ltsIdInfo": {"ltsGroupId": "group-id-12345", "ltsAccessStreamID": "access-stream-id-12345", "ltsAttackStreamID": "attack-stream-id-12345"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 11:42:19 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 002e342a9954f92875cd31785571b5c7
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
