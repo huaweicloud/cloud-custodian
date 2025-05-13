@@ -455,7 +455,8 @@ class SwrImage(QueryResourceManager):
             namespace = query_params['namespace']
             repository = query_params['repository']
             resources.extend(
-                self._get_repository_tags(client, namespace, repository, query_params)
+                self._get_repository_tags(
+                    client, namespace, repository, query_params)
             )
         else:
             # Otherwise, first get all repository list
@@ -502,7 +503,7 @@ class SwrImage(QueryResourceManager):
         tags = []
         try:
             from huaweicloudsdkswr.v2.model.list_repository_tags_request import (
-                ListRepositoryTagsRequest )
+                ListRepositoryTagsRequest)
 
             # Build request parameters
             request_kwargs = {
