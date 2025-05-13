@@ -24,7 +24,8 @@ class ApiResourceTest(BaseTest):
         self.assertEqual(resources[0]["name"], "test-api")
         # Validate VCR: value should match 'req_method' in apig_api_query
         self.assertEqual(resources[0]["req_method"], "GET")
-        self.assertTrue("backend_type" in resources[0])  # Verify augmentation added information
+        # Verify augmentation added information
+        self.assertTrue("backend_type" in resources[0])
 
     def test_api_filter_age_match(self):
         """Test API age filter - match"""
@@ -44,7 +45,8 @@ class ApiResourceTest(BaseTest):
 
     def test_api_filter_age_no_match(self):
         """Test API age filter - no match"""
-        factory = self.replay_flight_data("apig_api_filter_age")  # Reuse cassette
+        factory = self.replay_flight_data(
+            "apig_api_filter_age")  # Reuse cassette
         p = self.load_policy(
             {
                 "name": "apig-api-filter-age-no-match",
@@ -84,6 +86,47 @@ class ApiResourceTest(BaseTest):
         # Verify action success: manually check VCR cassette
         # apig_api_action_delete to confirm that
         # DELETE /v2/{project_id}/apigw/instances/{instance_id}/apis/{api_id} was called
+
+    def test_api_action_update(self):
+        """Test API update operation"""
+        factory = self.replay_flight_data("apig_api_action_update")
+        # Get API ID and name to update from recorded data
+        # Validate VCR: match 'id' in apig_api_action_update
+        api_id_to_update = "5f918d104dc84480a75166ba99efff21"
+        # Validate VCR: match 'name' in apig_api_action_update
+        api_original_name = "Api_http"
+        # New API name
+        api_new_name = "Updated_Api_http"
+        # New request method
+        api_new_method = "POST"
+        # New description
+        api_new_remark = "Updated by Cloud Custodian"
+
+        p = self.load_policy(
+            {
+                "name": "apig-api-action-update",
+                "resource": "huaweicloud.rest-api",
+                # Use value filter to match API exactly
+                "filters": [{"type": "value", "key": "id", "value": api_id_to_update}],
+                "actions": [{
+                    "type": "update",
+                    "name": api_new_name,
+                    "req_method": api_new_method,
+                    "remark": api_new_remark
+                }],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+
+        # Verify resource filtering is correct
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['id'], api_id_to_update)
+        self.assertEqual(resources[0]['name'], api_original_name)
+
+        # Verify update success: need to manually check VCR recording
+        # Confirm that PUT /v2/{project_id}/apigw/instances/{instance_id}/apis/{api_id} was called
+        # and the request body contains the correct update fields (name, req_method, remark)
 
 
 class StageResourceTest(BaseTest):
@@ -173,7 +216,8 @@ class ApiGroupResourceTest(BaseTest):
         self.assertEqual(len(resources), 1)
         # Validate VCR: value should match 'name' in apig_group_query
         self.assertEqual(resources[0]["name"], "api_group_001")
-        self.assertTrue("status" in resources[0])  # Verify augmentation added information
+        # Verify augmentation added information
+        self.assertTrue("status" in resources[0])
 
     def test_api_group_action_update_security(self):
         """Test update domain security policy action"""
@@ -210,14 +254,14 @@ class ApiGroupResourceTest(BaseTest):
         for domain in url_domains:
             if domain['id'] == domain_id_to_update:
                 domain_found = True
-                self.assertEqual(domain['min_ssl_version'], original_min_ssl_version)
+                self.assertEqual(domain['min_ssl_version'],
+                                 original_min_ssl_version)
                 break
         self.assertTrue(domain_found, "Domain not found in group")
         # Verify action success: manually check VCR cassette
         # apig_group_action_update_security to confirm that
         # PUT /v2/{project_id}/apigw/instances/{instance_id}/api-groups/{group_id}/domains/{domain_id} was called,
         # with correct body(min_ssl_version)
-
 
 
 # =========================
@@ -248,7 +292,8 @@ class ReusableFeaturesTest(BaseTest):
 
     def test_filter_value_no_match(self):
         """Test value filter - no match"""
-        factory = self.replay_flight_data("apig_api_filter_value_method")  # Reuse
+        factory = self.replay_flight_data(
+            "apig_api_filter_value_method")  # Reuse
         wrong_method = "DELETE"
         p = self.load_policy(
             {
@@ -322,4 +367,3 @@ class ReusableFeaturesTest(BaseTest):
         # Validate VCR: only one API in apig_api_filter_tag_count has exactly 2 tags
         self.assertEqual(len(resources), 1)
         self.assertIn("two-tags", resources[0]["name"])
-

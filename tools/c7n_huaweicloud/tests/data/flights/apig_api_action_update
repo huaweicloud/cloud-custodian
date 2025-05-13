@@ -20,11 +20,21 @@ interactions:
       - ap-southeat-1
       X-Sdk-Date:
       - 20250428T090413Z
-    method: DELETE
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/%7Binstance_id%7D/apis/2c9eb1538a138432018a13uuuuu00001
+    method: PUT
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/cc371c55cc9141558ccd76b86903e78b/apis/5f918d104dc84480a75166ba99efff21
   response:
     body:
-      string: ''
+      string: '{"id": "5f918d104dc84480a75166ba99efff21", "name": "Api_http", "group_id":
+        "c77f5e81d9cb4424bf704ef2b0ac7600", "group_name": "api_group_001", "group_version":
+        "V1", "match_mode": "NORMAL", "auth_type": "APP", "auth_opt": {"app_code_auth_type":
+        "DISABLE"}, "backend_type": "HTTP", "cors": false, "status": 1, "req_protocol":
+        "HTTPS", "req_method": "GET", "req_uri": "/test/http", "type": 1, "version":
+        "V0.0.1", "register_time": "2020-07-31T12:42:51Z", "update_time": "2020-08-02T16:32:47.046289Z",
+        "remark": "Web backend API", "backend_api": { "vpc_channel_status": 1, "vpc_channel_info":
+        { "vpc_channel_id": "56a7d7358e1b42459c9d730d65b14e59", "vpc_channel_proxy_host":
+        "www.example.com" }, "req_protocol": "HTTPS", "req_method": "GET", "req_uri":
+        "/test/original", "timeout": 5000, "retry_count": "-1" }, "tags": [{"key":
+        "Environment", "value": "Production"}, {"key": "filtertag", "value": "filtervalue"}]}'
     headers:
       Connection:
       - keep-alive
@@ -39,8 +49,6 @@ interactions:
       - HWWAFSESTIME=1745831053879; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -52,8 +60,8 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 204
-      message: No Content
+      code: 200
+      message: OK
 - request:
     body: null
     headers:
@@ -79,8 +87,8 @@ interactions:
     uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/%7Binstance_id%7D/apis?limit=100&offset=0
   response:
     body:
-      string: '{"total": 1, "size": 1, "apis": [{"id": "2c9eb1538a138432018a13uuuuu00001",
-        "name": "api-to-delete", "group_id": "c77f5e81d9cb4424bf704ef2b0ac7600", "group_name":
+      string: '{"total": 1, "size": 1, "apis": [{"id": "5f918d104dc84480a75166ba99efff21",
+        "name": "Api_http", "group_id": "c77f5e81d9cb4424bf704ef2b0ac7600", "group_name":
         "api_group_001", "group_version": "V1", "match_mode": "NORMAL", "auth_type":
         "AUTHORIZER", "auth_opt": {"app_code_auth_type": "DISABLE"}, "authorizer_id":
         "8d0443832a194eaa84244e0c1c1912ac", "backend_type": "HTTP", "cors": false,

@@ -430,7 +430,7 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'apig' or service in ['rest-api', 'rest-stage', 'apigw-domain-name', 'api-groups']:
+        elif service == 'apig' or service in ['rest-api', 'rest-stage', 'api-groups']:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)
@@ -556,7 +556,4 @@ class Session:
             request = ListEnvironmentsV2Request()
         elif service == 'api-groups':
             request = ListApiGroupsV2Request()
-        # elif service == 'apigw-domain-name':
-        #     request = ListDomainV2Request()
-        #     request.instance_id = self.get_apig_instance_id()
         return request
