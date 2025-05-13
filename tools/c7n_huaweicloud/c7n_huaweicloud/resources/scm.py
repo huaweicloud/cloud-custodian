@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from dateutil.parser import parse
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkscm.v3 import (
     # Certificate management related

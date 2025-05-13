@@ -4,13 +4,12 @@
 import os
 from unittest import mock
 
-from c7n.utils import local_session
 from huaweicloud_common import BaseTest
 
 
 class CertificateTest(BaseTest):
     """Huawei Cloud SSL Certificate Management Service Test Class
-    
+
     This test class covers basic functionality tests for the Certificate resource type,
     including resource queries, filters, and operations.
     """
@@ -31,7 +30,8 @@ class CertificateTest(BaseTest):
     def test_certificate_query(self):
         """Test certificate resource query functionality
 
-        Verify that certificate resource query works correctly and returns the expected certificate list.
+        Verify that certificate resource query works
+        correctly and returns the expected certificate list.
         """
         factory = self.replay_flight_data('certificate-query')
         p = self.load_policy(
@@ -132,7 +132,8 @@ class CertificateTest(BaseTest):
 
         # Fully mock list-item filter behavior
         with mock.patch('c7n.filters.core.ListItemFilter.process') as mock_filter_process:
-            # Mock filter processing results - return a resource list containing the target certificate
+            # Mock filter processing results - 
+            # return a resource list containing the target certificate
             def side_effect(resources, event=None):
                 # Extract certificate resource from original response
                 target_resource = None
@@ -158,8 +159,10 @@ class CertificateTest(BaseTest):
                             # Use lowercase 'tags' to match API response
                             "key": "tags",
                             "attrs": [
-                                {"type": "value", "key": "key", "value": target_tag_key},
-                                {"type": "value", "key": "value", "value": target_tag_value}
+                                {"type": "value", "key": "key",
+                                    "value": target_tag_key},
+                                {"type": "value", "key": "value",
+                                    "value": target_tag_value}
                             ]
                         }
                     ],
@@ -198,5 +201,5 @@ class CertificateTest(BaseTest):
         self.assertEqual(len(resources), 1)
         # Main assertion to verify if policy correctly filtered the target resource
         self.assertEqual(resources[0]['id'], cert_id_to_delete)
-        # Verify operation success: manually check VCR recording file certificate-delete to confirm 
+        # Verify operation success: manually check VCR recording file certificate-delete to confirm
         # call to DELETE /v3/scm/certificates/{cert_id}
