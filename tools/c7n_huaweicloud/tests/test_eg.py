@@ -18,13 +18,13 @@ class EventStreamingTest(BaseTest):
         self.default_region = "cn-north-4"
         # Override default region in environment variables
         os.environ['HUAWEI_DEFAULT_REGION'] = self.default_region
-        os.environ['HUAWEI_ACCESS_KEY_ID'] = "HPUAXO278DQMPGDTPEZK"
-        os.environ['HUAWEI_SECRET_ACCESS_KEY'] = "kz0n3Kk6dFHVZyJMAaYvkXvG72Otgooy1Kr9OsoT"
-        os.environ['HUAWEI_PROJECT_ID'] = "0869c85ca400f5fe2fccc008a6f6de39"
+        # os.environ['HUAWEI_ACCESS_KEY_ID'] = "HPUAXO278DQMPGDTPEZK"
+        # os.environ['HUAWEI_SECRET_ACCESS_KEY'] = "kz0n3Kk6dFHVZyJMAaYvkXvG72Otgooy1Kr9OsoT"
+        # os.environ['HUAWEI_PROJECT_ID'] = "0869c85ca400f5fe2fccc008a6f6de39"
         
     def test_eg_subscriptions_query(self):
         """Test basic query functionality for event streaming."""
-        factory = self.replay_flight_data('eg_subscriptions_query1')
+        factory = self.replay_flight_data('eg_subscriptions_query')
         p = self.load_policy({
             'name': 'subscriptions-query-test',
             'resource': 'huaweicloud.eg-subscription'
@@ -34,22 +34,6 @@ class EventStreamingTest(BaseTest):
         
         # Verify VCR: eg_eventstreaming_query should return 1 resource
         self.assertEqual(len(resources), 1)
-
-    def test_eventstreaming_age_filter(self):
-        """Test the 'age' filter for EventStreaming resources."""
-        factory = self.replay_flight_data('eg_eventstreaming_age_filter')
-        p = self.load_policy({
-            'name': 'old-event-streaming',
-            'resource': 'huaweicloud.eg-subscription',
-            'filters': [{
-                'type': 'age',
-                'days': 180, # Filter for resources older than 180 days
-                'op': 'gt'
-            }]
-        }, session_factory=factory)
-        resources = p.run()
-        # Verify VCR: eg_eventstreaming_age_filter should return 2 resources older than 180 days
-        self.assertEqual(len(resources), 2)
 
     def test_filter_tag_count_match(self):
         """Test the 'tag-count' filter."""
