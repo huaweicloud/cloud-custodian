@@ -421,6 +421,7 @@ class Session:
                 DcClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(DcRegion.value_of(self.region))
+                .build()
             )
         elif service == "cc":
             client = (

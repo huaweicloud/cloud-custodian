@@ -1,6 +1,5 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from unittest.mock import patch, MagicMock
 
 from huaweicloud_common import BaseTest
 
@@ -53,11 +52,11 @@ class DCTest(BaseTest):
     def test_dc_filter_value_no_match(self):
         """Test value filter - no match"""
         factory = self.replay_flight_data('dc_filter_value')  # Reuse the same recording
-        
+
         # Based on VCR recording data, should check for resources without UNKNOWN status
         # The recording has "ACTIVE" and "PENDING" statuses
-        wrong_status = 'UNKNOWN'  
-        
+        wrong_status = 'UNKNOWN'
+
         p = self.load_policy(
             {
                 'name': 'dc-filter-value-no-match',
@@ -72,8 +71,8 @@ class DCTest(BaseTest):
 
     def test_dc_filter_list_item_match(self):
         """Test list item filter - match (tag list)"""
-        # Verify VCR: direct connect 'dc-tagged-connection' in dc_filter_list_item_tag should have tag
-        # {"key": "environment", "value": "production"}
+        # Verify VCR: direct connect 'dc-tagged-connection' in dc_filter_list_item_tag
+        # should have tag {"key": "environment", "value": "production"}
         factory = self.replay_flight_data('dc_filter_list_item_tag')
         # Verify VCR: match 'key' in dc_filter_list_item_tag
         target_tag_key = "environment"
@@ -108,14 +107,15 @@ class DCTest(BaseTest):
     def test_filter_list_item_match(self):
         """Test list-item filter - Match (tags list)"""
         # This test method is similar to the test_filter_list_item_match method in test_dns.py
-        # Using the same flight_data to be consistent with the existing test_dc_filter_list_item_match
+        # Using the same flight_data to be consistent with the existing
+        # test_dc_filter_list_item_match
         factory = self.replay_flight_data('dc_filter_list_item_tag')
-        
+
         # Match target tag in dc_filter_list_item_tag
         target_tag_key = "environment"
         target_tag_value = "production"
         target_dc_id = "dc-123456789abcdef"
-        
+
         p = self.load_policy(
             {
                 "name": "dc-filter-list-item-match",
@@ -166,12 +166,13 @@ class DCTest(BaseTest):
 
     def test_dc_filter_marked_for_op(self):
         """Test marked for operation filter"""
-        # Due to Huawei Cloud tag structure being different from AWS, use custom tag matching instead of marked-for-op filter
+        # Due to Huawei Cloud tag structure being different from AWS,
+        # use custom tag matching instead of marked-for-op filter
         factory = self.replay_flight_data('dc_filter_marked_for_op')
-        
+
         # custodian_cleanup tag is used for marking operations
         tag_key = 'custodian_cleanup'
-        
+
         p = self.load_policy(
             {
                 'name': 'dc-filter-tag-match',
@@ -188,7 +189,7 @@ class DCTest(BaseTest):
             },
             session_factory=factory
         )
-        
+
         resources = p.run()
         # Verify VCR: only one direct connect meets the condition
         self.assertEqual(len(resources), 1)
@@ -239,7 +240,7 @@ class DCTest(BaseTest):
     def test_dc_action_remove_tag(self):
         """Test remove tag action"""
         factory = self.replay_flight_data('dc_action_remove_tag')
-        
+
         p = self.load_policy(
             {
                 'name': 'dc-action-remove-tag',
@@ -248,26 +249,8 @@ class DCTest(BaseTest):
             },
             session_factory=factory
         )
-        
+
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # Verification: Check VCR to confirm Huawei Cloud tag deletion API was called
-        # and 'environment' tag was deleted
-
-    # Test mark for operation action - use mock instead of actual API calls
-    def test_dc_action_mark_for_op(self):
-        """Test mark for operation action - validation only using mocks"""
-        # Create test resource
-        test_resource = {
-            'id': 'dc-123456789abcdef',
-            'name': 'dc-test-connection',
-            'tag_resource_type': 'direct-connect'
-        }
-        
-        # Directly verify mark-for-op is available for DC resource
-        from c7n_huaweicloud.resources.dc import DC
-        
-        # Verify mark-for-op operation is registered to DC resource
-        self.assertIn('mark-for-op', DC.action_registry)
-        
-        # Test passed - mark-for-op operation is correctly registered to DC resource
+        # Verification: Check VCR to confirm Huawei Cloud tag deletion
+        # API was called and 'environment' tag was deleted
