@@ -501,8 +501,8 @@ class SwrImage(QueryResourceManager):
         """
         tags = []
         try:
-            from huaweicloudsdkswr.v2.model.list_repository_tags_request import ( 
-                ListRepositoryTagsRequest)
+            from huaweicloudsdkswr.v2.model.list_repository_tags_request import (
+                ListRepositoryTagsRequest )
 
             # Build request parameters
             request_kwargs = {
