@@ -114,6 +114,8 @@ class EIPDelete(HuaweiCloudBaseAction):
         client_v3 = self.manager.get_client()
         # 使用eip_v2客户端进行删除操作
         client_v2 = session.client('eip_v2')
+        processed_resources = []
+
         for resource in resources:
             try:
                 # 检查EIP是否关联NATGW实例
@@ -122,7 +124,7 @@ class EIPDelete(HuaweiCloudBaseAction):
                         f"无法删除关联NATGW的弹性公网IP {resource['id']}，"
                         f"please use nat-snat-rule or nat-dnat-rule delete action instead."
                     )
-                    self.handle_exception(resource, resources)
+                    self.failed_resources.append(resource)
                     continue
 
                 # 如果EIP状态为ACTIVE（已绑定），先进行解绑
@@ -138,20 +140,24 @@ class EIPDelete(HuaweiCloudBaseAction):
                             f"请求ID: {e.request_id},"
                             f" 错误码: {e.error_code}, 错误消息: {e.error_msg}"
                         )
-                        self.handle_exception(resource, resources)
+                        self.failed_resources.append(resource)
                         continue
 
                 # 执行删除操作
                 request = DeletePublicipRequest(publicip_id=resource["id"])
                 client_v2.delete_publicip(request)
                 self.log.info(f"删除弹性公网IP {resource['id']} 成功")
+                processed_resources.append(resource)
             except exceptions.ClientRequestException as e:
                 self.log.error(
                     f"删除弹性公网IP {resource['id']} 失败，"
                     f"请求ID: {e.request_id}, 错误码: {e.error_code}, 错误消息: {e.error_msg}"
                 )
-                self.handle_exception(resource, resources)
-        return self.process_result(resources)
+                self.failed_resources.append(resource)
+
+        # 将成功处理的资源添加到结果中
+        self.result.get("succeeded_resources").extend(processed_resources)
+        return self.result
 
     def perform_action(self, resource):
         # 由于我们在process方法中已经处理了每个资源，所以这里不需要额外的操作
@@ -163,6 +169,8 @@ class EIPDisassociate(HuaweiCloudBaseAction):
     """解绑弹性公网IP
 
     从已绑定的实例上解绑弹性公网IP
+
+    注意：如果弹性公网IP关联的是NATGW实例，请使用nat-snat-rule或nat-dnat-rule删除操作
 
     :example:
 
@@ -184,20 +192,34 @@ class EIPDisassociate(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         # 筛选状态为ACTIVE（已绑定）的EIP
         active_resources = [r for r in resources if r.get("status") == "ACTIVE"]
+        processed_resources = []
 
         for resource in active_resources:
             try:
+                # 检查EIP是否关联NATGW实例
+                if resource.get("associate_instance_type") == "NATGW":
+                    self.log.error(
+                        f"无法解绑关联NATGW的弹性公网IP {resource['id']}，"
+                        f"please use nat-snat-rule or nat-dnat-rule delete action instead."
+                    )
+                    self.failed_resources.append(resource)
+                    continue
+
                 request = DisassociatePublicipsRequest()
                 request.publicip_id = resource["id"]
                 client.disassociate_publicips(request)
                 self.log.info(f"解绑弹性公网IP {resource['id']} 成功")
+                processed_resources.append(resource)
             except exceptions.ClientRequestException as e:
                 self.log.error(
                     f"解绑弹性公网IP {resource['id']} 失败，"
                     f"请求ID: {e.request_id}, 错误码: {e.error_code}, 错误消息: {e.error_msg}"
                 )
-                self.handle_exception(resource, active_resources)
-        return self.process_result(active_resources)
+                self.failed_resources.append(resource)
+
+        # 将成功处理的资源添加到结果中
+        self.result.get("succeeded_resources").extend(processed_resources)
+        return self.result
 
     def perform_action(self, resource):
         # 由于我们在process方法中已经处理了每个资源，所以这里不需要额外的操作
