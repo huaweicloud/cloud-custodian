@@ -10,14 +10,11 @@ from dateutil.parser import parse
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkrocketmq.v2.model import (
     DeleteInstanceRequest,
-    BatchCreateOrDeleteRocketmqTagRequest,
-    BatchCreateOrDeleteTagReq,
 )
-from huaweicloudsdkrocketmq.v2.model import TagEntity as SDKTagEntity
 
-from c7n.filters import Filter, ValueFilter, OPERATORS
-from c7n.filters.core import ListItemFilter, ListItemResourceManager
-from c7n.utils import type_schema, local_session
+from c7n.filters import Filter, OPERATORS
+from c7n.utils import type_schema
+
 
 log = logging.getLogger("custodian.huaweicloud.resources.rocketmq")
 
@@ -257,3 +254,154 @@ class DeleteRocketMQ(HuaweiCloudBaseAction):
             log.error(
                 f"Unable to delete RocketMQ instance {instance_name} ({instance_id}): {str(e)}")
             return None
+
+
+@RocketMQ.filter_registry.register('age')
+class RocketMQAgeFilter(Filter):
+    """
+    Filter RocketMQ instances based on creation time (age).
+
+    Allows users to filter instances created earlier or later than a specified time.
+
+    :example:
+    Find RocketMQ instances created more than 30 days ago:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: rocketmq-older-than-30-days
+            resource: huaweicloud.reliabilitys
+            filters:
+              - type: age                   # Filter type
+                days: 30                    # Specify days
+                op: gt                      # Operation, gt means "greater than" (older than)
+                                            # Other available operators: lt (younger than), ge, le
+    """
+    # Define the input schema for this filter
+    schema = type_schema(
+        'age',  # Filter type name
+        # Define comparison operation, reference common filter definitions
+        op={'$ref': '#/definitions/filters_common/comparison_operators'},
+        # Define time unit parameters
+        days={'type': 'number'},  # Days
+        hours={'type': 'number'},  # Hours
+        minutes={'type': 'number'}  # Minutes
+    )
+    schema_alias = True
+
+    # Specify the field name in the resource dictionary representing creation time
+    date_attribute = "created_at"
+
+    def validate(self):
+        return self
+
+    def process(self, resources, event=None):
+        """
+        Filter resources based on age.
+
+        :param resources: List of resources to filter
+        :param event: Optional event context
+        :return: Filtered resource list
+        """
+        # Get operator and time
+        op = self.data.get('op', 'greater-than')
+        if op not in OPERATORS:
+            raise ValueError(f"Invalid operator: {op}")
+        operator = OPERATORS[op]
+
+        # Calculate comparison date
+        from datetime import datetime, timedelta
+        from dateutil.tz import tzutc
+
+        days = self.data.get('days', 0)
+        hours = self.data.get('hours', 0)
+        minutes = self.data.get('minutes', 0)
+
+        now = datetime.now(tz=tzutc())
+        threshold_date = now - \
+            timedelta(days=days, hours=hours, minutes=minutes)
+
+        log.info(
+            f"Age filter: filtering resources created {op} {days} days, {hours} hours, {minutes} minutes ago")
+        log.info(f"Age filter: now={now}, threshold_date={threshold_date}")
+        log.info(f"Total resources before age filtering: {len(resources)}")
+
+        # Filter resources
+        matched = []
+        for resource in resources:
+            instance_id = resource.get('instance_id', 'unknown')
+            name = resource.get('name', 'unknown')
+            created_str = resource.get(self.date_attribute)
+
+            if not created_str:
+                log.debug(
+                    f"Resource {instance_id} ({name}) has no {self.date_attribute}")
+                continue
+
+            # Convert creation time
+            try:
+                created_date = None
+                # If it's a millisecond timestamp, convert to seconds then create datetime
+                if isinstance(created_str, (int, float)) or (isinstance(created_str, str) and created_str.isdigit()):
+                    try:
+                        # Ensure conversion to integer
+                        timestamp_ms = int(float(created_str))
+                        # Check if timestamp is in milliseconds (13 digits) or seconds (10 digits)
+                        if len(str(timestamp_ms)) >= 13:
+                            timestamp_s = timestamp_ms / 1000.0
+                        else:
+                            timestamp_s = timestamp_ms
+                        log.debug(
+                            f"Resource {instance_id}: Converting timestamp: {created_str} -> {timestamp_s} s")
+                        # Create datetime object from timestamp (UTC)
+                        created_date = datetime.utcfromtimestamp(
+                            timestamp_s).replace(tzinfo=tzutc())
+                    except (ValueError, TypeError, OverflowError) as e:
+                        log.debug(
+                            f"Resource {instance_id}: Unable to parse value '{created_str}' as timestamp: {e}")
+                        # If parsing fails, continue trying with dateutil.parser
+                        created_date = parse(str(created_str))
+                else:
+                    # If not a pure number, try using dateutil.parser to parse generic time string
+                    created_date = parse(str(created_str))
+
+                # Ensure datetime has timezone information
+                if not created_date.tzinfo:
+                    created_date = created_date.replace(tzinfo=tzutc())
+
+                # Calculate age in days
+                age_timedelta = now - created_date
+                age_days = age_timedelta.total_seconds() / 86400
+
+                log.debug(
+                    f"Resource {instance_id} ({name}) created_date={created_date}, age={age_days:.2f} days")
+
+                # Handle the 'gt' (greater than) case specifically to ensure correctness
+                if op == 'greater-than' or op == 'gt':
+                    # A resource is older than N days if its creation date is earlier than (now - N days)
+                    result = created_date < threshold_date
+                    log.debug(
+                        f"GT comparison: is {created_date} < {threshold_date}? {result}")
+                else:
+                    # For other operators, use the standard operator
+                    result = operator(created_date, threshold_date)
+                    log.debug(
+                        f"Standard comparison: {created_date} {op} {threshold_date} = {result}")
+
+                # If operation is 'gt', we only want resources older than threshold
+                # If creation date is earlier than threshold, resource is older
+                if result:
+                    matched.append(resource)
+                    log.debug(
+                        f"Resource {instance_id} ({name}) matched age filter")
+                else:
+                    log.debug(
+                        f"Resource {instance_id} ({name}) did not match age filter")
+            except Exception as e:
+                log.warning(
+                    f"Unable to parse creation time '{created_str}' for RocketMQ instance "
+                    f"{instance_id} ({name}): {e}")
+
+        log.info(
+            f"Resources after age filtering: {len(matched)} (matched) / {len(resources)} (total)")
+        return matched
