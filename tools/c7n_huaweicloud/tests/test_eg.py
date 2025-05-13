@@ -18,10 +18,13 @@ class EventStreamingTest(BaseTest):
         self.default_region = "cn-north-4"
         # Override default region in environment variables
         os.environ['HUAWEI_DEFAULT_REGION'] = self.default_region
+        os.environ['HUAWEI_ACCESS_KEY_ID'] = "HPUAXO278DQMPGDTPEZK"
+        os.environ['HUAWEI_SECRET_ACCESS_KEY'] = "kz0n3Kk6dFHVZyJMAaYvkXvG72Otgooy1Kr9OsoT"
+        os.environ['HUAWEI_PROJECT_ID'] = "0869c85ca400f5fe2fccc008a6f6de39"
         
     def test_eg_subscriptions_query(self):
         """Test basic query functionality for event streaming."""
-        factory = self.replay_flight_data('eg_subscriptions_query')
+        factory = self.replay_flight_data('eg_subscriptions_query1')
         p = self.load_policy({
             'name': 'subscriptions-query-test',
             'resource': 'huaweicloud.eg-subscription'
