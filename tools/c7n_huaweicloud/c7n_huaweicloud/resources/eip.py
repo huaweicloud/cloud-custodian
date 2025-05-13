@@ -89,6 +89,8 @@ class EIPDelete(HuaweiCloudBaseAction):
     """删除弹性公网IP
 
     删除前会自动解绑已绑定的弹性公网IP
+    
+    注意：如果弹性公网IP关联的是NATGW实例，请使用nat-snat-rule或nat-dnat-rule删除操作
 
     :example:
 
@@ -114,6 +116,15 @@ class EIPDelete(HuaweiCloudBaseAction):
         client_v2 = session.client('eip_v2')
         for resource in resources:
             try:
+                # 检查EIP是否关联NATGW实例
+                if resource.get("associate_instance_type") == "NATGW":
+                    self.log.error(
+                        f"无法删除关联NATGW的弹性公网IP {resource['id']}，"
+                        f"please use nat-snat-rule or nat-dnat-rule delete action instead."
+                    )
+                    self.handle_exception(resource, resources)
+                    continue
+                
                 # 如果EIP状态为ACTIVE（已绑定），先进行解绑
                 if resource.get("status") == "ACTIVE":
                     try:
