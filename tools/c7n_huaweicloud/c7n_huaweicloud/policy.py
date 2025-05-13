@@ -9,7 +9,7 @@ import pytz
 from c7n import utils
 from c7n.exceptions import PolicyValidationError
 from c7n.policy import execution, ServerlessExecutionMode, PullMode
-from c7n.utils import type_schema
+from c7n.utils import type_schema, local_session
 from c7n.version import version
 
 from c7n_huaweicloud.cts import CloudTraceServiceEvents
@@ -198,7 +198,9 @@ class FunctionGraphMode(ServerlessExecutionMode):
                         }
                     }
                 }
-            }
+            },
+            'user_data_encrypt_kms_key_id': {'type': 'string'},
+            'code_encrypt_kms_key_id': {'type': 'string'},
         }
     )
 
@@ -301,7 +303,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         with self.policy.ctx:
             self.policy.log.info(
                 "Provisioning policy FunctionGraph: %s region: %s", self.policy.name,
-                self.policy.options.region)
+                local_session(self.policy.session_factory).region)
             manager = mu.FunctionGraphManager(self.policy.session_factory)
             return manager.publish(
                 self.policy_functiongraph(self.policy),
