@@ -496,12 +496,13 @@ class SwrImage(QueryResourceManager):
     def _get_repository_tags(self, client, namespace, repository,
                              additional_params=None):
         """Get all image tags for the specified repository.
-        
+
         Fetches tag information for a SWR repository.
         """
         tags = []
         try:
-            from huaweicloudsdkswr.v2.model.list_repository_tags_request import ListRepositoryTagsRequest
+            from huaweicloudsdkswr.v2.model.list_repository_tags_request import ( 
+                ListRepositoryTagsRequest)
 
             # Build request parameters
             request_kwargs = {
