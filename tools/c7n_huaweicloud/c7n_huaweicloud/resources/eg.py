@@ -24,8 +24,29 @@ class Subscription(QueryResourceManager):
     .. code-block:: yaml
 
         policies:
-          - name: event-streaming-policy
+          - name: event-subscription-tags-autoadd
             resource: huaweicloud.eg-subscription
+            filters:
+              - type: tag-count
+                count: 0
+                op: eq
+            actions:
+              - type: tag
+                key: RequiredTag
+                value: RequiredValue
+
+        policies:
+          - name: event-subscription-untags
+            resource: huaweicloud.eg-subscription
+            filters:
+              - type: tag-count
+                count: 0
+                op: gt
+            actions:
+              - type: untag
+                tag_values:
+                  RequiredTag: RequiredValue
+
     """
 
     class resource_type(TypeInfo):
@@ -78,29 +99,3 @@ class Subscription(QueryResourceManager):
             self.log.error(f"Error during tag augmentation: {str(e)}")
             # Return original resources if any error occurs during the process
         return resources
-
-
-@Subscription.filter_registry.register('age')
-class SubscriptionAgeFilter(AgeFilter):
-    """Filters EventStreaming resources based on their creation time.
-    
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: old-event-streaming
-            resource: huaweicloud.eventstreaming
-            filters:
-              - type: age
-                days: 30
-                op: gt
-    """
-    schema = type_schema(
-        'age',
-        op={'$ref': '#/definitions/filters_common/comparison_operators'},
-        days={'type': 'number'},
-        hours={'type': 'number'},
-        minutes={'type': 'number'}
-    )
-    date_attribute = "created_time"
