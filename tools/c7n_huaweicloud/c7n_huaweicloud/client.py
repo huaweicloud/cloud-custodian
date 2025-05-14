@@ -508,8 +508,6 @@ class Session:
             request = ListServersDetailsRequest(
                 not_tags="__type_baremetal"
             )
-        elif service == "bms":
-            request = ListPublicipsRequest()
         elif service == "deh":
             request = ListDedicatedHostsRequest()
         elif service == "obs":
