@@ -336,6 +336,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
                 req_uri: "/test/update"
                 auth_type: APP
                 backend_type: HTTP
+                group_id: "your_group_id"
     """
 
     schema = type_schema(
@@ -454,8 +455,6 @@ class UpdateApiAction(HuaweiCloudBaseAction):
             raise
 
 # Environment Resource Management
-
-
 @resources.register('rest-stage')
 class StageResource(QueryResourceManager):
     """Huawei Cloud API Gateway Environment Resource Management
@@ -585,8 +584,6 @@ class StageResource(QueryResourceManager):
         return resources
 
 # Update Environment Resource
-
-
 @StageResource.action_registry.register('update')
 class UpdateStageAction(HuaweiCloudBaseAction):
     """Update environment action
@@ -604,16 +601,14 @@ class UpdateStageAction(HuaweiCloudBaseAction):
                 value: TEST
             actions:
               - type: update
-                description: "Updated by Cloud Custodian"
-                enable_metrics: true
+                name: updated-stage-name
+                remark: updated description
     """
 
     schema = type_schema(
         'update',
-        description={'type': 'string'},
-        enable_metrics={'type': 'boolean'},
-        is_waf_enabled={'type': 'boolean'},
-        is_client_certificate_required={'type': 'boolean'}
+        name={'type': 'string'},
+        remark={'type': 'string'},
     )
 
     def perform_action(self, resource):
@@ -735,8 +730,6 @@ class DeleteStageAction(HuaweiCloudBaseAction):
             raise
 
 # API Group Resource Management
-
-
 @resources.register('api-groups')
 class ApiGroupResource(QueryResourceManager):
     """Huawei Cloud API Gateway Group Resource Management
@@ -865,9 +858,7 @@ class ApiGroupResource(QueryResourceManager):
         # 由于已经在resources方法中处理了资源增强，所以这里直接返回
         return resources
 
-# Update Domain
-
-
+# Update Security
 @ApiGroupResource.action_registry.register('update-security')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
     """Update domain security policy action
