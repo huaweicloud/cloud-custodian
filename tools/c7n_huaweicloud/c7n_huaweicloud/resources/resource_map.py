@@ -11,6 +11,7 @@ ResourceMap = {
     "huaweicloud.ces-alarm": "c7n_huaweicloud.resources.ces.Alarm",
     "huaweicloud.kms": "c7n_huaweicloud.resources.kms.Kms",
     "huaweicloud.ecs": "c7n_huaweicloud.resources.ecs.Ecs",
+    "huaweicloud.bms": "c7n_huaweicloud.resources.bms.Bms",
     "huaweicloud.iam-user": "c7n_huaweicloud.resources.iam.User",
     "huaweicloud.iam-policy": "c7n_huaweicloud.resources.iam.Policy",
     "huaweicloud.vpc": "c7n_huaweicloud.resources.vpc.Vpc",
@@ -44,9 +45,9 @@ ResourceMap = {
     "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
     "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
     "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
+    "huaweicloud.eip": "c7n_huaweicloud.resources.eip.EIP",
     "huaweicloud.certificate": "c7n_huaweicloud.resources.scm.Certificate",
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
     "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
-    "huaweicloud.bms": "c7n_huaweicloud.resources.bms.Bms",
     "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS",
 }

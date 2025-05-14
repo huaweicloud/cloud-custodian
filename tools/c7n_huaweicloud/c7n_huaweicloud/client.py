@@ -55,7 +55,9 @@ from huaweicloudsdkelb.v3 import (
     ListListenersRequest,
 )
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
-from huaweicloudsdkeip.v3 import EipClient
+from huaweicloudsdkeip.v3 import EipClient, ListPublicipsRequest
+from huaweicloudsdkeip.v2 import EipClient as EipClientV2
+from huaweicloudsdkeip.v2.region.eip_region import EipRegion as EipRegionV2
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
 from huaweicloudsdkgeip.v3 import GeipClient
 from huaweicloudsdkims.v2.region.ims_region import ImsRegion
@@ -299,6 +301,13 @@ class Session:
                 .with_region(EipRegion.value_of(self.region))
                 .build()
             )
+        elif service == "eip_v2":
+            client = (
+                EipClientV2.new_builder()
+                .with_credentials(credentials)
+                .with_region(EipRegionV2.value_of(self.region))
+                .build()
+            )
         elif service == "geip":
             client = (
                 GeipClient.new_builder()
@@ -525,6 +534,8 @@ class Session:
             request = ListLoadBalancersRequest()
         elif service == "elb_listener":
             request = ListListenersRequest()
+        elif service == "eip":
+            request = ListPublicipsRequest()
         elif service == "ims":
             request = ListImagesRequest()
         elif service == "smn":
