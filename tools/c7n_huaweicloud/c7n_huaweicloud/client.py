@@ -109,13 +109,6 @@ from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
-from huaweicloudsdkdns.v2 import (
-    ListPublicZonesRequest,
-    ListPrivateZonesRequest,
-    ListRecordSetsWithLineRequest,
-    DnsClient
-)
-from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
 from huaweicloudsdkaom.v2 import (
     AomClient,
     ListMetricOrEventAlarmRuleRequest
@@ -483,14 +476,6 @@ class Session:
                 .with_region(AomRegion.value_of(self.region))
                 .build()
             )
-        elif service in ['dns-publiczone', 'dns-privatezone', 'dns-recordset']:
-            client = (
-                DnsClient.new_builder()
-                .with_credentials(credentials)
-                .with_region(DnsRegion.value_of(self.region))
-                .build()
-            )
-
         return client
 
     def region_client(self, service, region):
@@ -610,7 +595,6 @@ class Session:
             request = ListBareMetalServerDetailsRequest()
         elif service == 'rds':
             request = RdsListInstancesRequest()
-
         elif service == 'aom':
             request = ListMetricOrEventAlarmRuleRequest()
         return request
