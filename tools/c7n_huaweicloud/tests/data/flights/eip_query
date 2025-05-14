@@ -1,0 +1,60 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250509T023352Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/eip/publicips?limit=100
+  response:
+    body:
+      string: '{"publicips":[
+        {"id":"13e5419a-1234-1234-1234-123456789abc","public_ip_address":"10.123.45.79",
+        "status":"ACTIVE","type":"5_bgp","associate_instance_type":"PORT",
+        "associate_instance_id":"123456-port-id-6","bandwidth":{"id":"bw-135",
+        "name":"bandwidthTest13","size":5}}
+        ],"request_id":"e1c2d3e4f5g6h7i8j9k0","total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 09 May 2025 02:33:52 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746758030121; path=/
+      - HWWAFSESID=6a36e7c057e3f29416; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e9901db8abb40ebaccdfa686588fdbee
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+version: 1
