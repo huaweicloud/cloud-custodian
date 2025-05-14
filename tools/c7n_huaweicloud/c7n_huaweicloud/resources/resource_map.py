@@ -48,8 +48,6 @@ ResourceMap = {
     "huaweicloud.reliability": "c7n_huaweicloud.resources.rocketmq.RocketMQ",
     "huaweicloud.swr": "c7n_huaweicloud.resources.swr.Swr",
     "huaweicloud.swr-image": "c7n_huaweicloud.resources.swr.SwrImage",
-    "huaweicloud.swr": "c7n_huaweicloud.resources.swr.Swr",
-    "huaweicloud.swr-image": "c7n_huaweicloud.resources.swr.SwrImage",
     "huaweicloud.eip": "c7n_huaweicloud.resources.eip.EIP",
     "huaweicloud.certificate": "c7n_huaweicloud.resources.scm.Certificate",
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",

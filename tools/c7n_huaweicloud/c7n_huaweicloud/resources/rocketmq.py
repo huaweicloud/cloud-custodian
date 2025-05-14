@@ -23,8 +23,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.rocketmq")
 class RocketMQ(QueryResourceManager):
     """HuaweiCloud RocketMQ Instance Resource Manager.
 
-    Responsible for discovering, filtering, and managing RocketMQ instance resources on HuaweiCloud.
-    Inherits from QueryResourceManager to utilize its capabilities for querying and processing resource lists.
+    Responsible for discovering, filtering, and managing RocketMQ instance resources.
 
     :example:
     Define a simple policy to get all RocketMQ instances:
@@ -38,11 +37,7 @@ class RocketMQ(QueryResourceManager):
 
     class resource_type(TypeInfo):
         """Define RocketMQ resource metadata and type information"""
-        service = 'reliability'  # Specify the corresponding HuaweiCloud service name
-        # Specify API operations, result list key, and pagination parameters for enumerating resources
-        # 'list_instances' is the API method name
-        # 'instances' is the field name in the response that contains the instance list
-        # 'offset' is the pagination parameter name
+        service = 'reliability'
         enum_spec = ('list_instances', 'instances',
                      'offset', 10)
         id = 'instance_id'  # Specify the field name for the resource's unique identifier
@@ -50,27 +45,27 @@ class RocketMQ(QueryResourceManager):
         date = 'created_at'  # Specify the field name for the resource's creation time
         tag = True  # Indicate that this resource supports tags
         tag_resource_type = 'rocketmq'  # Specify the resource type for querying tags
-        
+
     def augment(self, resources):
         """
         Filter resource list to include only RocketMQ instances based on engine type.
-        
+
         This method filters the API returned resources to only include instances 
         with engine type 'reliability', which are the RocketMQ instances in 
         HuaweiCloud DMS service.
-        
+
         :param resources: Original resource list returned from API
         :return: Filtered resource list containing only RocketMQ instances
         """
         if not resources:
             return []
-            
+
         filtered_resources = []
         for resource in resources:
             # Check if engine type is 'reliability'
             if resource.get('engine') == 'reliability':
                 filtered_resources.append(resource)
-                
+
         log.debug(f"Filtered DMS instances: {len(resources)} total, {len(filtered_resources)} RocketMQ instances")
         return filtered_resources
 
@@ -235,7 +230,7 @@ class RocketMQAgeFilter(Filter):
         minutes = self.data.get('minutes', 0)
 
         now = datetime.now(tz=tzutc())
-        log.info(f"Age filter: filtering resources created {op} {days} days, {hours} hours, {minutes} minutes ago")
+        log.info(f"filtering resources created {op} {days} days, {hours} hours, {minutes} minutes ago")
 
         # Filter resources
         matched = []
@@ -252,7 +247,8 @@ class RocketMQAgeFilter(Filter):
             try:
                 created_date = None
                 # If it's a millisecond timestamp, convert to seconds then create datetime
-                if isinstance(created_str, (int, float)) or (isinstance(created_str, str) and created_str.isdigit()):
+                if isinstance(created_str, (int, float)) \
+                    or (isinstance(created_str, str) and created_str.isdigit()):
                     try:
                         # Ensure conversion to integer
                         timestamp_ms = int(float(created_str))
