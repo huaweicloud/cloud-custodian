@@ -15,7 +15,7 @@ interactions:
       X-Sdk-Date:
       - 20250409T093100Z
     method: GET
-    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains?expired_days_since=1095
   response:
     body:
       string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
