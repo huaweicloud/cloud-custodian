@@ -106,7 +106,8 @@ from huaweicloudsdkdns.v2 import (
     DnsClient
 )
 from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
-
+from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -302,7 +303,7 @@ class Session:
                 .build()
             )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -408,7 +409,13 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
-
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -521,4 +528,8 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
+        elif service == 'swr':
+            request = ListReposDetailsRequest()
+        elif service == 'swr-image':
+            request = ListRepositoryTagsRequest()
         return request
