@@ -13,11 +13,11 @@ from c7n.utils import local_session
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 
-from c7n_huaweicloud.marker_pagination import MarkerPagination
+from c7n_huaweicloud.utils.marker_pagination import MarkerPagination
 
 from huaweicloudsdkcore.exceptions import exceptions
 
-log = logging.getLogger('custodian.huaweicloud.query')
+log = logging.getLogger("custodian.huaweicloud.query")
 
 DEFAULT_LIMIT_SIZE = 100
 DEFAULT_MAXITEMS_SIZE = 400
@@ -27,7 +27,7 @@ def _dict_map(obj, params_map):
     if not params_map:
         return obj
     for k, v in params_map.items():
-        obj.__dict__['_' + k] = v
+        obj.__dict__["_" + k] = v
 
 
 class ResourceQuery:
@@ -50,17 +50,17 @@ class ResourceQuery:
             enum_op, path, pagination, limit = m.enum_spec
 
         # ims special processing
-        if pagination == 'ims':
+        if pagination == "ims":
             resources = self._pagination_ims(m, enum_op, path)
-        elif pagination == 'offset':
+        elif pagination == "offset":
             resources = self._pagination_limit_offset(m, enum_op, path, limit)
-        elif pagination == 'marker':
+        elif pagination == "marker":
             resources = self._pagination_limit_marker(m, enum_op, path)
-        elif pagination == 'maxitems-marker':
+        elif pagination == "maxitems-marker":
             resources = self._pagination_maxitems_marker(m, enum_op, path)
         elif pagination is None:
             resources = self._non_pagination(m, enum_op, path)
-        elif pagination == 'page':
+        elif pagination == "page":
             resources = self._pagination_limit_page(m, enum_op, path)
         else:
             log.exception(f"Unsupported pagination type: {pagination}")
@@ -68,11 +68,12 @@ class ResourceQuery:
         return resources
 
     def _pagination_limit_offset(self, m, enum_op, path, limit):
+
         session = local_session(self.session_factory)
         client = session.client(m.service)
 
         offset = 0
-        if hasattr(m, 'offset_start_num'):
+        if hasattr(m, "offset_start_num"):
             offset = m.offset_start_num
         limit = limit or DEFAULT_LIMIT_SIZE
         resources = []
@@ -81,11 +82,17 @@ class ResourceQuery:
             request.limit = limit
             request.offset = offset
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(path, eval(
-                str(response).replace('null', 'None').replace('false', 'False').
-                replace('true', 'True')))
+            res = jmespath.search(
+                path,
+                eval(
+                    str(response)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                ),
+            )
 
-            if path == '*':
+            if path == "*":
                 data_json = json.loads(str(response))
                 data_json["id"] = data_json[m.id]
                 resources.append(data_json)
@@ -94,8 +101,8 @@ class ResourceQuery:
             # replace id with the specified one
             if res is not None:
                 for data in res:
-                    data['id'] = data[m.id]
-                    data['tag_resource_type'] = m.tag_resource_type
+                    data["id"] = data[m.id]
+                    data["tag_resource_type"] = m.tag_resource_type
 
             resources = resources + res
             if len(res) == limit:
@@ -120,14 +127,20 @@ class ResourceQuery:
             except exceptions.ClientRequestException as e:
                 log.error(
                     f"request[{e.request_id}] failed[{e.status_code}], error_code[{e.error_code}],"
-                    f" error_msg[{e.error_msg}]")
+                    f" error_msg[{e.error_msg}]"
+                )
                 return resources
             count = response.count
             next_marker = response.next_marker
-            res = jmespath.search(path, eval(
-                str(response)
-                .replace('null', 'None').replace('false', 'False').
-                replace('true', 'True')))
+            res = jmespath.search(
+                path,
+                eval(
+                    str(response)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                ),
+            )
 
             # replace id with the specified one
             if res is not None:
@@ -141,8 +154,9 @@ class ResourceQuery:
                 break
         return resources
 
-    def _pagination_limit_marker(self, m, enum_op, path,
-                                 marker_pagination: MarkerPagination = None):
+    def _pagination_limit_marker(
+        self, m, enum_op, path, marker_pagination: MarkerPagination = None
+    ):
         session = local_session(self.session_factory)
         client = session.client(m.service)
 
@@ -154,26 +168,32 @@ class ResourceQuery:
         resources = []
         while 1:
             response = self._invoke_client_enum(client, enum_op, request)
-            response = eval(str(response).replace('null', 'None').
-                            replace('false', 'False').replace('true', 'True'))
+            response = eval(
+                str(response)
+                .replace("null", "None")
+                .replace("false", "False")
+                .replace("true", "True")
+            )
             res = jmespath.search(path, response)
 
             # replace id with the specified one
             if res is None or len(res) == 0:
                 return resources
             # re-set id
-            if 'id' not in res[0]:
+            if "id" not in res[0]:
                 for data in res:
-                    data['id'] = data[m.id]
-            if res and getattr(m, 'tag_resource_type', None):
+                    data["id"] = data[m.id]
+            if res and getattr(m, "tag_resource_type", None):
                 for data in res:
-                    data['tag_resource_type'] = m.tag_resource_type
+                    data["tag_resource_type"] = m.tag_resource_type
             # merge result
             resources = resources + res
 
             # get next page info
-            if m.service.endswith('v2'):
-                next_page_params_by_id = marker_pagination.get_next_page_params_by_id(res)
+            if m.service.endswith("v2"):
+                next_page_params_by_id = marker_pagination.get_next_page_params_by_id(
+                    res
+                )
                 if next_page_params_by_id:
                     _dict_map(request, next_page_params_by_id)
                 else:
@@ -191,17 +211,23 @@ class ResourceQuery:
         request = session.request(manager.service)
 
         response = getattr(client, enum_op)(request)
-        resources = jmespath.search(path, eval(
-            str(response).replace('null', 'None').replace('false', 'False')
-            .replace('true', 'True')))
+        resources = jmespath.search(
+            path,
+            eval(
+                str(response)
+                .replace("null", "None")
+                .replace("false", "False")
+                .replace("true", "True")
+            ),
+        )
 
         # replace id with the specified one
         if resources is None or len(resources) == 0:
             return []
         # re-set id
-        if 'id' not in resources[0]:
+        if "id" not in resources[0]:
             for data in resources:
-                data['id'] = data[manager.id]
+                data["id"] = data[manager.id]
 
         self._get_obs_account_id(response, manager, resources)
 
@@ -219,23 +245,29 @@ class ResourceQuery:
             request.limit = limit
             request.offset = page
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(path, eval(
-                str(response).replace('null', 'None').replace('false', 'False').
-                replace('true', 'True')))
+            res = jmespath.search(
+                path,
+                eval(
+                    str(response)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                ),
+            )
 
-            if path == '*':
+            if path == "*":
                 resources.append(json.loads(str(response)))
                 return resources
 
-            if path == '*':
+            if path == "*":
                 resources.append(json.loads(str(response)))
                 return resources
 
             # replace id with the specified one
             if res is not None:
                 for data in res:
-                    data['id'] = data[m.id]
-                    data['tag_resource_type'] = m.tag_resource_type
+                    data["id"] = data[m.id]
+                    data["tag_resource_type"] = m.tag_resource_type
 
             resources = resources + res
             if len(res) == limit:
@@ -274,16 +306,16 @@ class ResourceQuery:
             for data in res:
                 data["id"] = data[m.id]
                 marker = data["id"]
-                if getattr(m, 'tag_resource_type', None):
+                if getattr(m, "tag_resource_type", None):
                     data["tag_resource_type"] = m.tag_resource_type
             resources.extend(res)
         return resources
 
     def _get_obs_account_id(self, response, manager, resources):
-        if manager.service == 'obs':
+        if manager.service == "obs":
             account_id = jmespath.search("body.owner.owner_id", response)
             for data in resources:
-                data['account_id'] = account_id
+                data["account_id"] = account_id
 
 
 # abstract method for pagination
@@ -292,16 +324,16 @@ class DefaultMarkerPagination(MarkerPagination):
         self.limit = limit
 
     def get_first_page_params(self):
-        return {'limit': self.limit}
+        return {"limit": self.limit}
 
     def get_next_page_params(self, response):
-        page_info = jmespath.search('page_info', response)
+        page_info = jmespath.search("page_info", response)
         if not page_info:
             return None
-        next_marker = page_info.get('next_marker')
+        next_marker = page_info.get("next_marker")
         if not next_marker:
             return None
-        return {'limit': self.limit, 'marker': next_marker}
+        return {"limit": self.limit, "marker": next_marker}
 
     def get_next_page_params_by_id(self, res):
         if len(res) < self.limit:
@@ -309,13 +341,13 @@ class DefaultMarkerPagination(MarkerPagination):
         last_resource = res[-1]
         if not last_resource:
             return None
-        resource_id = last_resource.get('id')
+        resource_id = last_resource.get("id")
         if not resource_id:
             return None
-        return {'limit': self.limit, 'marker': resource_id}
+        return {"limit": self.limit, "marker": resource_id}
 
 
-@sources.register('describe-huaweicloud')
+@sources.register("describe-huaweicloud")
 class DescribeSource:
     def __init__(self, manager):
         self.manager = manager
@@ -337,20 +369,18 @@ class QueryMeta(type):
     """metaclass to have consistent action/filter registry for new resources."""
 
     def __new__(cls, name, parents, attrs):
-        if 'resource_type' not in attrs:
+        if "resource_type" not in attrs:
             return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
-        if 'filter_registry' not in attrs:
-            attrs['filter_registry'] = FilterRegistry(
-                '%s.filters' % name.lower())
-        if 'action_registry' not in attrs:
-            attrs['action_registry'] = ActionRegistry(
-                '%s.actions' % name.lower())
+        if "filter_registry" not in attrs:
+            attrs["filter_registry"] = FilterRegistry("%s.filters" % name.lower())
+        if "action_registry" not in attrs:
+            attrs["action_registry"] = ActionRegistry("%s.actions" % name.lower())
 
-        m = ResourceQuery.resolve(attrs['resource_type'])
-        if getattr(m, 'tag_resource_type', None):
-            register_tms_actions(attrs['action_registry'])
-            register_tms_filters(attrs['filter_registry'])
+        m = ResourceQuery.resolve(attrs["resource_type"])
+        if getattr(m, "tag_resource_type", None):
+            register_tms_actions(attrs["action_registry"])
+            register_tms_filters(attrs["filter_registry"])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
 
@@ -380,15 +410,19 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
         return self.resource_type
 
     def get_cache_key(self, query):
-        return {'source_type': self.source_type,
-                'query': query,
-                'service': self.resource_type.service}
+        return {
+            "source_type": self.source_type,
+            "query": query,
+            "service": self.resource_type.service,
+        }
 
     def get_resource(self, resource_info):
         return self.resource_type.get(self.get_client(), resource_info)
 
     def get_resources(self, resource_ids):
-        resources = self.augment(self.source.get_resources(self.get_resource_query())) or []
+        resources = (
+            self.augment(self.source.get_resources(self.get_resource_query())) or []
+        )
         result = []
         for resource in resources:
             if resource["id"] in resource_ids:
@@ -397,11 +431,11 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
 
     @property
     def source_type(self):
-        return self.data.get('source', 'describe-huaweicloud')
+        return self.data.get("source", "describe-huaweicloud")
 
     def get_resource_query(self):
-        if 'query' in self.data:
-            return {'filter': self.data.get('query')}
+        if "query" in self.data:
+            return {"filter": self.data.get("query")}
 
     def resources(self, query=None):
         q = query or self.get_resource_query()
@@ -430,8 +464,7 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
         return resources
 
     def check_resource_limit(self, selection_count, population_count):
-        """Check if policy's execution affects more resources then its limit.
-        """
+        """Check if policy's execution affects more resources then its limit."""
         p = self.ctx.policy
         max_resource_limits = MaxResourceLimit(p, selection_count, population_count)
         return max_resource_limits.check_resource_limits()
@@ -445,8 +478,7 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
 
 class TypeMeta(type):
     def __repr__(cls):
-        return "<TypeInfo service:%s>" % (
-            cls.service)
+        return "<TypeInfo service:%s>" % (cls.service)
 
 
 class TypeInfo(metaclass=TypeMeta):

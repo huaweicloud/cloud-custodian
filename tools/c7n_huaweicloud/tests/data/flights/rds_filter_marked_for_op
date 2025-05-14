@@ -1,0 +1,75 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250506T115531Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "rds-list-filter-id-1", "name": "rds-list-1",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-05-15T08:00:00+0000",
+        "updated": "2023-05-16T10:30:00+0000", "private_ips": ["192.168.0.18"], "public_ips":
+        [], "vpc_id": "vpc-list-id", "subnet_id": "subnet-list-id", "security_group_id":
+        "sg-list-id", "volume": {"type": "ULTRAHIGH", "size": 40},
+        "tags": [{"key": "custodian_cleanup", "value": "upgrade-db-version_2009-01-01"}]},
+        {"id": "rds-list-filter-id-2", "name": "rds-list-2",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-05-15T09:00:00+0000",
+        "updated": "2023-05-16T11:30:00+0000", "private_ips": ["192.168.0.19"], "public_ips":
+        [], "vpc_id": "vpc-list-id", "subnet_id": "subnet-list-id", "security_group_id":
+        "sg-list-id", "volume": {"type": "ULTRAHIGH", "size": 40},
+        "tags": [{"key": "custodian_cleanup", "value": "upgrade-db-version1_2009-01-01"}]},
+        {"id": "rds-list-filter-id-3", "name": "rds-list-3",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-05-15T10:00:00+0000",
+        "updated": "2023-05-16T12:30:00+0000", "private_ips": ["192.168.0.20"], "public_ips":
+        [], "vpc_id": "vpc-list-id", "subnet_id": "subnet-list-id", "security_group_id":
+        "sg-list-id", "volume": {"type": "ULTRAHIGH", "size": 40}}], "total_count": 3}
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 06 May 2025 11:55:31 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746532531250; path=/
+      - HWWAFSESID=6ed1e7325aa05fdb32; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 06f2921df93da50601343e93e7f9edb5
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

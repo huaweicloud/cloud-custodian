@@ -11,6 +11,8 @@ from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredenti
 from huaweicloudsdkcore.auth.provider import MetadataCredentialProvider
 from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
+from huaweicloudsdkbms.v1 import BmsClient, ListBareMetalServerDetailsRequest
+from huaweicloudsdkbms.v1.region.bms_region import BmsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v5 import (
@@ -52,8 +54,11 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
+from huaweicloudsdkeg.v1 import ListSubscriptionsRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
-from huaweicloudsdkeip.v3 import EipClient
+from huaweicloudsdkeip.v3 import EipClient, ListPublicipsRequest
+from huaweicloudsdkeip.v2 import EipClient as EipClientV2
+from huaweicloudsdkeip.v2.region.eip_region import EipRegion as EipRegionV2
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
 from huaweicloudsdkgeip.v3 import GeipClient
 from huaweicloudsdkims.v2.region.ims_region import ImsRegion
@@ -93,24 +98,26 @@ from huaweicloudsdkantiddos.v1 import AntiDDoSClient, ListDDosStatusRequest
 from huaweicloudsdkantiddos.v1.region.antiddos_region import AntiDDoSRegion
 from huaweicloudsdksecmaster.v2 import ListWorkspacesRequest, SecMasterClient
 from huaweicloudsdksecmaster.v2.region.secmaster_region import SecMasterRegion
+from huaweicloudsdkhss.v5 import ListHostStatusRequest, HssClient
+from huaweicloudsdkhss.v5.region.hss_region import HssRegion
 from huaweicloudsdkram.v1 import (
     RamClient,
     SearchResourceShareAssociationsRequest,
     SearchResourceShareAssociationsReqBody,
 )
+from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
+from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
-from huaweicloudsdkdns.v2 import (
-    ListPublicZonesRequest,
-    ListPrivateZonesRequest,
-    ListRecordSetsWithLineRequest,
-    DnsClient
-)
-from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
 from huaweicloudsdkrocketmq.v2 import RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
 from huaweicloudsdkrocketmq.v2.region.rocketmq_region import RocketMQRegion
-
 from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
+from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
+from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
+from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
+from huaweicloudsdkdc.v3.region.dc_region import DcRegion
+from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
+from huaweicloudsdkcc.v3.region.cc_region import CcRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -119,21 +126,28 @@ class Session:
     """Session"""
 
     def __init__(self, options=None):
-        self.region = os.getenv("HUAWEI_DEFAULT_REGION")
         self.token = None
-        if not self.region:
-            log.error(
-                "No default region set. Specify a default via HUAWEI_DEFAULT_REGION"
-            )
-            sys.exit(1)
+        self.domain_id = None
+        self.region = None
+        self.ak = None
+        self.sk = None
 
         if options is not None:
-            self.ak = options.get("SecurityAccessKey")
-            self.sk = options.get("SecuritySecretKey")
-            self.token = options.get("SecurityToken")
+            self.ak = options.get("access_key_id")
+            self.sk = options.get("secret_access_key")
+            self.token = options.get("security_token")
+            self.domain_id = options.get("domain_id")
+            self.region = options.get("region")
 
-        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
-        self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
+        self.ak = self.ak or os.getenv("HUAWEI_ACCESS_KEY_ID")
+        self.sk = self.sk or os.getenv("HUAWEI_SECRET_ACCESS_KEY")
+        self.region = self.region or os.getenv("HUAWEI_DEFAULT_REGION")
+
+        if not self.region:
+            log.error(
+                "No default region set. Specify a default via HUAWEI_DEFAULT_REGION."
+            )
+            sys.exit(1)
 
     def client(self, service):
         if self.ak is None or self.sk is None:
@@ -152,10 +166,9 @@ class Session:
             credentials = BasicCredentials(
                 self.ak, self.sk, os.getenv("HUAWEI_PROJECT_ID")
             ).with_security_token(self.token)
-            globalCredentials = GlobalCredentials(self.ak, self.sk).with_security_token(
-                self.token
-            )
-
+            globalCredentials = (GlobalCredentials(self.ak, self.sk, self.domain_id)
+                                 .with_security_token(self.token))
+        client = None
         if service == "vpc":
             client = (
                 VpcClientV3.new_builder()
@@ -291,6 +304,13 @@ class Session:
                 .with_region(EipRegion.value_of(self.region))
                 .build()
             )
+        elif service == "eip_v2":
+            client = (
+                EipClientV2.new_builder()
+                .with_credentials(credentials)
+                .with_region(EipRegionV2.value_of(self.region))
+                .build()
+            )
         elif service == "geip":
             client = (
                 GeipClient.new_builder()
@@ -333,6 +353,13 @@ class Session:
                 SecMasterClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(SecMasterRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "hss":
+            client = (
+                HssClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(HssRegion.value_of(self.region))
                 .build()
             )
         elif service == "cts-tracker":
@@ -405,18 +432,52 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
-        elif service in ['dns-publiczone', 'dns-privatezone', 'dns-recordset']:
-            client = (
-                DnsClient.new_builder()
-                .with_credentials(credentials)
-                .with_region(DnsRegion.value_of(self.region))
-                .build()
-            )
         elif service == 'reliability':
             client = (
                 RocketMQClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(RocketMQRegion.value_of(self.region))
+            )
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'certificate':
+            client = (
+                ScmClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(ScmRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'dc':
+            client = (
+                DcClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DcRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "cc":
+            client = (
+                CcClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CcRegion.CN_NORTH_4)
+                .build()
+            )
+        elif service == "bms":
+            client = (
+                BmsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(BmsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "rds":
+            client = (
+                RdsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RdsRegion.value_of(self.region))
                 .build()
             )
 
@@ -460,6 +521,8 @@ class Session:
             request = ListVolumesRequest()
         elif service == "er":
             request = ListEnterpriseRoutersRequest()
+        elif service == "cc":
+            request = ListCentralNetworksRequest()
         elif service == "lts-transfer":
             request = ListTransfersRequest()
         elif service == "config":
@@ -494,6 +557,8 @@ class Session:
             request = ListLoadBalancersRequest()
         elif service == "elb_listener":
             request = ListListenersRequest()
+        elif service == "eip":
+            request = ListPublicipsRequest()
         elif service == "ims":
             request = ListImagesRequest()
         elif service == "smn":
@@ -506,6 +571,8 @@ class Session:
             request = ListNatGatewayDnatRulesRequest()
         elif service == "secmaster":
             request = ListWorkspacesRequest()
+        elif service == "hss":
+            request = ListHostStatusRequest()
         elif service == "cts-tracker":
             request = ListTrackersRequest()
         elif service == "cts-notification-smn":
@@ -534,15 +601,18 @@ class Session:
             request = ListInstancesRequest()
         elif service == 'reliability':
             request = RocketMQListInstancesRequest()
-        elif service == 'dns-publiczone':
-            request = ListPublicZonesRequest()
-        elif service == 'dns-privatezone':
-            request = ListPrivateZonesRequest()
-            request.type = "private"
-        elif service == 'dns-recordset':
-            request = ListRecordSetsWithLineRequest()
         elif service == 'swr':
             request = ListReposDetailsRequest()
         elif service == 'swr-image':
             request = ListRepositoryTagsRequest()
+        elif service == 'certificate':
+            request = ListCertificatesRequest()
+        elif service == 'dc':
+            request = ListDirectConnectsRequest()
+        elif service == "bms":
+            request = ListBareMetalServerDetailsRequest()
+        elif service == 'rds':
+            request = RdsListInstancesRequest()
+        elif service == 'eg':
+            request = ListSubscriptionsRequest()
         return request

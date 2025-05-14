@@ -12,6 +12,7 @@ import os
 
 from c7n.mu import get_exec_options, custodian_archive as base_archive
 from c7n.utils import local_session
+from c7n.exceptions import PolicyExecutionError
 
 from huaweicloudsdkfunctiongraph.v2 import (
     ListFunctionsRequest,
@@ -29,7 +30,13 @@ from huaweicloudsdkfunctiongraph.v2 import (
     ShowDependencyVersionRequest,
     UpdateFunctionConfigRequest,
     UpdateFunctionConfigRequestBody,
-    DeleteFunctionTriggerRequest
+    DeleteFunctionTriggerRequest,
+    ShowFunctionAsyncInvokeConfigRequest,
+    UpdateFunctionAsyncInvokeConfigRequest,
+    UpdateFunctionAsyncInvokeConfigRequestBody,
+    FuncAsyncDestinationConfig,
+    FuncDestinationConfig,
+    DeleteFunctionAsyncInvokeConfigRequest,
 )
 from huaweicloudsdkeg.v1 import (
     ListChannelsRequest,
@@ -221,7 +228,7 @@ class FunctionGraphManager:
             "log_config", "network_controller", "is_stateful_function", "enable_dynamic_memory",
             "enable_auth_in_header", "domain_names", "restore_hook_handler",
             "restore_hook_timeout", "heartbeat_handler", "enable_class_isolation",
-            "enable_lts_log", "lts_custom_tag"
+            "enable_lts_log", "lts_custom_tag", "user_data_encrypt_kms_key_id",
         ]
         request = UpdateFunctionConfigRequest(function_urn=old_config["func_urn"])
         request_body = UpdateFunctionConfigRequestBody(
@@ -258,7 +265,8 @@ class FunctionGraphManager:
             func_code=FuncCode(
                 file=base64_str
             ),
-            depend_version_list=self.get_custodian_depend_version_id(func.runtime)
+            depend_version_list=self.get_custodian_depend_version_id(func.runtime),
+            code_encrypt_kms_key_id=func.code_encrypt_kms_key_id,
         )
         try:
             response = self.client.update_function_code(request)
@@ -285,7 +293,10 @@ class FunctionGraphManager:
         return response.body
 
     def publish(self, func, role=None):
-        result, changed, _ = self._create_or_update(func, role)
+        try:
+            result, changed, _ = self._create_or_update(func, role)
+        except PolicyExecutionError:
+            return
         func.func_urn = result.func_urn
 
         if changed:
@@ -302,7 +313,10 @@ class FunctionGraphManager:
                     log.info(
                         f'Created trigger[{create_trigger.trigger_id}] for function[{func.func_name}].')  # noqa: E501
 
-        return result
+        results = []
+        if result:
+            results.append(result)
+        return results
 
     def _create_or_update(self, func, role=None):
         role = func.xrole or role
@@ -335,18 +349,107 @@ class FunctionGraphManager:
             result = self.create_function(params)
             changed = True
 
+        if result:
+            self.process_async_invoke_config(func, result.func_urn)
+        else:
+            raise PolicyExecutionError("Create or update failed.")
+
         return result, changed, existing
 
     @staticmethod
     def compare_function_config(old_config, func):
         params = func.get_config()
         old_config = old_config.to_dict()
+        old_user_data, new_user_data = {}, {}
         need_update_params = {}
+        # 将user_data字段转为dict, 便于比较
+        if params.get('user_data', ""):
+            new_user_data = json.loads(params['user_data'])
+        if old_config.get('user_data', ""):
+            old_user_data = json.loads(old_config['user_data'])
         for param in params:
+            # 跳过异步配置、环境变量
+            if param in ["async_invoke_config", "user_data"]:
+                continue
             if params[param] != old_config.get(param):
                 need_update_params[param] = params[param]
 
+        # 单独比较user_data:
+        if new_user_data != old_user_data:
+            need_update_params['user_data'] = json.dumps(new_user_data)
         return need_update_params
+
+    def process_async_invoke_config(self, func, func_urn):
+        show_async_config_request = ShowFunctionAsyncInvokeConfigRequest(
+            function_urn=func_urn
+        )
+        try:
+            old_config = self.client.show_function_async_invoke_config(
+                show_async_config_request).to_dict()
+        except exceptions.ClientRequestException as e:
+            if int(e.status_code) == 404:
+                old_config = None
+            else:
+                log.error(f'Show function async config failed, request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
+                return
+
+        new_config = func.async_invoke_config
+        if new_config:
+            update_async_config_request = UpdateFunctionAsyncInvokeConfigRequest(
+                function_urn=func_urn
+            )
+            update_async_config_request.body = UpdateFunctionAsyncInvokeConfigRequestBody(
+                enable_async_status_log=new_config.get('enable_async_status_log'),
+                max_async_retry_attempts=new_config.get('max_async_retry_attempts'),
+                max_async_event_age_in_seconds=new_config.get('max_async_event_age_in_seconds'),
+                destination_config=FuncAsyncDestinationConfig(
+                    on_success=FuncDestinationConfig(
+                        destination=new_config.get('destination_config', {}).
+                        get('on_success', {}).
+                        get('destination', ""),
+                        param=json.dumps(
+                            new_config.get('destination_config', {}).
+                            get('on_success', {}).
+                            get('param', {})),
+                    ),
+                    on_failure=FuncDestinationConfig(
+                        destination=new_config.get('destination_config', {}).
+                        get('on_failure', {}).
+                        get('destination', ""),
+                        param=json.dumps(
+                            new_config.get('destination_config', {}).
+                            get('on_failure', {}).
+                            get('param', {})),
+                    ),
+                )
+            )
+            try:
+                log.info('Update function async config...')
+                _ = self.client.update_function_async_invoke_config(
+                    update_async_config_request
+                )
+            except exceptions.ClientRequestException as e:
+                log.error(f'Update function async config failed, request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
+                return
+        elif old_config and not new_config:
+            delete_async_config_request = DeleteFunctionAsyncInvokeConfigRequest(
+                function_urn=func_urn
+            )
+            try:
+                log.info('Delete function async config')
+                _ = self.client.delete_function_async_invoke_config(delete_async_config_request)
+            except exceptions.ClientRequestException as e:
+                log.error(f'Delete function async config failed, request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
+                return
 
     @staticmethod
     def calculate_sha512(archive, buffer_size=65536) -> str:
@@ -448,6 +551,21 @@ class AbstractFunctionGraph:
     def log_config(self):
         """LTS log config"""
 
+    @property
+    @abc.abstractmethod
+    def async_invoke_config(self):
+        """Async invoke config"""
+
+    @property
+    @abc.abstractmethod
+    def user_data_encrypt_kms_key_id(self):
+        """KMS key id for encrypt user data"""
+
+    @property
+    @abc.abstractmethod
+    def code_encrypt_kms_key_id(self):
+        """KMS key id for encrypt function code"""
+
     @abc.abstractmethod
     def get_events(self, session_factory):
         """ """
@@ -470,6 +588,9 @@ class AbstractFunctionGraph:
             'description': self.description,
             'enable_lts_log': self.enable_lts_log,
             'log_config': self.log_config,
+            'async_invoke_config': self.async_invoke_config,
+            'user_data_encrypt_kms_key_id': self.user_data_encrypt_kms_key_id,
+            'code_encrypt_kms_key_id': self.code_encrypt_kms_key_id,
         }
 
         return conf
@@ -539,7 +660,19 @@ class FunctionGraph(AbstractFunctionGraph):
     def log_config(self):
         return self.func_data.get('log_config', None)
 
-    def get_events(self, ssession_factory):
+    @property
+    def async_invoke_config(self):
+        return self.func_data.get('async_invoke_config', None)
+
+    @property
+    def user_data_encrypt_kms_key_id(self):
+        return self.func_data.get('user_data_encrypt_kms_key_id', "")
+
+    @property
+    def code_encrypt_kms_key_id(self):
+        return self.func_data.get('code_encrypt_kms_key_id', "")
+
+    def get_events(self, session_factory):
         return self.func_data.get('events', ())
 
     def get_archive(self):
@@ -603,7 +736,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     @property
     def user_data(self):
         user_data = {
-            "HUAWEI_DEFAULT_REGION": os.getenv("HUAWEI_DEFAULT_REGION"),
+            "HUAWEI_DEFAULT_REGION": local_session(self.policy.session_factory).region,
             "LOG_LEVEL": self.policy.data['mode'].get('log_level', "WARNING"),
         }
         return json.dumps(user_data)
@@ -626,6 +759,18 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     @property
     def packages(self):
         return self.policy.data['mode'].get('packages')
+
+    @property
+    def async_invoke_config(self):
+        return self.policy.data['mode'].get('async_invoke_config', None)
+
+    @property
+    def user_data_encrypt_kms_key_id(self):
+        return self.policy.data['mode'].get('user_data_encrypt_kms_key_id', "")
+
+    @property
+    def code_encrypt_kms_key_id(self):
+        return self.policy.data['mode'].get('code_encrypt_kms_key_id', "")
 
     def get_events(self, session_factory):
         events = []
