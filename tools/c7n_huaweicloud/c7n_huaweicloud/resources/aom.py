@@ -25,7 +25,7 @@ log = logging.getLogger('custodian.huaweicloud.resources.aom')
 @resources.register('aom-alarm')
 class AomAlarm(QueryResourceManager):
     """华为云AOM告警规则资源管理器
-    
+
     用于管理和操作华为云应用运维管理服务(AOM)的告警规则
     """
 
@@ -39,13 +39,13 @@ class AomAlarm(QueryResourceManager):
 @AomAlarm.filter_registry.register('alarm-rule')
 class AlarmRuleFilter(ValueFilter):
     """AOM告警规则过滤器
-    
+
     根据告警规则的属性进行过滤
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: aom-alarm-rule-filter
             resource: huaweicloud.aom-alarm
@@ -65,11 +65,11 @@ class AlarmRuleFilter(ValueFilter):
 @AomAlarm.action_registry.register('delete')
 class DeleteAlarmRule(HuaweiCloudBaseAction):
     """删除AOM告警规则
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: delete-aom-alarm
             resource: huaweicloud.aom-alarm
@@ -114,13 +114,13 @@ class DeleteAlarmRule(HuaweiCloudBaseAction):
 @AomAlarm.action_registry.register('update')
 class UpdateAlarmRule(HuaweiCloudBaseAction):
     """更新AOM告警规则
-    
+
     根据API文档更新AOM告警规则，支持更新告警规则的名称、描述、是否启用、告警通知等属性
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: update-aom-alarm
             resource: huaweicloud.aom-alarm
@@ -364,13 +364,13 @@ class UpdateAlarmRule(HuaweiCloudBaseAction):
 @AomAlarm.action_registry.register('add')
 class AddAlarmRule(HuaweiCloudBaseAction):
     """添加AOM告警规则
-    
+
     根据API文档添加AOM指标类或事件类告警规则
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: add-metric-alarm
             resource: huaweicloud.aom-alarm
@@ -404,7 +404,7 @@ class AddAlarmRule(HuaweiCloudBaseAction):
                       filter: "resource_group_id=default_resource_group_id"
                       count: 3
                       severity: 2
-    
+
         policies:
           - name: add-event-alarm
             resource: huaweicloud.aom-alarm
