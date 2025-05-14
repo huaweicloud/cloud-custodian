@@ -613,11 +613,4 @@ class Session:
 
         elif service == 'aom':
             request = ListMetricOrEventAlarmRuleRequest()
-        elif service == 'dns-publiczone':
-            request = ListPublicZonesRequest()
-        elif service == 'dns-privatezone':
-            request = ListPrivateZonesRequest()
-            request.type = "private"
-        elif service == 'dns-recordset':
-            request = ListRecordSetsWithLineRequest()
         return request

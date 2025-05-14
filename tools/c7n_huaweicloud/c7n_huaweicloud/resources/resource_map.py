@@ -50,8 +50,5 @@ ResourceMap = {
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
     "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
     "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS",
-    "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
-    "huaweicloud.dns-privatezone": "c7n_huaweicloud.resources.dns.PrivateZone",
-    "huaweicloud.dns-recordset": "c7n_huaweicloud.resources.dns.RecordSet",
     "huaweicloud.aom-alarm": "c7n_huaweicloud.resources.aom.AomAlarm"
 }
