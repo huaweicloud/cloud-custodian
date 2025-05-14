@@ -1,0 +1,68 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250509T023352Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/eip/publicips?limit=100
+  response:
+    body:
+      string: '{"publicips":[
+        {"id":"10e5419a-1234-1234-1234-123456789abc","public_ip_address":"10.123.45.76",
+        "status":"ACTIVE","type":"5_bgp","associate_instance_type":"ELB",
+        "associate_instance_id":"123456-elb-id-2","bandwidth":{"id":"bw-132",
+        "name":"bandwidthTest10","size":10}},
+        {"id":"11e5419a-1234-1234-1234-123456789abc","public_ip_address":"10.123.45.77",
+        "status":"DOWN","type":"5_bgp","associate_instance_type":null,
+        "associate_instance_id":null,"bandwidth":{"id":"bw-133",
+        "name":"bandwidthTest11","size":15}},
+        {"id":"12e5419a-1234-1234-1234-123456789abc","public_ip_address":"10.123.45.78",
+        "status":"ACTIVE","type":"5_bgp","associate_instance_type":"PORT",
+        "associate_instance_id":"123456-port-id-5","bandwidth":{"id":"bw-134",
+        "name":"bandwidthTest12","size":20}}
+        ],"request_id":"d1c2d3e4f5g6h7i8j9k0","total_count":3}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 09 May 2025 02:33:52 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746758029534; path=/
+      - HWWAFSESID=44303793a66241c04f; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 8629f27752b5f4b065f2905bd2a0bd70
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+version: 1
