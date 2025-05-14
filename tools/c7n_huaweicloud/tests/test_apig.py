@@ -141,7 +141,7 @@ class StageResourceTest(BaseTest):
         factory = self.replay_flight_data("apig_stage_action_update")
         # Get environment ID to update from apig_stage_action_update
         # Validate VCR: match 'id' in apig_stage_action_update
-        stage_id_to_update = "2c9eb1538a138432018a13zzzzz00001"
+        stage_id_to_update = "7a1ad0c350844ee69479b47df9a881cb"
         new_name = "updated-test-env"
         new_description = "Updated by Cloud Custodian"  # Updated description
         p = self.load_policy(
@@ -167,7 +167,7 @@ class StageResourceTest(BaseTest):
         factory = self.replay_flight_data("apig_stage_action_delete")
         # Get environment ID to delete from apig_stage_action_delete
         # Validate VCR: match 'id' in apig_stage_action_delete
-        stage_id_to_delete = "2c9eb1538a138432018a13xxxxx00001"
+        stage_id_to_delete = "7a1ad0c350844ee69479b47df9a881cb"
         p = self.load_policy(
             {
                 "name": "apig-stage-action-delete",

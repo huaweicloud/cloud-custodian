@@ -211,6 +211,47 @@ class ApiResource(QueryResourceManager):
             request.instance_id = str(instance_id)
             request.limit = 100
             
+            # 定义API支持的过滤参数映射表
+            param_mapping = {
+                'name': 'name',                 # API名称
+                'api_id': 'api_id',             # API ID
+                'id': 'api_id',                 # ID别名
+                'group_id': 'group_id',         # API组ID
+                'req_method': 'req_method',     # 请求方法
+                'req_uri': 'req_uri',           # 请求URI
+                'auth_type': 'auth_type',       # 认证类型
+                'env_id': 'env_id',             # 环境ID
+                'type': 'type',                 # API类型
+            }
+            
+            # 检查策略中的过滤器，提取可以发送到API请求的过滤参数
+            if hasattr(self, 'data') and isinstance(self.data, dict) and 'filters' in self.data:
+                for f in self.data['filters']:
+                    if isinstance(f, dict) and 'key' in f:
+                        key = f.get('key')
+                        if key in param_mapping:
+                            # 映射到API参数名
+                            api_param_name = param_mapping[key]
+                            filter_type = f.get('type', 'value')
+                            
+                            # 处理不同类型的过滤器
+                            if filter_type == 'value':
+                                # 只处理特定的操作类型
+                                op = f.get('op', 'eq').lower()
+                                # 只处理等于操作的过滤器，跳过正则表达式、列表包含等复杂操作
+                                if op not in ('regex', 'in', 'ni', 'not-in', 'ne', 'gt', 'lt', 'gte', 'lte'):
+                                    param_value = f.get('value')
+                                    if param_value is not None:
+                                        log.info(f"添加API过滤参数: {api_param_name}={param_value}")
+                                        # 使用setattr动态设置请求对象的属性
+                                        setattr(request, api_param_name, param_value)
+                            # 对于SQL过滤器，只有op为eq的情况下才添加到请求参数
+                            elif filter_type == 'scalar' and f.get('op', '').lower() == 'eq':
+                                param_value = f.get('value')
+                                if param_value is not None:
+                                    log.info(f"添加SQL过滤参数: {api_param_name}={param_value}")
+                                    setattr(request, api_param_name, param_value)
+            
             # 直接调用API
             response = client.list_apis_v2(request)
             
@@ -525,7 +566,7 @@ class StageResource(QueryResourceManager):
         return instance_id
     
     def resources(self):
-        """重写资源获取方法，确保正确设置instance_id"""
+        """重写资源获取方法，确保正确设置instance_id和所有可能的过滤参数"""
         session = local_session(self.session_factory)
         client = session.client('apig')
         
@@ -545,6 +586,44 @@ class StageResource(QueryResourceManager):
             # 关键修复：设置instance_id
             request.instance_id = str(instance_id)
             request.limit = 100
+            
+            # 定义API支持的过滤参数映射表
+            param_mapping = {
+                'name': 'name',               # 环境名称
+                'env_id': 'env_id',           # 环境ID
+                'env_name': 'name',           # 环境名称别名
+                'description': 'remark',      # 环境描述，注意API参数是remark
+                'remark': 'remark',           # 环境描述
+                'id': 'env_id',               # ID别名
+            }
+            
+            # 检查策略中的过滤器，提取可以发送到API请求的过滤参数
+            if hasattr(self, 'data') and isinstance(self.data, dict) and 'filters' in self.data:
+                for f in self.data['filters']:
+                    if isinstance(f, dict) and 'key' in f:
+                        key = f.get('key')
+                        if key in param_mapping:
+                            # 映射到API参数名
+                            api_param_name = param_mapping[key]
+                            filter_type = f.get('type', 'value')
+                            
+                            # 处理不同类型的过滤器
+                            if filter_type == 'value':
+                                # 只处理特定的操作类型
+                                op = f.get('op', 'eq').lower()
+                                # 只处理等于操作的过滤器，跳过正则表达式、列表包含等复杂操作
+                                if op not in ('regex', 'in', 'ni', 'not-in', 'ne', 'gt', 'lt', 'gte', 'lte'):
+                                    param_value = f.get('value')
+                                    if param_value is not None:
+                                        log.info(f"添加环境过滤参数: {api_param_name}={param_value}")
+                                        # 使用setattr动态设置请求对象的属性
+                                        setattr(request, api_param_name, param_value)
+                            # 对于SQL过滤器，只有op为eq的情况下才添加到请求参数
+                            elif filter_type == 'scalar' and f.get('op', '').lower() == 'eq':
+                                param_value = f.get('value')
+                                if param_value is not None:
+                                    log.info(f"添加环境SQL过滤参数: {api_param_name}={param_value}")
+                                    setattr(request, api_param_name, param_value)
             
             # 直接调用API
             response = client.list_environments_v2(request)
@@ -800,7 +879,7 @@ class ApiGroupResource(QueryResourceManager):
         return instance_id
     
     def resources(self):
-        """重写资源获取方法，确保正确设置instance_id"""
+        """重写资源获取方法，确保正确设置instance_id和所有可能的过滤参数"""
         session = local_session(self.session_factory)
         client = session.client('apig')
         
@@ -821,6 +900,44 @@ class ApiGroupResource(QueryResourceManager):
             request.instance_id = str(instance_id)
             request.limit = 100
             
+            # 定义API支持的过滤参数映射表
+            param_mapping = {
+                'name': 'name',                 # 分组名称
+                'group_id': 'id',               # 分组ID
+                'id': 'id',                     # ID别名
+                'status': 'status',             # 分组状态
+                'description': 'remark',        # 分组描述，注意API参数是remark
+                'remark': 'remark',             # 分组描述
+            }
+            
+            # 检查策略中的过滤器，提取可以发送到API请求的过滤参数
+            if hasattr(self, 'data') and isinstance(self.data, dict) and 'filters' in self.data:
+                for f in self.data['filters']:
+                    if isinstance(f, dict) and 'key' in f:
+                        key = f.get('key')
+                        if key in param_mapping:
+                            # 映射到API参数名
+                            api_param_name = param_mapping[key]
+                            filter_type = f.get('type', 'value')
+                            
+                            # 处理不同类型的过滤器
+                            if filter_type == 'value':
+                                # 只处理特定的操作类型
+                                op = f.get('op', 'eq').lower()
+                                # 只处理等于操作的过滤器，跳过正则表达式、列表包含等复杂操作
+                                if op not in ('regex', 'in', 'ni', 'not-in', 'ne', 'gt', 'lt', 'gte', 'lte'):
+                                    param_value = f.get('value')
+                                    if param_value is not None:
+                                        log.info(f"添加API组过滤参数: {api_param_name}={param_value}")
+                                        # 使用setattr动态设置请求对象的属性
+                                        setattr(request, api_param_name, param_value)
+                            # 对于SQL过滤器，只有op为eq的情况下才添加到请求参数
+                            elif filter_type == 'scalar' and f.get('op', '').lower() == 'eq':
+                                param_value = f.get('value')
+                                if param_value is not None:
+                                    log.info(f"添加API组SQL过滤参数: {api_param_name}={param_value}")
+                                    setattr(request, api_param_name, param_value)
+            
             # 直接调用API
             response = client.list_api_groups_v2(request)
             
@@ -829,9 +946,54 @@ class ApiGroupResource(QueryResourceManager):
             if hasattr(response, 'groups'):
                 for group in response.groups:
                     group_dict = {}
-                    # 提取API组属性，只获取基本数据类型的属性
+                    
+                    # 特殊处理url_domains属性，直接将其提取为单独的列表
+                    url_domains = []
+                    if hasattr(group, 'url_domains') and group.url_domains is not None:
+                        for domain in group.url_domains:
+                            domain_dict = {}
+                            # 处理每个域名对象的各种属性
+                            if hasattr(domain, 'id'):
+                                domain_dict['id'] = domain.id
+                            if hasattr(domain, 'domain'):
+                                domain_dict['domain'] = domain.domain
+                            if hasattr(domain, 'cname_status'):
+                                domain_dict['cname_status'] = domain.cname_status
+                            if hasattr(domain, 'ssl_id'):
+                                domain_dict['ssl_id'] = domain.ssl_id
+                            if hasattr(domain, 'ssl_name'):
+                                domain_dict['ssl_name'] = domain.ssl_name
+                            if hasattr(domain, 'min_ssl_version'):
+                                domain_dict['min_ssl_version'] = domain.min_ssl_version
+                                
+                            # 添加其他可能的属性
+                            for attr_name in ['verified_client_certificate_enabled', 
+                                             'is_has_trusted_root_ca', 
+                                             'ingress_http_port', 
+                                             'ingress_https_port']:
+                                if hasattr(domain, attr_name):
+                                    domain_dict[attr_name] = getattr(domain, attr_name)
+                                    
+                            # 处理可能的ssl_infos嵌套列表
+                            if hasattr(domain, 'ssl_infos') and domain.ssl_infos is not None:
+                                ssl_infos_list = []
+                                for ssl_info in domain.ssl_infos:
+                                    if hasattr(ssl_info, '__dict__'):
+                                        ssl_info_dict = {}
+                                        for ssl_attr in dir(ssl_info):
+                                            if not ssl_attr.startswith('_') and not callable(getattr(ssl_info, ssl_attr)):
+                                                ssl_info_dict[ssl_attr] = getattr(ssl_info, ssl_attr)
+                                        ssl_infos_list.append(ssl_info_dict)
+                                domain_dict['ssl_infos'] = ssl_infos_list
+                            else:
+                                domain_dict['ssl_infos'] = []
+                                
+                            url_domains.append(domain_dict)
+                    
+                    # 提取API组的其他属性
                     for attr in dir(group):
-                        if not attr.startswith('_') and not callable(getattr(group, attr)):
+                        if (not attr.startswith('_') and not callable(getattr(group, attr)) 
+                            and attr != 'url_domains'):  # 跳过url_domains，因为我们已经处理过了
                             value = getattr(group, attr)
                             # 确保值是可序列化的基本类型
                             if isinstance(value, (str, int, float, bool, type(None))) or (
@@ -840,8 +1002,11 @@ class ApiGroupResource(QueryResourceManager):
                             ):
                                 group_dict[attr] = value
                     
+                    # 添加处理好的url_domains
+                    group_dict['url_domains'] = url_domains
+                    
                     # 添加必要的字段
-                    group_dict['id'] = group.id
+                    group_dict['id'] = getattr(group, 'id', '')
                     group_dict['instance_id'] = instance_id
                     group_dict['tag_resource_type'] = self.resource_type.tag_resource_type
                     
@@ -890,7 +1055,19 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         group_id = resource['id']
         instance_id = resource.get('instance_id')
+        
+        # 从策略数据中获取domain_id
         domain_id = self.data.get('domain_id')
+        
+        # 如果策略中未指定domain_id，则尝试从资源的url_domains列表中获取
+        if not domain_id and 'url_domains' in resource and resource['url_domains']:
+            # 检查url_domains是否为列表且不为空
+            if isinstance(resource['url_domains'], list) and len(resource['url_domains']) > 0:
+                # 尝试获取第一个域名的ID
+                domain_item = resource['url_domains'][0]
+                if isinstance(domain_item, dict) and 'id' in domain_item:
+                    domain_id = domain_item['id']
+                    self.log.info(f"使用资源中的第一个域名ID: {domain_id}")
 
         if not domain_id:
             self.log.error(
