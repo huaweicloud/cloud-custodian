@@ -18,7 +18,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.eip")
 
 @resources.register("eip")
 class EIP(QueryResourceManager):
-    """华为云弹性公网IP资源
+    """HuaweiCloud Elastic IP Resource
 
     :example:
 
@@ -42,9 +42,9 @@ class EIP(QueryResourceManager):
 
 @EIP.filter_registry.register("associate-instance-type")
 class AssociateInstanceTypeFilter(Filter):
-    """EIP关联的实例类型过滤器
+    """EIP Associated Instance Type Filter
 
-    过滤基于关联的实例类型（例如PORT、NATGW、ELB、ELBV1、VPN等）的EIP
+    Filter EIPs based on associated instance type (e.g., PORT, NATGW, ELB, ELBV1, VPN, etc.)
 
     :example:
 
@@ -68,16 +68,16 @@ class AssociateInstanceTypeFilter(Filter):
         results = []
 
         for resource in resources:
-            # 检查associate_instance_type是否为空（未关联任何实例）
+            # Check if associate_instance_type is empty (not associated with any instance)
             resource_instance_type = resource.get("associate_instance_type", "")
 
             if not resource_instance_type:
-                # 未关联任何实例
+                # Not associated with any instance
                 if instance_type == "NONE":
                     results.append(resource)
                 continue
 
-            # 直接根据API返回的associate_instance_type进行匹配
+            # Match based on associate_instance_type returned by API
             if resource_instance_type == instance_type:
                 results.append(resource)
 
@@ -86,11 +86,12 @@ class AssociateInstanceTypeFilter(Filter):
 
 @EIP.action_registry.register("delete")
 class EIPDelete(HuaweiCloudBaseAction):
-    """删除弹性公网IP
+    """Delete Elastic IP
 
-    删除前会自动解绑已绑定的弹性公网IP
+    Automatically disassociates the EIP before deletion if it's bound to an instance
 
-    注意：如果弹性公网IP关联的是NATGW实例，请使用nat-snat-rule或nat-dnat-rule删除操作
+    Note: If the EIP is associated with a NATGW instance, please use nat-snat-rule or nat-dnat-rule
+    delete actions instead
 
     :example:
 
@@ -110,67 +111,68 @@ class EIPDelete(HuaweiCloudBaseAction):
 
     def process(self, resources):
         session = local_session(self.manager.session_factory)
-        # 使用eip_v3客户端进行解绑操作
+        # Use eip_v3 client for disassociation
         client_v3 = self.manager.get_client()
-        # 使用eip_v2客户端进行删除操作
+        # Use eip_v2 client for deletion
         client_v2 = session.client('eip_v2')
         processed_resources = []
 
         for resource in resources:
             try:
-                # 检查EIP是否关联NATGW实例
+                # Check if EIP is associated with NATGW instance
                 if resource.get("associate_instance_type") == "NATGW":
                     self.log.error(
-                        f"无法删除关联NATGW的弹性公网IP {resource['id']}，"
+                        f"Cannot delete EIP {resource['id']} associated with NATGW, "
                         f"please use nat-snat-rule or nat-dnat-rule delete action instead."
                     )
                     self.failed_resources.append(resource)
                     continue
 
-                # 如果EIP状态为ACTIVE（已绑定），先进行解绑
+                # If EIP status is ACTIVE (bound), disassociate it first
                 if resource.get("status") == "ACTIVE":
                     try:
                         request = DisassociatePublicipsRequest()
                         request.publicip_id = resource["id"]
                         client_v3.disassociate_publicips(request)
-                        self.log.info(f"解绑弹性公网IP {resource['id']} 成功")
+                        self.log.info(f"Successfully disassociated EIP {resource['id']}")
                     except exceptions.ClientRequestException as e:
                         self.log.error(
-                            f"解绑弹性公网IP {resource['id']} 失败，"
-                            f"请求ID: {e.request_id},"
-                            f" 错误码: {e.error_code}, 错误消息: {e.error_msg}"
+                            f"Failed to disassociate EIP {resource['id']}, "
+                            f"Request ID: {e.request_id},"
+                            f" Error Code: {e.error_code}, Error Message: {e.error_msg}"
                         )
                         self.failed_resources.append(resource)
                         continue
 
-                # 执行删除操作
+                # Perform deletion
                 request = DeletePublicipRequest(publicip_id=resource["id"])
                 client_v2.delete_publicip(request)
-                self.log.info(f"删除弹性公网IP {resource['id']} 成功")
+                self.log.info(f"Successfully deleted EIP {resource['id']}")
                 processed_resources.append(resource)
             except exceptions.ClientRequestException as e:
                 self.log.error(
-                    f"删除弹性公网IP {resource['id']} 失败，"
-                    f"请求ID: {e.request_id}, 错误码: {e.error_code}, 错误消息: {e.error_msg}"
+                    f"Failed to delete EIP {resource['id']}, "
+                    f"Request ID: {e.request_id}, Error Code: {e.error_code}, Error Message: {e.error_msg}"
                 )
                 self.failed_resources.append(resource)
 
-        # 将成功处理的资源添加到结果中
+        # Add successfully processed resources to the result
         self.result.get("succeeded_resources").extend(processed_resources)
         return self.result
 
     def perform_action(self, resource):
-        # 由于我们在process方法中已经处理了每个资源，所以这里不需要额外的操作
+        # No additional operation needed as we have already processed each resource in the process method
         pass
 
 
 @EIP.action_registry.register("disassociate")
 class EIPDisassociate(HuaweiCloudBaseAction):
-    """解绑弹性公网IP
+    """Disassociate Elastic IP
 
-    从已绑定的实例上解绑弹性公网IP
+    Disassociates an EIP from the instance it is bound to
 
-    注意：如果弹性公网IP关联的是NATGW实例，请使用nat-snat-rule或nat-dnat-rule删除操作
+    Note: If the EIP is associated with a NATGW instance, please use nat-snat-rule or nat-dnat-rule
+    delete actions instead
 
     :example:
 
@@ -190,16 +192,16 @@ class EIPDisassociate(HuaweiCloudBaseAction):
 
     def process(self, resources):
         client = self.manager.get_client()
-        # 筛选状态为ACTIVE（已绑定）的EIP
+        # Filter EIPs with ACTIVE status (bound to instances)
         active_resources = [r for r in resources if r.get("status") == "ACTIVE"]
         processed_resources = []
 
         for resource in active_resources:
             try:
-                # 检查EIP是否关联NATGW实例
+                # Check if EIP is associated with NATGW instance
                 if resource.get("associate_instance_type") == "NATGW":
                     self.log.error(
-                        f"无法解绑关联NATGW的弹性公网IP {resource['id']}，"
+                        f"Cannot disassociate EIP {resource['id']} associated with NATGW, "
                         f"please use nat-snat-rule or nat-dnat-rule delete action instead."
                     )
                     self.failed_resources.append(resource)
@@ -208,19 +210,19 @@ class EIPDisassociate(HuaweiCloudBaseAction):
                 request = DisassociatePublicipsRequest()
                 request.publicip_id = resource["id"]
                 client.disassociate_publicips(request)
-                self.log.info(f"解绑弹性公网IP {resource['id']} 成功")
+                self.log.info(f"Successfully disassociated EIP {resource['id']}")
                 processed_resources.append(resource)
             except exceptions.ClientRequestException as e:
                 self.log.error(
-                    f"解绑弹性公网IP {resource['id']} 失败，"
-                    f"请求ID: {e.request_id}, 错误码: {e.error_code}, 错误消息: {e.error_msg}"
+                    f"Failed to disassociate EIP {resource['id']}, "
+                    f"Request ID: {e.request_id}, Error Code: {e.error_code}, Error Message: {e.error_msg}"
                 )
                 self.failed_resources.append(resource)
 
-        # 将成功处理的资源添加到结果中
+        # Add successfully processed resources to the result
         self.result.get("succeeded_resources").extend(processed_resources)
         return self.result
 
     def perform_action(self, resource):
-        # 由于我们在process方法中已经处理了每个资源，所以这里不需要额外的操作
+        # No additional operation needed as we have already processed each resource in the process method
         pass

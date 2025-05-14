@@ -3,15 +3,15 @@ from huaweicloud_common import BaseTest
 
 class EipTest(BaseTest):
     """
-    华为云弹性公网IP资源测试类
-    包含对EIP类、AssociateInstanceTypeFilter、EIPDelete和EIPDisassociate的测试用例
+    HuaweiCloud Elastic IP Resource Test Class
+    Contains test cases for EIP class, AssociateInstanceTypeFilter, EIPDelete and EIPDisassociate
     """
 
     def test_eip_query(self):
         """
-        测试EIP资源查询功能
+        Test EIP resource query functionality
 
-        验证能够正确列出华为云账户中的弹性公网IP资源
+        Verifies the ability to correctly list elastic IP resources in the HuaweiCloud account
         """
         factory = self.replay_flight_data("eip_query")
         p = self.load_policy(
@@ -24,9 +24,9 @@ class EipTest(BaseTest):
 
     def test_associate_instance_type_filter_elb(self):
         """
-        测试EIP关联ELB实例类型过滤器
+        Test EIP association with ELB instance type filter
 
-        验证能够正确筛选出关联到ELB实例的弹性公网IP
+        Verifies the ability to correctly filter elastic IPs associated with ELB instances
         """
         factory = self.replay_flight_data("eip_associate_instance_type_filter_elb")
         p = self.load_policy(
@@ -48,9 +48,9 @@ class EipTest(BaseTest):
 
     def test_associate_instance_type_filter_natgw(self):
         """
-        测试EIP关联NATGW实例类型过滤器
+        Test EIP association with NATGW instance type filter
 
-        验证能够正确筛选出关联到NATGW实例的弹性公网IP
+        Verifies the ability to correctly filter elastic IPs associated with NATGW instances
         """
         factory = self.replay_flight_data("eip_associate_instance_type_filter_natgw")
         p = self.load_policy(
@@ -72,9 +72,9 @@ class EipTest(BaseTest):
 
     def test_associate_instance_type_filter_port(self):
         """
-        测试EIP关联PORT实例类型过滤器
+        Test EIP association with PORT instance type filter
 
-        验证能够正确筛选出关联到PORT实例的弹性公网IP
+        Verifies the ability to correctly filter elastic IPs associated with PORT instances
         """
         factory = self.replay_flight_data("eip_associate_instance_type_filter_port")
         p = self.load_policy(
@@ -96,9 +96,9 @@ class EipTest(BaseTest):
 
     def test_associate_instance_type_filter_none(self):
         """
-        测试EIP无关联实例类型过滤器
+        Test EIP with no associated instance type filter
 
-        验证能够正确筛选出未关联任何实例的弹性公网IP
+        Verifies the ability to correctly filter elastic IPs not associated with any instance
         """
         factory = self.replay_flight_data("eip_associate_instance_type_filter_none")
         p = self.load_policy(
@@ -120,9 +120,9 @@ class EipTest(BaseTest):
 
     def test_delete_eip(self):
         """
-        测试EIP删除功能
+        Test EIP deletion functionality
 
-        验证能够正确删除指定的弹性公网IP资源
+        Verifies the ability to correctly delete specified elastic IP resources
         """
         factory = self.replay_flight_data("eip_delete")
         p = self.load_policy(
@@ -146,9 +146,9 @@ class EipTest(BaseTest):
 
     def test_delete_eip_failure(self):
         """
-        测试EIP删除失败场景
+        Test EIP deletion failure scenario
 
-        验证当删除弹性公网IP失败时能够正确处理异常
+        Verifies proper exception handling when elastic IP deletion fails
         """
         factory = self.replay_flight_data("eip_delete_failure")
         p = self.load_policy(
@@ -172,9 +172,9 @@ class EipTest(BaseTest):
 
     def test_disassociate_eip(self):
         """
-        测试EIP解绑功能
+        Test EIP disassociation functionality
 
-        验证能够正确解绑已关联实例的弹性公网IP
+        Verifies the ability to correctly disassociate elastic IPs from associated instances
         """
         factory = self.replay_flight_data("eip_disassociate")
         p = self.load_policy(
@@ -204,9 +204,10 @@ class EipTest(BaseTest):
 
     def test_disassociate_eip_inactive(self):
         """
-        测试对未绑定实例的EIP执行解绑操作
+        Test disassociation operation on unbound EIPs
 
-        验证对未绑定实例（非ACTIVE状态）的弹性公网IP执行解绑操作时能够正确处理
+        Verifies proper handling when disassociation is attempted on EIPs not bound to instances
+        (non-ACTIVE status)
         """
         factory = self.replay_flight_data("eip_disassociate_inactive")
         p = self.load_policy(
@@ -236,9 +237,9 @@ class EipTest(BaseTest):
 
     def test_disassociate_eip_failure(self):
         """
-        测试EIP解绑失败场景
+        Test EIP disassociation failure scenario
 
-        验证当解绑弹性公网IP失败时能够正确处理异常
+        Verifies proper exception handling when elastic IP disassociation fails
         """
         factory = self.replay_flight_data("eip_disassociate_failure")
         p = self.load_policy(
@@ -268,9 +269,9 @@ class EipTest(BaseTest):
 
     def test_value_filter_by_status(self):
         """
-        测试使用值过滤器筛选EIP资源
+        Test using value filter to filter EIP resources by status
 
-        验证能够根据状态值正确筛选出弹性公网IP
+        Verifies the ability to correctly filter elastic IPs based on status value
         """
         factory = self.replay_flight_data("eip_value_filter_by_status")
         p = self.load_policy(
@@ -293,9 +294,9 @@ class EipTest(BaseTest):
 
     def test_value_filter_by_name(self):
         """
-        测试使用值过滤器筛选EIP资源
+        Test using value filter to filter EIP resources by name
 
-        验证能够根据名称正确筛选出弹性公网IP
+        Verifies the ability to correctly filter elastic IPs based on name
         """
         factory = self.replay_flight_data("eip_value_filter_by_name")
         p = self.load_policy(
@@ -318,9 +319,10 @@ class EipTest(BaseTest):
 
     def test_mixed_filters(self):
         """
-        测试混合使用多个过滤器
+        Test using multiple filters together
 
-        验证能够同时使用值过滤器和关联实例类型过滤器筛选弹性公网IP
+        Verifies the ability to correctly filter elastic IPs using both value and associate instance type
+        filters simultaneously
         """
         factory = self.replay_flight_data("eip_mixed_filters")
         p = self.load_policy(
