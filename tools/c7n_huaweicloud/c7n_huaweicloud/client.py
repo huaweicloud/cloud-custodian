@@ -200,7 +200,7 @@ class Session:
             client = (
                 TmsClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(TmsRegion.value_of(self.region))
+                .with_region(TmsRegion.value_of("ap-southeast-1"))
                 .build()
             )
         elif service == "cbr":
@@ -410,7 +410,7 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'reliabilitys':
+        elif service == 'reliability':
             client = (
                 RocketMQClient.new_builder()
                 .with_credentials(credentials)
@@ -530,6 +530,6 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
-        elif service == 'reliabilitys':
+        elif service == 'reliability':
             request = RocketMQListInstancesRequest()
         return request

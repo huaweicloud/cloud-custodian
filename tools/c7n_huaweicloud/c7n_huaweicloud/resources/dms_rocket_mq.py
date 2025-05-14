@@ -10,20 +10,16 @@ from dateutil.parser import parse
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkrocketmq.v2.model import (
     DeleteInstanceRequest,
-    BatchCreateOrDeleteRocketmqTagRequest,
-    BatchCreateOrDeleteTagReq,
 )
-from huaweicloudsdkrocketmq.v2.model import TagEntity
 
-from c7n.filters import Filter, ValueFilter, OPERATORS
-from c7n.filters.core import ListItemFilter, ListItemResourceManager
-from c7n.utils import type_schema, local_session
+from c7n.filters import Filter, OPERATORS
+from c7n.utils import type_schema
 
 
 log = logging.getLogger("custodian.huaweicloud.resources.rocketmq")
 
 
-@resources.register('reliabilitys')
+@resources.register('reliability')
 class RocketMQ(QueryResourceManager):
     """HuaweiCloud RocketMQ Instance Resource Manager.
 
@@ -37,12 +33,12 @@ class RocketMQ(QueryResourceManager):
 
         policies:
           - name: rocketmq-instances-discovery  # Policy name
-            resource: huaweicloud.reliabilitys  # Specify resource type as HuaweiCloud RocketMQ
+            resource: huaweicloud.reliability  # Specify resource type as HuaweiCloud RocketMQ
     """
 
     class resource_type(TypeInfo):
         """Define RocketMQ resource metadata and type information"""
-        service = 'reliabilitys'  # Specify the corresponding HuaweiCloud service name
+        service = 'reliability'  # Specify the corresponding HuaweiCloud service name
         # Specify API operations, result list key, and pagination parameters for enumerating resources
         # 'list_instances' is the API method name
         # 'instances' is the field name in the response that contains the instance list
@@ -54,84 +50,29 @@ class RocketMQ(QueryResourceManager):
         date = 'created_at'  # Specify the field name for the resource's creation time
         tag = True  # Indicate that this resource supports tags
         tag_resource_type = 'rocketmq'  # Specify the resource type for querying tags
-
-    def query(self, **params):
+        
+    def augment(self, resources):
         """
-        Override query method to add better error handling and debugging.
-
-        :param params: Parameters to pass to the API client
-        :return: List of resources
+        Filter resource list to include only RocketMQ instances based on engine type.
+        
+        This method filters the API returned resources to only include instances 
+        with engine type 'reliability', which are the RocketMQ instances in 
+        HuaweiCloud DMS service.
+        
+        :param resources: Original resource list returned from API
+        :return: Filtered resource list containing only RocketMQ instances
         """
-        client = self.get_client()
-        resources = []
-
-        enum_op, enum_path, pagination_key, pagination_batch = self.get_enum_op_config()
-
-        try:
-            # Check how many total resources we have to establish expected count
-            log.info(
-                f"Querying RocketMQ resources with config: op={enum_op}, path={enum_path}")
-
-            # Perform API call with initial parameters
-            params_copy = params.copy()
-            if pagination_key:
-                params_copy[pagination_key] = 0  # Start at offset 0
-
-            page = 1
-            total_items = 0
-            while True:
-                try:
-                    log.debug(f"API call {enum_op} with params: {params_copy}")
-                    response = getattr(client, enum_op)(**params_copy)
-
-                    if response is None:
-                        log.warning(f"API call {enum_op} returned None")
-                        break
-
-                    # Extract data from the response
-                    data = response
-                    if hasattr(response, 'to_dict'):
-                        data = response.to_dict()
-
-                    # Navigate to the correct response path
-                    path_parts = enum_path.split('.')
-                    for part in path_parts:
-                        if part and data:
-                            data = data.get(part, [])
-
-                    if not data:
-                        log.debug(
-                            f"No data found at path {enum_path} in response")
-                        break
-
-                    # Add resources from this page
-                    item_count = len(data)
-                    resources.extend(data)
-                    total_items += item_count
-                    log.debug(
-                        f"Retrieved page {page} with {item_count} resources, total now: {total_items}")
-
-                    # Check if we need to paginate
-                    if pagination_key and item_count >= pagination_batch:
-                        # Move to next page
-                        params_copy[pagination_key] = params_copy.get(
-                            pagination_key, 0) + pagination_batch
-                        page += 1
-                    else:
-                        # No more pages
-                        break
-
-                except Exception as e:
-                    log.error(
-                        f"Error during API call {enum_op} (page {page}): {e}")
-                    break
-
-            log.info(f"Total RocketMQ resources retrieved: {len(resources)}")
-
-        except Exception as e:
-            log.error(f"Failed to query RocketMQ resources: {e}")
-
-        return resources
+        if not resources:
+            return []
+            
+        filtered_resources = []
+        for resource in resources:
+            # Check if engine type is 'reliability'
+            if resource.get('engine') == 'reliability':
+                filtered_resources.append(resource)
+                
+        log.debug(f"Filtered DMS instances: {len(resources)} total, {len(filtered_resources)} RocketMQ instances")
+        return filtered_resources
 
 
 @RocketMQ.filter_registry.register('security-group')
@@ -150,7 +91,7 @@ class RocketMQSecurityGroupFilter(SecurityGroupFilter):
 
         policies:
           - name: rocketmq-with-public-sg
-            resource: huaweicloud.reliabilitys
+            resource: huaweicloud.reliability
             filters:
               - type: value       
                 key: security_group_id                  
@@ -175,7 +116,7 @@ class DeleteRocketMQ(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-old-marked-rocketmq
-            resource: huaweicloud.reliabilitys
+            resource: huaweicloud.reliability
             filters:
               - type: marked-for-op
                 op: delete
@@ -247,7 +188,7 @@ class RocketMQAgeFilter(Filter):
 
         policies:
           - name: rocketmq-older-than-30-days
-            resource: huaweicloud.reliabilitys
+            resource: huaweicloud.reliability
             filters:
               - type: age                   # Filter type
                 days: 30                    # Specify days
@@ -286,7 +227,7 @@ class RocketMQAgeFilter(Filter):
             raise ValueError(f"Invalid operator: {op}")
 
         # Calculate comparison date
-        from datetime import datetime, timedelta
+        from datetime import datetime
         from dateutil.tz import tzutc
 
         days = self.data.get('days', 0)

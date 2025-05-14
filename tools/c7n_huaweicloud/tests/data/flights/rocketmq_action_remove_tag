@@ -30,8 +30,8 @@ interactions:
         "300", "created_at": 1683460485000, "user_id": "db3f59c9f07e41e29231b5e33b844fe0",
         "user_name": "root", "enable_publicip": false, "management_connect_address":
         "10.128.0.67:9876", "connect_address": "10.128.0.77:9876", "resource_spec_code":
-        "rocketmq.cluster.small.2n", "tags": {"environment": "testing", "temp-tag": "to-be-removed"} } ],
-        "total": 1 }'
+        "rocketmq.cluster.small.2n", "tags": {"environment": "testing", "temp-tag":
+        "to-be-removed"} } ], "total": 1 }'
     headers:
       Connection:
       - keep-alive
@@ -206,4 +206,63 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: '{"project_id": "0cf0a0a3b0af4a70916739860f557c05", "resources": [{"resource_id":
+      "87de1d04-40ed-4860-9898-deab0cf9e5f6", "resource_type": "rocketmq"}], "tags":
+      []}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '163'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - tms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - 05b3b1ebad00256f4f1023abcd
+      X-Sdk-Date:
+      - 20250514T085802Z
+    method: POST
+    uri: https://tms.ap-southeast-1.myhuaweicloud.com/v1.0/resource-tags/batch-delete
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"0befb33a6e71b190ba066105b4e45159"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 08:58:02 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747213082285; path=/
+      - HWWAFSESID=95a7a738338df8f497; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 0befb33a6e71b190ba066105b4e45159
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
 version: 1

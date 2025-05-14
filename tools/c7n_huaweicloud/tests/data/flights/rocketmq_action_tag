@@ -206,4 +206,63 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: '{"project_id": "0cf0a0a3b0af4a70916739860f557c05", "resources": [{"resource_id":
+      "87de1d04-40ed-4860-9898-deab0cf9e5f6", "resource_type": "rocketmq"}], "tags":
+      [{"key": "CostCenter", "value": "Finance"}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '204'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - tms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - 05b3b1ebad00256f4f1023abcd
+      X-Sdk-Date:
+      - 20250514T084726Z
+    method: POST
+    uri: https://tms.ap-southeast-1.myhuaweicloud.com/v1.0/resource-tags/batch-create
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"ed3e586ca763d874c0ee3b200a745d24"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 08:47:26 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=21453731d6713edecc; path=/
+      - HWWAFSESTIME=1747212446700; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ed3e586ca763d874c0ee3b200a745d24
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
 version: 1
