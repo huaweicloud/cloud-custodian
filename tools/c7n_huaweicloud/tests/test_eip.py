@@ -321,7 +321,8 @@ class EipTest(BaseTest):
         """
         Test using multiple filters together
 
-        Verifies the ability to correctly filter elastic IPs using both value and associate instance type
+        Verifies the ability to correctly filter elastic
+         IPs using both value and associate instance type
         filters simultaneously
         """
         factory = self.replay_flight_data("eip_mixed_filters")

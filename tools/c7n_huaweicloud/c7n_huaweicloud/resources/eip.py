@@ -152,7 +152,8 @@ class EIPDelete(HuaweiCloudBaseAction):
             except exceptions.ClientRequestException as e:
                 self.log.error(
                     f"Failed to delete EIP {resource['id']}, "
-                    f"Request ID: {e.request_id}, Error Code: {e.error_code}, Error Message: {e.error_msg}"
+                    f"Request ID: {e.request_id}, Error Code: {e.error_code}"
+                    f", Error Message: {e.error_msg}"
                 )
                 self.failed_resources.append(resource)
 
@@ -161,7 +162,8 @@ class EIPDelete(HuaweiCloudBaseAction):
         return self.result
 
     def perform_action(self, resource):
-        # No additional operation needed as we have already processed each resource in the process method
+        # No additional operation needed as we have
+        # already processed each resource in the process method
         pass
 
 
@@ -171,7 +173,8 @@ class EIPDisassociate(HuaweiCloudBaseAction):
 
     Disassociates an EIP from the instance it is bound to
 
-    Note: If the EIP is associated with a NATGW instance, please use nat-snat-rule or nat-dnat-rule
+    Note: If the EIP is associated with a NATGW instance,
+     please use nat-snat-rule or nat-dnat-rule
     delete actions instead
 
     :example:
@@ -215,7 +218,8 @@ class EIPDisassociate(HuaweiCloudBaseAction):
             except exceptions.ClientRequestException as e:
                 self.log.error(
                     f"Failed to disassociate EIP {resource['id']}, "
-                    f"Request ID: {e.request_id}, Error Code: {e.error_code}, Error Message: {e.error_msg}"
+                    f"Request ID: {e.request_id}, Error Code: {e.error_code},"
+                    f" Error Message: {e.error_msg}"
                 )
                 self.failed_resources.append(resource)
 
@@ -224,5 +228,6 @@ class EIPDisassociate(HuaweiCloudBaseAction):
         return self.result
 
     def perform_action(self, resource):
-        # No additional operation needed as we have already processed each resource in the process method
+        # No additional operation needed as we have already
+        # processed each resource in the process method
         pass
