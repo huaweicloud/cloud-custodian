@@ -10,10 +10,14 @@ from dateutil.parser import parse
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkrocketmq.v2.model import (
     DeleteInstanceRequest,
+    BatchCreateOrDeleteRocketmqTagRequest,
+    BatchCreateOrDeleteTagReq,
 )
+from huaweicloudsdkrocketmq.v2.model import TagEntity as SDKTagEntity
 
-from c7n.filters import Filter, OPERATORS
-from c7n.utils import type_schema
+from c7n.filters import Filter, ValueFilter, OPERATORS
+from c7n.filters.core import ListItemFilter, ListItemResourceManager
+from c7n.utils import type_schema, local_session
 
 
 log = logging.getLogger("custodian.huaweicloud.resources.rocketmq")
@@ -303,11 +307,10 @@ class RocketMQAgeFilter(Filter):
         :param event: Optional event context
         :return: Filtered resource list
         """
-        # Get operator and time
+        # Get operator and time parameters
         op = self.data.get('op', 'greater-than')
         if op not in OPERATORS:
             raise ValueError(f"Invalid operator: {op}")
-        operator = OPERATORS[op]
 
         # Calculate comparison date
         from datetime import datetime, timedelta
@@ -318,13 +321,7 @@ class RocketMQAgeFilter(Filter):
         minutes = self.data.get('minutes', 0)
 
         now = datetime.now(tz=tzutc())
-        threshold_date = now - \
-            timedelta(days=days, hours=hours, minutes=minutes)
-
-        log.info(
-            f"Age filter: filtering resources created {op} {days} days, {hours} hours, {minutes} minutes ago")
-        log.info(f"Age filter: now={now}, threshold_date={threshold_date}")
-        log.info(f"Total resources before age filtering: {len(resources)}")
+        log.info(f"Age filter: filtering resources created {op} {days} days, {hours} hours, {minutes} minutes ago")
 
         # Filter resources
         matched = []
@@ -334,8 +331,7 @@ class RocketMQAgeFilter(Filter):
             created_str = resource.get(self.date_attribute)
 
             if not created_str:
-                log.debug(
-                    f"Resource {instance_id} ({name}) has no {self.date_attribute}")
+                log.debug(f"Resource {instance_id} ({name}) has no {self.date_attribute}")
                 continue
 
             # Convert creation time
@@ -351,14 +347,10 @@ class RocketMQAgeFilter(Filter):
                             timestamp_s = timestamp_ms / 1000.0
                         else:
                             timestamp_s = timestamp_ms
-                        log.debug(
-                            f"Resource {instance_id}: Converting timestamp: {created_str} -> {timestamp_s} s")
                         # Create datetime object from timestamp (UTC)
                         created_date = datetime.utcfromtimestamp(
                             timestamp_s).replace(tzinfo=tzutc())
                     except (ValueError, TypeError, OverflowError) as e:
-                        log.debug(
-                            f"Resource {instance_id}: Unable to parse value '{created_str}' as timestamp: {e}")
                         # If parsing fails, continue trying with dateutil.parser
                         created_date = parse(str(created_str))
                 else:
@@ -373,35 +365,524 @@ class RocketMQAgeFilter(Filter):
                 age_timedelta = now - created_date
                 age_days = age_timedelta.total_seconds() / 86400
 
-                log.debug(
-                    f"Resource {instance_id} ({name}) created_date={created_date}, age={age_days:.2f} days")
+                # Perform age comparison based on operator
+                result = False
+                if op in ('greater-than', 'gt'):
+                    # Age > days
+                    result = age_days > days
+                elif op in ('less-than', 'lt'):
+                    # Age < days
+                    result = age_days < days
+                elif op in ('equal', 'eq'):
+                    # Age ≈ days (within 1 day)
+                    result = abs(age_days - days) < 1
+                elif op in ('greater-or-equal', 'ge'):
+                    # Age >= days
+                    result = age_days >= days
+                elif op in ('less-or-equal', 'le'):
+                    # Age <= days
+                    result = age_days <= days
 
-                # Handle the 'gt' (greater than) case specifically to ensure correctness
-                if op == 'greater-than' or op == 'gt':
-                    # A resource is older than N days if its creation date is earlier than (now - N days)
-                    result = created_date < threshold_date
-                    log.debug(
-                        f"GT comparison: is {created_date} < {threshold_date}? {result}")
-                else:
-                    # For other operators, use the standard operator
-                    result = operator(created_date, threshold_date)
-                    log.debug(
-                        f"Standard comparison: {created_date} {op} {threshold_date} = {result}")
-
-                # If operation is 'gt', we only want resources older than threshold
-                # If creation date is earlier than threshold, resource is older
                 if result:
                     matched.append(resource)
-                    log.debug(
-                        f"Resource {instance_id} ({name}) matched age filter")
-                else:
-                    log.debug(
-                        f"Resource {instance_id} ({name}) did not match age filter")
+
             except Exception as e:
                 log.warning(
                     f"Unable to parse creation time '{created_str}' for RocketMQ instance "
                     f"{instance_id} ({name}): {e}")
 
-        log.info(
-            f"Resources after age filtering: {len(matched)} (matched) / {len(resources)} (total)")
+        log.info(f"Age filter matched {len(matched)} of {len(resources)} resources")
         return matched
+
+@RocketMQ.action_registry.register('mark-for-op')
+class RocketMQMarkForOpAction(HuaweiCloudBaseAction):
+    """
+    Add a "mark-for-operation" tag to RocketMQ instances.
+
+    This action is used to mark resources so that other policies (using the `marked-for-op` filter)
+    can identify and execute at a future time.
+    It creates a tag on the resource with a value containing the specified operation (`op`)
+    and execution timestamp.
+
+    :example:
+    Mark RocketMQ instances created over 90 days ago to be deleted in 7 days:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: mark-old-rocketmq-for-deletion
+            resource: huaweicloud.reliabilitys
+            filters:
+              - type: age
+                days: 90
+                op: gt
+            actions:
+              - type: mark-for-op          # Action type
+                op: delete                  # Operation to mark ('delete', 'stop', 'restart')
+                days: 7                     # Delay execution days (from now)
+                # hours: 0                  # (Optional) Delay execution hours (from now)
+                tag: custodian_cleanup      # Tag key (should match filter's tag)
+    """
+    # Define the input schema for this action
+    schema = type_schema(
+        'mark-for-op',  # Action type name
+        # Operation type to mark
+        op={'enum': ['delete', 'stop', 'restart']},
+        # Delay execution days (from current time)
+        days={'type': 'number', 'minimum': 0, 'default': 0},
+        # Delay execution hours (from current time)
+        hours={'type': 'number', 'minimum': 0, 'default': 0},
+        # Tag key, default is 'mark-for-op-custodian'
+        tag={'type': 'string', 'default': 'mark-for-op-custodian'},
+        # Declare 'op' parameter as required
+        required=['op']
+    )
+
+    def perform_action(self, resource):
+        """
+        Perform the mark operation on a single resource.
+
+        :param resource: RocketMQ instance resource dictionary to mark
+        :return: None or API response (but typically no specific result)
+        """
+        # Get parameters from policy definition
+        op = self.data.get('op')
+        tag_key = self.data.get('tag', 'mark-for-op-custodian')
+        days = self.data.get('days', 0)
+        hours = self.data.get('hours', 0)
+
+        instance_id = resource.get('instance_id')
+        if not instance_id:
+            log.error(
+                f"Cannot mark RocketMQ resource missing 'instance_id': "
+                f"{resource.get('name', 'unknown name')}")
+            return None
+
+        # Calculate scheduled execution time (UTC)
+        from datetime import datetime, timedelta
+        try:
+            action_time = datetime.utcnow() + timedelta(days=days, hours=hours)
+            # Format timestamp string, must be consistent with TagActionFilter parsing format
+            action_time_str = action_time.strftime('%Y/%m/%d %H:%M:%S UTC')
+        except OverflowError:
+            log.error(
+                f"Invalid mark operation timestamp calculation, RocketMQ instance {instance_id} "
+                f"(days={days}, hours={hours})")
+            return None
+
+        # Build tag value, format is "operation_timestamp"
+        tag_value = f"{op}@{action_time_str}"  # Use @ as separator, clearer
+
+        # Call internal method to create tag
+        self._create_or_update_tag(resource, tag_key, tag_value)
+
+        return None  # Typically mark operations don't return specific results
+
+    def _create_or_update_tag(self, resource, key, value):
+        """
+        Create or update a tag for the specified resource.
+
+        :param resource: Target resource dictionary
+        :param key: Tag key
+        :param value: Tag value
+        """
+        instance_id = resource['instance_id']
+        instance_name = resource.get('name', 'unknown name')
+        # Get HuaweiCloud RocketMQ client
+        client = self.manager.get_client()
+        # Construct tag entity (using HuaweiCloud SDK's TagEntity class)
+        tag_entity = SDKTagEntity(key=key, value=value)
+        try:
+            # Construct batch create/delete tag request
+            request = BatchCreateOrDeleteRocketmqTagRequest()
+            request.instance_id = instance_id
+            request.body = BatchCreateOrDeleteTagReq()
+            # HuaweiCloud batch interface doesn't have a direct 'update' operation.
+            # Current implementation assumes 'create' will overwrite existing tags.
+            request.body.action = "create"
+            request.body.tags = [tag_entity]
+            # Call API to perform operation
+            client.batch_create_or_delete_rocketmq_tag(request)
+            log.info(
+                f"Added or updated tag for RocketMQ instance {instance_name} ({instance_id}): "
+                f"{key}={value}")
+        except exceptions.ClientRequestException as e:
+            # Handle API request exceptions
+            log.error(
+                f"Unable to add or update tag {key} for RocketMQ instance {instance_name} ({instance_id}): "
+                f"{e.error_msg} (status code: {e.status_code})"
+            )
+        except Exception as e:
+            # Handle other potential exceptions
+            log.error(
+                f"Unable to add or update tag {key} for RocketMQ instance {instance_name} ({instance_id}): "
+                f"{str(e)}")
+
+
+@RocketMQ.action_registry.register('auto-tag-user')
+class RocketMQAutoTagUser(HuaweiCloudBaseAction):
+    """
+    (Conceptual) Automatically add creator user tags to RocketMQ instances.
+
+    **Important Note:** This action depends on creator information being included in the resource data
+    (e.g., the 'user_name' field here).
+    RocketMQ instance information returned by HuaweiCloud API **typically does not directly include
+    the creator IAM username**.
+    Therefore, the effectiveness of this action depends on whether the `QueryResourceManager`
+    or its `augment` method can obtain and populate the `user_name` field through other means
+    (e.g., querying the CTS operation log service). If it cannot be obtained, the tag value will be 'unknown'.
+
+    :example:
+    Add a 'Creator' tag with the creator's username (if available) to RocketMQ instances
+    missing this tag:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: tag-rocketmq-creator-if-missing
+            resource: huaweicloud.reliabilitys
+            filters:
+              - "tag:Creator": absent       # Filter instances without 'Creator' tag
+            actions:
+              - type: auto-tag-user         # Action type
+                tag: Creator                # Tag key to add (default is 'CreatorName')
+    """
+    # Define the input schema for this action
+    schema = type_schema(
+        'auto-tag-user',  # Action type name
+        # Specify the tag key to add, default is 'CreatorName'
+        tag={'type': 'string', 'default': 'CreatorName'},
+        # The pattern mode for this operation, default is 'resource'
+        # Optional 'account' (may indicate the current account executing the policy, but has no practical meaning)
+        mode={'type': 'string', 'enum': [
+            'resource', 'account'], 'default': 'resource'},
+        # If mode is 'resource', specify the resource dictionary key to get the username
+        user_key={'type': 'string', 'default': 'creator'},
+        # Changed to 'creator' which might be more general
+        # Whether to update existing tags, default is True
+        update={'type': 'boolean', 'default': True},
+        # No required parameters (since all parameters have default values)
+        required=[]
+    )
+
+    # Permission declaration (if getting user information requires specific permissions)
+    # permissions = ('cts:listOperations',) # For example, if CTS logs need to be checked
+
+    def perform_action(self, resource):
+        """
+        Perform auto-tag user operation on a single resource.
+
+        :param resource: RocketMQ instance resource dictionary to tag
+        :return: None
+        """
+        tag_key = self.data.get('tag', 'CreatorName')
+        mode = self.data.get('mode', 'resource')
+        user_key = self.data.get('user_key', 'creator')
+        update = self.data.get('update', True)
+
+        instance_id = resource.get('instance_id')
+        instance_name = resource.get('name', 'unknown name')
+        if not instance_id:
+            log.error(
+                f"Cannot tag RocketMQ resource missing 'instance_id': {instance_name}")
+            return None
+
+        # Check if update is needed and if the tag already exists
+        if not update and tag_key in [t.get('Key') for t in resource.get('Tags', [])]:
+            log.debug(
+                f"RocketMQ instance {instance_name} ({instance_id}) already has tag '{tag_key}' "
+                f"and updates are not allowed, skipping.")
+            return None
+
+        user_name = 'unknown'  # Default value
+        if mode == 'resource':
+            # Try to get username from resource dictionary
+            user_name = resource.get(user_key, 'unknown')
+            if user_name == 'unknown':
+                # If default 'creator' key not found, also try original code's 'user_name'
+                user_name = resource.get('user_name', 'unknown')
+
+                # If still unknown, can consider adding logic to query CTS logs
+                if user_name == 'unknown':
+                    log.warning(
+                        f"Could not find creator information for RocketMQ instance {instance_name} ({instance_id}) "
+                        f"(tried keys: '{user_key}', 'user_name'). "
+                        f"Using 'unknown'.")
+        elif mode == 'account':
+            log.warning(
+                "'account' mode in RocketMQAutoTagUser not fully implemented.")
+            user_name = 'unknown'
+
+        # Reuse RocketMQMarkForOpAction's helper method
+        rocketmq_marker = RocketMQMarkForOpAction(self.data, self.manager)
+        rocketmq_marker._create_or_update_tag(resource, tag_key, user_name)
+
+        return None
+
+@RocketMQ.action_registry.register('tag')
+class RocketMQTag(HuaweiCloudBaseAction):
+    """
+    Add or update a specified tag on RocketMQ instances.
+
+    This is a generic tag-adding action that allows users to directly specify tag keys and values.
+    If a tag with the same key already exists, it will be overwritten by default.
+
+    :example:
+    Add an 'Environment=Production' tag to all RocketMQ instances in the production environment:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: tag-rocketmq-production-env
+            resource: huaweicloud.reliabilitys
+            # May need filters to identify production instances
+            # filters:
+            #   - ...
+            actions:
+              - type: tag                   # Action type
+                key: Environment            # Tag key to add/update
+                value: Production           # Tag value to set
+    """
+    # Define the input schema for this action
+    schema = type_schema(
+        'tag',  # Action type name
+        key={'type': 'string'},  # Tag key
+        value={'type': 'string'},  # Tag value
+        # Declare 'key' and 'value' parameters as required
+        required=['key', 'value']
+    )
+
+    def perform_action(self, resource):
+        """
+        Perform add/update tag operation on a single resource.
+
+        :param resource: RocketMQ instance resource dictionary to tag
+        :return: None
+        """
+        key = self.data.get('key')
+        value = self.data.get('value')
+
+        instance_id = resource.get('instance_id')
+        if not instance_id:
+            log.error(
+                f"Cannot tag RocketMQ resource missing 'instance_id': "
+                f"{resource.get('name', 'unknown name')}")
+            return None
+
+        # Reuse RocketMQMarkForOpAction's helper method
+        rocketmq_marker = RocketMQMarkForOpAction(self.data, self.manager)
+        rocketmq_marker._create_or_update_tag(resource, key, value)
+
+        return None
+
+
+@RocketMQ.action_registry.register('remove-tag')
+class RocketMQRemoveTag(HuaweiCloudBaseAction):
+    """
+    Remove one or more specified tags from RocketMQ instances.
+
+    Allows users to remove tags from instances based on tag keys.
+
+    :example:
+    Remove the 'Temporary' tag from all RocketMQ instances:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: remove-temp-rocketmq-tags
+            resource: huaweicloud.reliabilitys
+            # Can add filters to ensure only operating on instances with this tag
+            filters:
+              - "tag:Temporary": present
+            actions:
+              - type: remove-tag            # Action type
+                key: Temporary              # Tag key to remove (required)
+              # Can specify multiple keys to remove multiple tags at once
+              # - type: remove-tag
+              #   keys: ["Temp1", "Temp2"]
+    """
+    # Define the input schema for this action
+    schema = type_schema(
+        'remove-tag',  # Action type name
+        # Can specify a single key or a list of keys
+        key={'type': 'string'},  # Single tag key to remove
+        # List of tag keys to remove
+        keys={'type': 'array', 'items': {'type': 'string'}},
+        # required=['keys'] # At least need key or keys
+        # Better approach would be using oneOf or anyOf, but Custodian's schema might not support
+        # Temporarily allow key and keys optional, handle in code
+    )
+
+    def perform_action(self, resource):
+        """
+        Perform remove tag operation on a single resource.
+
+        :param resource: RocketMQ instance resource dictionary to remove tags from
+        :return: None
+        """
+        # Get list of tag keys to remove
+        tags_to_remove = self.data.get('keys', [])
+        single_key = self.data.get('key')
+        if single_key and single_key not in tags_to_remove:
+            tags_to_remove.append(single_key)
+
+        if not tags_to_remove:
+            log.warning(
+                "No tag keys specified (key or keys) in remove-tag operation.")
+            return None
+
+        instance_id = resource.get('instance_id')
+        instance_name = resource.get('name', 'unknown name')
+        if not instance_id:
+            log.error(
+                f"Cannot remove tags, RocketMQ resource missing 'instance_id': {instance_name}")
+            return None
+
+        # Check for tags that actually exist on the instance, avoid trying to delete non-existent tags
+        # (API might allow it, but would cause unnecessary calls)
+        current_tags = {t.get('Key') for t in resource.get('Tags', [])}
+        keys_that_exist = [k for k in tags_to_remove if k in current_tags]
+
+        if not keys_that_exist:
+            log.debug(
+                f"RocketMQ instance {instance_name} ({instance_id}) has none of the tags to remove: "
+                f"{tags_to_remove}")
+            return None
+
+        # Call internal method to remove tags
+        self._remove_tags_internal(resource, keys_that_exist)
+
+        return None
+
+    def _remove_tags_internal(self, resource, keys_to_delete):
+        """
+        Internal helper method to call API to remove the specified list of tag keys.
+
+        :param resource: Target resource dictionary
+        :param keys_to_delete: List of tag key strings to delete
+        """
+        instance_id = resource['instance_id']
+        instance_name = resource.get('name', 'unknown name')
+        client = self.manager.get_client()
+
+        # Create TagEntity for each key to delete (only provide key)
+        tag_entities = [SDKTagEntity(key=k) for k in keys_to_delete]
+
+        try:
+            # Construct batch delete tags request
+            request = BatchCreateOrDeleteRocketmqTagRequest()
+            request.instance_id = instance_id
+            request.body = BatchCreateOrDeleteTagReq()
+            request.body.action = "delete"  # Specify operation as delete
+            request.body.tags = tag_entities  # Include tags to delete
+            # Call API to perform deletion
+            client.batch_create_or_delete_rocketmq_tag(request)
+            log.info(
+                f"Removed tags from RocketMQ instance {instance_name} ({instance_id}): "
+                f"{keys_to_delete}")
+        except exceptions.ClientRequestException as e:
+            log.error(
+                f"Unable to remove tags {keys_to_delete} from RocketMQ instance {instance_name} ({instance_id}): "
+                f"{e.error_msg} (status code: {e.status_code})"
+            )
+        except Exception as e:
+            log.error(
+                f"Unable to remove tags {keys_to_delete} from RocketMQ instance {instance_name} ({instance_id}): "
+                f"{str(e)}")
+
+
+@RocketMQ.action_registry.register('rename-tag')
+class RocketMQRenameTag(HuaweiCloudBaseAction):
+    """
+    Rename a tag key on RocketMQ instances.
+
+    This operation is actually "copy and delete":
+    1. Read the value of the tag with the old key (`old_key`).
+    2. Create a new tag with the new key (`new_key`) and the old value.
+    3. Delete the tag with the old key (`old_key`).
+
+    :example:
+    Rename the 'Env' tag to 'Environment' on all instances:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: standardize-env-tag-rocketmq
+            resource: huaweicloud.reliabilitys
+            filters:
+              - "tag:Env": present          # Ensure only operating on instances with 'Env' tag
+            actions:
+              - type: rename-tag            # Action type
+                old_key: Env                # Old tag key
+                new_key: Environment        # New tag key
+    """
+    # Define the input schema for this action
+    schema = type_schema(
+        'rename-tag',  # Action type name
+        old_key={'type': 'string'},  # Old tag key
+        new_key={'type': 'string'},  # New tag key
+        # Declare 'old_key' and 'new_key' parameters as required
+        required=['old_key', 'new_key']
+    )
+
+    def perform_action(self, resource):
+        """
+        Perform rename tag operation on a single resource.
+
+        :param resource: RocketMQ instance resource dictionary to rename tag on
+        :return: None
+        """
+        old_key = self.data.get('old_key')
+        new_key = self.data.get('new_key')
+
+        if old_key == new_key:
+            log.warning(
+                f"Old tag key '{old_key}' and new tag key '{new_key}' "
+                f"are the same, no need to rename.")
+            return None
+
+        instance_id = resource.get('instance_id')
+        instance_name = resource.get('name', 'unknown name')
+        if not instance_id:
+            log.error(
+                f"Cannot rename tag, RocketMQ resource missing 'instance_id': {instance_name}")
+            return None
+
+        # Find old tag value
+        old_value = None
+        if 'Tags' in resource:
+            for tag in resource['Tags']:
+                if tag.get('Key') == old_key:
+                    old_value = tag.get('Value')
+                    break
+
+        # If old tag doesn't exist, no operation
+        if old_value is None:
+            log.info(
+                f"Tag '{old_key}' not found on RocketMQ instance {instance_name} ({instance_id}), "
+                f"skipping rename.")
+            return None
+
+        # Check if new tag already exists
+        if 'Tags' in resource:
+            for tag in resource['Tags']:
+                if tag.get('Key') == new_key:
+                    log.warning(
+                        f"Target tag key '{new_key}' already exists on "
+                        f"RocketMQ instance {instance_name} ({instance_id}). Rename operation will "
+                        f"overwrite its existing value (if continued).")
+                    break
+
+        # 1. Add new tag (with old value)
+        rocketmq_marker = RocketMQMarkForOpAction(self.data, self.manager)
+        rocketmq_marker._create_or_update_tag(resource, new_key, old_value)
+
+        # 2. Remove old tag
+        remover = RocketMQRemoveTag(self.data, self.manager)
+        remover._remove_tags_internal(resource, [old_key])
+
+        log.info(
+            f"Renamed tag '{old_key}' to '{new_key}' on RocketMQ instance "
+            f"{instance_name} ({instance_id})")
+
+        return None

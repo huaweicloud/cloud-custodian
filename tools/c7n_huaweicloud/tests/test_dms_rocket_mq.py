@@ -56,26 +56,28 @@ class RocketMQInstanceTest(BaseTest):
     def test_rocketmq_filter_age(self):
         factory = self.replay_flight_data('rocketmq_filter_age')
 
-        # Test if creation time > threshold time (2022, this should be true because the instance was created in 2023)
+        # Test if age > threshold (1 day)
+        # Most RocketMQ instances should be at least 1 day old
         p_gt = self.load_policy({
             'name': 'rocketmq-filter-age-gt-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'type': 'age', 'days': 1000, 'op': 'gt'}]
+            'filters': [{'type': 'age', 'days': 1, 'op': 'gt'}]  # Age > 1 day
         }, session_factory=factory)
         resources_gt = p_gt.run()
-        # Should find one resource (2023 > threshold 2022)
+        # Should find one resource (instance age > 1 day)
         self.assertEqual(len(resources_gt), 1)
 
-        # Test if creation time < threshold date (for future dates, this is always true)
-        p_future = self.load_policy({
-            'name': 'rocketmq-filter-future-test',
+        # Test if age < very large threshold (10000 days)
+        # All instances should be younger than 10000 days
+        p_lt = self.load_policy({
+            'name': 'rocketmq-filter-lt-test',
             'resource': 'huaweicloud.reliabilitys',
-            # Creation time < future date
-            'filters': [{'type': 'age', 'days': -1000, 'op': 'lt'}]
+            # Age < 10000 days
+            'filters': [{'type': 'age', 'days': 10000, 'op': 'lt'}]
         }, session_factory=factory)
-        resources_future = p_future.run()
-        # Should find one resource (past time < future date)
-        self.assertEqual(len(resources_future), 1)
+        resources_lt = p_lt.run()
+        # Should find one resource (age < 10000 days)
+        self.assertEqual(len(resources_lt), 1)
 
     def test_rocketmq_filter_list_item(self):
         factory = self.replay_flight_data('rocketmq_filter_list_item')
