@@ -111,6 +111,7 @@ from huaweicloudsdkapig.v2 import (
     ListApisV2Request,
     ListEnvironmentsV2Request,
     ListApiGroupsV2Request,
+    ListInstancesV2Request,
 )
 from huaweicloudsdkapig.v2.region.apig_region import ApigRegion
 
@@ -430,7 +431,7 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'apig' or service in ['rest-api', 'rest-stage', 'api-groups']:
+        elif service == 'apig' or service in ['rest-api', 'rest-stage', 'api-groups', 'apig-instance']:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)
@@ -556,4 +557,6 @@ class Session:
             request = ListEnvironmentsV2Request()
         elif service == 'api-groups':
             request = ListApiGroupsV2Request()
+        elif service == 'apig-instance':
+            request = ListInstancesV2Request()
         return request

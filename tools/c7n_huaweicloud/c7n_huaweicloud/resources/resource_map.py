@@ -49,4 +49,5 @@ ResourceMap = {
     "huaweicloud.rest-stage": "c7n_huaweicloud.resources.apig.StageResource",
     "huaweicloud.apigw-domain-name": "c7n_huaweicloud.resources.apig.DomainNameResource",
     "huaweicloud.api-groups": "c7n_huaweicloud.resources.apig.ApiGroupResource",
+    "huaweicloud.apig-instance": "c7n_huaweicloud.resources.apig.InstanceResource",
 }
