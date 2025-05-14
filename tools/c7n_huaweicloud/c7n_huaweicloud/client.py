@@ -437,6 +437,7 @@ class Session:
                 RocketMQClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(RocketMQRegion.value_of(self.region))
+                .build()
             )
         elif service in ['swr', 'swr-image']:
             client = (

@@ -50,8 +50,8 @@ class RocketMQ(QueryResourceManager):
         """
         Filter resource list to include only RocketMQ instances based on engine type.
 
-        This method filters the API returned resources to only include instances 
-        with engine type 'reliability', which are the RocketMQ instances in 
+        This method filters the API returned resources to only include instances
+        with engine type 'reliability', which are the RocketMQ instances in
         HuaweiCloud DMS service.
 
         :param resources: Original resource list returned from API
@@ -66,7 +66,8 @@ class RocketMQ(QueryResourceManager):
             if resource.get('engine') == 'reliability':
                 filtered_resources.append(resource)
 
-        log.debug(f"Filtered DMS instances: {len(resources)} total, {len(filtered_resources)} RocketMQ instances")
+        log.debug(f"Filtered DMS instances: {len(resources)} total, \
+            {len(filtered_resources)} RocketMQ instances")
         return filtered_resources
 
 
@@ -88,9 +89,9 @@ class RocketMQSecurityGroupFilter(SecurityGroupFilter):
           - name: rocketmq-with-public-sg
             resource: huaweicloud.reliability
             filters:
-              - type: value       
-                key: security_group_id                  
-                value: 0e3310ef-6477-4830-b802-12ee99e4fc70       
+              - type: value
+                key: security_group_id
+                value: 0e3310ef-6477-4830-b802-12ee99e4fc70
     """
     # Specify the field name in the RocketMQ resource dictionary that contains the security group ID
     RelatedIdsExpression = "security_group_id"
@@ -230,7 +231,8 @@ class RocketMQAgeFilter(Filter):
         minutes = self.data.get('minutes', 0)
 
         now = datetime.now(tz=tzutc())
-        log.info(f"filtering resources created {op} {days} days, {hours} hours, {minutes} minutes ago")
+        log.info(f"filtering resources created \
+            {op} {days} days, {hours} hours, {minutes} minutes ago")
 
         # Filter resources
         matched = []
@@ -260,7 +262,7 @@ class RocketMQAgeFilter(Filter):
                         # Create datetime object from timestamp (UTC)
                         created_date = datetime.utcfromtimestamp(
                             timestamp_s).replace(tzinfo=tzutc())
-                    except (ValueError, TypeError, OverflowError) as e:
+                    except (ValueError, TypeError, OverflowError):
                         # If parsing fails, continue trying with dateutil.parser
                         created_date = parse(str(created_str))
                 else:

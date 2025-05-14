@@ -174,7 +174,7 @@ class RocketMQInstanceTest(BaseTest):
         resources = p.run()
         # Assuming action was performed on 1 instance
         self.assertEqual(len(resources), 1)
-        # Verification: need to check VCR recording, confirm batch_create_or_delete_rocketmq_tag was called
+        # Verification: confirm batch_create_or_delete_rocketmq_tag was called
         # and request body contains correct tag key and value (with timestamp)
 
     def test_rocketmq_action_tag(self):
@@ -186,7 +186,7 @@ class RocketMQInstanceTest(BaseTest):
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # Verification: check VCR, confirm batch_create_or_delete_rocketmq_tag was called (action=create)
+        # Verification: confirm batch_create_or_delete_rocketmq_tag was called (action=create)
         # and body.tags contains {'key': 'CostCenter', 'value': 'Finance'}
 
     def test_rocketmq_action_remove_tag(self):
@@ -194,9 +194,7 @@ class RocketMQInstanceTest(BaseTest):
         p = self.load_policy({
             'name': 'rocketmq-action-remove-tag-test',
             'resource': 'huaweicloud.reliability',
-            # Ensure tag exists before removing
-            # 'filters': [{'tag:environment': 'present'}],
-            'actions': [{'type': 'remove-tag', 'keys': ['environment', 'temp-tag']}]},  # Remove multiple
+            'actions': [{'type': 'remove-tag', 'key': ['environment', 'temp-tag']}]},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -206,7 +204,6 @@ class RocketMQInstanceTest(BaseTest):
         p = self.load_policy({
             'name': 'rocketmq-action-rename-tag-test',
             'resource': 'huaweicloud.reliability',
-            # 'filters': [{'tag:env': 'present'}],  # Ensure old tag exists
             'actions': [{'type': 'rename-tag', 'old_key': 'env', 'new_key': 'Environment'}]
             },
             session_factory=factory)
