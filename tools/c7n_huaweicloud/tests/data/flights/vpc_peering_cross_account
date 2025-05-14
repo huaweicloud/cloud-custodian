@@ -1,0 +1,102 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v2.0/vpc/peerings?limit=100
+  response:
+    body:
+      string: '{"peerings":[{"name":"peering-test","id":"a91a7e33-08cd-472c-990b-11419085b68a","status":"ACTIVE","description":"","request_vpc_info":{"vpc_id":"a2b75033-d097-49ce-a8f3-59a802056cb9","tenant_id":"ap-southeat-1"},"accept_vpc_info":{"vpc_id":"30c573fc-8b2a-41cc-8209-0f506d8a5dee","tenant_id":"0ba43f51a800f3612fb0c0124b63d6d4"},"created_at":"2025-04-24T07:17:49","updated_at":"2025-04-24T07:17:49"}],"peerings_links":[{"href":"https://vpc.ap-southeast-1.myhuaweicloud.com:443/v2.0/vpc/peerings?limit=100&marker=a91a7e33-08cd-472c-990b-11419085b68a&page_reverse=true","rel":"previous"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: DELETE
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v2.0/vpc/peerings/a91a7e33-08cd-472c-990b-11419085b68a
+  response:
+    body: 
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: NO_CONTENT
+version: 1

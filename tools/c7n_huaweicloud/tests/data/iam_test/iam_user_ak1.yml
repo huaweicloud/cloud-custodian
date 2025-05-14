@@ -6,7 +6,7 @@ policies:
         key: status
         value: active
       - type: access-key
-        key: create_time
+        key: created_at
         value_type: age
         value: 3
-        op: lt
+        op: gt

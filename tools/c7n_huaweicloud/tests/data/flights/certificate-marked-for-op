@@ -1,0 +1,79 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250507T093103Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Wed, 07 May 2025 09:31:03 GMT
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - req-mock-request-id
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - scm.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250507T093110Z
+    method: GET
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates
+  response:
+    body:
+      string: '{"certificates":[{"id":"scs1554192131150","name":"marked-for-delete-cert","domain":"www.example.com",
+        "sans":"a.example.com;b.example.com","type":"OV_SSL_CERT","deploy_support":true, "signature_algorithm":"SHA256WITHRSA","brand":"GEOTRUST",
+        "expire_time":"2021-05-27 16:46:25.0","domain_type":"MULTI_DOMAIN", "validity_period":12,"status":"EXPIRED","domain_count":2,"wildcard_count":0,
+        "description":null,"tags":{"custodian_cleanup":"delete_2025/04/25"}}],"total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '450'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 07 May 2025 09:31:10 GMT
+      X-Request-Id:
+      - 5c5ebe6e9b3644710c7fd433a182d7d3
+    status:
+      code: 200
+      message: OK
+version: 1
