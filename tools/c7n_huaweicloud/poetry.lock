@@ -429,7 +429,7 @@ name = "huaweicloudsdkdns"
 version = "3.1.147"
 description = "DNS"
 optional = false
-python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
     {file = "huaweicloudsdkdns-3.1.147-py2.py3-none-any.whl", hash = "sha256:46cbec5edc2214a9d44565064e4deb1e395290c9f9e1ab5d599fae6096db4ea1"},
 ]
@@ -441,19 +441,6 @@ huaweicloudsdkcore = ">=3.1.147"
 type = "legacy"
 url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "mirrors"
-
-[[package]]
-name = "huaweicloudsdkdns"
-version = "3.1.147"
-description = "DNS"
-optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
-files = [
-    {file = "huaweicloudsdkdns-3.1.147-py2.py3-none-any.whl", hash = "sha256:46cbec5edc2214a9d44565064e4deb1e395290c9f9e1ab5d599fae6096db4ea1"},
-]
-
-[package.dependencies]
-huaweicloudsdkcore = ">=3.1.147"
 
 [[package]]
 name = "huaweicloudsdkecs"
@@ -810,6 +797,11 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "mirrors"
+
 [[package]]
 name = "huaweicloudsdkscm"
 version = "3.1.147"
@@ -822,6 +814,11 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdksecmaster"
@@ -867,6 +864,24 @@ optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdksmn-3.1.147-py2.py3-none-any.whl", hash = "sha256:b7a45e5cdcae4a0bf100a904ca6971d731ce2d2a4cdf530a74df67aa47a55ff3"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.147"
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "mirrors"
+
+[[package]]
+name = "huaweicloudsdkswr"
+version = "3.1.147"
+description = "SWR"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
+files = [
+    {file = "huaweicloudsdkswr-3.1.147-py2.py3-none-any.whl", hash = "sha256:473a6c3f843484a5157a588a8bb2ba022db3016237ffbe88db7353a9c160e6d7"},
 ]
 
 [package.dependencies]
@@ -1565,4 +1580,4 @@ reference = "mirrors"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "d43913105dc633e956ff8cf48e257534bfaad4f8aa1bd771184c51a58183eec3"
+content-hash = "481bfe14ec59d71e3da93f695d1b755a43d546dc4dd2233382a16a9ac31c3b9b"
