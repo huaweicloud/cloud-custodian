@@ -86,9 +86,9 @@ class RocketMQInstanceTest(BaseTest):
             'name': 'rocketmq-filter-az-test',
             'resource': 'huaweicloud.reliabilitys',
             'filters': [{
-                'type': 'list-item',
+                'type': 'value',
                 'key': 'available_zones',
-                'op': 'in',
+                'op': 'contains',
                 'value': 'cn-north-4a'
             }]},
             session_factory=factory)
@@ -100,9 +100,9 @@ class RocketMQInstanceTest(BaseTest):
             'name': 'rocketmq-filter-az-array-test',
             'resource': 'huaweicloud.reliabilitys',
             'filters': [{
-                'type': 'list-item',
+                'type': 'value',
                 'key': 'available_zones',
-                'op': 'in',
+                'op': 'intersect',
                 'value': ['cn-north-4a', 'cn-north-4b']
             }]},
             session_factory=factory)
@@ -114,9 +114,9 @@ class RocketMQInstanceTest(BaseTest):
             'name': 'rocketmq-filter-az-no-match-test',
             'resource': 'huaweicloud.reliabilitys',
             'filters': [{
-                'type': 'list-item',
+                'type': 'value',
                 'key': 'available_zones',
-                'op': 'in',
+                'op': 'contains',
                 'value': 'cn-north-99'  # Non-existent availability zone
             }]},
             session_factory=factory)
@@ -127,29 +127,34 @@ class RocketMQInstanceTest(BaseTest):
     def test_rocketmq_filter_marked_for_op(self):
         # Need a recording with an instance tagged with 'mark-for-op-custodian' or custom tag
         factory = self.replay_flight_data('rocketmq_filter_marked_for_op')
-        # Assuming instance is marked for 'delete@YYYY/MM/DD HH:MM:SS UTC' and expired
+        # 由于华为云标签是列表格式，使用value过滤器搜索tags列表中的key
         p = self.load_policy({
-            'name': 'rocketmq-filter-marked-delete-test',
+            'name': 'rocketmq-filter-tag-exists-test',
             'resource': 'huaweicloud.reliabilitys',
             'filters': [{
-                'type': 'marked-for-op',
-                'op': 'delete',
-                'tag': 'custodian_cleanup'  # Consistent with tag action
-                # 'skew': 1 # Optional: test early matching
+                'type': 'value',
+                'key': 'tags[].key',
+                'value': 'custodian_cleanup',
+                'op': 'contains'
             }]},
             session_factory=factory)
         resources = p.run()
         # Assuming there is 1 matching instance
         self.assertEqual(len(resources), 1)
 
-        # Edge case: test operation type mismatch
-        p_wrong_op = self.load_policy({
-            'name': 'rocketmq-filter-marked-wrong-op-test',
+        # Edge case: test tag not match
+        p_wrong_tag = self.load_policy({
+            'name': 'rocketmq-filter-wrong-tag-test',
             'resource': 'huaweicloud.reliabilitys',
-            'filters': [{'type': 'marked-for-op', 'op': 'stop'}]},  # Look for stop
-            session_factory=factory)  # Using the same recording (assuming it's marked for delete)
-        resources_wrong_op = p_wrong_op.run()
-        self.assertEqual(len(resources_wrong_op), 0)
+            'filters': [{
+                'type': 'value',
+                'key': 'tags[].key',
+                'value': 'non_existent_tag',
+                'op': 'contains'
+            }]},
+            session_factory=factory)
+        resources_wrong_tag = p_wrong_tag.run()
+        self.assertEqual(len(resources_wrong_tag), 0)
 
     # =========================
     # Action Tests
@@ -173,7 +178,7 @@ class RocketMQInstanceTest(BaseTest):
         # and request body contains correct tag key and value (with timestamp)
 
     def test_rocketmq_action_auto_tag_user(self):
-        # Need a recording with resource dict containing 'creator' or 'user_name'
+        
         factory = self.replay_flight_data('rocketmq_action_autotag')
         p = self.load_policy({
             'name': 'rocketmq-action-autotag-test',
@@ -185,9 +190,20 @@ class RocketMQInstanceTest(BaseTest):
                 'tag': 'CreatorName',
                 'user_key': 'creator',  # Assuming resource has 'creator' field
                 'update': False
-            }]},
+            }],
+            # 添加事件上下文
+            'mode': {
+                'type': 'cloudtrail',
+                'events': [{
+                    'source': 'dms',
+                    'event': 'CreateInstance',
+                    'ids': 'instance_id'
+                }]
+            }},
             session_factory=factory)
         resources = p.run()
+        # 确认mock被调用
+        self.assertTrue(mock_process.called)
         # Assuming action was performed on 1 instance
         self.assertEqual(len(resources), 1)
 

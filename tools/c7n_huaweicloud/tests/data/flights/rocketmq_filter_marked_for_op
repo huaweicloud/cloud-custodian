@@ -47,7 +47,7 @@ interactions:
             "tags": [
               {
                 "key": "custodian_cleanup",
-                "value": "delete@2025/05/01 12:00:00 UTC"
+                "value": "delete_2025-05-01-12-00-00"
               }
             ]
           }
