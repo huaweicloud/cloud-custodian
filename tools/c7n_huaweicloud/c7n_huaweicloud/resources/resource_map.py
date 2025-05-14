@@ -45,5 +45,5 @@ ResourceMap = {
     "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
     "huaweicloud.dns-privatezone": "c7n_huaweicloud.resources.dns.PrivateZone",
     "huaweicloud.dns-recordset": "c7n_huaweicloud.resources.dns.RecordSet",
-    "huaweicloud.reliability": "c7n_huaweicloud.resources.dms_rocket_mq.RocketMQ"
+    "huaweicloud.reliability": "c7n_huaweicloud.resources.rocketmq.RocketMQ"
 }
