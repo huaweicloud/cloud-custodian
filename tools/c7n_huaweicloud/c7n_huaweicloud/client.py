@@ -54,6 +54,7 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
+from huaweicloudsdkeg.v1 import ListSubscriptionsRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
 from huaweicloudsdkeip.v3 import EipClient, ListPublicipsRequest
 from huaweicloudsdkeip.v2 import EipClient as EipClientV2
@@ -584,5 +585,6 @@ class Session:
             request = ListBareMetalServerDetailsRequest()
         elif service == 'rds':
             request = RdsListInstancesRequest()
-
+        elif service == 'eg':
+            request = ListSubscriptionsRequest()
         return request
