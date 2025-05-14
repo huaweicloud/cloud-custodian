@@ -1,0 +1,173 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T060241Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [
+                {"id": "rds-instance-backup-disabled-1", "name": "rds-instance-no-backup-1", 
+                 "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1", 
+                 "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-01-15T08:00:00+0000", 
+                 "updated": "2023-01-16T10:30:00+0000", "private_ips": ["192.168.0.10"]},
+                {"id": "rds-instance-backup-enabled-1", "name": "rds-instance-backup-1", 
+                 "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1", 
+                 "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-01-16T08:00:00+0000", 
+                 "updated": "2023-01-17T10:30:00+0000", "private_ips": ["192.168.0.11"]}
+               ], 
+        "total_count": 2}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 06:02:41 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=08c777357e6a5dbb1f; path=/
+      - HWWAFSESTIME=1745992961309; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 05a9aa6a2507affecf82f74332dcd7ef
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T060242Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-backup-disabled-1/backups/policy
+  response:
+    body:
+      string: '{"backup_policy": {"keep_days": 0, "start_time": "", "period": "", "backup_type": ""}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 06:02:42 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745992962310; path=/
+      - HWWAFSESID=12c889357f7a5dcc20; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 16a9bb7b3618b00fd093085443ded8f0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T060243Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-backup-enabled-1/backups/policy
+  response:
+    body:
+      string: '{"backup_policy": {"keep_days": 7, "start_time": "01:00-02:00", "period": "1,2,3,4,5", "backup_type": "auto"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 06:02:43 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745992963311; path=/
+      - HWWAFSESID=13d889358f7a6dcc21; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 27bac08c472ac11fe1a4195554efe9g1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

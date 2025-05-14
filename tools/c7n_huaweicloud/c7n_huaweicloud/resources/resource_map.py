@@ -16,6 +16,7 @@ ResourceMap = {
     "huaweicloud.iam-policy": "c7n_huaweicloud.resources.iam.Policy",
     "huaweicloud.vpc": "c7n_huaweicloud.resources.vpc.Vpc",
     "huaweicloud.vpc-flow-log": "c7n_huaweicloud.resources.vpc.FlowLog",
+    "huaweicloud.vpc-peering": "c7n_huaweicloud.resources.vpc.Peering",
     "huaweicloud.vpc-port": "c7n_huaweicloud.resources.vpc.Port",
     "huaweicloud.vpc-security-group": "c7n_huaweicloud.resources.vpc.SecurityGroup",
     "huaweicloud.vpc-security-group-rule": "c7n_huaweicloud.resources.vpc.SecurityGroupRule",
@@ -28,6 +29,7 @@ ResourceMap = {
     "huaweicloud.nat-snat-rule": "c7n_huaweicloud.resources.nat.NatSnatRule",
     "huaweicloud.nat-dnat-rule": "c7n_huaweicloud.resources.nat.NatDnatRule",
     "huaweicloud.secmaster": "c7n_huaweicloud.resources.secmaster.Secmaster",
+    "huaweicloud.hss": "c7n_huaweicloud.resources.hss.Hss",
     "huaweicloud.cts-tracker": "c7n_huaweicloud.resources.cts-tracker.Tracker",
     "huaweicloud.cts-notification-smn":
         "c7n_huaweicloud.resources.cts-notification-smn.Notification",
@@ -43,5 +45,9 @@ ResourceMap = {
     "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
     "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
     "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
-    "huaweicloud.eip": "c7n_huaweicloud.resources.eip.EIP"
+    "huaweicloud.eip": "c7n_huaweicloud.resources.eip.EIP",
+    "huaweicloud.certificate": "c7n_huaweicloud.resources.scm.Certificate",
+    "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
+    "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
+    "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS",
 }

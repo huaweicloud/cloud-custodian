@@ -1,0 +1,63 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - bms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250508T015505Z
+    method: GET
+    uri: https://bms.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/baremetalservers/detail
+  response:
+    body:
+      string: '{"servers": [{"id": "bms-test-id1", "user_id": "user-test-id1", "name":
+        "bms-test-name1", "status": "ACTIVE", "tenant_id": "tenant-test-id1", "created":
+        "2025-05-08T01:55:04Z", "updated": "2025-05-08T01:55:04Z", "addresses": {"network1":
+        [{"addr": "192.168.1.100", "version": 4}]}, "metadata": {}, "tags": ["test-tag1"]},
+        {"id": "bms-test-id2", "user_id": "user-test-id1", "name": "bms-test-name2",
+        "status": "SHUTOFF", "tenant_id": "tenant-test-id1", "created": "2025-05-08T01:55:04Z",
+        "updated": "2025-05-08T01:55:04Z", "addresses": {"network1": [{"addr": "192.168.1.101",
+        "version": 4}]}, "metadata": {}, "tags": ["test-tag2"]}, {"id": "bms-test-id3",
+        "user_id": "user-test-id1", "name": "bms-test-name3", "status": "ERROR", "tenant_id":
+        "tenant-test-id1", "created": "2025-05-08T01:55:04Z", "updated": "2025-05-08T01:55:04Z",
+        "addresses": {"network1": [{"addr": "192.168.1.102", "version": 4}]}, "metadata":
+        {}, "tags": ["test-tag3"]}], "count": 3}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 08 May 2025 01:55:05 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 8544690b12d806dd5e284fcfadc52589
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

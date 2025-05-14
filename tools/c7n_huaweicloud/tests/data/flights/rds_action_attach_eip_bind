@@ -1,0 +1,113 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T103921Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "rds-instance-id-for-eip", "name": "rds-eip-test",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-01-15T08:00:00+0000",
+        "updated": "2023-01-16T10:30:00+0000", "private_ips": ["192.168.0.10"], "public_ips": [],
+        "vpc_id": "vpc-test-id", "subnet_id": "subnet-test-id", "security_group_id":
+        "sg-test-id"}], "total_count": 1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 10:39:22 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=64b0e7353e0eb1c619; path=/
+      - HWWAFSESTIME=1745923162023; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 1e8602c3a6a7dbee3878a50d9a8a5af0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"public_ip": {"public_bind_type": "bind", "public_ip_id": "eip-test-id"}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T103922Z
+    method: PUT
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-id-for-eip/public-ip
+  response:
+    body:
+      string: '{"job_id": "ff8080818257e8c701827162dbc0001e", "workflowId": "667"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 10:39:22 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=64b0e7653e0eb1c620; path=/
+      - HWWAFSESTIME=1745923162123; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 2f8602c3a6a7dbee3878a50d9a8a5ba1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
