@@ -107,6 +107,15 @@ from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
+from huaweicloudsdkdns.v2 import (
+    ListPublicZonesRequest,
+    ListPrivateZonesRequest,
+    ListRecordSetsWithLineRequest,
+    DnsClient
+)
+from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
+from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
@@ -314,7 +323,7 @@ class Session:
                 .build()
             )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -418,6 +427,20 @@ class Session:
                 KafkaClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(KafkaRegion.value_of(self.region))
+                .build()
+            )
+        elif service in ['dns-publiczone', 'dns-privatezone', 'dns-recordset']:
+            client = (
+                DnsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DnsRegion.value_of(self.region))
+                .build()
+            )
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
                 .build()
             )
         elif service == 'certificate':
@@ -565,6 +588,17 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == 'dns-publiczone':
+            request = ListPublicZonesRequest()
+        elif service == 'dns-privatezone':
+            request = ListPrivateZonesRequest()
+            request.type = "private"
+        elif service == 'dns-recordset':
+            request = ListRecordSetsWithLineRequest()
+        elif service == 'swr':
+            request = ListReposDetailsRequest()
+        elif service == 'swr-image':
+            request = ListRepositoryTagsRequest()
         elif service == 'certificate':
             request = ListCertificatesRequest()
         elif service == 'dc':
