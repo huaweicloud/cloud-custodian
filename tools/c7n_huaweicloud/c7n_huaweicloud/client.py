@@ -55,7 +55,9 @@ from huaweicloudsdkelb.v3 import (
     ListListenersRequest,
 )
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
-from huaweicloudsdkeip.v3 import EipClient
+from huaweicloudsdkeip.v3 import EipClient, ListPublicipsRequest
+from huaweicloudsdkeip.v2 import EipClient as EipClientV2
+from huaweicloudsdkeip.v2.region.eip_region import EipRegion as EipRegionV2
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
 from huaweicloudsdkgeip.v3 import GeipClient
 from huaweicloudsdkims.v2.region.ims_region import ImsRegion
@@ -102,6 +104,8 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsRequest,
     SearchResourceShareAssociationsReqBody,
 )
+from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
+from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
@@ -297,6 +301,13 @@ class Session:
                 .with_region(EipRegion.value_of(self.region))
                 .build()
             )
+        elif service == "eip_v2":
+            client = (
+                EipClientV2.new_builder()
+                .with_credentials(credentials)
+                .with_region(EipRegionV2.value_of(self.region))
+                .build()
+            )
         elif service == "geip":
             client = (
                 GeipClient.new_builder()
@@ -446,6 +457,13 @@ class Session:
                 .with_region(BmsRegion.value_of(self.region))
                 .build()
             )
+        elif service == "rds":
+            client = (
+                RdsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RdsRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -516,6 +534,8 @@ class Session:
             request = ListLoadBalancersRequest()
         elif service == "elb_listener":
             request = ListListenersRequest()
+        elif service == "eip":
+            request = ListPublicipsRequest()
         elif service == "ims":
             request = ListImagesRequest()
         elif service == "smn":
@@ -563,4 +583,7 @@ class Session:
             request = ListDirectConnectsRequest()
         elif service == "bms":
             request = ListBareMetalServerDetailsRequest()
+        elif service == 'rds':
+            request = RdsListInstancesRequest()
+
         return request

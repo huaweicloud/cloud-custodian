@@ -17,10 +17,10 @@ log = logging.getLogger('custodian.huaweicloud.scm')
 
 
 @resources.register('scm')
-class Certificate(QueryResourceManager):
+class Scm(QueryResourceManager):
 
     class resource_type(TypeInfo):
-        service = 'certificate'
+        service = 'scm'
         enum_spec = ('list_certificates', 'certificates', None)
         id = 'id'
         name = 'name'
@@ -31,7 +31,7 @@ class Certificate(QueryResourceManager):
         tag_resource_type = 'scm_cert'
 
 
-@Certificate.action_registry.register('delete')
+@Scm.action_registry.register('delete')
 class DeleteCertificateAction(HuaweiCloudBaseAction):
     """Delete Certificate Action
 
@@ -41,7 +41,7 @@ class DeleteCertificateAction(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-expired-certificates
-            resource: huaweicloud.certificate
+            resource: huaweicloud.scm
             filters:
               - type: value
                 key: status
