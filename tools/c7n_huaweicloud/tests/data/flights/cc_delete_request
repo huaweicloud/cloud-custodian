@@ -1,0 +1,168 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250426T073053Z
+    method: GET
+    uri: https://iam.cn-north-4.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"","enabled":true,"id":"d78cbac186b744899480f25bd022f468","links":{"self":"https://iam.myhuaweicloud.com/v3/domains/d78cbac186b744899480f25bd022f468"},"name":"IAMDomain"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 26 Apr 2025 07:30:54 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745652653431; path=/
+      - HWWAFSESID=c3acfc1ba5f2c8d402; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 3e336a7c75f491664ab4b420ebfb5a98
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cc.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - d78cbac186b744899480f25bd022f468
+      X-Sdk-Date:
+      - 20250426T074028Z
+    method: GET
+    uri: https://cc.myhuaweicloud.com/v3/d78cbac186b744899480f25bd022f468/ccaas/cloud-connections?limit=100
+  response:
+    body:
+      string: '{ "cloud_connections": [  {   "status": "ACTIVE",   "enterprise_project_id":
+        "0",   "name": "test-custodian-123",   "created_at": "2025-04-25T06:29:40Z",   "updated_at":
+        "2025-04-25T06:34:36Z",   "id": "03ac5131da4f460e8792ce0b9a1ac5e5",   "description":
+        "",   "domain_id": "86ce1c4be7b54959a26d7b5a2c6ca85d",   "admin_state_up":
+        true,   "used_scene": "vpc",   "tags": [    {     "key": "123",     "value":
+        "123"    },    {     "key": "test1",     "value": "test1"    },    {     "key":
+        "test_key",     "value": "test_value"    }   ],   "network_instance_number":
+        0,   "bandwidth_package_number": 0,   "inter_region_bandwidth_number": 0  }
+        ], "page_info": {   "previous_marker": "03ac5131da4f460e8792ce0b9a1ac5e5",  "current_count":
+        1 }}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 26 Apr 2025 07:40:30 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745653230108; path=/
+      - HWWAFSESID=2c4667383a0a688fbe; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e6afafb580eac7924a2ce9f1ad5dc6f8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - cc.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - d78cbac186b744899480f25bd022f468
+      X-Sdk-Date:
+      - 20250426T082018Z
+    method: DELETE
+    uri: https://cc.myhuaweicloud.com/v3/d78cbac186b744899480f25bd022f468/ccaas/cloud-connections/03ac5131da4f460e8792ce0b9a1ac5e5
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"cb9b0204f0e0a261a1f735802be261fc"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 26 Apr 2025 08:20:19 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745655616036; path=/
+      - HWWAFSESID=07fec76b5da1f623e0; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - cb9b0204f0e0a261a1f735802be261fc
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: ''
+version: 1

@@ -114,16 +114,30 @@ CONFIG_SCHEMA = {
                 'tags': {'type': 'array', 'items': {'type': 'string'}},
                 'regions': {'type': 'array', 'items': {'type': 'string'}},
                 'vars': {'type': 'object'},
-                }
             }
         },
+        'domain': {
+            'type': 'object',
+            'additionalProperties': True,
+            'required': ['domain_id'],
+            'properties': {
+                'domain_id': {'type': 'string'},
+                'agency_urn': {'type': 'string'},
+                'duration_seconds': {'type': 'integer', 'minimum': 900},
+                'regions': {'type': 'array', 'items': {'type': 'string'}},
+                'tags': {'type': 'array', 'items': {'type': 'string'}},
+                'vars': {'type': 'object'},
+            }
+        }
+    },
     'type': 'object',
     'additionalProperties': False,
     'oneOf': [
         {'required': ['accounts']},
         {'required': ['projects']},
         {'required': ['subscriptions']},
-        {'required': ['tenancies']}
+        {'required': ['tenancies']},
+        {'required': ['domains']}
         ],
     'properties': {
         'vars': {'type': 'object'},
@@ -142,8 +156,12 @@ CONFIG_SCHEMA = {
         'tenancies': {
             'type': 'array',
             'items': {'$ref': '#/definitions/tenancy'}
-            }
+        },
+        'domains': {
+            'type': 'array',
+            'items': {'$ref': '#/definitions/domain'}
         }
+    }
 }
 
 
@@ -600,6 +618,22 @@ def accounts_iterator(config):
              "oci_compartments": a.get("vars", {}).get("oci_compartments"),
              "vars": _update(a.get("vars", {}), org_vars)}
         yield d
+    for a in config.get('domains', ()):
+        if not a['agency_urn'].startswith('iam::'):
+            raise ValueError(f"Invalid agency_urn format in account {a['name']}")
+        if not 900 <= a['duration_seconds'] <= 43200:
+            raise ValueError("duration_seconds must be between 900 and 43200")
+
+        d = {'account_id': a['domain_id'],
+             'domain_id': a['domain_id'],
+             'name': a.get('name', a['domain_id']),
+             'regions': a.get('regions', ['cn-north-4']),
+             "agency_urn": a["agency_urn"],
+             "duration_seconds": a["duration_seconds"],
+             'provider': 'huaweicloud',
+             'tags': a.get('tags', ()),
+             'vars': _update(a.get('vars', {}), org_vars)}
+        yield d
 
 
 def _update(old, new):
@@ -642,6 +676,14 @@ def run_account(account, region, policies_config, output_path,
 
     if account.get("oci_compartments"):
         env_vars.update({"OCI_COMPARTMENTS": account.get("oci_compartments")})
+
+    if account.get('agency_urn'):
+        log.info("Using Huawei Cloud agency: %s", account['agency_urn'])
+        config['agency_urn'] = account['agency_urn']
+        config['duration_seconds'] = account['duration_seconds']
+        config['regions'] = account['regions']
+        config['domain_id'] = account['domain_id']
+        config['name'] = account['name']
 
     policies = PolicyCollection.from_data(policies_config, config)
     policy_counts = {}

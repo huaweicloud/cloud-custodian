@@ -3,6 +3,7 @@
 
 import logging
 import json
+import os
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkvpc.v2 import (
@@ -17,7 +18,10 @@ from huaweicloudsdkvpc.v2 import (
     AllowedAddressPair,
     UpdatePortOption,
     UpdatePortRequest,
-    UpdatePortRequestBody
+    UpdatePortRequestBody,
+    DeleteVpcPeeringRequest,
+    ListRouteTablesRequest,
+    ShowRouteTableRequest
 )
 from huaweicloudsdkvpc.v3 import (
     ListSecurityGroupsRequest,
@@ -1276,3 +1280,151 @@ class SetFlowLog(HuaweiCloudBaseAction):
         self.result.update(action_result)
         print(self.result)
         return self.result
+
+
+@resources.register('vpc-peering')
+class Peering(QueryResourceManager):
+    class resource_type(TypeInfo):
+        service = 'vpc_v2'
+        enum_spec = ('list_vpc_peerings', 'peerings', 'marker')
+        id = 'id'
+
+
+@Peering.filter_registry.register("cross-account")
+class PeeringCrossAccount(Filter):
+    """Filter to query VPC peering connections across accounts.
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: peering-cross-account
+                resource: huaweicloud.vpc-peering
+                filters:
+                  - cross-account
+
+    """
+
+    schema = type_schema('cross-account')
+
+    def process(self, resources, event=None):
+        res = []
+        for r in resources:
+            if 'request_vpc_info' not in r or 'accept_vpc_info' not in r:
+                continue
+            request_tenant = r['request_vpc_info']['tenant_id']
+            accept_tenant = r['accept_vpc_info']['tenant_id']
+            if request_tenant != accept_tenant:
+                res.append(r)
+
+        return res
+
+
+@Peering.filter_registry.register("missing-route")
+class PeeringMissingRoute(Filter):
+    """Return active VPC peering connections which are missing a route
+    in route tables.
+
+    If the peering connection is between two vpcs in the same account,
+    the connection is returned unless it is in present route tables in
+    each vpc.
+
+    If the peering connection is between accounts, then the local vpc's
+    route table is checked.
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: peering-missing-route
+                resource: huaweicloud.vpc-peering
+                filters:
+                  - missing-route
+
+    """
+
+    schema = type_schema('missing-route')
+
+    def process(self, resources, event=None):
+        res = []
+        current_tenant = os.getenv('HUAWEI_PROJECT_ID')
+        for r in resources:
+            if r['status'] != 'ACTIVE':
+                continue
+            is_across_accounts = False
+            request_tenant = r['request_vpc_info']['tenant_id']
+            accept_tenant = r['accept_vpc_info']['tenant_id']
+            if request_tenant != accept_tenant:
+                is_across_accounts = True
+            request_vpc = r['request_vpc_info']['vpc_id']
+            accept_vpc = r['accept_vpc_info']['vpc_id']
+            peering_id = r['id']
+            if is_across_accounts:
+                for vpc, tenant in [(request_vpc, request_tenant), (accept_vpc, accept_tenant)]:
+                    if tenant == current_tenant and self._is_missing_route(vpc, peering_id):
+                        res.append(r)
+            else:
+                if self._is_missing_route(request_vpc, peering_id) or \
+                    self._is_missing_route(accept_vpc, peering_id):
+                    res.append(r)
+
+        return res
+
+    def _is_missing_route(self, vpc_id, peering_id):
+        client = self.manager.get_client()
+        try:
+            request = ListRouteTablesRequest(vpc_id=vpc_id)
+            response = client.list_route_tables(request)
+            rtbs = response.routetables
+            if len(rtbs) == 0:
+                return True
+            rtb_ids = [rtb.to_dict()['id'] for rtb in rtbs]
+
+            is_route_exist = False
+            for rtb_id in rtb_ids:
+                request = ShowRouteTableRequest(routetable_id=rtb_id)
+                response = client.show_route_table(request)
+                routes = response.routetable.to_dict().get('routes')
+                is_route_exist = any(route['type'] == 'peering'
+                                    and route['nexthop'] == peering_id
+                                    for route in routes)
+                if is_route_exist:
+                    return False
+        except exceptions.ClientRequestException as ex:
+            log.exception("Failed to check missing route because "
+                        "query routetables of %s failed. "
+                        "RequestId: %s, Reason: %s." %
+                        (vpc_id, ex.request_id, ex.error_msg))
+        return not is_route_exist
+
+
+@Peering.action_registry.register("delete")
+class PeeringDelete(HuaweiCloudBaseAction):
+    """Action to delete vpc peering connections.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: peering-delete-rejected
+            resource: huaweicloud.vpc-peering
+            filters:
+              - type: value
+                key: status
+                value: "REJECTED"
+            actions:
+              - delete
+    """
+
+    schema = type_schema("delete")
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        request = DeleteVpcPeeringRequest(peering_id=resource["id"])
+        response = client.delete_vpc_peering(request)
+        log.info("Delete vpc peering %s response is: [%d] %s" %
+                (resource["id"], response.status_code, response.to_json_object()))
+        return response

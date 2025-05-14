@@ -494,9 +494,10 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
     def process_resource(self, resource):
         try:
-            old_value = None
             if not self.old_value:
                 old_value = self.get_value_by_key(resource, self.key)
+            else:
+                old_value = self.old_value
             if not self.old_value and not old_value:
                 self.log.exception("No value of key %s in resource %s", self.key, resource["id"])
                 return
