@@ -418,7 +418,7 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'certificate':
+        elif service == 'scm':
             client = (
                 ScmClient.new_builder()
                 .with_credentials(globalCredentials)
@@ -556,8 +556,9 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
-        elif service == 'certificate':
+        elif service == 'scm':
             request = ListCertificatesRequest()
+            request.expired_days_since = 1095
         elif service == 'dc':
             request = ListDirectConnectsRequest()
         elif service == "bms":

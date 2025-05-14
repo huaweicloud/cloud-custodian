@@ -16,22 +16,8 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 log = logging.getLogger('custodian.huaweicloud.scm')
 
 
-@resources.register('certificate')
+@resources.register('scm')
 class Certificate(QueryResourceManager):
-    """Huawei Cloud SSL Certificate Manager
-
-    :Example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: certificate-expiring-soon
-            resource: huaweicloud.certificate
-            filters:
-              - type: value
-                key: status
-                value: ISSUED
-    """
 
     class resource_type(TypeInfo):
         service = 'certificate'
