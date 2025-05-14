@@ -106,6 +106,11 @@ from huaweicloudsdkdns.v2 import (
     DnsClient
 )
 from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
+from huaweicloudsdkaom.v2 import (
+    AomClient,
+    ListMetricOrEventAlarmRuleRequest
+)
+from huaweicloudsdkaom.v2.region.aom_region import AomRegion
 
 
 log = logging.getLogger("custodian.huaweicloud.client")
@@ -401,6 +406,13 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'aom':
+            client = (
+                AomClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AomRegion.value_of(self.region))
+                .build()
+            )
         elif service in ['dns-publiczone', 'dns-privatezone', 'dns-recordset']:
             client = (
                 DnsClient.new_builder()
@@ -514,6 +526,8 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == 'aom':
+            request = ListMetricOrEventAlarmRuleRequest()
         elif service == 'dns-publiczone':
             request = ListPublicZonesRequest()
         elif service == 'dns-privatezone':
