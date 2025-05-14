@@ -10,10 +10,10 @@ from huaweicloudsdktms.v1 import (
 
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from c7n.filters.core import AgeFilter
-from c7n.utils import local_session, type_schema
+from c7n.utils import local_session
 
 log = logging.getLogger('custodian.huaweicloud.eg')
+
 
 @resources.register('eg-subscription')
 class Subscription(QueryResourceManager):
@@ -68,7 +68,6 @@ class Subscription(QueryResourceManager):
         """
         if not resources:
             return resources
-            
         # Attempt to create TMS client to query tags
         try:
             session = local_session(self.session_factory)
@@ -89,7 +88,7 @@ class Subscription(QueryResourceManager):
                             if hasattr(tag, 'key') and hasattr(tag, 'value'):
                                 tags.append({'key': tag.key, 'value': tag.value})
                     else:
-                        self.log.warning(f"Unexpected response structure: 'tags' attribute missing.")
+                        self.log.warning("Unexpected response structure: 'tags' attribute missing.")
                     resource['tags'] = tags
                 except exceptions.ClientRequestException as e:
                     self.log.warning(
