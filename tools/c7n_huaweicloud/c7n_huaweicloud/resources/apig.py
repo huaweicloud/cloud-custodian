@@ -249,36 +249,6 @@ class ApiResource(QueryResourceManager):
         # 由于已经在resources方法中处理了资源增强，所以这里直接返回
         return resources
 
-# API Resource Filters
-@ApiResource.filter_registry.register('age')
-class ApiAgeFilter(AgeFilter):
-    """API creation time filter
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-api-old
-            resource: huaweicloud.rest-api
-            filters:
-              - type: age
-                days: 90
-                op: gt
-    """
-
-    schema = type_schema(
-        'age',
-        op={
-            '$ref': '#/definitions/filters_common/comparison_operators'
-        },
-        days={'type': 'number'},
-        hours={'type': 'number'},
-        minutes={'type': 'number'}
-    )
-    date_attribute = "register_time"
-
-
 # API Resource Actions
 @ApiResource.action_registry.register('delete')
 class DeleteApiAction(HuaweiCloudBaseAction):
@@ -351,19 +321,21 @@ class UpdateApiAction(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-          - name: apig-api-update
+            - name: apig-api-update
             resource: huaweicloud.rest-api
             filters:
-              - type: value
-                key: name
-                value: test-api
+                - type: value
+                key: id
+                value: 499e3bd193ba4db89a49f0ebdef19796
             actions:
-              - type: update
-                api_type: 1
+                - type: update          
                 name: updated-api-name
+                api_type: 1
                 req_protocol: HTTPS
                 req_method: POST
-                remark: "Updated by Cloud Custodian"
+                req_uri: "/test/update"
+                auth_type: APP
+                backend_type: HTTP
     """
 
     schema = type_schema(
@@ -371,7 +343,6 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         name={'type': 'string'},
         # 使用api_type替代type，避免与操作类型冲突
         api_type={'type': 'integer', 'enum': [1, 2]},
-        version={'type': 'string'},
         req_protocol={'type': 'string', 'enum': [
             'HTTP', 'HTTPS', 'BOTH', 'GRPCS']},
         req_method={'type': 'string', 'enum': [
@@ -379,13 +350,8 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         req_uri={'type': 'string'},
         auth_type={'type': 'string', 'enum': [
             'NONE', 'APP', 'IAM', 'AUTHORIZER']},
-        cors={'type': 'boolean'},
-        match_mode={'type': 'string', 'enum': ['NORMAL', 'SWA']},
-        remark={'type': 'string'},
         backend_type={'type': 'string', 'enum': ['HTTP', 'FUNCTION', 'MOCK']},
-        result_normal_sample={'type': 'string'},
-        result_failure_sample={'type': 'string'},
-        authorizer_id={'type': 'string'},
+        group_id={'type':'string'},
     )
 
     def _build_update_body(self, resource):
@@ -412,18 +378,12 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         field_mappings = {
             'name': 'name',
             'api_type': 'type',  # 使用api_type映射到type
-            'version': 'version',
             'req_protocol': 'req_protocol',
             'req_method': 'req_method',
             'req_uri': 'req_uri',
             'auth_type': 'auth_type',
-            'cors': 'cors',
-            'match_mode': 'match_mode',
-            'remark': 'remark',
             'backend_type': 'backend_type',
-            'result_normal_sample': 'result_normal_sample',
-            'result_failure_sample': 'result_failure_sample',
-            'authorizer_id': 'authorizer_id'
+            'group_id':'group_id'
         }
 
         for policy_field, api_field in field_mappings.items():
