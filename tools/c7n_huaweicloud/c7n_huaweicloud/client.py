@@ -108,7 +108,9 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
-from huaweicloudsdkrocketmq.v2 import RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
+from huaweicloudsdkrocketmq.v2 import (
+    RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
+)
 from huaweicloudsdkrocketmq.v2.region.rocketmq_region import RocketMQRegion
 from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
