@@ -523,13 +523,6 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
-        elif service == 'dns-publiczone':
-            request = ListPublicZonesRequest()
-        elif service == 'dns-privatezone':
-            request = ListPrivateZonesRequest()
-            request.type = "private"
-        elif service == 'dns-recordset':
-            request = ListRecordSetsWithLineRequest()
         elif service == 'reliability':
             request = RocketMQListInstancesRequest()
         return request
