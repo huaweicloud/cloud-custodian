@@ -15,7 +15,7 @@ interactions:
       X-Sdk-Date:
       - 20250409T093100Z
     method: GET
-    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains?expired_days_since=1095
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
   response:
     body:
       string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
@@ -55,8 +55,7 @@ interactions:
       X-Sdk-Date:
       - 20250409T093110Z
     method: GET
-    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates
-  response:
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates?expired_days_since=1095
     body:
       string: "{\"certificates\":[{\"id\":\"scs1554192131150\",\"name\":\"test-with-tags\",\"domain\":\"www.zx.com\",
         \"sans\":\"a.zx.com;b.zx.com\",\"type\":\"OV_SSL_CERT\",\"deploy_support\":true,
