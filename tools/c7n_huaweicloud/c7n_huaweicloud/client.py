@@ -52,7 +52,7 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
-from huaweicloudsdkeg.v1 import ListEventStreamingRequest
+from huaweicloudsdkeg.v1 import ListSubscriptionsRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
 from huaweicloudsdkeip.v3 import EipClient
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
@@ -107,7 +107,8 @@ from huaweicloudsdkdns.v2 import (
     DnsClient
 )
 from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
-
+from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -303,7 +304,7 @@ class Session:
                 .build()
             )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -409,7 +410,13 @@ class Session:
                 .with_region(DnsRegion.value_of(self.region))
                 .build()
             )
-
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -521,6 +528,10 @@ class Session:
             request.type = "private"
         elif service == 'dns-recordset':
             request = ListRecordSetsWithLineRequest()
+        elif service == 'swr':
+            request = ListReposDetailsRequest()
+        elif service == 'swr-image':
+            request = ListRepositoryTagsRequest()
         elif service == 'eg':
-            request = ListEventStreamingRequest()
+            request = ListSubscriptionsRequest()
         return request
