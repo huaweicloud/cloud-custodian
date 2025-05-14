@@ -51,9 +51,16 @@ huaweicloudsdkram = "^3.1.138"
 huaweicloudsdkantiddos = "^3.1.138"
 huaweicloudsdkdns = "^3.1.138"
 huaweicloudsdkrocketmq = "^3.1.138"
+huaweicloudsdkswr = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"
+
+
+[[tool.poetry.source]]
+name = "mirrors"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+priority = "default"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
