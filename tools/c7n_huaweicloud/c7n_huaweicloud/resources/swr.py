@@ -21,7 +21,6 @@ from huaweicloudsdkswr.v2.model.create_retention_request import CreateRetentionR
 from huaweicloudsdkswr.v2.model.create_retention_request_body import CreateRetentionRequestBody
 from huaweicloudsdkswr.v2.model.rule import Rule
 from huaweicloudsdkswr.v2.model.tag_selector import TagSelector
-from huaweicloudsdkswr.v2.model.list_repos_details_request import ListReposDetailsRequest
 
 log = logging.getLogger('custodian.huaweicloud.swr')
 
@@ -299,7 +298,7 @@ class LifecycleRule(Filter):
 
     def match_policy_with_matchers(self, policy, matchers):
         """Check if policy matches using generic matchers.
-        
+
         :param policy: Lifecycle policy to check
         :param matchers: List of matchers to apply
         :return: True if policy matches all matchers, False otherwise
@@ -417,33 +416,33 @@ class SwrImage(QueryResourceManager):
         :return: List of all SWR images
         """
         all_images = []
-        
+
         # First get all SWR repositories
         try:
             # Use SWR resource manager to get all repositories with pagination handled
             from c7n_huaweicloud.provider import resources as huaweicloud_resources
             swr_manager = huaweicloud_resources.get('swr')(self.ctx, {})
             repositories = swr_manager.resources()
-            
+
             client = self.get_client()
-            
+
             # For each repository, get its images
             for repo in repositories:
                 namespace = repo.get('namespace')
                 repository = repo.get('name')
-                
+
                 if not namespace or not repository:
                     continue
-                
+
                 # Get all images for this repository
                 images = self._get_repository_tags_paginated(client, namespace, repository)
                 all_images.extend(images)
                 self.log.debug(
                     f"Retrieved {len(images)} images for repository {namespace}/{repository}")
-                
+
         except Exception as e:
             self.log.error(f"Failed to fetch SWR images: {e}")
-            
+ 
         self.log.info(f"Retrieved a total of {len(all_images)} SWR images")
         return all_images
 
@@ -460,7 +459,7 @@ class SwrImage(QueryResourceManager):
         tags = []
         offset = 0
         limit = 100  # Default page size
-        
+
         try:
             while True:
                 # Build request with pagination parameters
@@ -470,14 +469,14 @@ class SwrImage(QueryResourceManager):
                     limit=limit,
                     offset=offset
                 )
-                
+
                 # Execute request
                 response = client.list_repository_tags(request)
-                
+
                 # Break if no results
                 if not response.body or len(response.body) == 0:
                     break
-                
+
                 # Process results
                 batch = []
                 for image in response.body:
@@ -485,31 +484,31 @@ class SwrImage(QueryResourceManager):
                         image_dict = image.to_dict()
                     else:
                         image_dict = image
-                        
+
                     # Add repository context
                     image_dict['namespace'] = namespace
                     image_dict['repository'] = repository
                     
                     batch.append(image_dict)
-                
+
                 # Add batch to results
                 tags.extend(batch)
-                
+
                 # Check if we need to fetch more
                 if len(batch) < limit:
                     break
-                    
+
                 # Move to next page
                 offset += limit
-                
+
                 self.log.debug(
                     f"Retrieved {len(batch)} tags for {namespace}/{repository}, "
                     f"total so far: {len(tags)}")
-                
+
         except Exception as e:
             self.log.error(
                 f"Failed to get tags for repository {namespace}/{repository}: {e}")
-            
+
         return tags
 
 
