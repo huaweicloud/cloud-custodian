@@ -99,13 +99,6 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsReqBody,
 )
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
-from huaweicloudsdkdns.v2 import (
-    ListPublicZonesRequest,
-    ListPrivateZonesRequest,
-    ListRecordSetsWithLineRequest,
-    DnsClient
-)
-from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
 from huaweicloudsdkapig.v2 import (
     ApigClient, 
     ListApisV2Request,
@@ -424,13 +417,6 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
-        elif service in ['dns-publiczone', 'dns-privatezone', 'dns-recordset']:
-            client = (
-                DnsClient.new_builder()
-                .with_credentials(credentials)
-                .with_region(DnsRegion.value_of(self.region))
-                .build()
-            )
         elif service == 'apig' or service in ['rest-api', 'rest-stage', 'api-groups', 'apig-instance']:
             client = (
                 ApigClient.new_builder()
@@ -544,13 +530,6 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
-        elif service == 'dns-publiczone':
-            request = ListPublicZonesRequest()
-        elif service == 'dns-privatezone':
-            request = ListPrivateZonesRequest()
-            request.type = "private"
-        elif service == 'dns-recordset':
-            request = ListRecordSetsWithLineRequest()
         elif service == 'rest-api':
             request = ListApisV2Request()
         elif service == 'rest-stage':

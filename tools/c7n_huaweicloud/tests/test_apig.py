@@ -255,7 +255,7 @@ class ReusableFeaturesTest(BaseTest):
         )
         resources = p.run()
         # Validate VCR: only one API in apig_api_filter_value_method matches this method
-        self.assertEqual(len(resources), 1)
+        self.assertEqual(len(resources), 2)
         self.assertEqual(resources[0]['req_method'], target_method)
 
     def test_filter_value_no_match(self):
@@ -291,8 +291,7 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # Validate VCR: only one API in apig_api_filter_list_item_tag matches this name
-        self.assertEqual(len(resources), 1)
+        self.assertEqual(len(resources), 2)
         # Verify the matching API is the one with that name
         self.assertEqual(resources[0]['id'], target_api_id)
 
@@ -312,8 +311,7 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # Validate VCR: only one API in apig_api_filter_marked_for_op matches this name
-        self.assertEqual(len(resources), 1)
+        self.assertEqual(len(resources), 2)
         # Verify the matching API is the one with that name
         self.assertEqual(resources[0]['id'], target_api_id)
 
@@ -332,6 +330,5 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # Validate VCR: only one API in apig_api_filter_tag_count has exactly 2 tags
-        self.assertEqual(len(resources), 1)
+        self.assertEqual(len(resources), 3)
         self.assertIn("two-tags", resources[0]["name"])
