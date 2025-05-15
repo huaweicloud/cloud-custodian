@@ -442,7 +442,7 @@ class SwrImage(QueryResourceManager):
 
         except Exception as e:
             self.log.error(f"Failed to fetch SWR images: {e}")
- 
+
         self.log.info(f"Retrieved a total of {len(all_images)} SWR images")
         return all_images
 
@@ -488,7 +488,7 @@ class SwrImage(QueryResourceManager):
                     # Add repository context
                     image_dict['namespace'] = namespace
                     image_dict['repository'] = repository
-                    
+
                     batch.append(image_dict)
 
                 # Add batch to results
