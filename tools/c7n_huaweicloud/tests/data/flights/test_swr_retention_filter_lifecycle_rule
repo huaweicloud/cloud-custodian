@@ -1,0 +1,95 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T084441Z
+    method: GET
+    uri: https://swr.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/retentions
+  response:
+    body:
+      string: '[{"id":"12345","algorithm":"or","rules":[{"template":"date_rule","params":{"days":30},"tag_selectors":[{"kind":"label","pattern":"test"}]}]}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 08:44:42 GMT
+      Server:
+      - api-gateway
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - 123c08a15e25d4a4adda21c090278b7b
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T084652Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/retentions
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"171433c28ea22bb83efa6f572d1edde5"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 08:46:52 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=ee3fe73085c3c3d39a; path=/
+      - HWWAFSESTIME=1745916412235; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 171433c28ea22bb83efa6f572d1edde5
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

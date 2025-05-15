@@ -1,0 +1,144 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T022319Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos?limit=100&offset=0
+  response:
+    body:
+      string: '[ { "name": "test-repo-no-namespace", "category": "linux", "description":
+        "Test repository without namespace", "size": 12345, "is_public": false, "num_images":
+        1, "num_download": 0, "created_at": "2023-01-01T00:00:00Z", "updated_at":
+        "2023-01-01T00:00:00Z", "logo": "", "url": "", "path": "swr.ap-southeast-1.myhuaweicloud.com/test-repo-no-namespace",
+        "internal_path": "10.125.0.198:20202/test-repo-no-namespace", "domain_name":
+        "test-domain", "namespace": "", "tags": ["latest"], "status": false, "total_range":
+        1 } ]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Range:
+      - 0-1/1
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 03 Apr 2025 04:43:25 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T033356Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/unknown/repos/test-repo-no-namespace/retentions
+  response:
+    body:
+      string: '[]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 03:33:56 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 1ea37ea86ad0ad2620906d79066f71ea
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T113607Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces//repos/test-repo-no-namespace/retentions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAyzMwQoCIRSF4X1PcXEdoTE22K5VtGsRtBxG7ymFRkudCKJ3T6jt+TnfWyDnlIep
+        XMVWnDxodzwQJxSKqRJeoVRKmfz4GywQ6T7bWygeTCFSbR/EZ8gpTohVLP+iS4xGNm5/XkklVSsZ
+        jxmlDoFb6YzcMKN3RunOOCktj44V1hLa9hctPosvAAAA//8DAE7NZoKeAAAA
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 11:36:07 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746012967765; path=/
+      - HWWAFSESID=46863731a8c76192cb; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 4906dde7c91549c00bdacd1e20e5b7f5
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 404
+      message: Not Found
+version: 1

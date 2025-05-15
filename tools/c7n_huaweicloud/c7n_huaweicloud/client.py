@@ -54,6 +54,7 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
+from huaweicloudsdkeg.v1 import ListSubscriptionsRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
 from huaweicloudsdkeip.v3 import EipClient, ListPublicipsRequest
 from huaweicloudsdkeip.v2 import EipClient as EipClientV2
@@ -107,6 +108,8 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
+from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
 from huaweicloudsdkaom.v2 import (
@@ -328,7 +331,7 @@ class Session:
                 .build()
             )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -432,6 +435,13 @@ class Session:
                 KafkaClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(KafkaRegion.value_of(self.region))
+                .build()
+            )
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
                 .build()
             )
         elif service == 'certificate':
@@ -587,6 +597,10 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == 'swr':
+            request = ListReposDetailsRequest()
+        elif service == 'swr-image':
+            request = ListRepositoryTagsRequest()
         elif service == 'certificate':
             request = ListCertificatesRequest()
         elif service == 'dc':
@@ -595,6 +609,8 @@ class Session:
             request = ListBareMetalServerDetailsRequest()
         elif service == 'rds':
             request = RdsListInstancesRequest()
+        elif service == 'eg':
+            request = ListSubscriptionsRequest()
         elif service == 'aom':
             request = ListMetricOrEventAlarmRuleRequest()
         return request
