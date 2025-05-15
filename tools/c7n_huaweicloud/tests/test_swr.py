@@ -7,10 +7,10 @@ from huaweicloud_common import BaseTest
 
 
 class SwrRepositoryTest(BaseTest):
-    """Test SWR Repository resources, filters, and actions"""
+    """Test SWR Repository resources, filters, and actions."""
 
     def test_swr_repository_query(self):
-        """Test SWR Repository query and augment"""
+        """Test SWR Repository query and augment functionality."""
         factory = self.replay_flight_data("swr_repository_query")
         p = self.load_policy(
             {
@@ -63,7 +63,7 @@ class SwrRepositoryTest(BaseTest):
         self.assertEqual(selectors[2]["pattern"], "^123$")
 
     def test_swr_filter_value(self):
-        """Test SWR Repository value filter"""
+        """Test SWR Repository value filter for filtering by field values."""
         factory = self.replay_flight_data("swr_filter_value")
         p = self.load_policy(
             {
@@ -80,7 +80,7 @@ class SwrRepositoryTest(BaseTest):
         self.assertFalse(resources[0]["is_public"])
 
     def test_swr_filter_age(self):
-        """Test SWR Repository age filter"""
+        """Test SWR Repository age filter for filtering by creation time."""
         factory = self.replay_flight_data("swr_filter_age")
         p = self.load_policy(
             {
@@ -103,10 +103,10 @@ class SwrRepositoryTest(BaseTest):
 
 
 class SwrImageTest(BaseTest):
-    """Test SWR Image resources, filters, and actions"""
+    """Test SWR Image resources, filters, and actions."""
 
     def test_swr_image_query(self):
-        """Test SWR Image query and augment"""
+        """Test SWR Image query and resource enumeration."""
         factory = self.replay_flight_data("swr_image_query")
         p = self.load_policy(
             {
@@ -133,7 +133,7 @@ class SwrImageTest(BaseTest):
         self.assertTrue("digest" in resources[0])
 
     def test_swr_image_filter_age(self):
-        """Test SWR Image age filter"""
+        """Test SWR Image age filter for filtering by creation time."""
         factory = self.replay_flight_data("swr_image_filter_age")
         p = self.load_policy(
             {
@@ -155,7 +155,7 @@ class SwrImageTest(BaseTest):
         self.assertTrue(created_date.year == 2022)
 
     def test_swr_image_filter_value(self):
-        """Test SWR Image value filter"""
+        """Test SWR Image value filter for filtering by field values."""
         factory = self.replay_flight_data("swr_image_filter_value")
         p = self.load_policy(
             {
@@ -173,10 +173,10 @@ class SwrImageTest(BaseTest):
 
 
 class LifecycleRuleFilterTest(BaseTest):
-    """Test SWR Lifecycle Rule filter"""
+    """Test SWR Lifecycle Rule filter functionality."""
 
     def test_lifecycle_rule_filter_match(self):
-        """Test Lifecycle Rule filter - Match"""
+        """Test Lifecycle Rule filter - Match repositories with lifecycle rules."""
         factory = self.replay_flight_data("swr_filter_lifecycle_rule_match")
         p = self.load_policy(
             {
@@ -198,7 +198,7 @@ class LifecycleRuleFilterTest(BaseTest):
         self.assertTrue(len(lifecycle_policy) > 0)
 
     def test_lifecycle_rule_filter_no_match(self):
-        """Test Lifecycle Rule filter - No Match"""
+        """Test Lifecycle Rule filter - Match repositories without lifecycle rules."""
         factory = self.replay_flight_data("swr_filter_lifecycle_rule_no_match")
         p = self.load_policy(
             {
@@ -221,10 +221,10 @@ class LifecycleRuleFilterTest(BaseTest):
 
 
 class SetLifecycleActionTest(BaseTest):
-    """Test SWR Set Lifecycle Rule actions"""
+    """Test SWR Set Lifecycle Rule actions."""
 
     def test_create_lifecycle_rule(self):
-        """Test Create Lifecycle Rule"""
+        """Test creating lifecycle rules for SWR repositories."""
         factory = self.replay_flight_data("swr_lifecycle_action_success")
         p = self.load_policy(
             {

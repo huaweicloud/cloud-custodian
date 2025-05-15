@@ -30,6 +30,7 @@ log = logging.getLogger('custodian.huaweicloud.swr')
 class Swr(QueryResourceManager):
     """Huawei Cloud SWR (Software Repository) Resource Manager.
 
+
     :example:
 
     .. code-block:: yaml
@@ -47,18 +48,30 @@ class Swr(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = 'swr'
+        """Define SWR resource metadata and type information"""
+        service = 'swr'  # Specify corresponding HuaweiCloud service name
+        # Specify API operation, result list key, and pagination parameter(s) for enumerating resources
+        # 'list_repos_details' is the API method name
+        # 'body' is the field name in the response containing the instance list
+        # 'offset' is the parameter name for pagination
         enum_spec = ('list_repos_details', 'body', 'offset')
-        id = 'name'
-        name = 'name'
-        filter_name = 'name'
-        filter_type = 'scalar'
-        taggable = False
-        tag_resource_type = 'swr'
-        date = 'created_at'
+        id = 'name'  # Specify resource unique identifier field name
+        name = 'name'  # Specify resource name field name
+        filter_name = 'name'  # Field name for filtering by name
+        filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
+        taggable = False  # Indicate that this resource doesn't support tagging directly
+        tag_resource_type = 'swr'  # Specify resource type for querying tags
+        date = 'created_at'  # Specify field name for resource creation time
 
     def augment(self, resources):
-        """Augment resource information with lifecycle policies."""
+        """Augment resource information with lifecycle policies.
+        
+        This method enhances the original resource data by adding lifecycle policies
+        for each SWR repository.
+        
+        :param resources: Original resource dictionary list obtained from API
+        :return: Enhanced resource dictionary list with lifecycle policies
+        """
         client = self.get_client()
         for resource in resources:
             resource['tag_resource_type'] = 'swr-repository'
@@ -66,7 +79,12 @@ class Swr(QueryResourceManager):
         return resources
 
     def get_lifecycle_policy(self, client, resource):
-        """Get lifecycle policy for a specific repository."""
+        """Get lifecycle policy for a specific repository.
+        
+        :param client: HuaweiCloud SWR client
+        :param resource: SWR repository resource dictionary
+        :return: Resource with lifecycle policy added
+        """
         try:
             repository = resource['name']
             namespace = resource['namespace']
@@ -188,6 +206,12 @@ class LifecycleRule(Filter):
     policy_annotation = 'c7n:lifecycle-policy'
 
     def process(self, resources, event=None):
+        """Process resources based on lifecycle rule criteria.
+        
+        :param resources: List of resources to filter
+        :param event: Optional event context
+        :return: Filtered resource list
+        """
         state = self.data.get('state', True)
         results = []
 
@@ -234,7 +258,10 @@ class LifecycleRule(Filter):
         return results
 
     def build_params_filters(self):
-        """Build parameter filters."""
+        """Build parameter filters.
+        
+        :return: Dictionary of parameter filters
+        """
         params_filters = {}
         if 'params' in self.data:
             for param_key, param_config in self.data.get('params', {}).items():
@@ -259,7 +286,10 @@ class LifecycleRule(Filter):
         return params_filters
 
     def build_matchers(self):
-        """Build generic matchers."""
+        """Build generic matchers.
+        
+        :return: List of value filter matchers
+        """
         matchers = []
         for matcher in self.data.get('match', []):
             vf = ValueFilter(matcher)
@@ -268,7 +298,12 @@ class LifecycleRule(Filter):
         return matchers
 
     def match_policy_with_matchers(self, policy, matchers):
-        """Check if policy matches using generic matchers."""
+        """Check if policy matches using generic matchers.
+        
+        :param policy: Lifecycle policy to check
+        :param matchers: List of matchers to apply
+        :return: True if policy matches all matchers, False otherwise
+        """
         if not matchers:
             return True
 
@@ -278,7 +313,12 @@ class LifecycleRule(Filter):
         return True
 
     def match_policy_params(self, policy, params_filters):
-        """Check if policy parameters match filters."""
+        """Check if policy parameters match filters.
+        
+        :param policy: Lifecycle policy to check
+        :param params_filters: Parameter filters to apply
+        :return: True if policy matches parameter filters, False otherwise
+        """
         for rule in policy.get('rules', []):
             rule_params = rule.get('params', {})
 
@@ -308,7 +348,12 @@ class LifecycleRule(Filter):
         return False
 
     def match_tag_selector(self, policy, tag_selector):
-        """Check if policy tag selector matches the filter."""
+        """Check if policy tag selector matches the filter.
+        
+        :param policy: Lifecycle policy to check
+        :param tag_selector: Tag selector criteria
+        :return: True if policy matches tag selector, False otherwise
+        """
         for rule in policy.get('rules', []):
             for selector in rule.get('tag_selectors', []):
                 match = True
@@ -329,6 +374,10 @@ class LifecycleRule(Filter):
 class SwrImage(QueryResourceManager):
     """Huawei Cloud SWR Image Resource Manager.
 
+    This class is responsible for discovering, filtering, and managing SWR image resources
+    on HuaweiCloud. It implements a two-level query approach, first retrieving all SWR repositories,
+    then querying images for each repository.
+
     :example:
 
     .. code-block:: yaml
@@ -343,34 +392,19 @@ class SwrImage(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = 'swr'
+        """Define SWR Image resource metadata and type information"""
+        service = 'swr'  # Specify corresponding HuaweiCloud service name
+        # Specify API operation, result list key, and pagination parameter(s) for enumerating resources
+        # 'list_repository_tags' is the API method name
+        # 'body' is the field name in the response containing the tag list
+        # 'offset' is the parameter name for pagination
         enum_spec = ('list_repository_tags', 'body', 'offset')
-        id = 'id'
+        id = 'id'  # Specify resource unique identifier field name
         name = 'tag'  # Tag field corresponds to image version name
-        filter_name = 'tag'
-        filter_type = 'scalar'
+        filter_name = 'tag'  # Field name for filtering by tag
+        filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
         taggable = False  # SWR images don't support tagging
         date = 'created'  # Creation time field
-
-    def augment(self, resources):
-        """Enhance resource information."""
-        result = []
-        for resource in resources:
-            try:
-                # Build complete ID
-                if 'namespace' in resource and 'repository' in resource:
-                    tag_val = resource.get('Tag')
-                    if tag_val:
-                        # Use Tag value to build ID
-                        resource['id'] = (f"{resource['namespace']}/"
-                                          f"{resource['repository']}/{tag_val}")
-
-                result.append(resource)
-            except Exception as e:
-                self.log.warning(
-                    f"Failed to enhance resource information: {e}")
-
-        return result
 
     def _fetch_resources(self, query):
         """Fetch all SWR images by first getting repositories then images.
@@ -378,6 +412,9 @@ class SwrImage(QueryResourceManager):
         This method overrides parent's _fetch_resources to implement the two-level query:
         1. Query all SWR repositories
         2. For each repository, query its images
+        
+        :param query: Query parameters (not used in this implementation)
+        :return: List of all SWR images
         """
         all_images = []
         
@@ -414,6 +451,11 @@ class SwrImage(QueryResourceManager):
         """Get all image tags for a repository with pagination.
         
         This uses the offset pagination mechanism that matches the SWR API.
+        
+        :param client: HuaweiCloud SWR client
+        :param namespace: Repository namespace
+        :param repository: Repository name
+        :return: List of image tags
         """
         tags = []
         offset = 0
@@ -587,7 +629,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
     permissions = ('swr:*:*:*',)  # SWR related permissions
 
     def process(self, resources):
-        """Process resources list, create lifecycle rules for each repository."""
+        """Process resources list, create lifecycle rules for each repository.
+        
+        :param resources: List of resources to process
+        :return: Processed resources
+        """
         # Validate rule configuration
         if 'rules' not in self.data or not self.data['rules']:
             self.log.error("Missing required lifecycle rule configuration")
@@ -597,7 +643,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
         return super(SetLifecycle, self).process(resources)
 
     def perform_action(self, resource):
-        """Implement abstract method, perform action for a single resource."""
+        """Implement abstract method, perform action for a single resource.
+        
+        :param resource: Single resource to process
+        :return: Updated resource with action results
+        """
         client = self.manager.get_client()
 
         # Get repository information
