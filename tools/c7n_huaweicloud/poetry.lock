@@ -199,6 +199,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.147"
 
 [[package]]
+name = "huaweicloudsdkaom"
+version = "3.1.147"
+description = "AOM"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkaom-3.1.147-py2.py3-none-any.whl", hash = "sha256:d12e7b85705f2581c12b3c4b9bacdff7c48fff5794d488ba4af04b9a01dfb9a0"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.147"
+
+[[package]]
 name = "huaweicloudsdkbms"
 version = "3.1.147"
 description = "BMS"
@@ -1237,4 +1250,5 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "fe7e960efbf7ffa07707da468bd2355534303cca42a5cbabb0f9bbe6ed75b82e"
+
+content-hash = "5e90a1f65035c0908b11f8eb7cc40ff2eae8e61e95215b46a3d178aa56c3ba69"

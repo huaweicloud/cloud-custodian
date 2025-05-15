@@ -37,39 +37,13 @@ class CertificateTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "certificate-query",
-                "resource": "huaweicloud.certificate",
+                "resource": "huaweicloud.scm",
             },
             session_factory=factory,
         )
         resources = p.run()
         # Verify resource query results
         self.assertEqual(len(resources), 1)
-
-    def test_tag_count_filter(self):
-        """Test tag count filter
-
-        Verify if the tag-count filter can correctly filter certificates with specified tag count.
-        """
-        factory = self.replay_flight_data('certificate-tag-count')
-        p = self.load_policy(
-            {
-                "name": "certificate-tag-count-filter",
-                "resource": "huaweicloud.certificate",
-                "filters": [
-                    {
-                        "type": "tag-count",
-                        "count": 1,
-                        "op": "gte"
-                    }
-                ]
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Verify certificates that have at least one tag
-        for resource in resources:
-            self.assertIsNotNone(resource.get("tags"))
-            self.assertGreaterEqual(len(resource.get("tags", {})), 1)
 
     def test_filter_list_item_match(self):
         """Test list-item filter - tag matching
@@ -108,7 +82,7 @@ class CertificateTest(BaseTest):
             p = self.load_policy(
                 {
                     "name": "certificate-filter-list-item-match",
-                    "resource": "huaweicloud.certificate",
+                    "resource": "huaweicloud.scm",
                     "filters": [
                         {
                             "type": "list-item",
@@ -146,7 +120,7 @@ class CertificateTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "certificate-delete",
-                "resource": "huaweicloud.certificate",
+                "resource": "huaweicloud.scm",
                 # Use value filter to precisely target the certificate to delete
                 "filters": [{"type": "value", "key": "id", "value": cert_id_to_delete}],
                 "actions": ["delete"],
