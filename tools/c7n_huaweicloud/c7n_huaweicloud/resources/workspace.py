@@ -87,7 +87,7 @@ class ConnectionStatusFilter(Filter):
     
         policies:
           - name: find-unregister-desktops
-            resource: huaweicloud.workspaces
+            resource: huaweicloud.workspace-desktop
             filters:
               - type: connection-status
                 op: eq
@@ -128,52 +128,52 @@ class ConnectionStatusFilter(Filter):
         return results
 
 
-@Workspace.action_registry.register('terminate')
-class TerminateWorkspace(HuaweiCloudBaseAction):
-    """Terminate cloud desktops
-    
-    This action uses DeleteDesktop or BatchDeleteDesktops API to terminate one or more cloud desktop instances.
-    
+@Workspace.action_registry.register('delete')
+class DeleteWorkspace(HuaweiCloudBaseAction):
+    """Delete cloud desktops
+
+    This action uses DeleteDesktop or BatchDeleteDesktops API to delete one or more cloud desktop instances.
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
-          - name: terminate-inactive-workspaces
-            resource: huaweicloud.workspaces
+          - name: delete-inactive-workspaces
+            resource: huaweicloud.workspace-desktop
             filters:
               - type: connection-status
                 op: eq
                 value: UNREGISTER
             actions:
-              - terminate
+              - delete
     """
-    
-    schema = type_schema('terminate')
-    
+
+    schema = type_schema('delete')
+
     def process(self, resources):
         """Process resources in batch
-        
+
         :param resources: List of resources to process
         :return: Operation results
         """
         if not resources:
             return []      
 
-        return self.batch_terminate(resources)
-    
-    def batch_terminate(self, resources):
-        """Terminate cloud desktops in batch
-        
+        return self.batch_delete(resources)
+
+    def batch_delete(self, resources):
+        """Delete cloud desktops in batch
+
         :param resources: List of resources
         :return: Operation results
         """
         session = local_session(self.manager.session_factory)
         client = session.client('workspace')
-        
+
         # Extract desktop IDs
         desktop_ids = [r['id'] for r in resources]
-        
+
         # Process up to 100 at a time
         results = []
         for i in range(0, len(desktop_ids), 100):
@@ -185,10 +185,10 @@ class TerminateWorkspace(HuaweiCloudBaseAction):
                 results.append(response.to_dict())
                 self.log.info(f"Successfully submitted termination request for {len(batch)} desktops")
             except Exception as e:
-                self.log.error(f"Failed to terminate desktops: {e}")
-        
+                self.log.error(f"Failed to delete desktops: {e}")
+
         return results
-    
+
     def perform_action(self, resource):
         return super().perform_action(resource)
 
@@ -199,36 +199,36 @@ Here are some common Huawei Cloud Workspace policy examples:
 1. Mark Inactive Desktops Policy:
 ```yaml
 policies:
-  - name: terminate-inactive-workspaces
-    resource: huaweicloud.workspaces
+  - name: delete-inactive-workspaces
+    resource: huaweicloud.workspace-desktop
     filters:
       - type: connection-status
         op: eq
         value: UNREGISTER
     actions:
-      - terminate
+      - delete
 ```
 
-2. Terminate Marked Inactive Desktops Policy:
+2. Delete Marked Inactive Desktops Policy:
 ```yaml
 policies:
-  - name: terminate-marked-workspaces
-    resource: huaweicloud.workspaces
+  - name: delete-marked-workspaces
+    resource: huaweicloud.workspace-desktop
     description: |
-      Terminate desktops marked for cleanup
+      Delete desktops marked for cleanup
     filters:
       - type: marked-for-op
-        op: terminate
+        op: delete
         tag: custodian_cleanup
     actions:
-      - terminate
+      - delete
 ```
 
 3. Tag Untagged Desktops:
 ```yaml
 policies:
   - name: tag-untagged-workspaces
-    resource: huaweicloud.workspaces
+    resource: huaweicloud.workspace-desktop
     description: |
       Add Owner tag to desktops missing it
     filters:
@@ -243,7 +243,7 @@ policies:
 ```yaml
 policies:
   - name: tag-workspace-creator
-    resource: huaweicloud.workspaces
+    resource: huaweicloud.workspace-desktop
     description: |
       Listen for desktop creation events and auto-tag creator
     mode:
@@ -261,7 +261,7 @@ policies:
 ```yaml
 policies:
   - name: find-noncompliant-workspaces
-    resource: huaweicloud.workspaces
+    resource: huaweicloud.workspace-desktop
     description: |
       Find desktops that don't comply with security rules
     filters:

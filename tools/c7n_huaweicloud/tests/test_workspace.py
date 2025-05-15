@@ -86,34 +86,34 @@ class WorkspaceTest(BaseTest):
     # =========================
     # Action Tests
     # =========================
-    def test_terminate_action(self):
-        """Test terminate action"""
-        factory = self.replay_flight_data('workspace_terminate')
+    def test_delete_action(self):
+        """Test delete action"""
+        factory = self.replay_flight_data('workspace_delete')
         p = self.load_policy({
-            'name': 'workspace-terminate-test',
+            'name': 'workspace-delete-test',
             'resource': 'huaweicloud.workspace-desktop',
             'filters': [{
                 'type': 'connection-status',
                 'op': 'eq',
                 'value': 'UNREGISTER'
             }],
-            'actions': ['terminate']},
+            'actions': ['delete']},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
-    def test_terminate_batch_action(self):
-        """Test batch terminate action"""
-        factory = self.replay_flight_data('workspace_terminate_batch')
+    def test_delete_batch_action(self):
+        """Test batch delete action"""
+        factory = self.replay_flight_data('workspace_delete_batch')
         p = self.load_policy({
-            'name': 'workspace-terminate-batch-test',
+            'name': 'workspace-delete-batch-test',
             'resource': 'huaweicloud.workspace-desktop',
             'filters': [{
                 'type': 'connection-status',
                 'op': 'eq',
                 'value': 'UNREGISTER'
             }],
-            'actions': ['terminate']},
+            'actions': ['delete']},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 2)  # Testing batch termination of 2 desktops
