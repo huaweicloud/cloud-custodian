@@ -48,7 +48,7 @@ class Swr(QueryResourceManager):
 
     class resource_type(TypeInfo):
         service = 'swr'
-        enum_spec = ('list_repos_details', 'body', None)
+        enum_spec = ('list_repos_details', 'body', 'offset')
         id = 'name'
         name = 'name'
         filter_name = 'name'
@@ -344,7 +344,7 @@ class SwrImage(QueryResourceManager):
 
     class resource_type(TypeInfo):
         service = 'swr'
-        enum_spec = ('list_repository_tags', 'body', None)
+        enum_spec = ('list_repository_tags', 'body', 'offset')
         id = 'id'
         name = 'Tag'  # Tag field corresponds to image version name
         filter_name = 'Tag'
@@ -357,12 +357,6 @@ class SwrImage(QueryResourceManager):
         result = []
         for resource in resources:
             try:
-                # Ensure Tag field exists and provide compatibility for lowercase tag field
-                if 'Tag' in resource and 'tag' not in resource:
-                    resource['tag'] = resource['Tag']
-                elif 'tag' in resource and 'Tag' not in resource:
-                    resource['Tag'] = resource['tag']
-
                 # Build complete ID
                 if 'namespace' in resource and 'repository' in resource:
                     tag_val = resource.get('Tag') or resource.get('tag')
@@ -421,93 +415,111 @@ class SwrImage(QueryResourceManager):
         return self.augment(resources)
 
     def resources(self, query=None):
-        """Get resource list by querying all repositories first."""
-        resources = []
-        client = self.get_client()
-
-        # First get all repository list
+        """Get resource list by querying all repositories first.
+        
+        This method overrides the parent class to implement the two-level query:
+        1. Query all SWR repositories
+        2. For each repository, query its images
+        
+        We try to leverage query.py's pagination mechanisms where possible.
+        """
+        all_images = []
+        
+        # First get all SWR repositories
         try:
-            # Query SWR repository list
-            repos_request = ListReposDetailsRequest()
-            repos_response = client.list_repos_details(repos_request)
-
-            if repos_response.body:
-                for repo in repos_response.body:
-                    repo_dict = repo
-                    if hasattr(repo, 'to_dict'):
-                        repo_dict = repo.to_dict()
-                    else:
-                        repo_dict = repo
-
-                    # Get repository's namespace and name
-                    namespace = repo_dict.get('namespace')
-                    repository = repo_dict.get('name')
-
-                    if namespace and repository:
-                        # Get all image tags for this repository
-                        repo_tags = self._get_repository_tags(
-                            client, namespace, repository)
-                        resources.extend(repo_tags)
+            # Use SWR resource manager to get all repositories with pagination handled
+            from c7n_huaweicloud.provider import resources as huaweicloud_resources
+            swr_manager = huaweicloud_resources.get('swr')(self.ctx, {})
+            repositories = swr_manager.resources()
+            
+            client = self.get_client()
+            
+            # For each repository, get its images
+            for repo in repositories:
+                namespace = repo.get('namespace')
+                repository = repo.get('name')
+                
+                if not namespace or not repository:
+                    continue
+                
+                # Get all images for this repository
+                images = self._get_repository_tags_paginated(client, namespace, repository)
+                all_images.extend(images)
+                
         except Exception as e:
-            self.log.error(
-                f"Failed to query SWR repository list: {e}")
+            self.log.error(f"Failed to fetch SWR images: {e}")
+        
+        # Apply resource filtering from the parent class
+        resource_count = len(all_images)
+        filtered_resources = self.filter_resources(all_images)
+        
+        # Check resource limits if applicable
+        if self.data == self.ctx.policy.data:
+            self.check_resource_limit(len(filtered_resources), resource_count)
+            
+        # Return augmented resources
+        return self.augment(filtered_resources)
 
-        with self.ctx.tracer.subsegment('filter'):
-            resources = self.filter_resources(resources)
-
-        return self.augment(resources)
-
-    def _get_repository_tags(self, client, namespace, repository):
-        """Get all image tags for the specified repository.
-
-        Fetches tag information for a SWR repository.
+    def _get_repository_tags_paginated(self, client, namespace, repository):
+        """Get all image tags for a repository with pagination.
+        
+        This uses the offset pagination mechanism that matches the SWR API.
         """
         tags = []
+        offset = 0
+        limit = 100  # Default page size
+        
         try:
-            # Build request parameters
-            request_kwargs = {
-                'namespace': namespace,
-                'repository': repository
-            }
-
-            # Create and send request
-            request = ListRepositoryTagsRequest(**request_kwargs)
-            response = client.list_repository_tags(request)
-
-            # Process response
-            if response.body:
+            while True:
+                # Build request with pagination parameters
+                request = ListRepositoryTagsRequest(
+                    namespace=namespace,
+                    repository=repository,
+                    limit=limit,
+                    offset=offset
+                )
+                
+                # Execute request
+                response = client.list_repository_tags(request)
+                
+                # Break if no results
+                if not response.body or len(response.body) == 0:
+                    break
+                
+                # Process results
+                batch = []
                 for image in response.body:
-                    image_dict = {}
                     if hasattr(image, 'to_dict'):
                         image_dict = image.to_dict()
                     else:
                         image_dict = image
-
-                    # Ensure image tag has namespace and repository information
+                        
+                    # Add repository context
                     image_dict['namespace'] = namespace
                     image_dict['repository'] = repository
-
-                    # Process Tag field - ensure Tag field exists
-                    # HuaweiCloud API returns Tag field in uppercase
+                    
+                    # Normalize tag field
                     if 'Tag' in image_dict and not image_dict.get('tag'):
                         image_dict['tag'] = image_dict['Tag']
                     elif 'tag' in image_dict and not image_dict.get('Tag'):
                         image_dict['Tag'] = image_dict['tag']
-                    elif 'Tag' not in image_dict and 'tag' not in image_dict:
-                        # If no Tag field, but path field exists, try to extract from path
-                        if 'path' in image_dict and ':' in image_dict['path']:
-                            tag_value = image_dict['path'].split(':')[-1]
-                            # Set both uppercase and lowercase tag fields
-                            image_dict['Tag'] = tag_value
-                            image_dict['tag'] = tag_value
-
-                    tags.append(image_dict)
-
+                    
+                    batch.append(image_dict)
+                
+                # Add batch to results
+                tags.extend(batch)
+                
+                # Check if we need to fetch more
+                if len(batch) < limit:
+                    break
+                    
+                # Move to next page
+                offset += limit
+                
         except Exception as e:
             self.log.error(
-                f"Failed to query repository "
-                f"{namespace}/{repository} tags: {e}")
-
+                f"Failed to get tags for repository {namespace}/{repository}: {e}")
+            
         return tags
 
 
