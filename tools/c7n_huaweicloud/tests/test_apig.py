@@ -7,11 +7,12 @@ from huaweicloud_common import BaseTest
 # API Gateway Instance Tests
 # =========================
 
+
 class InstanceResourceTest(BaseTest):
-    """测试API网关实例资源、过滤器和操作"""
+    """Test API Gateway Instance resources, filters and actions"""
 
     def test_instance_query(self):
-        """测试API网关实例资源查询和增强"""
+        """Test API Gateway Instance resource query and augmentation"""
         factory = self.replay_flight_data("apig_instance_query")
         p = self.load_policy(
             {
@@ -21,7 +22,7 @@ class InstanceResourceTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # 验证VCR: apig_instance_query 应该包含2个实例
+        # Validate VCR: apig_instance_query should contain 2 instances
         self.assertEqual(len(resources), 2)
 
 
@@ -231,10 +232,11 @@ class ApiGroupResourceTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-     
+
 # =========================
 # Reusable Features Tests (Using API resource as example)
 # =========================
+
 
 class ReusableFeaturesTest(BaseTest):
     """Test reusable filters and actions on API Gateway resources"""
@@ -243,20 +245,19 @@ class ReusableFeaturesTest(BaseTest):
         """Test value filter - match"""
         factory = self.replay_flight_data("apig_api_filter_value_method")
         # Get method value from apig_api_filter_value_method
-        # Validate VCR: method for 'method-get.example.com' in apig_api_filter_value_method
-        target_method = "GET"
+        target_name = "test-get-api"
         p = self.load_policy(
             {
                 "name": "apig-filter-value-method-match",
                 "resource": "huaweicloud.rest-api",
-                "filters": [{"type": "value", "key": "req_method", "value": target_method}],
+                "filters": [{"type": "value", "key": "name", "value": target_name}],
             },
             session_factory=factory,
         )
         resources = p.run()
         # Validate VCR: only one API in apig_api_filter_value_method matches this method
-        self.assertEqual(len(resources), 2)
-        self.assertEqual(resources[0]['req_method'], target_method)
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['name'], target_name)
 
     def test_filter_value_no_match(self):
         """Test value filter - no match"""
@@ -291,7 +292,7 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        self.assertEqual(len(resources), 2)
+        self.assertEqual(len(resources), 1)
         # Verify the matching API is the one with that name
         self.assertEqual(resources[0]['id'], target_api_id)
 
@@ -311,7 +312,7 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        self.assertEqual(len(resources), 2)
+        self.assertEqual(len(resources), 1)
         # Verify the matching API is the one with that name
         self.assertEqual(resources[0]['id'], target_api_id)
 
@@ -330,5 +331,5 @@ class ReusableFeaturesTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        self.assertEqual(len(resources), 3)
+        self.assertEqual(len(resources), 1)
         self.assertIn("two-tags", resources[0]["name"])

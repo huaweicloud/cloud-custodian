@@ -62,57 +62,64 @@ class InstanceResource(QueryResourceManager):
         filter_type = 'scalar'
         taggable = True
         tag_resource_type = 'apig'
-        
+
     def process_resources(self, resources):
-        """处理资源数据，确保project_id等字段存在"""
+        """Process resource data, ensure fields like project_id exist"""
         processed_resources = []
         
         for resource in resources:
             resource_dict = {}
             
-            # 优先从原始属性中提取数据
+            # Extract data from original attributes first
             if hasattr(resource, '__dict__') and hasattr(resource, '_field_names'):
-                # 处理SDK对象模式
+                # Process SDK object mode
                 for field in resource._field_names:
                     if hasattr(resource, field):
                         value = getattr(resource, field)
-                        # 确保值是可序列化的基本类型
+                        # Ensure values are serializable basic types
                         if isinstance(value, (str, int, float, bool, type(None))) or (
                             isinstance(value, (list, dict)) and not any(
                                 hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
                         ):
                             resource_dict[field] = value
             else:
-                # 处理字典模式
+                # Process dictionary mode
                 for key, value in resource.items() if isinstance(resource, dict) else []:
-                    # 确保值是可序列化的基本类型
+                    # Ensure values are serializable basic types
                     if isinstance(value, (str, int, float, bool, type(None))) or (
                         isinstance(value, (list, dict)) and not any(
                             hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
                     ):
                         resource_dict[key] = value
             
-            # 确保基本字段存在
-            resource_dict['id'] = getattr(resource, 'id', resource.get('id', ''))
-            resource_dict['instance_name'] = getattr(resource, 'instance_name', resource.get('instance_name', ''))
+            # Ensure basic fields exist
+            resource_dict['id'] = getattr(
+                resource, 'id', resource.get('id', ''))
+            resource_dict['instance_name'] = getattr(
+                resource, 'instance_name', resource.get('instance_name', ''))
             
-            # 添加其他重要字段
+            # Add other important fields
             if hasattr(resource, 'project_id') or (isinstance(resource, dict) and 'project_id' in resource):
-                resource_dict['project_id'] = getattr(resource, 'project_id', resource.get('project_id', ''))
+                resource_dict['project_id'] = getattr(
+                    resource, 'project_id', resource.get('project_id', ''))
             if hasattr(resource, 'type') or (isinstance(resource, dict) and 'type' in resource):
-                resource_dict['type'] = getattr(resource, 'type', resource.get('type', ''))
+                resource_dict['type'] = getattr(
+                    resource, 'type', resource.get('type', ''))
             if hasattr(resource, 'status') or (isinstance(resource, dict) and 'status' in resource):
-                resource_dict['status'] = getattr(resource, 'status', resource.get('status', ''))
+                resource_dict['status'] = getattr(
+                    resource, 'status', resource.get('status', ''))
             if hasattr(resource, 'spec') or (isinstance(resource, dict) and 'spec' in resource):
-                resource_dict['spec'] = getattr(resource, 'spec', resource.get('spec', ''))
+                resource_dict['spec'] = getattr(
+                    resource, 'spec', resource.get('spec', ''))
             if hasattr(resource, 'create_time') or (isinstance(resource, dict) and 'create_time' in resource):
-                resource_dict['create_time'] = getattr(resource, 'create_time', resource.get('create_time', ''))
+                resource_dict['create_time'] = getattr(
+                    resource, 'create_time', resource.get('create_time', ''))
                 
-            # 添加已处理的资源
+            # Add processed resource
             processed_resources.append(resource_dict)
                 
         return processed_resources
-        
+
     def augment(self, resources):
         """增强资源信息"""
         # 确保所有资源都可以被正确序列化
@@ -148,108 +155,105 @@ class ApiResource(QueryResourceManager):
         tag_resource_type = 'apig'
 
     def get_instance_id(self):
-        """查询并获取API网关实例ID
+        """Query and get API Gateway instance ID
         
-        通过查询apig-instance接口获取可用的实例ID，优先使用运行中的实例
-        如果未找到可用实例，则返回默认实例ID
+        Get available instance ID by querying apig-instance API, prioritizing running instances
+        If no available instance is found, return default instance ID
         """
         session = local_session(self.session_factory)
         
-        # 如果策略中已指定instance_id，则直接使用
+        # If instance_id is specified in the policy, use it directly
         if hasattr(self, 'data') and isinstance(self.data, dict) and 'instance_id' in self.data:
             instance_id = self.data['instance_id']
-            log.info(f"使用策略配置中的instance_id: {instance_id}")
+            log.info(f"Using instance_id from policy configuration: {instance_id}")
             return instance_id
             
-        # 查询APIG实例列表
+        # Query APIG instance list
         try:
-            # 使用apig-instance服务客户端
+            # Use apig-instance service client
             client = session.client('apig-instance')
             instances_request = ListInstancesV2Request()
             response = client.list_instances_v2(instances_request)
             
             if hasattr(response, 'instances') and response.instances:
-                # 使用第一个运行中的实例
+                # Use the first running instance
                 for instance in response.instances:
                     if instance.status == 'Running':
                         instance_id = instance.id
-                        log.info(f"使用查询到的第一个运行中实例ID: {instance_id}")
+                        log.info(f"Using first running instance ID: {instance_id}")
                         return instance_id
                 
-                # 如果没有找到运行中的实例，使用第一个实例
+                # If no running instance is found, use the first instance
                 if response.instances:
                     instance_id = response.instances[0].id
-                    log.info(f"未找到运行中实例，使用第一个可用实例ID: {instance_id}")
+                    log.info(f"No running instance found, using first available instance ID: {instance_id}")
                     return instance_id
         except Exception as e:
-            log.error(f"查询APIG实例列表失败: {str(e)}", exc_info=True)
+            log.error(f"Failed to query APIG instance list: {str(e)}", exc_info=True)
         
-        # 如果仍然没有获取到，使用默认实例ID
+        # If still no instance ID is obtained, use default instance ID
         instance_id = session.get_apig_instance_id()
-        log.info(f"未找到可用实例，使用配置的默认实例ID: {instance_id}")
+        log.info(f"No available instance found, using default instance ID from configuration: {instance_id}")
         return instance_id
-    
-    def resources(self):
-        """重写资源获取方法，确保正确设置instance_id"""
+
+    def _fetch_resources(self, query):
+        """Override resource retrieval method to ensure instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
-        client = session.client('apig')
+        client = session.client(self.resource_type.service)
         
-        # 获取实例ID
+        # Get instance ID
         instance_id = self.get_instance_id()
         
-        # 修改：确保instance_id被正确设置
+        # Ensure instance_id is properly set
         if not instance_id:
-            log.error("无法获取有效的APIG实例ID，无法继续查询API列表")
+            log.error("Unable to get valid APIG instance ID, cannot continue querying API list")
             return []
-            
-        log.debug(f"使用实例ID {instance_id} 查询API列表")
         
-        # 创建请求对象
+        # Create new request object instead of modifying the incoming query
+        request = ListApisV2Request()
+        request.instance_id = str(instance_id)
+        request.limit = 100
+        
+        # Call client method to process request
         try:
-            request = ListApisV2Request()
-            # 关键修复：设置instance_id
-            request.instance_id = str(instance_id)
-            request.limit = 100
-            
-            # 直接调用API
             response = client.list_apis_v2(request)
-            
-            # 处理响应
             resources = []
+            
             if hasattr(response, 'apis'):
                 for api in response.apis:
                     api_dict = {}
-                    # 提取API属性，只获取基本数据类型的属性进行序列化
+                    # Extract API attributes, only get basic data type attributes for serialization
                     for attr in dir(api):
                         if (not attr.startswith('_') and not callable(getattr(api, attr))
                             and attr not in ['auth_opt', 'vpc_status', 'auth_opt_status']):
                             value = getattr(api, attr)
-                            # 确保值是可序列化的基本类型
+                            # Ensure values are serializable basic types
                             if isinstance(value, (str, int, float, bool, type(None))) or (
                                 isinstance(value, (list, dict)) and not any(
                                     hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
                             ):
                                 api_dict[attr] = value
                     
-                    # 添加必要的字段
+                    # Add required fields
                     api_dict['id'] = api.id
                     api_dict['instance_id'] = instance_id
                     api_dict['tag_resource_type'] = self.resource_type.tag_resource_type
                     
                     resources.append(api_dict)
             
-            log.info(f"成功从实例 {instance_id} 获取 {len(resources)} 个API资源")
             return resources
         except exceptions.ClientRequestException as e:
-            log.error(f"查询API列表失败: {str(e)}", exc_info=True)
+            log.error(f"Failed to query API list: {str(e)}", exc_info=True)
             return []
-        
+
     def augment(self, resources):
-        """增强资源信息，添加instance_id字段"""
-        # 由于已经在resources方法中处理了资源增强，所以这里直接返回
+        """增强资源信息"""
+        # 直接返回已处理的资源
         return resources
 
 # API Resource Actions
+
+
 @ApiResource.action_registry.register('delete')
 class DeleteApiAction(HuaweiCloudBaseAction):
     """Delete API action
@@ -276,36 +280,36 @@ class DeleteApiAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            # 当资源中不含instance_id，使用manager获取
+            # When instance_id is not in the resource, use manager to get it
             if hasattr(self.manager, 'get_instance_id'):
                 instance_id = self.manager.get_instance_id()
             else:
-                # 如果没有get_instance_id方法，使用默认实例ID
+                # If there's no get_instance_id method, use default instance ID
                 session = local_session(self.manager.session_factory)
                 instance_id = session.get_apig_instance_id()
-                log.info(f"未找到可用实例，使用配置的默认实例ID: {instance_id}")
+                log.info(f"No available instance found, using default instance ID from configuration: {instance_id}")
 
         try:
-            # 添加更多调试信息
-            self.log.debug(f"删除API {api_id} (所属实例: {instance_id})")
+            # Add more debug information
+            self.log.debug(f"Deleting API {api_id} (Instance: {instance_id})")
             
             from huaweicloudsdkapig.v2 import DeleteApiV2Request
             
-            # 确保instance_id是字符串类型
+            # Ensure instance_id is string type
             request = DeleteApiV2Request(
                 instance_id=str(instance_id),
                 api_id=api_id
             )
             
-            # 打印请求对象
-            self.log.debug(f"请求对象: {request}")
+            # Print request object
+            self.log.debug(f"Request object: {request}")
             
             client.delete_api_v2(request)
             self.log.info(
-                f"成功删除API: {resource.get('name')} (ID: {api_id})")
+                f"Successfully deleted API: {resource.get('name')} (ID: {api_id})")
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"删除API失败 {resource.get('name')} (ID: {api_id}): {e}", exc_info=True)
+                f"Failed to delete API {resource.get('name')} (ID: {api_id}): {e}", exc_info=True)
             raise
 
 
@@ -352,7 +356,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         auth_type={'type': 'string', 'enum': [
             'NONE', 'APP', 'IAM', 'AUTHORIZER']},
         backend_type={'type': 'string', 'enum': ['HTTP', 'FUNCTION', 'MOCK']},
-        group_id={'type':'string'},
+        group_id={'type': 'string'},
     )
 
     def _build_update_body(self, resource):
@@ -378,13 +382,13 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         # Update with new values from policy parameters
         field_mappings = {
             'name': 'name',
-            'api_type': 'type',  # 使用api_type映射到type
+            'api_type': 'type',  # Map api_type to type
             'req_protocol': 'req_protocol',
             'req_method': 'req_method',
             'req_uri': 'req_uri',
             'auth_type': 'auth_type',
             'backend_type': 'backend_type',
-            'group_id':'group_id'
+            'group_id': 'group_id'
         }
 
         for policy_field, api_field in field_mappings.items():
@@ -411,50 +415,52 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            # 当资源中不含instance_id，使用manager获取
+            # When instance_id is not in the resource, use manager to get it
             if hasattr(self.manager, 'get_instance_id'):
                 instance_id = self.manager.get_instance_id()
             else:
-                # 如果没有get_instance_id方法，使用默认实例ID
+                # If there's no get_instance_id method, use default instance ID
                 session = local_session(self.manager.session_factory)
                 instance_id = session.get_apig_instance_id()
-                log.info(f"未找到可用实例，使用配置的默认实例ID: {instance_id}")
+                log.info(f"No available instance found, using default instance ID from configuration: {instance_id}")
 
         try:
-            # 添加更多调试信息
-            self.log.debug(f"更新API {api_id} (所属实例: {instance_id})")
+            # Add more debug information
+            self.log.debug(f"Updating API {api_id} (Instance: {instance_id})")
             
             from huaweicloudsdkapig.v2 import UpdateApiV2Request
             
-            # 首先构建需要更新的参数
+            # First build the parameters to update
             update_body = self._build_update_body(resource)
 
             if not update_body:
                 self.log.warning(
-                    f"未提供更新参数，跳过API更新 {resource.get('name')} (ID: {api_id})")
+                    f"No update parameters provided, skipping API update {resource.get('name')} (ID: {api_id})")
                 return
 
-            # 创建更新请求，确保instance_id是字符串类型
+            # Create update request, ensure instance_id is string type
             request = UpdateApiV2Request(
                 instance_id=str(instance_id),
                 api_id=api_id,
                 body=update_body
             )
             
-            # 打印请求对象
-            self.log.debug(f"请求对象: {request}")
+            # Print request object
+            self.log.debug(f"Request object: {request}")
 
-            # 发送请求
+            # Send request
             response = client.update_api_v2(request)
             self.log.info(
-                f"成功更新API: {resource.get('name')} (ID: {api_id})")
+                f"Successfully updated API: {resource.get('name')} (ID: {api_id})")
             return response
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"更新API失败 {resource.get('name')} (ID: {api_id}): {e}", exc_info=True)
+                f"Failed to update API {resource.get('name')} (ID: {api_id}): {e}", exc_info=True)
             raise
 
 # Environment Resource Management
+
+
 @resources.register('rest-stage')
 class StageResource(QueryResourceManager):
     """Huawei Cloud API Gateway Environment Resource Management
@@ -483,107 +489,104 @@ class StageResource(QueryResourceManager):
         tag_resource_type = 'apig'
 
     def get_instance_id(self):
-        """查询并获取API网关实例ID
+        """Query and get API Gateway instance ID
         
-        通过查询apig-instance接口获取可用的实例ID，优先使用运行中的实例
-        如果未找到可用实例，则返回默认实例ID
+        Get available instance ID by querying apig-instance API, prioritizing running instances
+        If no available instance is found, return default instance ID
         """
         session = local_session(self.session_factory)
         
-        # 如果策略中已指定instance_id，则直接使用
+        # If instance_id is specified in the policy, use it directly
         if hasattr(self, 'data') and isinstance(self.data, dict) and 'instance_id' in self.data:
             instance_id = self.data['instance_id']
-            log.info(f"使用策略配置中的instance_id: {instance_id}")
+            log.info(f"Using instance_id from policy configuration: {instance_id}")
             return instance_id
             
-        # 查询APIG实例列表
+        # Query APIG instance list
         try:
-            # 使用apig-instance服务客户端
+            # Use apig-instance service client
             client = session.client('apig-instance')
             instances_request = ListInstancesV2Request()
             response = client.list_instances_v2(instances_request)
             
             if hasattr(response, 'instances') and response.instances:
-                # 使用第一个运行中的实例
+                # Use the first running instance
                 for instance in response.instances:
                     if instance.status == 'Running':
                         instance_id = instance.id
-                        log.info(f"使用查询到的第一个运行中实例ID: {instance_id}")
+                        log.info(f"Using first running instance ID: {instance_id}")
                         return instance_id
                 
-                # 如果没有找到运行中的实例，使用第一个实例
+                # If no running instance is found, use the first instance
                 if response.instances:
                     instance_id = response.instances[0].id
-                    log.info(f"未找到运行中实例，使用第一个可用实例ID: {instance_id}")
+                    log.info(f"No running instance found, using first available instance ID: {instance_id}")
                     return instance_id
         except Exception as e:
-            log.error(f"查询APIG实例列表失败: {str(e)}", exc_info=True)
+            log.error(f"Failed to query APIG instance list: {str(e)}", exc_info=True)
         
-        # 如果仍然没有获取到，使用默认实例ID
+        # If still no instance ID is obtained, use default instance ID
         instance_id = session.get_apig_instance_id()
-        log.info(f"未找到可用实例，使用配置的默认实例ID: {instance_id}")
+        log.info(f"No available instance found, using default instance ID from configuration: {instance_id}")
         return instance_id
-    
-    def resources(self):
-        """重写资源获取方法，确保正确设置instance_id"""
+
+    def _fetch_resources(self, query):
+        """Override resource retrieval method to ensure instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
-        client = session.client('apig')
+        client = session.client(self.resource_type.service)
         
-        # 获取实例ID
+        # Get instance ID
         instance_id = self.get_instance_id()
         
-        # 修改：确保instance_id被正确设置
+        # Ensure instance_id is properly set
         if not instance_id:
-            log.error("无法获取有效的APIG实例ID，无法继续查询环境列表")
+            log.error("Unable to get valid APIG instance ID, cannot continue querying environment list")
             return []
-            
-        log.debug(f"使用实例ID {instance_id} 查询环境列表")
         
-        # 创建请求对象
+        # Create new request object instead of modifying the incoming query
+        request = ListEnvironmentsV2Request()
+        request.instance_id = str(instance_id)
+        request.limit = 100
+        
+        # Call client method to process request
         try:
-            request = ListEnvironmentsV2Request()
-            # 关键修复：设置instance_id
-            request.instance_id = str(instance_id)
-            request.limit = 100
-            
-            # 直接调用API
             response = client.list_environments_v2(request)
-            
-            # 处理响应
             resources = []
+            
             if hasattr(response, 'envs'):
                 for env in response.envs:
                     env_dict = {}
-                    # 提取环境属性，只获取基本数据类型的属性
+                    # Extract environment attributes, only get basic data type attributes
                     for attr in dir(env):
                         if not attr.startswith('_') and not callable(getattr(env, attr)):
                             value = getattr(env, attr)
-                            # 确保值是可序列化的基本类型
+                            # Ensure values are serializable basic types
                             if isinstance(value, (str, int, float, bool, type(None))) or (
                                 isinstance(value, (list, dict)) and not any(
                                     hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
                             ):
                                 env_dict[attr] = value
                     
-                    # 添加必要的字段
+                    # Add required fields
                     env_dict['id'] = env.id
                     env_dict['instance_id'] = instance_id
                     env_dict['tag_resource_type'] = self.resource_type.tag_resource_type
                     
                     resources.append(env_dict)
-            
-            log.info(f"成功从实例 {instance_id} 获取 {len(resources)} 个环境资源")
+                
             return resources
         except exceptions.ClientRequestException as e:
-            log.error(f"查询环境列表失败: {str(e)}", exc_info=True)
+            log.error(f"Failed to query environment list: {str(e)}", exc_info=True)
             return []
-        
+
     def augment(self, resources):
-        """增强资源信息，添加instance_id字段"""
-        # 由于已经在resources方法中处理了资源增强，所以这里直接返回
+        """增强资源信息"""
+        # 直接返回已处理的资源
         return resources
 
 # Update Environment Resource
+
+
 @StageResource.action_registry.register('update')
 class UpdateStageAction(HuaweiCloudBaseAction):
     """Update environment action
@@ -615,22 +618,22 @@ class UpdateStageAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         env_id = resource['id']
         instance_id = resource.get('instance_id')
-        
+
         if not instance_id:
-            # 当资源中不含instance_id，使用manager获取
+            # When instance_id is not in the resource, use manager to get it
             if hasattr(self.manager, 'get_instance_id'):
                 instance_id = self.manager.get_instance_id()
             else:
-                # 如果没有get_instance_id方法，使用默认实例ID
+                # If there's no get_instance_id method, use default instance ID
                 session = local_session(self.manager.session_factory)
                 instance_id = session.get_apig_instance_id()
-                log.info(f"未找到可用实例，使用配置的默认实例ID: {instance_id}")
+                log.info(f"No available instance found, using default instance ID from configuration: {instance_id}")
 
         try:
-            # 添加更多调试信息
-            self.log.debug(f"更新环境 {env_id} (所属实例: {instance_id})")
+            # Add more debug information
+            self.log.debug(f"Updating environment {env_id} (Instance: {instance_id})")
             
-            # 准备更新参数
+            # Prepare update parameters
             update_info = {}
             
             if 'name' in self.data:
@@ -638,7 +641,7 @@ class UpdateStageAction(HuaweiCloudBaseAction):
             if 'description' in self.data:
                 update_info['remark'] = self.data['description']
             
-            # 添加其他可能的参数
+            # Add other possible parameters
             if 'enable_metrics' in self.data:
                 update_info['enable_metrics'] = self.data['enable_metrics']
             if 'is_waf_enabled' in self.data:
@@ -648,27 +651,27 @@ class UpdateStageAction(HuaweiCloudBaseAction):
 
             if not update_info:
                 self.log.warning(
-                    f"未提供更新参数，跳过环境更新 {resource.get('name')} (ID: {env_id})")
+                    f"No update parameters provided, skipping environment update {resource.get('name')} (ID: {env_id})")
                 return
 
-            # 创建更新请求，确保instance_id是字符串类型
+            # Create update request, ensure instance_id is string type
             request = UpdateEnvironmentV2Request(
                 instance_id=str(instance_id),
                 env_id=env_id,
                 body=update_info
             )
             
-            # 打印请求对象
-            self.log.debug(f"请求对象: {request}")
+            # Print request object
+            self.log.debug(f"Request object: {request}")
 
-            # 发送请求
+            # Send request
             response = client.update_environment_v2(request)
             self.log.info(
-                f"成功更新环境: {resource.get('name')} (ID: {env_id})")
+                f"Successfully updated environment: {resource.get('name')} (ID: {env_id})")
             return response
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"更新环境失败 {resource.get('name')} (ID: {env_id}): {e}", exc_info=True)
+                f"Failed to update environment {resource.get('name')} (ID: {env_id}): {e}", exc_info=True)
             raise
 
 
@@ -697,39 +700,41 @@ class DeleteStageAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         env_id = resource['id']
         instance_id = resource.get('instance_id')
-        
+
         if not instance_id:
-            # 当资源中不含instance_id，使用manager获取
+            # When instance_id is not in the resource, use manager to get it
             if hasattr(self.manager, 'get_instance_id'):
                 instance_id = self.manager.get_instance_id()
             else:
-                # 如果没有get_instance_id方法，使用默认实例ID
+                # If there's no get_instance_id method, use default instance ID
                 session = local_session(self.manager.session_factory)
                 instance_id = session.get_apig_instance_id()
-                log.info(f"未找到可用实例，使用配置的默认实例ID: {instance_id}")
+                log.info(f"No available instance found, using default instance ID from configuration: {instance_id}")
 
         try:
-            # 添加更多调试信息
-            self.log.debug(f"删除环境 {env_id} (所属实例: {instance_id})")
+            # Add more debug information
+            self.log.debug(f"Deleting environment {env_id} (Instance: {instance_id})")
             
-            # 确保instance_id是字符串类型
+            # Ensure instance_id is string type
             request = DeleteEnvironmentV2Request(
                 instance_id=str(instance_id),
                 env_id=env_id
             )
             
-            # 打印请求对象
-            self.log.debug(f"请求对象: {request}")
+            # Print request object
+            self.log.debug(f"Request object: {request}")
             
             client.delete_environment_v2(request)
             self.log.info(
-                f"成功删除环境: {resource.get('name')} (ID: {env_id})")
+                f"Successfully deleted environment: {resource.get('name')} (ID: {env_id})")
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"删除环境失败 {resource.get('name')} (ID: {env_id}): {e}", exc_info=True)
+                f"Failed to delete environment {resource.get('name')} (ID: {env_id}): {e}", exc_info=True)
             raise
 
 # API Group Resource Management
+
+
 @resources.register('api-groups')
 class ApiGroupResource(QueryResourceManager):
     """Huawei Cloud API Gateway Group Resource Management
@@ -758,84 +763,80 @@ class ApiGroupResource(QueryResourceManager):
         tag_resource_type = 'apig'
 
     def get_instance_id(self):
-        """查询并获取API网关实例ID
+        """Query and get API Gateway instance ID
         
-        通过查询apig-instance接口获取可用的实例ID，优先使用运行中的实例
-        如果未找到可用实例，则返回默认实例ID
+        Get available instance ID by querying apig-instance API, prioritizing running instances
+        If no available instance is found, return default instance ID
         """
         session = local_session(self.session_factory)
         
-        # 如果策略中已指定instance_id，则直接使用
+        # If instance_id is specified in the policy, use it directly
         if hasattr(self, 'data') and isinstance(self.data, dict) and 'instance_id' in self.data:
             instance_id = self.data['instance_id']
-            log.info(f"使用策略配置中的instance_id: {instance_id}")
+            log.info(f"Using instance_id from policy configuration: {instance_id}")
             return instance_id
             
-        # 查询APIG实例列表
+        # Query APIG instance list
         try:
-            # 使用apig-instance服务客户端
+            # Use apig-instance service client
             client = session.client('apig-instance')
             instances_request = ListInstancesV2Request()
             response = client.list_instances_v2(instances_request)
             
             if hasattr(response, 'instances') and response.instances:
-                # 使用第一个运行中的实例
+                # Use the first running instance
                 for instance in response.instances:
                     if instance.status == 'Running':
                         instance_id = instance.id
-                        log.info(f"使用查询到的第一个运行中实例ID: {instance_id}")
+                        log.info(f"Using first running instance ID: {instance_id}")
                         return instance_id
                 
-                # 如果没有找到运行中的实例，使用第一个实例
+                # If no running instance is found, use the first instance
                 if response.instances:
                     instance_id = response.instances[0].id
-                    log.info(f"未找到运行中实例，使用第一个可用实例ID: {instance_id}")
+                    log.info(f"No running instance found, using first available instance ID: {instance_id}")
                     return instance_id
         except Exception as e:
-            log.error(f"查询APIG实例列表失败: {str(e)}", exc_info=True)
+            log.error(f"Failed to query APIG instance list: {str(e)}", exc_info=True)
         
-        # 如果仍然没有获取到，使用默认实例ID
+        # If still no instance ID is obtained, use default instance ID
         instance_id = session.get_apig_instance_id()
-        log.info(f"未找到可用实例，使用配置的默认实例ID: {instance_id}")
+        log.info(f"No available instance found, using default instance ID from configuration: {instance_id}")
         return instance_id
-    
-    def resources(self):
-        """重写资源获取方法，确保正确设置instance_id"""
+
+    def _fetch_resources(self, query):
+        """Override resource retrieval method to ensure instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
-        client = session.client('apig')
+        client = session.client(self.resource_type.service)
         
-        # 获取实例ID
+        # Get instance ID
         instance_id = self.get_instance_id()
         
-        # 修改：确保instance_id被正确设置
+        # Ensure instance_id is properly set
         if not instance_id:
-            log.error("无法获取有效的APIG实例ID，无法继续查询API组列表")
+            log.error("Unable to get valid APIG instance ID, cannot continue querying API group list")
             return []
-            
-        log.debug(f"使用实例ID {instance_id} 查询API组列表")
         
-        # 创建请求对象
+        # Create new request object instead of modifying the incoming query
+        request = ListApiGroupsV2Request()
+        request.instance_id = str(instance_id)
+        request.limit = 100
+        
+        # Call client method to process request
         try:
-            request = ListApiGroupsV2Request()
-            # 关键修复：设置instance_id
-            request.instance_id = str(instance_id)
-            request.limit = 100
-            
-            # 直接调用API
             response = client.list_api_groups_v2(request)
-            
-            # 处理响应
             resources = []
+            
             if hasattr(response, 'groups'):
                 for group in response.groups:
                     group_dict = {}
                     
-                    # 特殊处理url_domains属性，直接将其提取为单独的列表
+                    # Special handling for url_domains attribute, extract as separate list
                     url_domains = []
                     if hasattr(group, 'url_domains') and group.url_domains is not None:
                         for domain in group.url_domains:
                             domain_dict = {}
-                            # 处理每个域名对象的各种属性
+                            # Process each domain object's various attributes
                             if hasattr(domain, 'id'):
                                 domain_dict['id'] = domain.id
                             if hasattr(domain, 'domain'):
@@ -849,15 +850,16 @@ class ApiGroupResource(QueryResourceManager):
                             if hasattr(domain, 'min_ssl_version'):
                                 domain_dict['min_ssl_version'] = domain.min_ssl_version
                                 
-                            # 添加其他可能的属性
+                            # Add other possible attributes
                             for attr_name in ['verified_client_certificate_enabled', 
                                              'is_has_trusted_root_ca', 
                                              'ingress_http_port', 
                                              'ingress_https_port']:
                                 if hasattr(domain, attr_name):
-                                    domain_dict[attr_name] = getattr(domain, attr_name)
+                                    domain_dict[attr_name] = getattr(
+                                        domain, attr_name)
                                     
-                            # 处理可能的ssl_infos嵌套列表
+                            # Process possible ssl_infos nested list
                             if hasattr(domain, 'ssl_infos') and domain.ssl_infos is not None:
                                 ssl_infos_list = []
                                 for ssl_info in domain.ssl_infos:
@@ -865,7 +867,8 @@ class ApiGroupResource(QueryResourceManager):
                                         ssl_info_dict = {}
                                         for ssl_attr in dir(ssl_info):
                                             if not ssl_attr.startswith('_') and not callable(getattr(ssl_info, ssl_attr)):
-                                                ssl_info_dict[ssl_attr] = getattr(ssl_info, ssl_attr)
+                                                ssl_info_dict[ssl_attr] = getattr(
+                                                    ssl_info, ssl_attr)
                                         ssl_infos_list.append(ssl_info_dict)
                                 domain_dict['ssl_infos'] = ssl_infos_list
                             else:
@@ -873,40 +876,41 @@ class ApiGroupResource(QueryResourceManager):
                                 
                             url_domains.append(domain_dict)
                     
-                    # 提取API组的其他属性
+                    # Extract other API group attributes
                     for attr in dir(group):
                         if (not attr.startswith('_') and not callable(getattr(group, attr)) 
-                            and attr != 'url_domains'):  # 跳过url_domains，因为我们已经处理过了
+                            and attr != 'url_domains'):  # Skip url_domains as we've already processed it
                             value = getattr(group, attr)
-                            # 确保值是可序列化的基本类型
+                            # Ensure values are serializable basic types
                             if isinstance(value, (str, int, float, bool, type(None))) or (
                                 isinstance(value, (list, dict)) and not any(
                                     hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
                             ):
                                 group_dict[attr] = value
                     
-                    # 添加处理好的url_domains
+                    # Add processed url_domains
                     group_dict['url_domains'] = url_domains
                     
-                    # 添加必要的字段
+                    # Add required fields
                     group_dict['id'] = getattr(group, 'id', '')
                     group_dict['instance_id'] = instance_id
                     group_dict['tag_resource_type'] = self.resource_type.tag_resource_type
                     
                     resources.append(group_dict)
             
-            log.info(f"成功从实例 {instance_id} 获取 {len(resources)} 个API组资源")
             return resources
         except exceptions.ClientRequestException as e:
-            log.error(f"查询API组列表失败: {str(e)}", exc_info=True)
+            log.error(f"Failed to query API group list: {str(e)}", exc_info=True)
             return []
-        
+
     def augment(self, resources):
-        """增强资源信息，添加instance_id字段"""
-        # 由于已经在resources方法中处理了资源增强，所以这里直接返回
+        """增强资源信息"""
+        # 直接返回已处理的资源
         return resources
 
 # Update Security
+
+
 @ApiGroupResource.action_registry.register('update-security')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
     """Update domain security policy action
@@ -924,14 +928,16 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
                 value: c77f5e81d9cb4424bf704ef2b0ac7600
             actions:
               - type: update-security
-                domain_id: 2c9eb1538a138432018a13ccccc00001
                 min_ssl_version: TLSv1.2
     """
 
     schema = type_schema(
         'update-security',
-        domain_id={'type': 'string'},
-        min_ssl_version={'type': 'string', 'enum': ['TLSv1.1', 'TLSv1.2']}
+        min_ssl_version={'type': 'string', 'enum': ['TLSv1.1', 'TLSv1.2']},
+        is_http_redirect_to_https={'type': 'boolean'},
+        verified_client_certificate_enabled={'type': 'boolean'},
+        ingress_http_port={'type': 'integer', 'minimum': -1, 'maximum': 49151},
+        ingress_https_port={'type': 'integer', 'minimum': -1, 'maximum': 49151}
     )
 
     def perform_action(self, resource):
@@ -939,69 +945,82 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
         group_id = resource['id']
         instance_id = resource.get('instance_id')
         
-        # 从策略数据中获取domain_id
+        # Get domain_id from policy data
         domain_id = self.data.get('domain_id')
         
-        # 如果策略中未指定domain_id，则尝试从资源的url_domains列表中获取
+        # If domain_id is not specified in the policy, try to get it from the resource's url_domains list
         if not domain_id and 'url_domains' in resource and resource['url_domains']:
-            # 检查url_domains是否为列表且不为空
+            # Check if url_domains is a list and not empty
             if isinstance(resource['url_domains'], list) and len(resource['url_domains']) > 0:
-                # 尝试获取第一个域名的ID
+                # Try to get the ID of the first domain
                 domain_item = resource['url_domains'][0]
                 if isinstance(domain_item, dict) and 'id' in domain_item:
                     domain_id = domain_item['id']
-                    self.log.info(f"使用资源中的第一个域名ID: {domain_id}")
+                    self.log.info(f"Using first domain ID from resource: {domain_id}")
 
         if not domain_id:
             self.log.error(
-                f"未指定domain_id，无法执行更新域名安全策略操作，API组ID: {group_id}")
+                f"No domain_id specified, cannot perform domain security policy update, API group ID: {group_id}")
             return
 
         if not instance_id:
-            # 当资源中不含instance_id，使用manager获取
+            # When instance_id is not in the resource, use manager to get it
             if hasattr(self.manager, 'get_instance_id'):
                 instance_id = self.manager.get_instance_id()
             else:
-                # 如果没有get_instance_id方法，使用默认实例ID
+                # If there's no get_instance_id method, use default instance ID
                 session = local_session(self.manager.session_factory)
                 instance_id = session.get_apig_instance_id()
-                log.info(f"未找到可用实例，使用配置的默认实例ID: {instance_id}")
+                log.info(f"No available instance found, using default instance ID from configuration: {instance_id}")
 
         try:
-            # 添加更多调试信息
-            self.log.debug(f"更新域名安全策略 域名ID: {domain_id}, API组ID: {group_id} (所属实例: {instance_id})")
+            # Add more debug information
+            self.log.debug(
+                f"Updating domain security policy Domain ID: {domain_id}, API group ID: {group_id} (Instance: {instance_id})")
             
-            # 准备更新参数
+            # Prepare update parameters
             update_info = {}
             
             if 'min_ssl_version' in self.data:
                 update_info['min_ssl_version'] = self.data['min_ssl_version']
             
+            if 'is_http_redirect_to_https' in self.data:
+                update_info['is_http_redirect_to_https'] = self.data['is_http_redirect_to_https']
+                
+            if 'verified_client_certificate_enabled' in self.data:
+                update_info['verified_client_certificate_enabled'] = self.data['verified_client_certificate_enabled']
+                
+            if 'ingress_http_port' in self.data:
+                update_info['ingress_http_port'] = self.data['ingress_http_port']
+                
+            if 'ingress_https_port' in self.data:
+                update_info['ingress_https_port'] = self.data['ingress_https_port']
+            
             if 'ssl_id' in self.data:
                 update_info['ssl_id'] = self.data['ssl_id']
-                update_info['ssl_name'] = '绑定到该域名的证书'
+                update_info['ssl_name'] = 'Certificate bound to this domain'
                 
             if not update_info:
                 self.log.warning(
-                    f"未提供更新参数，跳过域名安全策略更新，域名ID: {domain_id}, API组ID: {group_id}")
+                    f"No update parameters provided, skipping domain security policy update, Domain ID: {domain_id}, API group ID: {group_id}")
                 return
 
-            # 创建更新请求，确保instance_id是字符串类型
+            # Create update request, ensure instance_id is string type
             request = UpdateDomainV2Request(
                 instance_id=str(instance_id),
                 domain_id=domain_id,
                 body=update_info
             )
             
-            # 打印请求对象
-            self.log.debug(f"请求对象: {request}")
+            # Print request object
+            self.log.debug(f"Request object: {request}")
 
-            # 发送请求
+            # Send request
             response = client.update_domain_v2(request)
             self.log.info(
-                f"成功更新域名安全策略: API组 {resource.get('name')} (ID: {group_id}), 域名ID: {domain_id}")
+                f"Successfully updated domain security policy: API group {resource.get('name')} (ID: {group_id}), Domain ID: {domain_id}")
             return response
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"更新域名安全策略失败: API组 {resource.get('name')} (ID: {group_id}), 域名ID: {domain_id}: {e}", exc_info=True)
+                f"Failed to update domain security policy: API group {resource.get('name')} (ID: {group_id}), Domain ID: {domain_id}: {e}", exc_info=True)
             raise
