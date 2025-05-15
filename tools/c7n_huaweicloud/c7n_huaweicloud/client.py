@@ -11,6 +11,8 @@ from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredenti
 from huaweicloudsdkcore.auth.provider import MetadataCredentialProvider
 from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
+from huaweicloudsdkbms.v1 import BmsClient, ListBareMetalServerDetailsRequest
+from huaweicloudsdkbms.v1.region.bms_region import BmsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v5 import (
@@ -116,21 +118,24 @@ class Session:
     def __init__(self, options=None):
         self.token = None
         self.domain_id = None
+        self.region = None
+        self.ak = None
+        self.sk = None
 
         if options is not None:
             self.ak = options.get("access_key_id")
             self.sk = options.get("secret_access_key")
             self.token = options.get("security_token")
-            self.domain_id = options.get("account_id")
+            self.domain_id = options.get("domain_id")
             self.region = options.get("region")
 
-        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
-        self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
-        self.region = os.getenv("HUAWEI_DEFAULT_REGION") or self.region
+        self.ak = self.ak or os.getenv("HUAWEI_ACCESS_KEY_ID")
+        self.sk = self.sk or os.getenv("HUAWEI_SECRET_ACCESS_KEY")
+        self.region = self.region or os.getenv("HUAWEI_DEFAULT_REGION")
 
         if not self.region:
             log.error(
-                "No default region set. Specify a default via HUAWEI_DEFAULT_REGION"
+                "No default region set. Specify a default via HUAWEI_DEFAULT_REGION."
             )
             sys.exit(1)
 
@@ -153,7 +158,7 @@ class Session:
             ).with_security_token(self.token)
             globalCredentials = (GlobalCredentials(self.ak, self.sk, self.domain_id)
                                  .with_security_token(self.token))
-
+        client = None
         if service == "vpc":
             client = (
                 VpcClientV3.new_builder()
@@ -424,6 +429,13 @@ class Session:
                 .with_region(CcRegion.CN_NORTH_4)
                 .build()
             )
+        elif service == "bms":
+            client = (
+                BmsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(BmsRegion.value_of(self.region))
+                .build()
+            )
 
         return client
 
@@ -535,5 +547,7 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == "bms":
+            request = ListBareMetalServerDetailsRequest()
 
         return request
