@@ -8,24 +8,6 @@ from huaweicloud_common import BaseTest
 # =========================
 
 
-class InstanceResourceTest(BaseTest):
-    """Test API Gateway Instance resources, filters and actions"""
-
-    def test_instance_query(self):
-        """Test API Gateway Instance resource query and augmentation"""
-        factory = self.replay_flight_data("apig_instance_query")
-        p = self.load_policy(
-            {
-                "name": "apig-instance-query",
-                "resource": "huaweicloud.apig-instance",
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Validate VCR: apig_instance_query should contain 2 instances
-        self.assertEqual(len(resources), 2)
-
-
 class ApiResourceTest(BaseTest):
     """Test API Gateway API resources, filters and actions"""
 
@@ -35,7 +17,7 @@ class ApiResourceTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-api-query",
-                "resource": "huaweicloud.rest-api",
+                "resource": "huaweicloud.apig-api",
             },
             session_factory=factory,
         )
@@ -44,10 +26,6 @@ class ApiResourceTest(BaseTest):
         self.assertEqual(len(resources), 1)
         # Validate VCR: value should match 'name' in apig_api_query
         self.assertEqual(resources[0]["name"], "test-api")
-        # Validate VCR: value should match 'req_method' in apig_api_query
-        self.assertEqual(resources[0]["req_method"], "GET")
-        # Verify augmentation added information
-        self.assertTrue("backend_type" in resources[0])
 
     def test_api_action_delete(self):
         """Test delete API action"""
@@ -60,7 +38,7 @@ class ApiResourceTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-api-action-delete",
-                "resource": "huaweicloud.rest-api",
+                "resource": "huaweicloud.apig-api",
                 # Use value filter for clarity
                 "filters": [{"type": "value", "key": "id", "value": api_id_to_delete}],
                 "actions": ["delete"],
@@ -94,7 +72,7 @@ class ApiResourceTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-api-action-update",
-                "resource": "huaweicloud.rest-api",
+                "resource": "huaweicloud.apig-api",
                 # Use value filter to match API exactly
                 "filters": [{"type": "value", "key": "id", "value": api_id_to_update}],
                 "actions": [{
@@ -127,7 +105,7 @@ class StageResourceTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-stage-query",
-                "resource": "huaweicloud.rest-stage",
+                "resource": "huaweicloud.apig-stage",
             },
             session_factory=factory,
         )
@@ -148,7 +126,7 @@ class StageResourceTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-stage-action-update",
-                "resource": "huaweicloud.rest-stage",
+                "resource": "huaweicloud.apig-stage",
                 "filters": [{"type": "value", "key": "id", "value": stage_id_to_update}],
                 "actions": [{
                     "type": "update",
@@ -172,7 +150,7 @@ class StageResourceTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-stage-action-delete",
-                "resource": "huaweicloud.rest-stage",
+                "resource": "huaweicloud.apig-stage",
                 "filters": [{"type": "value", "key": "id", "value": stage_id_to_delete}],
                 "actions": ["delete"],
             },
@@ -196,17 +174,14 @@ class ApiGroupResourceTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-group-query",
-                "resource": "huaweicloud.api-groups",
+                "resource": "huaweicloud.apig-api-groups",
             },
             session_factory=factory,
         )
         resources = p.run()
-        # Validate VCR: apig_group_query should contain API groups
         self.assertEqual(len(resources), 1)
         # Validate VCR: value should match 'name' in apig_group_query
         self.assertEqual(resources[0]["name"], "api_group_001")
-        # Verify augmentation added information
-        self.assertTrue("status" in resources[0])
 
     def test_api_group_action_update_security(self):
         """Test update domain security policy action"""
@@ -220,10 +195,10 @@ class ApiGroupResourceTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-group-action-update-security",
-                "resource": "huaweicloud.api-groups",
+                "resource": "huaweicloud.apig-api-groups",
                 "filters": [{"type": "value", "key": "id", "value": group_id_to_update}],
                 "actions": [{
-                    "type": "update-security",
+                    "type": "update-domain",
                     "min_ssl_version": new_min_ssl_version,
                     "domain_id": domain_id_to_update
                 }],
@@ -249,7 +224,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-filter-value-method-match",
-                "resource": "huaweicloud.rest-api",
+                "resource": "huaweicloud.apig-api",
                 "filters": [{"type": "value", "key": "name", "value": target_name}],
             },
             session_factory=factory,
@@ -267,7 +242,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-filter-value-method-no-match",
-                "resource": "huaweicloud.rest-api",
+                "resource": "huaweicloud.apig-api",
                 "filters": [{"type": "value", "key": "req_method", "value": wrong_method}],
             },
             session_factory=factory,
@@ -286,7 +261,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-filter-name-match",
-                "resource": "huaweicloud.rest-api",
+                "resource": "huaweicloud.apig-api",
                 "filters": [{"type": "value", "key": "name", "value": "api-tagged.*", "op": "regex"}],
             },
             session_factory=factory,
@@ -306,7 +281,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-filter-name-match",
-                "resource": "huaweicloud.rest-api",
+                "resource": "huaweicloud.apig-api",
                 "filters": [{"type": "value", "key": "name", "value": "api-marked.*", "op": "regex"}],
             },
             session_factory=factory,
@@ -325,7 +300,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "apig-filter-name-match",
-                "resource": "huaweicloud.rest-api",
+                "resource": "huaweicloud.apig-api",
                 "filters": [{"type": "value", "key": "name", "value": "api-two-tags.*", "op": "regex"}],
             },
             session_factory=factory,

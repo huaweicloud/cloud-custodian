@@ -21,18 +21,14 @@ interactions:
       X-Sdk-Date:
       - 20250514T110523Z
     method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances?limit=500
   response:
     body:
       string: '{"total":2,"size":2,"instances":[{"id":"eddc4d25480b4cd6b512f270a1b8b341",
         "project_id":"73d69ae0cfcf460190522d06b60f05ad", "instance_name":"apig-Enterprise-Professional",
         "status":"Running", "instance_status":6, "spec":"PROFESSIONAL", "create_time":1585302825070,
         "enterprise_project_id":"0", "eip_address":"xxx.xxx.xxx.xxx", "charging_mode":1,
-        "cbc_metadata":"CS2006301043A28NF:00301-734023-0--0", "type":"apig"}, {"id":"2e2d613c64094a4a94ad38e7ca30adee",
-        "project_id":"73d69ae0cfcf460190522d06b60f05ad", "instance_name":"apig-autotest-apitest",
-        "status":"Running", "instance_status":6, "spec":"PROFESSIONAL", "create_time":1594370987422,
-        "enterprise_project_id":"0", "eip_address":"xxx.xxx.xxx.xxx", "charging_mode":0,
-        "type":"apig", "cbc_operation_locks":[{"lock_scene":"TO_PERIOD_LOCK", "lock_source_id":"CxxxxxxxxxxxM"}]}]}'
+        "cbc_metadata":"CS2006301043A28NF:00301-734023-0--0", "type":"apig"}]}'
     headers:
       Connection:
       - keep-alive
@@ -69,7 +65,7 @@ interactions:
       X-Sdk-Date:
       - 20250509T044621Z
     method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/eddc4d25480b4cd6b512f270a1b8b341/apis?limit=100
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/eddc4d25480b4cd6b512f270a1b8b341/apis?limit=500&&offset=0
   response:
     body:
       string: '{"total": 2, "size": 2, "apis": [ {"id": "5f918d104dc84480a75166ba99efff26",

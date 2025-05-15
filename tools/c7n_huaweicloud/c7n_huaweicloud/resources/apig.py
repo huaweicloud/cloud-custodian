@@ -31,100 +31,8 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 
 log = logging.getLogger('custodian.huaweicloud.apig')
 
-
-# APIG Instance Resource Management
-@resources.register('apig-instance')
-class InstanceResource(QueryResourceManager):
-    """Huawei Cloud API Gateway Instance Resource Management
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-instance-list
-            resource: huaweicloud.apig-instance
-            filters:
-              - type: value
-                key: status
-                value: Running
-    """
-
-    class resource_type(TypeInfo):
-        service = 'apig-instance'
-        enum_spec = ('list_instances_v2', 'instances', 'offset')
-        id = 'id'
-        name = 'instance_name'
-        filter_name = 'instance_name'
-        filter_type = 'scalar'
-        taggable = True
-        tag_resource_type = 'apig'
-
-    def process_resources(self, resources):
-        """Process resource data, ensure fields like project_id exist"""
-        processed_resources = []
-
-        for resource in resources:
-            resource_dict = {}
-
-            # Extract data from original attributes first
-            if hasattr(resource, '__dict__') and hasattr(resource, '_field_names'):
-                # Process SDK object mode
-                for field in resource._field_names:
-                    if hasattr(resource, field):
-                        value = getattr(resource, field)
-                        # Ensure values are serializable basic types
-                        if isinstance(value, (str, int, float, bool, type(None))) or (
-                            isinstance(value, (list, dict)) and not any(
-                                hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
-                        ):
-                            resource_dict[field] = value
-            else:
-                # Process dictionary mode
-                for key, value in resource.items() if isinstance(resource, dict) else []:
-                    # Ensure values are serializable basic types
-                    if isinstance(value, (str, int, float, bool, type(None))) or (
-                        isinstance(value, (list, dict)) and not any(
-                            hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
-                    ):
-                        resource_dict[key] = value
-
-            # Ensure basic fields exist
-            resource_dict['id'] = getattr(
-                resource, 'id', resource.get('id', ''))
-            resource_dict['instance_name'] = getattr(
-                resource, 'instance_name', resource.get('instance_name', ''))
-
-            # Add other important fields
-            if hasattr(resource, 'project_id') or (isinstance(resource, dict) and 'project_id' in resource):
-                resource_dict['project_id'] = getattr(
-                    resource, 'project_id', resource.get('project_id', ''))
-            if hasattr(resource, 'type') or (isinstance(resource, dict) and 'type' in resource):
-                resource_dict['type'] = getattr(
-                    resource, 'type', resource.get('type', ''))
-            if hasattr(resource, 'status') or (isinstance(resource, dict) and 'status' in resource):
-                resource_dict['status'] = getattr(
-                    resource, 'status', resource.get('status', ''))
-            if hasattr(resource, 'spec') or (isinstance(resource, dict) and 'spec' in resource):
-                resource_dict['spec'] = getattr(
-                    resource, 'spec', resource.get('spec', ''))
-            if hasattr(resource, 'create_time') or (isinstance(resource, dict) and 'create_time' in resource):
-                resource_dict['create_time'] = getattr(
-                    resource, 'create_time', resource.get('create_time', ''))
-
-            # Add processed resource
-            processed_resources.append(resource_dict)
-
-        return processed_resources
-
-    def augment(self, resources):
-        """Enhance resource information"""
-        # Ensure all resources can be properly serialized
-        return self.process_resources(resources)
-
-
 # API Resource Management
-@resources.register('rest-api')
+@resources.register('apig-api')
 class ApiResource(QueryResourceManager):
     """Huawei Cloud API Gateway API Resource Management
 
@@ -134,7 +42,7 @@ class ApiResource(QueryResourceManager):
 
         policies:
           - name: apig-api-list
-            resource: huaweicloud.rest-api
+            resource: huaweicloud.apig-api
             filters:
               - type: value
                 key: status
@@ -142,7 +50,7 @@ class ApiResource(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = 'rest-api'
+        service = 'apig-api'
         enum_spec = ('list_apis_v2', 'apis', 'offset')
         id = 'id'
         name = 'name'
@@ -164,39 +72,26 @@ class ApiResource(QueryResourceManager):
             instance_id = self.data['instance_id']
             log.info(
                 f"Using instance_id from policy configuration: {instance_id}")
-            return instance_id
+            return [instance_id]
 
         # Query APIG instance list
         try:
             # Use apig-instance service client
             client = session.client('apig-instance')
-            instances_request = ListInstancesV2Request()
+            instances_request = ListInstancesV2Request(limit=500)
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
                 # Use the first running instance
+                instance_ids = []
                 for instance in response.instances:
-                    if instance.status == 'Running':
-                        instance_id = instance.id
-                        log.info(
-                            f"Using first running instance ID: {instance_id}")
-                        return instance_id
-
-                # If no running instance is found, use the first instance
-                if response.instances:
-                    instance_id = response.instances[0].id
-                    log.info(
-                        f"No running instance found, using first available instance ID: {instance_id}")
-                    return instance_id
+                    instance_ids.append(instance.id)
+                return instance_ids
         except Exception as e:
             log.error(
                 f"Failed to query APIG instance list: {str(e)}", exc_info=True)
 
-        # If still no instance ID is obtained, use default instance ID
-        instance_id = session.get_apig_instance_id()
-        log.info(
-            f"No available instance found, using default instance ID from configuration: {instance_id}")
-        return instance_id
+        return []
 
     def _fetch_resources(self, query):
         """Override resource retrieval method to ensure instance_id parameter is included in the request"""
@@ -204,59 +99,52 @@ class ApiResource(QueryResourceManager):
         client = session.client(self.resource_type.service)
 
         # Get instance ID
-        instance_id = self.get_instance_id()
+        instance_ids = self.get_instance_id()
 
         # Ensure instance_id is properly set
-        if not instance_id:
+        if not instance_ids:
             log.error(
                 "Unable to get valid APIG instance ID, cannot continue querying API list")
             return []
 
-        # Create new request object instead of modifying the incoming query
-        request = ListApisV2Request()
-        request.instance_id = str(instance_id)
-        request.limit = 100
+        resources = []
+        for instance_id in instance_ids:
+            offset, limit = 0, 500
+            while True:
+                # Create new request object instead of modifying the incoming query
+                request = ListApisV2Request(offset=offset, limit=limit)
+                request.instance_id = instance_id
 
-        # Call client method to process request
-        try:
-            response = client.list_apis_v2(request)
-            resources = []
+                # Call client method to process request
+                try:
+                    response = client.list_apis_v2(request)
+                    if hasattr(response, 'apis'):
+                        for api in response.apis:
+                            api_dict = {}
+                            api_dict["id"] = api.id
+                            api_dict["name"] = api.name
+                            api_dict["group_id"] = api.group_id
+                            api_dict["instance_id"] = instance_id
+                            api_dict['tag_resource_type'] = self.resource_type.tag_resource_type
+                            
+                            resources.append(api_dict)
+                except exceptions.ClientRequestException as e:
+                    log.error(f"Failed to query API list: {str(e)}", exc_info=True)
+                    break
 
-            if hasattr(response, 'apis'):
-                for api in response.apis:
-                    api_dict = {}
-                    # Extract API attributes, only get basic data type attributes for serialization
-                    for attr in dir(api):
-                        if (not attr.startswith('_') and not callable(getattr(api, attr))
-                                and attr not in ['auth_opt', 'vpc_status', 'auth_opt_status']):
-                            value = getattr(api, attr)
-                            # Ensure values are serializable basic types
-                            if isinstance(value, (str, int, float, bool, type(None))) or (
-                                isinstance(value, (list, dict)) and not any(
-                                    hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
-                            ):
-                                api_dict[attr] = value
+                offset += limit
+                if not response.total or offset >= response.total:
+                    break
 
-                    # Add required fields
-                    api_dict['id'] = api.id
-                    api_dict['instance_id'] = instance_id
-                    api_dict['tag_resource_type'] = self.resource_type.tag_resource_type
-
-                    resources.append(api_dict)
-
-            return resources
-        except exceptions.ClientRequestException as e:
-            log.error(f"Failed to query API list: {str(e)}", exc_info=True)
-            return []
+        return resources
 
     def augment(self, resources):
         """Enhance resource information"""
         # Return processed resources directly
         return resources
 
+
 # API Resource Actions
-
-
 @ApiResource.action_registry.register('delete')
 class DeleteApiAction(HuaweiCloudBaseAction):
     """Delete API action
@@ -267,7 +155,7 @@ class DeleteApiAction(HuaweiCloudBaseAction):
 
         policies:
           - name: apig-api-delete
-            resource: huaweicloud.rest-api
+            resource: huaweicloud.apig-api
             filters:
               - type: value
                 key: name
@@ -283,15 +171,9 @@ class DeleteApiAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            # When instance_id is not in the resource, use manager to get it
-            if hasattr(self.manager, 'get_instance_id'):
-                instance_id = self.manager.get_instance_id()
-            else:
-                # If there's no get_instance_id method, use default instance ID
-                session = local_session(self.manager.session_factory)
-                instance_id = session.get_apig_instance_id()
-                log.info(
-                    f"No available instance found, using default instance ID from configuration: {instance_id}")
+            self.log.error(
+                f"No available instance found, using default instance ID from configuration: {instance_id}")
+            return
 
         try:
             # Add more debug information
@@ -299,7 +181,7 @@ class DeleteApiAction(HuaweiCloudBaseAction):
 
             # Ensure instance_id is string type
             request = DeleteApiV2Request(
-                instance_id=str(instance_id),
+                instance_id=instance_id,
                 api_id=api_id
             )
 
@@ -327,22 +209,79 @@ class UpdateApiAction(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-            - name: apig-api-update
-            resource: huaweicloud.rest-api
-            filters:
+            - name: apig-api-update-full-example
+              resource: huaweicloud.apig-api
+              filters:
                 - type: value
-                key: id
-                value: 499e3bd193ba4db89a49f0ebdef19796
-            actions:
+                  key: id
+                  value: 499e3bd193ba4db89a49f0ebdef19796
+              actions:
                 - type: update          
-                name: updated-api-name
-                api_type: 1
-                req_protocol: HTTPS
-                req_method: POST
-                req_uri: "/test/update"
-                auth_type: APP
-                backend_type: HTTP
-                group_id: "your_group_id"
+                  # Basic API properties
+                  name: updated-api-name
+                  api_type: 1  # 1 for public API, 2 for private API
+                  version: "v1.0.1"
+                  req_protocol: HTTPS
+                  req_method: POST
+                  req_uri: "/v1/test/update"
+                  auth_type: APP  # Options: NONE, APP, IAM, AUTHORIZER
+                  group_id: "c77f5e81d9cb4424bf704ef2b0ac7600"
+                  match_mode: "NORMAL"  # NORMAL or SWA
+                  cors: false
+                  remark: "Updated API with complete parameters"
+                  
+                  # Response examples
+                  result_normal_sample: '{"result": "success", "data": {"id": 1}}'
+                  result_failure_sample: '{"error_code": "APIG.0301", "error_msg": "Incorrect API parameters"}'
+                  
+                  # Tracing configuration
+                  trace_enabled: true
+                  sampling_strategy: "RATE"
+                  sampling_param: "10"
+                  
+                  # Tags
+                  tags: 
+                    - "production"
+                    - "api-gateway"
+                  
+                  # Backend API configuration
+                  backend_type: "HTTP"  # HTTP, FUNCTION, or MOCK
+                  backend_api:
+                    req_protocol: "HTTPS"
+                    req_method: "POST"
+                    req_uri: "/backend/service"
+                    timeout: 5000
+                    retry_count: "3"
+                    url_domain: "api.example.com"
+                    host: "api.backend-service.com"
+                    
+                  # Backend parameters
+                  backend_params:
+                    - name: "X-User-Id"
+                      value: "$context.authorizer.userId"
+                      location: "HEADER"
+                      origin: "SYSTEM"
+                      remark: "User ID from the authorizer"
+                    - name: "api-version"
+                      value: "v1"
+                      location: "HEADER"
+                      origin: "CONSTANT"
+                      remark: "API version as a constant"
+                      
+                  # Authentication options
+                  auth_opt:
+                    app_code_auth_type: "HEADER"
+                    app_code_headers:
+                      - "X-Api-Auth"
+                      
+                  # SSL verification
+                  disables_ssl_verification: false
+                  
+                  # Mock response (when backend_type is MOCK)
+                  mock_info:
+                    status_code: 200
+                    example: '{"data": "mock response"}'
+                    contentType: "application/json"
     """
 
     schema = type_schema(
@@ -359,6 +298,48 @@ class UpdateApiAction(HuaweiCloudBaseAction):
             'NONE', 'APP', 'IAM', 'AUTHORIZER']},
         backend_type={'type': 'string', 'enum': ['HTTP', 'FUNCTION', 'MOCK']},
         group_id={'type': 'string'},
+        version={'type': 'string'},
+        cors={'type': 'boolean'},
+        remark={'type': 'string'},
+        authorizer_id={'type': 'string'},
+        match_mode={'type': 'string', 'enum': ['NORMAL', 'SWA']},
+        result_normal_sample={'type': 'string'},
+        result_failure_sample={'type': 'string'},
+        trace_enabled={'type': 'boolean'},
+        sampling_strategy={'type': 'string'},
+        sampling_param={'type': 'string'},
+        tags={'type': 'array', 'items': {'type': 'string'}},
+        backend_api={'type': 'object', 'properties': {
+            'req_protocol': {'type': 'string', 'enum': ['HTTP', 'HTTPS']},
+            'req_method': {'type': 'string', 'enum': [
+                'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH', 'OPTIONS', 'ANY']},
+            'req_uri': {'type': 'string'},
+            'timeout': {'type': 'integer'},
+            'retry_count': {'type': 'string'},
+            'url_domain': {'type': 'string'},
+            'host': {'type': 'string'},
+            'vpc_channel_info': {'type': 'object'}
+        }},
+        backend_params={'type': 'array', 'items': {'type': 'object', 'properties': {
+            'name': {'type': 'string'},
+            'value': {'type': 'string'},
+            'location': {'type': 'string', 'enum': [
+                'PATH', 'QUERY', 'HEADER']},
+            'origin': {'type': 'string', 'enum': [
+                'REQUEST', 'CONSTANT', 'SYSTEM']},
+            'remark': {'type': 'string'}
+        }}},
+        auth_opt={'type': 'object', 'properties': {
+            'app_code_auth_type': {'type': 'string', 'enum': [
+                'DISABLE', 'HEADER', 'APP_CODE', 'HEADER_OR_APP_CODE']},
+            'app_code_headers': {'type': 'array', 'items': {'type': 'string'}}
+        }},
+        disables_ssl_verification={'type': 'boolean'},
+        mock_info={'type': 'object', 'properties': {
+            'status_code': {'type': 'integer'},
+            'example': {'type': 'string'},
+            'contentType': {'type': 'string'}
+        }}
     )
 
     def _build_update_body(self, resource):
@@ -375,41 +356,14 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         update_info = {}
 
         # Required fields from original resource
-        required_fields = ['name', 'type', 'req_protocol',
-                           'req_method', 'req_uri', 'auth_type']
-        for field in required_fields:
-            if field in resource:
-                update_info[field] = resource[field]
-
-        # Update with new values from policy parameters
-        field_mappings = {
-            'name': 'name',
-            'api_type': 'type',  # Map api_type to type
-            'req_protocol': 'req_protocol',
-            'req_method': 'req_method',
-            'req_uri': 'req_uri',
-            'auth_type': 'auth_type',
-            'backend_type': 'backend_type',
-            'group_id': 'group_id'
-        }
-
-        for policy_field, api_field in field_mappings.items():
-            if policy_field in self.data:
-                update_info[api_field] = self.data[policy_field]
-
-        # Handle backend_api information (if exists)
-        if 'backend_api' in resource:
-            update_info['backend_api'] = resource['backend_api']
-
-        # Handle backend_params information (if exists)
-        if 'backend_params' in resource:
-            update_info['backend_params'] = resource['backend_params']
+        for field in self.data:
+            if field == "api_type":
+                update_info["type"] = self.data[field]
+            else:
+                update_info[field] = self.data[field]
 
         # Construct API create request body
-        if update_info:
-            return ApiCreate(**update_info)
-
-        return None
+        return ApiCreate(**update_info)
 
     def perform_action(self, resource):
         client = self.manager.get_client()
@@ -417,15 +371,9 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            # When instance_id is not in the resource, use manager to get it
-            if hasattr(self.manager, 'get_instance_id'):
-                instance_id = self.manager.get_instance_id()
-            else:
-                # If there's no get_instance_id method, use default instance ID
-                session = local_session(self.manager.session_factory)
-                instance_id = session.get_apig_instance_id()
-                log.info(
-                    f"No available instance found, using default instance ID from configuration: {instance_id}")
+            self.log.error(
+                f"No available instance found, using default instance ID from configuration: {instance_id}")
+            return
 
         try:
             # Add more debug information
@@ -435,13 +383,13 @@ class UpdateApiAction(HuaweiCloudBaseAction):
             update_body = self._build_update_body(resource)
 
             if not update_body:
-                self.log.warning(
+                self.log.error(
                     f"No update parameters provided, skipping API update {resource.get('name')} (ID: {api_id})")
                 return
 
             # Create update request, ensure instance_id is string type
             request = UpdateApiV2Request(
-                instance_id=str(instance_id),
+                instance_id=instance_id,
                 api_id=api_id,
                 body=update_body
             )
@@ -460,9 +408,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
             raise
 
 # Environment Resource Management
-
-
-@resources.register('rest-stage')
+@resources.register('apig-stage')
 class StageResource(QueryResourceManager):
     """Huawei Cloud API Gateway Environment Resource Management
 
@@ -472,7 +418,7 @@ class StageResource(QueryResourceManager):
 
         policies:
           - name: apig-stage-list
-            resource: huaweicloud.rest-stage
+            resource: huaweicloud.apig-stage
             filters:
               - type: value
                 key: name
@@ -480,7 +426,7 @@ class StageResource(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = 'rest-stage'
+        service = 'apig-stage'
         enum_spec = ('list_environments_v2', 'envs', 'offset')
         id = 'id'
         name = 'name'
@@ -502,39 +448,26 @@ class StageResource(QueryResourceManager):
             instance_id = self.data['instance_id']
             log.info(
                 f"Using instance_id from policy configuration: {instance_id}")
-            return instance_id
+            return [instance_id]
 
         # Query APIG instance list
         try:
             # Use apig-instance service client
             client = session.client('apig-instance')
-            instances_request = ListInstancesV2Request()
+            instances_request = ListInstancesV2Request(limit=500)
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
                 # Use the first running instance
+                instance_ids = []
                 for instance in response.instances:
-                    if instance.status == 'Running':
-                        instance_id = instance.id
-                        log.info(
-                            f"Using first running instance ID: {instance_id}")
-                        return instance_id
-
-                # If no running instance is found, use the first instance
-                if response.instances:
-                    instance_id = response.instances[0].id
-                    log.info(
-                        f"No running instance found, using first available instance ID: {instance_id}")
-                    return instance_id
+                    instance_ids.append(instance.id)
+                return instance_ids
         except Exception as e:
             log.error(
                 f"Failed to query APIG instance list: {str(e)}", exc_info=True)
 
-        # If still no instance ID is obtained, use default instance ID
-        instance_id = session.get_apig_instance_id()
-        log.info(
-            f"No available instance found, using default instance ID from configuration: {instance_id}")
-        return instance_id
+        return []
 
     def _fetch_resources(self, query):
         """Override resource retrieval method to ensure instance_id parameter is included in the request"""
@@ -542,50 +475,40 @@ class StageResource(QueryResourceManager):
         client = session.client(self.resource_type.service)
 
         # Get instance ID
-        instance_id = self.get_instance_id()
+        instance_ids = self.get_instance_id()
 
         # Ensure instance_id is properly set
-        if not instance_id:
+        if not instance_ids:
             log.error(
-                "Unable to get valid APIG instance ID, cannot continue querying environment list")
+                "Unable to get valid APIG instance ID, cannot continue querying API list")
             return []
 
-        # Create new request object instead of modifying the incoming query
-        request = ListEnvironmentsV2Request()
-        request.instance_id = str(instance_id)
-        request.limit = 100
+        resources = []
+        for instance_id in instance_ids:
+            # Create new request object instead of modifying the incoming query
+            request = ListEnvironmentsV2Request(limit=500)
+            request.instance_id = instance_id
 
-        # Call client method to process request
-        try:
-            response = client.list_environments_v2(request)
-            resources = []
+            # Call client method to process request
+            try:
+                response = client.list_environments_v2(request)
 
-            if hasattr(response, 'envs'):
-                for env in response.envs:
-                    env_dict = {}
-                    # Extract environment attributes, only get basic data type attributes
-                    for attr in dir(env):
-                        if not attr.startswith('_') and not callable(getattr(env, attr)):
-                            value = getattr(env, attr)
-                            # Ensure values are serializable basic types
-                            if isinstance(value, (str, int, float, bool, type(None))) or (
-                                isinstance(value, (list, dict)) and not any(
-                                    hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
-                            ):
-                                env_dict[attr] = value
+                if hasattr(response, 'envs'):
+                    for env in response.envs:
+                        env_dict = {}
+                        env_dict['id'] = env.id
+                        env_dict['name'] = env.name
+                        env_dict['instance_id'] = instance_id
+                        env_dict['tag_resource_type'] = self.resource_type.tag_resource_type
 
-                    # Add required fields
-                    env_dict['id'] = env.id
-                    env_dict['instance_id'] = instance_id
-                    env_dict['tag_resource_type'] = self.resource_type.tag_resource_type
+                        resources.append(env_dict)
 
-                    resources.append(env_dict)
-
-            return resources
-        except exceptions.ClientRequestException as e:
-            log.error(
-                f"Failed to query environment list: {str(e)}", exc_info=True)
-            return []
+                return resources
+            except exceptions.ClientRequestException as e:
+                log.error(
+                    f"Failed to query environment list: {str(e)}", exc_info=True)
+                return []
+        return resources
 
     def augment(self, resources):
         """Enhance resource information"""
@@ -593,8 +516,6 @@ class StageResource(QueryResourceManager):
         return resources
 
 # Update Environment Resource
-
-
 @StageResource.action_registry.register('update')
 class UpdateStageAction(HuaweiCloudBaseAction):
     """Update environment action
@@ -605,7 +526,7 @@ class UpdateStageAction(HuaweiCloudBaseAction):
 
         policies:
           - name: apig-stage-update
-            resource: huaweicloud.rest-stage
+            resource: huaweicloud.apig-stage
             filters:
               - type: value
                 key: name
@@ -629,14 +550,9 @@ class UpdateStageAction(HuaweiCloudBaseAction):
 
         if not instance_id:
             # When instance_id is not in the resource, use manager to get it
-            if hasattr(self.manager, 'get_instance_id'):
-                instance_id = self.manager.get_instance_id()
-            else:
-                # If there's no get_instance_id method, use default instance ID
-                session = local_session(self.manager.session_factory)
-                instance_id = session.get_apig_instance_id()
-                log.info(
-                    f"No available instance found, using default instance ID from configuration: {instance_id}")
+            self.log.error(
+                f"No available instance found, using default instance ID from configuration: {instance_id}")
+            return
 
         try:
             # Add more debug information
@@ -648,25 +564,12 @@ class UpdateStageAction(HuaweiCloudBaseAction):
 
             if 'name' in self.data:
                 update_info['name'] = self.data['name']
-            if 'description' in self.data:
-                update_info['remark'] = self.data['description']
-
-            # Add other possible parameters
-            if 'enable_metrics' in self.data:
-                update_info['enable_metrics'] = self.data['enable_metrics']
-            if 'is_waf_enabled' in self.data:
-                update_info['is_waf_enabled'] = self.data['is_waf_enabled']
-            if 'is_client_certificate_required' in self.data:
-                update_info['is_client_certificate_required'] = self.data['is_client_certificate_required']
-
-            if not update_info:
-                self.log.warning(
-                    f"No update parameters provided, skipping environment update {resource.get('name')} (ID: {env_id})")
-                return
+            if 'remark' in self.data:
+                update_info['remark'] = self.data['remark']
 
             # Create update request, ensure instance_id is string type
             request = UpdateEnvironmentV2Request(
-                instance_id=str(instance_id),
+                instance_id=instance_id,
                 env_id=env_id,
                 body=update_info
             )
@@ -695,7 +598,7 @@ class DeleteStageAction(HuaweiCloudBaseAction):
 
         policies:
           - name: apig-stage-delete
-            resource: huaweicloud.rest-stage
+            resource: huaweicloud.apig-stage
             filters:
               - type: value
                 key: name
@@ -712,15 +615,9 @@ class DeleteStageAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            # When instance_id is not in the resource, use manager to get it
-            if hasattr(self.manager, 'get_instance_id'):
-                instance_id = self.manager.get_instance_id()
-            else:
-                # If there's no get_instance_id method, use default instance ID
-                session = local_session(self.manager.session_factory)
-                instance_id = session.get_apig_instance_id()
-                log.info(
-                    f"No available instance found, using default instance ID from configuration: {instance_id}")
+            self.log.error(
+                f"No available instance found, using default instance ID from configuration: {instance_id}")
+            return
 
         try:
             # Add more debug information
@@ -729,7 +626,7 @@ class DeleteStageAction(HuaweiCloudBaseAction):
 
             # Ensure instance_id is string type
             request = DeleteEnvironmentV2Request(
-                instance_id=str(instance_id),
+                instance_id=instance_id,
                 env_id=env_id
             )
 
@@ -745,9 +642,7 @@ class DeleteStageAction(HuaweiCloudBaseAction):
             raise
 
 # API Group Resource Management
-
-
-@resources.register('api-groups')
+@resources.register('apig-api-groups')
 class ApiGroupResource(QueryResourceManager):
     """Huawei Cloud API Gateway Group Resource Management
 
@@ -757,7 +652,7 @@ class ApiGroupResource(QueryResourceManager):
 
         policies:
           - name: apig-group-list
-            resource: huaweicloud.api-groups
+            resource: huaweicloud.apig-api-groups
             filters:
               - type: value
                 key: status
@@ -765,7 +660,7 @@ class ApiGroupResource(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = 'api-groups'
+        service = 'apig-api-groups'
         enum_spec = ('list_api_groups_v2', 'groups', 'offset')
         id = 'id'
         name = 'name'
@@ -787,39 +682,26 @@ class ApiGroupResource(QueryResourceManager):
             instance_id = self.data['instance_id']
             log.info(
                 f"Using instance_id from policy configuration: {instance_id}")
-            return instance_id
+            return [instance_id]
 
         # Query APIG instance list
         try:
             # Use apig-instance service client
             client = session.client('apig-instance')
-            instances_request = ListInstancesV2Request()
+            instances_request = ListInstancesV2Request(limit=500)
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
                 # Use the first running instance
+                instance_ids = []
                 for instance in response.instances:
-                    if instance.status == 'Running':
-                        instance_id = instance.id
-                        log.info(
-                            f"Using first running instance ID: {instance_id}")
-                        return instance_id
-
-                # If no running instance is found, use the first instance
-                if response.instances:
-                    instance_id = response.instances[0].id
-                    log.info(
-                        f"No running instance found, using first available instance ID: {instance_id}")
-                    return instance_id
+                    instance_ids.append(instance.id)
+                return instance_ids
         except Exception as e:
             log.error(
                 f"Failed to query APIG instance list: {str(e)}", exc_info=True)
 
-        # If still no instance ID is obtained, use default instance ID
-        instance_id = session.get_apig_instance_id()
-        log.info(
-            f"No available instance found, using default instance ID from configuration: {instance_id}")
-        return instance_id
+        return []
 
     def _fetch_resources(self, query):
         """Override resource retrieval method to ensure instance_id parameter is included in the request"""
@@ -827,100 +709,53 @@ class ApiGroupResource(QueryResourceManager):
         client = session.client(self.resource_type.service)
 
         # Get instance ID
-        instance_id = self.get_instance_id()
+        instance_ids = self.get_instance_id()
 
         # Ensure instance_id is properly set
-        if not instance_id:
+        if not instance_ids:
             log.error(
                 "Unable to get valid APIG instance ID, cannot continue querying API group list")
             return []
 
-        # Create new request object instead of modifying the incoming query
-        request = ListApiGroupsV2Request()
-        request.instance_id = str(instance_id)
-        request.limit = 100
 
-        # Call client method to process request
-        try:
-            response = client.list_api_groups_v2(request)
-            resources = []
+        resources = []
+        for instance_id in instance_ids:
+            offset, limit = 0, 500
+            while True:
+                # Create new request object instead of modifying the incoming query
+                request = ListApiGroupsV2Request(offset=offset, limit=limit)
+                request.instance_id = instance_id
 
-            if hasattr(response, 'groups'):
-                for group in response.groups:
-                    group_dict = {}
+                # Call client method to process request
+                try:
+                    response = client.list_api_groups_v2(request)
+                    if hasattr(response, 'groups'):
+                        for group in response.groups:
+                            group_dict = {}
+                            group_dict["id"] = group.id
+                            group_dict["name"] = group.name
+                            group_dict["instance_id"] = instance_id
+                            group_dict['tag_resource_type'] = self.resource_type.tag_resource_type
+                            # Special handling for url_domains attribute, extract as separate list
+                            if hasattr(group, 'url_domains') and group.url_domains is not None:
+                                url_domains = []
+                                for domain in group.url_domains:
+                                    domain_dict = {}
+                                    domain_dict['id'] = domain.id
+                                    url_domains.append(domain_dict)
 
-                    # Special handling for url_domains attribute, extract as separate list
-                    url_domains = []
-                    if hasattr(group, 'url_domains') and group.url_domains is not None:
-                        for domain in group.url_domains:
-                            domain_dict = {}
-                            # Process each domain object's various attributes
-                            if hasattr(domain, 'id'):
-                                domain_dict['id'] = domain.id
-                            if hasattr(domain, 'domain'):
-                                domain_dict['domain'] = domain.domain
-                            if hasattr(domain, 'cname_status'):
-                                domain_dict['cname_status'] = domain.cname_status
-                            if hasattr(domain, 'ssl_id'):
-                                domain_dict['ssl_id'] = domain.ssl_id
-                            if hasattr(domain, 'ssl_name'):
-                                domain_dict['ssl_name'] = domain.ssl_name
-                            if hasattr(domain, 'min_ssl_version'):
-                                domain_dict['min_ssl_version'] = domain.min_ssl_version
+                                # Add processed url_domains
+                                group_dict['url_domains'] = url_domains
+                            resources.append(group_dict)
+                except exceptions.ClientRequestException as e:
+                    log.error(f"Failed to query API Group list: {str(e)}", exc_info=True)
+                    break
 
-                            # Add other possible attributes
-                            for attr_name in ['verified_client_certificate_enabled',
-                                              'is_has_trusted_root_ca',
-                                              'ingress_http_port',
-                                              'ingress_https_port']:
-                                if hasattr(domain, attr_name):
-                                    domain_dict[attr_name] = getattr(
-                                        domain, attr_name)
+                offset += limit
+                if not response.total or offset >= response.total:
+                    break
 
-                            # Process possible ssl_infos nested list
-                            if hasattr(domain, 'ssl_infos') and domain.ssl_infos is not None:
-                                ssl_infos_list = []
-                                for ssl_info in domain.ssl_infos:
-                                    if hasattr(ssl_info, '__dict__'):
-                                        ssl_info_dict = {}
-                                        for ssl_attr in dir(ssl_info):
-                                            if not ssl_attr.startswith('_') and not callable(getattr(ssl_info, ssl_attr)):
-                                                ssl_info_dict[ssl_attr] = getattr(
-                                                    ssl_info, ssl_attr)
-                                        ssl_infos_list.append(ssl_info_dict)
-                                domain_dict['ssl_infos'] = ssl_infos_list
-                            else:
-                                domain_dict['ssl_infos'] = []
-
-                            url_domains.append(domain_dict)
-
-                    # Extract other API group attributes
-                    for attr in dir(group):
-                        if (not attr.startswith('_') and not callable(getattr(group, attr))
-                                and attr != 'url_domains'):  # Skip url_domains as we've already processed it
-                            value = getattr(group, attr)
-                            # Ensure values are serializable basic types
-                            if isinstance(value, (str, int, float, bool, type(None))) or (
-                                isinstance(value, (list, dict)) and not any(
-                                    hasattr(item, '__dict__') for item in value) if isinstance(value, list) else True
-                            ):
-                                group_dict[attr] = value
-
-                    # Add processed url_domains
-                    group_dict['url_domains'] = url_domains
-
-                    # Add required fields
-                    group_dict['id'] = getattr(group, 'id', '')
-                    group_dict['instance_id'] = instance_id
-                    group_dict['tag_resource_type'] = self.resource_type.tag_resource_type
-
-                    resources.append(group_dict)
-
-            return resources
-        except exceptions.ClientRequestException as e:
-            log.error(
-                f"Failed to query API group list: {str(e)}", exc_info=True)
-            return []
+        return resources
 
     def augment(self, resources):
         """Enhance resource information"""
@@ -928,9 +763,7 @@ class ApiGroupResource(QueryResourceManager):
         return resources
 
 # Update Security
-
-
-@ApiGroupResource.action_registry.register('update-security')
+@ApiGroupResource.action_registry.register('update-domain')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
     """Update domain security policy action
 
@@ -939,26 +772,27 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-          - name: apig-domain-update-security
-            resource: huaweicloud.api-groups
+          - name: apig-domain-update-domain
+            resource: huaweicloud.apig-api-groups
             filters:
               - type: value
                 key: id
                 value: c77f5e81d9cb4424bf704ef2b0ac7600
             actions:
-              - type: update-security
+              - type: update-domain
+                domain_id: test_domain_id
                 min_ssl_version: TLSv1.2
     """
 
     schema = type_schema(
-        'update-security',
+        'update-domain',
         min_ssl_version={'type': 'string', 'enum': ['TLSv1.1', 'TLSv1.2']},
         is_http_redirect_to_https={'type': 'boolean'},
         verified_client_certificate_enabled={'type': 'boolean'},
         ingress_http_port={'type': 'integer', 'minimum': -1, 'maximum': 49151},
-        ingress_https_port={'type': 'integer', 'minimum': -1, 'maximum': 49151}
+        ingress_https_port={'type': 'integer', 'minimum': -1, 'maximum': 49151},
+        domain_id={'type':'string'}
     )
-
     def perform_action(self, resource):
         client = self.manager.get_client()
         group_id = resource['id']
@@ -967,70 +801,30 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
         # Get domain_id from policy data
         domain_id = self.data.get('domain_id')
 
-        # If domain_id is not specified in the policy, try to get it from the resource's url_domains list
-        if not domain_id and 'url_domains' in resource and resource['url_domains']:
-            # Check if url_domains is a list and not empty
-            if isinstance(resource['url_domains'], list) and len(resource['url_domains']) > 0:
-                # Try to get the ID of the first domain
-                domain_item = resource['url_domains'][0]
-                if isinstance(domain_item, dict) and 'id' in domain_item:
-                    domain_id = domain_item['id']
-                    self.log.info(
-                        f"Using first domain ID from resource: {domain_id}")
-
         if not domain_id:
             self.log.error(
                 f"No domain_id specified, cannot perform domain security policy update, API group ID: {group_id}")
             return
-
-        if not instance_id:
-            # When instance_id is not in the resource, use manager to get it
-            if hasattr(self.manager, 'get_instance_id'):
-                instance_id = self.manager.get_instance_id()
-            else:
-                # If there's no get_instance_id method, use default instance ID
-                session = local_session(self.manager.session_factory)
-                instance_id = session.get_apig_instance_id()
-                log.info(
-                    f"No available instance found, using default instance ID from configuration: {instance_id}")
 
         try:
             # Add more debug information
             self.log.debug(
                 f"Updating domain security policy Domain ID: {domain_id}, API group ID: {group_id} (Instance: {instance_id})")
 
-            # Prepare update parameters
+            from huaweicloudsdkapig.v2.model.url_domain_modify import UrlDomainModify
+            
             update_info = {}
 
-            if 'min_ssl_version' in self.data:
-                update_info['min_ssl_version'] = self.data['min_ssl_version']
-
-            if 'is_http_redirect_to_https' in self.data:
-                update_info['is_http_redirect_to_https'] = self.data['is_http_redirect_to_https']
-
-            if 'verified_client_certificate_enabled' in self.data:
-                update_info['verified_client_certificate_enabled'] = self.data['verified_client_certificate_enabled']
-
-            if 'ingress_http_port' in self.data:
-                update_info['ingress_http_port'] = self.data['ingress_http_port']
-
-            if 'ingress_https_port' in self.data:
-                update_info['ingress_https_port'] = self.data['ingress_https_port']
-
-            if 'ssl_id' in self.data:
-                update_info['ssl_id'] = self.data['ssl_id']
-                update_info['ssl_name'] = 'Certificate bound to this domain'
-
-            if not update_info:
-                self.log.warning(
-                    f"No update parameters provided, skipping domain security policy update, Domain ID: {domain_id}, API group ID: {group_id}")
-                return
+            # Required fields from original resource
+            for field in self.data:
+                if field != "domain_id" and field != "type":
+                    update_info[field] = self.data[field]
 
             # Create update request, ensure instance_id is string type
             request = UpdateDomainV2Request(
-                instance_id=str(instance_id),
+                instance_id=instance_id,
                 domain_id=domain_id,
-                body=update_info
+                body=UrlDomainModify(**update_info)
             )
 
             # Print request object

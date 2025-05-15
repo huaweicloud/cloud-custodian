@@ -21,18 +21,14 @@ interactions:
       X-Sdk-Date:
       - 20250514T110523Z
     method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances?limit=100&offset=0
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances?limit=500
   response:
     body:
       string: '{"total":2,"size":2,"instances":[{"id":"eddc4d25480b4cd6b512f270a1b8b341",
         "project_id":"73d69ae0cfcf460190522d06b60f05ad", "instance_name":"apig-Enterprise-Professional",
         "status":"Running", "instance_status":6, "spec":"PROFESSIONAL", "create_time":1585302825070,
         "enterprise_project_id":"0", "eip_address":"xxx.xxx.xxx.xxx", "charging_mode":1,
-        "cbc_metadata":"CS2006301043A28NF:00301-734023-0--0", "type":"apig"}, {"id":"2e2d613c64094a4a94ad38e7ca30adee",
-        "project_id":"73d69ae0cfcf460190522d06b60f05ad", "instance_name":"apig-autotest-apitest",
-        "status":"Running", "instance_status":6, "spec":"PROFESSIONAL", "create_time":1594370987422,
-        "enterprise_project_id":"0", "eip_address":"xxx.xxx.xxx.xxx", "charging_mode":0,
-        "type":"apig", "cbc_operation_locks":[{"lock_scene":"TO_PERIOD_LOCK", "lock_source_id":"CxxxxxxxxxxxM"}]}]}'
+        "cbc_metadata":"CS2006301043A28NF:00301-734023-0--0", "type":"apig"}]}'
     headers:
       Connection:
       - keep-alive
@@ -42,8 +38,6 @@ interactions:
       - Wed, 14 May 2025 11:05:23 GMT
       Server:
       - API Gateway
-      Transfer-Encoding:
-      - chunked
       X-Request-Id:
       - a123b456c789d012e345f678g901h234
     status:
@@ -67,9 +61,9 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250508T081123Z
+      - 20250515T123241Z
     method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/cc371c55cc9141558ccd76b86903e78b/api-groups?limit=100
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/eddc4d25480b4cd6b512f270a1b8b341/api-groups?limit=500&offset=0
   response:
     body:
       string: '{ "total": 1, "size": 1, "groups": [ { "update_time": "2020-07-31T06:55:55Z",
@@ -87,65 +81,12 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 08 May 2025 08:11:23 GMT
+      - Thu, 15 May 2025 12:32:41 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=ba42d73e8a75e1299f; path=/
-      - HWWAFSESTIME=1746690683412; path=/
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - 83e3f237e9f30b47391da348a6decc5a
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Host:
-      - apig.ap-southeast-1.myhuaweicloud.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
-      X-Sdk-Date:
-      - 20250514T113850Z
-    method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances
-  response:
-    body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"7a3637f458e2d34a51e281c8f2fbb3a7"}
-
-        '
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Wed, 14 May 2025 11:38:50 GMT
-      Server:
-      - CloudWAF
-      Set-Cookie:
-      - HWWAFSESID=f82377311d1acade37; path=/
-      - HWWAFSESTIME=1747222730807; path=/
+      - HWWAFSESID=28dbc73d8954da0cd1; path=/
+      - HWWAFSESTIME=1747312361652; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -157,10 +98,10 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 7a3637f458e2d34a51e281c8f2fbb3a7
+      - 34b891e952013d4f133abf239b6d57b8
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: ok
 version: 1

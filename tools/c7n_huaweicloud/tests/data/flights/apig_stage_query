@@ -21,18 +21,14 @@ interactions:
       X-Sdk-Date:
       - 20250514T110523Z
     method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances?limit=100&offset=0
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances?limit=500
   response:
     body:
       string: '{"total":2,"size":2,"instances":[{"id":"eddc4d25480b4cd6b512f270a1b8b341",
         "project_id":"73d69ae0cfcf460190522d06b60f05ad", "instance_name":"apig-Enterprise-Professional",
         "status":"Running", "instance_status":6, "spec":"PROFESSIONAL", "create_time":1585302825070,
         "enterprise_project_id":"0", "eip_address":"xxx.xxx.xxx.xxx", "charging_mode":1,
-        "cbc_metadata":"CS2006301043A28NF:00301-734023-0--0", "type":"apig"}, {"id":"2e2d613c64094a4a94ad38e7ca30adee",
-        "project_id":"73d69ae0cfcf460190522d06b60f05ad", "instance_name":"apig-autotest-apitest",
-        "status":"Running", "instance_status":6, "spec":"PROFESSIONAL", "create_time":1594370987422,
-        "enterprise_project_id":"0", "eip_address":"xxx.xxx.xxx.xxx", "charging_mode":0,
-        "type":"apig", "cbc_operation_locks":[{"lock_scene":"TO_PERIOD_LOCK", "lock_source_id":"CxxxxxxxxxxxM"}]}]}'
+        "cbc_metadata":"CS2006301043A28NF:00301-734023-0--0", "type":"apig"}]}'
     headers:
       Connection:
       - keep-alive
@@ -42,8 +38,6 @@ interactions:
       - Wed, 14 May 2025 11:05:23 GMT
       Server:
       - API Gateway
-      Transfer-Encoding:
-      - chunked
       X-Request-Id:
       - a123b456c789d012e345f678g901h234
     status:
@@ -69,7 +63,7 @@ interactions:
       X-Sdk-Date:
       - 20250508T065506Z
     method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/cc371c55cc9141558ccd76b86903e78b/envs?limit=100
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/eddc4d25480b4cd6b512f270a1b8b341/envs?limit=500
   response:
     body:
       string: '{"total": 1, "size": 1, "envs": [{"id": "7a1ad0c350844ee69479b47df9a881cb",
@@ -103,59 +97,3 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Host:
-      - apig.ap-southeast-1.myhuaweicloud.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
-      X-Sdk-Date:
-      - 20250514T121830Z
-    method: GET
-    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances
-  response:
-    body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"ff6d3f8f2bad5d91941264fe2218db38"}
-
-        '
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Wed, 14 May 2025 12:18:30 GMT
-      Server:
-      - CloudWAF
-      Set-Cookie:
-      - HWWAFSESID=32c5673f4c25ad7ace; path=/
-      - HWWAFSESTIME=1747225110901; path=/
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - ff6d3f8f2bad5d91941264fe2218db38
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 401
-      message: Unauthorized
-version: 1

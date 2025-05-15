@@ -132,21 +132,6 @@ class Session:
         self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
         self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
 
-    def get_apig_instance_id(self):
-        """获取APIG实例ID，如果未配置则返回默认值
-        
-        默认值是为了测试目的，实际使用时应该从环境变量或配置中获取
-        """
-        # 从环境变量或配置中获取实例ID
-        instance_id = os.getenv("HUAWEI_APIG_INSTANCE_ID")
-        
-        # 如果未配置，返回默认值
-        if not instance_id:
-            instance_id = 'cc371c55cc9141558ccd76b86903e78b'
-            log.info(f"未找到APIG实例ID配置，使用默认实例ID: {instance_id}")
-            
-        return instance_id
-
     def client(self, service):
         if self.ak is None or self.sk is None:
             # basic
@@ -417,7 +402,7 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'apig' or service in ['rest-api', 'rest-stage', 'api-groups', 'apig-instance']:
+        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups', 'apig-instance']:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)
@@ -530,11 +515,11 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
-        elif service == 'rest-api':
+        elif service == 'apig-api':
             request = ListApisV2Request()
-        elif service == 'rest-stage':
+        elif service == 'apig-stage':
             request = ListEnvironmentsV2Request()
-        elif service == 'api-groups':
+        elif service == 'apig-api-groups':
             request = ListApiGroupsV2Request()
         elif service == 'apig-instance':
             request = ListInstancesV2Request()
