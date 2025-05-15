@@ -338,7 +338,7 @@ class SwrImage(QueryResourceManager):
             resource: huaweicloud.swr-image
             filters:
               - type: value
-                key: Tag
+                key: tag
                 value: latest
     """
 
@@ -346,8 +346,8 @@ class SwrImage(QueryResourceManager):
         service = 'swr'
         enum_spec = ('list_repository_tags', 'body', 'offset')
         id = 'id'
-        name = 'Tag'  # Tag field corresponds to image version name
-        filter_name = 'Tag'
+        name = 'tag'  # Tag field corresponds to image version name
+        filter_name = 'tag'
         filter_type = 'scalar'
         taggable = False  # SWR images don't support tagging
         date = 'created'  # Creation time field
@@ -359,7 +359,7 @@ class SwrImage(QueryResourceManager):
             try:
                 # Build complete ID
                 if 'namespace' in resource and 'repository' in resource:
-                    tag_val = resource.get('Tag') or resource.get('tag')
+                    tag_val = resource.get('Tag')
                     if tag_val:
                         # Use Tag value to build ID
                         resource['id'] = (f"{resource['namespace']}/"
@@ -372,56 +372,12 @@ class SwrImage(QueryResourceManager):
 
         return result
 
-    def get_resources(self, resource_ids):
-        """Get specific resources by ID."""
-        resources = []
-
-        if not resource_ids:
-            return resources
-
-        client = self.get_client()
-
-        # Parse resource ID format: namespace/repository/tag
-        for resource_id in resource_ids:
-            try:
-                namespace, repository, tag = resource_id.split('/')
-
-                request = ListRepositoryTagsRequest(
-                    namespace=namespace,
-                    repository=repository,
-                    tag=tag  # Directly filter the specified tag
-                )
-
-                # Send request
-                response = client.list_repository_tags(request)
-
-                # Process response
-                if response.body:
-                    for image in response.body:
-                        image_dict = {}
-                        if hasattr(image, 'to_dict'):
-                            image_dict = image.to_dict()
-                        else:
-                            image_dict = image
-
-                        # Add namespace and repository information
-                        image_dict['namespace'] = namespace
-                        image_dict['repository'] = repository
-
-                        resources.append(image_dict)
-            except Exception as e:
-                self.log.warning(f"Failed to get resource {resource_id}: {e}")
-
-        return self.augment(resources)
-
-    def resources(self, query=None):
-        """Get resource list by querying all repositories first.
+    def _fetch_resources(self, query):
+        """Fetch all SWR images by first getting repositories then images.
         
-        This method overrides the parent class to implement the two-level query:
+        This method overrides parent's _fetch_resources to implement the two-level query:
         1. Query all SWR repositories
         2. For each repository, query its images
-        
-        We try to leverage query.py's pagination mechanisms where possible.
         """
         all_images = []
         
@@ -445,20 +401,14 @@ class SwrImage(QueryResourceManager):
                 # Get all images for this repository
                 images = self._get_repository_tags_paginated(client, namespace, repository)
                 all_images.extend(images)
+                self.log.debug(
+                    f"Retrieved {len(images)} images for repository {namespace}/{repository}")
                 
         except Exception as e:
             self.log.error(f"Failed to fetch SWR images: {e}")
-        
-        # Apply resource filtering from the parent class
-        resource_count = len(all_images)
-        filtered_resources = self.filter_resources(all_images)
-        
-        # Check resource limits if applicable
-        if self.data == self.ctx.policy.data:
-            self.check_resource_limit(len(filtered_resources), resource_count)
             
-        # Return augmented resources
-        return self.augment(filtered_resources)
+        self.log.info(f"Retrieved a total of {len(all_images)} SWR images")
+        return all_images
 
     def _get_repository_tags_paginated(self, client, namespace, repository):
         """Get all image tags for a repository with pagination.
@@ -498,12 +448,6 @@ class SwrImage(QueryResourceManager):
                     image_dict['namespace'] = namespace
                     image_dict['repository'] = repository
                     
-                    # Normalize tag field
-                    if 'Tag' in image_dict and not image_dict.get('tag'):
-                        image_dict['tag'] = image_dict['Tag']
-                    elif 'tag' in image_dict and not image_dict.get('Tag'):
-                        image_dict['Tag'] = image_dict['tag']
-                    
                     batch.append(image_dict)
                 
                 # Add batch to results
@@ -515,6 +459,10 @@ class SwrImage(QueryResourceManager):
                     
                 # Move to next page
                 offset += limit
+                
+                self.log.debug(
+                    f"Retrieved {len(batch)} tags for {namespace}/{repository}, "
+                    f"total so far: {len(tags)}")
                 
         except Exception as e:
             self.log.error(

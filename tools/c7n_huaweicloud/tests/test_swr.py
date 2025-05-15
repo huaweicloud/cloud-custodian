@@ -119,7 +119,7 @@ class SwrImageTest(BaseTest):
         # Verify VCR: There should be 6 images from multiple repositories
         self.assertEqual(len(resources), 6)
         # Verify VCR: Image tag should be 'latest'
-        self.assertEqual(resources[0]["Tag"], "latest")
+        self.assertEqual(resources[0]["tag"], "latest")
         # Verify namespace and repository information
         self.assertEqual(resources[0]["namespace"], "test-namespace")
         self.assertEqual(resources[0]["repository"], "test-repo")

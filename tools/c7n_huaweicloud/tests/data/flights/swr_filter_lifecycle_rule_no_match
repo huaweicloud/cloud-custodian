@@ -19,7 +19,7 @@ interactions:
       X-Sdk-Date:
       - 20250430T022319Z
     method: GET
-    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos?limit=100&offset=0
   response:
     body:
       string: '[ { "name": "test-repo", "category": "linux", "description": "Test
@@ -103,7 +103,7 @@ interactions:
       X-Sdk-Date:
       - 20250513T021559Z
     method: GET
-    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos?limit=100&offset=0
   response:
     body:
       string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"ee566d83797f134183dae2c5cf0a4fa5"}
