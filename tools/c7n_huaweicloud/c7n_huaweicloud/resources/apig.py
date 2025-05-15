@@ -121,8 +121,8 @@ class InstanceResource(QueryResourceManager):
         return processed_resources
 
     def augment(self, resources):
-        """增强资源信息"""
-        # 确保所有资源都可以被正确序列化
+        """Enhance resource information"""
+        # Ensure all resources can be properly serialized
         return self.process_resources(resources)
 
 
@@ -247,8 +247,8 @@ class ApiResource(QueryResourceManager):
             return []
 
     def augment(self, resources):
-        """增强资源信息"""
-        # 直接返回已处理的资源
+        """Enhance resource information"""
+        # Return processed resources directly
         return resources
 
 # API Resource Actions
@@ -346,7 +346,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
     schema = type_schema(
         'update',
         name={'type': 'string'},
-        # 使用api_type替代type，避免与操作类型冲突
+        # Use api_type instead of type to avoid conflict with operation type
         api_type={'type': 'integer', 'enum': [1, 2]},
         req_protocol={'type': 'string', 'enum': [
             'HTTP', 'HTTPS', 'BOTH', 'GRPCS']},
@@ -580,8 +580,8 @@ class StageResource(QueryResourceManager):
             return []
 
     def augment(self, resources):
-        """增强资源信息"""
-        # 直接返回已处理的资源
+        """Enhance resource information"""
+        # Return processed resources directly
         return resources
 
 # Update Environment Resource
@@ -904,8 +904,8 @@ class ApiGroupResource(QueryResourceManager):
             return []
 
     def augment(self, resources):
-        """增强资源信息"""
-        # 直接返回已处理的资源
+        """Enhance resource information"""
+        # Return processed resources directly
         return resources
 
 # Update Security
