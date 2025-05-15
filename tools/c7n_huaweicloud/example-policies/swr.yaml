@@ -1,0 +1,94 @@
+policies:
+  - name: swr-retention-list
+    description: |
+      列出指定命名空间和仓库的镜像老化规则
+    resource: huaweicloud.swr-retention
+    namespace: my-namespace  # 指定命名空间
+    repository: my-repository  # 指定仓库
+    region: cn-north-4  # 华为云区域
+
+  - name: swr-retention-old-rules
+    description: |
+      查找创建时间超过90天的老化规则
+    resource: huaweicloud.swr-retention
+    namespace: my-namespace
+    repository: my-repository
+    region: cn-north-4
+    filters:
+      - type: age
+        days: 90
+        op: gt
+
+  - name: swr-retention-create
+    description: |
+      为指定仓库创建镜像老化规则
+    resource: huaweicloud.swr-retention
+    namespace: my-namespace
+    repository: my-repository
+    region: cn-north-4
+    actions:
+      - type: create-retention
+        algorithm: or  # 或关系，满足任一规则即应用
+        rules:
+          - template: date_rule  # 日期规则
+            params:
+              days: 30  # 保留30天
+            tag_selectors:
+              - kind: label
+                pattern: "dev"  # 匹配标签为dev的镜像
+
+  - name: swr-retention-delete
+    description: |
+      删除指定命名空间和仓库中标记为待删除的老化规则
+    resource: huaweicloud.swr-retention
+    namespace: my-namespace
+    repository: my-repository
+    region: cn-north-4
+    filters:
+      - type: marked-for-op
+        op: delete
+        tag: c7n_status
+    actions:
+      - delete  # 执行删除操作
+
+  - name: swr-retention-tag
+    description: |
+      为命中过滤条件的老化规则添加标签
+    resource: huaweicloud.swr-retention
+    namespace: my-namespace
+    repository: my-repository
+    region: cn-north-4
+    filters:
+      - type: value
+        key: algorithm
+        value: or
+    actions:
+      - type: tag
+        tags:
+          to-review: true
+          reviewed-on: '{now:%Y-%m-%d}'
+
+  - name: swr-retention-mark-and-notify
+    description: |
+      标记老化规则并发送通知
+    resource: huaweicloud.swr-retention
+    namespace: my-namespace
+    repository: my-repository
+    region: cn-north-4
+    filters:
+      - type: age
+        days: 180
+        op: gt
+    actions:
+      - type: mark-for-op
+        op: delete
+        days: 7
+        tag: c7n_status
+      - type: notify
+        to:
+          - resource-owner
+          - ['email', 'admin@example.com']
+        subject: '老化规则将在7天后删除'
+        transport:
+          type: email
+          from: cloud-custodian@example.com 

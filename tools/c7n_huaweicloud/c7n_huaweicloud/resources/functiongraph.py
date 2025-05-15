@@ -110,7 +110,7 @@ class ReservedConcurrency(ValueFilter):
                 response = client.list_reserved_instance_configs(request)
                 reserved_instances = response.reserved_instances
                 if reserved_instances is None:
-                    return r
+                    return None
                 for reserved_instance in reserved_instances:
                     if reserved_instance.function_urn == f'{r["func_urn"]}:{r["version"]}':
                         # change result to Python dict
@@ -123,6 +123,10 @@ class ReservedConcurrency(ValueFilter):
                 log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
                           f'error_code[{e.error_code}], '
                           f'error_msg[{e.error_msg}]')
+                return None
+            except Exception as e:
+                log.error(f'other error, {str(e)}')
+                return None
             return r
 
         with self.executor_factory(max_workers=3) as w:
@@ -175,7 +179,7 @@ class FunctionTrigger(ValueFilter):
                 response = client.list_function_triggers(request)
                 triggers = response.body
                 if triggers is None:
-                    return r
+                    return None
                 # change result to Python dict
                 r[self.annotation_key] = eval(str(triggers).
                                               replace('null', 'None').
@@ -185,6 +189,10 @@ class FunctionTrigger(ValueFilter):
                 log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
                           f'error_code[{e.error_code}], '
                           f'error_msg[{e.error_msg}]')
+                return None
+            except Exception as e:
+                log.error(f'other error, {str(e)}')
+                return None
             return r
 
         with self.executor_factory(max_workers=3) as w:
