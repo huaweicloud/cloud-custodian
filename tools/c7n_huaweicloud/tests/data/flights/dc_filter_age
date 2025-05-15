@@ -19,7 +19,7 @@ interactions:
       X-Sdk-Date:
       - 20250429T010456Z
     method: GET
-    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects?limit=100
   response:
     body:
       string: "{\"request_id\":\"3b4ff178b882f7c0b18c704b78a3eb23\", \"direct_connects\":[
