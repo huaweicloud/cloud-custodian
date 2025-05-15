@@ -54,8 +54,11 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
+from huaweicloudsdkeg.v1 import ListSubscriptionsRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
-from huaweicloudsdkeip.v3 import EipClient
+from huaweicloudsdkeip.v3 import EipClient, ListPublicipsRequest
+from huaweicloudsdkeip.v2 import EipClient as EipClientV2
+from huaweicloudsdkeip.v2.region.eip_region import EipRegion as EipRegionV2
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
 from huaweicloudsdkgeip.v3 import GeipClient
 from huaweicloudsdkims.v2.region.ims_region import ImsRegion
@@ -102,7 +105,22 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsRequest,
     SearchResourceShareAssociationsReqBody,
 )
+from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
+from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
+from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
+from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
+from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
+from huaweicloudsdkaom.v2 import (
+    AomClient,
+    ListMetricOrEventAlarmRuleRequest
+)
+from huaweicloudsdkaom.v2.region.aom_region import AomRegion
+
+from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
+from huaweicloudsdkdc.v3.region.dc_region import DcRegion
+
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
 from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailRequest
@@ -294,6 +312,13 @@ class Session:
                 .with_region(EipRegion.value_of(self.region))
                 .build()
             )
+        elif service == "eip_v2":
+            client = (
+                EipClientV2.new_builder()
+                .with_credentials(credentials)
+                .with_region(EipRegionV2.value_of(self.region))
+                .build()
+            )
         elif service == "geip":
             client = (
                 GeipClient.new_builder()
@@ -316,7 +341,7 @@ class Session:
                 .build()
             )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -422,6 +447,27 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'scm':
+            client = (
+                ScmClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(ScmRegion.value_of("ap-southeast-1"))
+                .build()
+            )
+        elif service == 'dc':
+            client = (
+                DcClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DcRegion.value_of(self.region))
+                .build()
+            )
         elif service == "cc":
             client = (
                 CcClient.new_builder()
@@ -436,7 +482,20 @@ class Session:
                 .with_region(BmsRegion.value_of(self.region))
                 .build()
             )
-
+        elif service == "rds":
+            client = (
+                RdsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RdsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'aom':
+            client = (
+                AomClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AomRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -507,6 +566,8 @@ class Session:
             request = ListLoadBalancersRequest()
         elif service == "elb_listener":
             request = ListListenersRequest()
+        elif service == "eip":
+            request = ListPublicipsRequest()
         elif service == "ims":
             request = ListImagesRequest()
         elif service == "smn":
@@ -547,7 +608,21 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == 'swr':
+            request = ListReposDetailsRequest()
+        elif service == 'swr-image':
+            request = ListRepositoryTagsRequest()
+        elif service == 'scm':
+            request = ListCertificatesRequest()
+            request.expired_days_since = 1095
+        elif service == 'dc':
+            request = ListDirectConnectsRequest()
         elif service == "bms":
             request = ListBareMetalServerDetailsRequest()
-
+        elif service == 'rds':
+            request = RdsListInstancesRequest()
+        elif service == 'eg':
+            request = ListSubscriptionsRequest()
+        elif service == 'aom':
+            request = ListMetricOrEventAlarmRuleRequest()
         return request

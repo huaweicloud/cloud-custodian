@@ -1,0 +1,55 @@
+
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093109Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones?limit=100
+  response:
+    body:
+      string: '{"links": {"self": "https://dns.huaweicloud.com/v2/zones?limit=100"},
+        "zones": [{"id": "2c9eb1538a138432018a13aaaaa00001", "name": "public-old.example.com.",
+        "description": "Old public zone", "email": "admin@example.com", "zone_type":
+        "public", "ttl": 300, "serial": 1678886423, "status": "ACTIVE", "record_num":
+        1, "pool_id": "pubpoolidold", "project_id": "0605dc51495c4447b48f5168309f9b5f",
+        "created_at": "2023-01-15T12:00:23Z", "updated_at": "2023-01-15T12:00:23Z",
+        "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13aaaaa00001"},
+        "masters": [], "router": {"router_id": "null", "status": "PENDING_CREATE"},
+        "tags": [], "enterprise_project_id": "0"}, {"id": "2c9eb1538a138432018a13bbbbb00001",
+        "name": "public-new.example.com.", "description": "New public zone", "email":
+        "admin@example.com", "zone_type": "public", "ttl": 300, "serial": 1678886424,
+        "status": "ACTIVE", "record_num": 1, "pool_id": "pubpoolidnew", "project_id":
+        "0605dc51495c4447b48f5168309f9b5f", "created_at": "2025-04-08T12:00:24Z",
+        "updated_at": "2025-04-08T12:00:24Z", "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13bbbbb00001"},
+        "masters": [], "router": {"router_id": "null", "status": "PENDING_CREATE"},
+        "tags": [], "enterprise_project_id": "0"}], "metadata": {"total_count": 2}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1300'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:09 GMT
+      X-Request-Id:
+      - 060380a712db80c953624d1d55ebf8ee
+    status:
+      code: 200
+      message: success

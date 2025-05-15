@@ -1,0 +1,64 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dcaas.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250428T120640Z
+    method: GET
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects?limit=100
+  response:
+    body:
+      string: "{\"request_id\":\"3b4ff178b882f7c0b18c704b78a3eb23\", \"direct_connects\":[
+        {\"id\":\"dc-123456789abcdef\", \"tenant_id\":\"ap-southeat-1\", \"name\":\"dc-test-connection\",
+        \"description\":\"\u6D4B\u8BD5\u4E13\u7EBF\u8FDE\u63A5\", \"port_type\":\"10G\",
+        \"bandwidth\":1000, \"location\":\"Huawei DC Location\", \"peer_location\":\"Customer
+        DC Location\", \"device_id\":\"dc-device-001\", \"interface_name\":\"interface-1\",
+        \"redundant_id\":null, \"provider\":\"Huawei Cloud\", \"provider_status\":\"ACTIVE\",
+        \"type\":\"standard\", \"hosting_id\":null, \"vlan\":100, \"charge_mode\":\"Prepaid\",
+        \"order_id\":\"123456789\", \"product_id\":\"dc-product-001\", \"status\":\"ACTIVE\",
+        \"admin_state_up\":true, \"spec_code\":\"dc.10g\", \"applicant\":\"admin\",
+        \"create_time\":\"2025-01-01T00:00:00Z\", \"enterprise_project_id\":\"0\",
+        \"region_id\":\"ap-southeast-1\", \"building_line_status\":\"COMPLETED\",
+        \"accept_time\":\"2025-01-01T01:00:00Z\", \"port_spec_code\":\"xxx-port-spec\",
+        \"port_type_name\":\"10G-\u7535\u53E3\" } ] } "
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Apr 2025 12:06:40 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=1285b736efa54d997b; path=/
+      - HWWAFSESTIME=1745842000500; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 3b4ff178b882f7c0b18c704b78a3eb23
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
