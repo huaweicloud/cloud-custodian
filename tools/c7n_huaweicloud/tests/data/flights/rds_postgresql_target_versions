@@ -1,0 +1,113 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T030107Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "postgres-instance-04", "name": "postgres-hba-conf-no-match",
+        "status": "ACTIVE", "datastore": {"type": "PostgreSQL", "version": "13.4"},
+        "private_ips": ["192.168.1.40"], "port": 5432, "pg_hba_conf": [ {"field":
+        "host", "type": "host", "database": "all", "user": "all", "address": "192.168.1.0/24",
+        "auth_method": "md5"}], "type": "Single"}], "total_count": 1} '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 03:01:07 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747018867870; path=/
+      - HWWAFSESID=c940873e6992b721ae; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 30f078ec34899f97a21b61650fea4682
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T030627Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/postgres-instance-04/major-version/available-version
+  response:
+    body:
+      string: '{
+         "available_versions": ["13.9", "14.4"]
+}
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 03:06:27 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747019187215; path=/
+      - HWWAFSESID=0e85073b213d4c784e; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 2fa20ed6daffac4b6460c079b316fcbe
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
