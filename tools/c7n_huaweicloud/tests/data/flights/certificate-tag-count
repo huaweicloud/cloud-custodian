@@ -55,13 +55,13 @@ interactions:
       X-Sdk-Date:
       - 20250409T093110Z
     method: GET
-    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates
-  response:
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates?expired_days_since=1095
     body:
-      string: '{"certificates":[{"id":"scs1554192131150","name":"test-with-tags","domain":"www.zx.com",
-        "sans":"a.zx.com;b.zx.com","type":"OV_SSL_CERT","deploy_support":true, "signature_algorithm":"SHA256WITHRSA","brand":"GEOTRUST",
-        "expire_time":"2021-05-27 16:46:25.0","domain_type":"MULTI_DOMAIN", "validity_period":12,"status":"ISSUED","domain_count":2,"wildcard_count":0,
-        "description":"带标签的测试证书","tags":[{"key":"env","value":"production"},{"key":"project","value":"cloud-custodian"}]}],"total_count":1}'
+      string: "{\"certificates\":[{\"id\":\"scs1554192131150\",\"name\":\"test-with-tags\",\"domain\":\"www.zx.com\",
+        \"sans\":\"a.zx.com;b.zx.com\",\"type\":\"OV_SSL_CERT\",\"deploy_support\":true,
+        \"signature_algorithm\":\"SHA256WITHRSA\",\"brand\":\"GEOTRUST\", \"expire_time\":\"2021-05-27
+        16:46:25.0\",\"domain_type\":\"MULTI_DOMAIN\", \"validity_period\":12,\"status\":\"ISSUED\",\"domain_count\":2,\"wildcard_count\":0,
+        \"description\":\"\u5E26\u6807\u7B7E\u7684\u6D4B\u8BD5\u8BC1\u4E66\",\"tags\":[{\"key\":\"env\",\"value\":\"production\"},{\"key\":\"project\",\"value\":\"cloud-custodian\"}]}],\"total_count\":1}"
     headers:
       Connection:
       - keep-alive
@@ -76,4 +76,3 @@ interactions:
     status:
       code: 200
       message: OK
-version: 1

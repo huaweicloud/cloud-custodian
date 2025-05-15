@@ -55,7 +55,7 @@ interactions:
       X-Sdk-Date:
       - 20250409T093110Z
     method: GET
-    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates?expired_days_since=1095
   response:
     body:
       string: '{"certificates":[{"id":"scs1554192131150","name":"test","domain":"www.zx.com",
@@ -116,4 +116,3 @@ interactions:
     status:
       code: 204
       message: No Content
-version: 1

@@ -43,6 +43,18 @@ def get_obs_client(session_factory, bucket):
     return client
 
 
+def filter_region_bucket(session_factory, buckets):
+    session = local_session(session_factory)
+    current_region = session.region
+
+    filtered_buckets = []
+    for bucket in buckets:
+        if bucket.get('location') == current_region:
+            filtered_buckets.append(bucket)
+
+    return filtered_buckets
+
+
 def raise_exception(resp, method, bucket):
     log.error({"invoke method [": method, "] failed for bukcet ": bucket['name'],
                "request reason is ": resp.reason, " request id is": resp.requestId})
@@ -514,8 +526,9 @@ class WildcardStatementFilter(Filter):
     annotation_key = 'c7n:WildcardStatements'
 
     def process(self, buckets, event=None):
+        filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
         with self.executor_factory(max_workers=5) as w:
-            results = w.map(self.process_bucket, buckets)
+            results = w.map(self.process_bucket, filtered_buckets)
             results = list(filter(None, list(results)))
             return results
 
@@ -586,8 +599,9 @@ class BucketEncryptionStateFilter(Filter):
     annotation_key = 'c7n:BucketEncryptionCrypto'
 
     def process(self, buckets, event=None):
+        filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
         with self.executor_factory(max_workers=5) as w:
-            results = w.map(self.process_bucket, buckets)
+            results = w.map(self.process_bucket, filtered_buckets)
             results = list(filter(None, list(results)))
             return results
 
@@ -665,8 +679,9 @@ class GlobalGrantsFilter(Filter):
     annotation_key = 'c7n:GlobalPermissions'
 
     def process(self, buckets, event=None):
+        filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
         with self.executor_factory(max_workers=5) as w:
-            results = w.map(self.process_bucket, buckets)
+            results = w.map(self.process_bucket, filtered_buckets)
             results = list(filter(None, list(results)))
             return results
 
@@ -761,8 +776,9 @@ class FilterPublicBlock(Filter):
     annotation_key = 'c7n:PublicAccessBlock'
 
     def process(self, buckets, event=None):
+        filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
         with self.executor_factory(max_workers=5) as w:
-            results = w.map(self.process_bucket, buckets)
+            results = w.map(self.process_bucket, filtered_buckets)
             results = list(filter(None, list(results)))
             return results
 
@@ -841,8 +857,9 @@ class SecureTransportFilter(Filter):
     resource_list_template = ["{bucket_name}", "{bucket_name}/*"]
 
     def process(self, buckets, event=None):
+        filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
         with self.executor_factory(max_workers=5) as w:
-            results = w.map(self.process_bucket, buckets)
+            results = w.map(self.process_bucket, filtered_buckets)
             results = list(filter(None, list(results)))
             return results
 
@@ -918,8 +935,9 @@ class ObsCrossAccountFilter(Filter):
      "PutBucketAcl", "PutEncryptionConfiguration", "PutObjectAcl", "*"]
 
     def process(self, buckets, event=None):
+        filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
         with self.executor_factory(max_workers=5) as w:
-            results = w.map(self.process_bucket, buckets)
+            results = w.map(self.process_bucket, filtered_buckets)
             results = list(filter(None, list(results)))
             return results
 
@@ -1054,3 +1072,76 @@ class ObsCrossAccountFilter(Filter):
                 return False
             else:
                 raise_exception(resp, 'getBucketWebsite', bucket)
+
+
+@Obs.filter_registry.register("obs-missing-tag-filter")
+class OBSMissingTagFilter(Filter):
+    """Detects and filters Huawei Cloud OBS buckets that are missing the designated tags.
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: missing-bucket-tags
+                resource: huaweicloud.obs
+                filters:
+                  - type: obs-missing-tag-filter
+                    tags:
+                      - key: key1
+                        value: value1
+                      - key: key2
+                        value: value2
+                    match: missing-any
+    """
+    schema = type_schema(
+        'obs-missing-tag-filter',
+        required=['tags'],
+        tags={
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'additionalProperties': False,
+                'required': ['key', 'value'],
+                'properties': {
+                    'key': {'type': 'string'},
+                    'value': {'type': 'string'}
+                }
+            }
+        },
+        match={'type': 'string', 'enum': ['missing-all', 'missing-any']}
+    )
+
+    def process(self, buckets, event=None):
+        filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
+        with self.executor_factory(max_workers=5) as w:
+            results = w.map(self.process_bucket, filtered_buckets)
+            results = list(filter(None, list(results)))
+            return results
+
+    def process_bucket(self, bucket):
+        expected_tags = {(t['key'], t['value']) for t in self.data.get('tags', [])}
+        match_mode = self.data.get('match', 'missing-any')
+
+        bucket_tags = self.get_bucket_tags(bucket)
+        if self._is_match(expected_tags, bucket_tags, match_mode):
+            return bucket
+        else:
+            return None
+
+    def get_bucket_tags(self, bucket):
+        client = get_obs_client(self.manager.session_factory, bucket)
+        resp = client.getBucketTagging(bucket['name'])
+        if resp.status < 300:
+            return {(tag['key'], tag['value']) for tag in resp.body.get('tagSet', [])}
+        else:
+            if 'NoSuchTagSet' == resp.errorCode:
+                return {}
+            raise_exception(resp, 'getBucketTagging', bucket)
+
+    def _is_match(self, expected, actual, match_mode):
+        if match_mode == 'missing-all':
+            return expected.isdisjoint(actual)
+        elif match_mode == 'missing-any':
+            return not actual.issuperset(expected)
+        return False

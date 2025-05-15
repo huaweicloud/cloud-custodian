@@ -54,6 +54,7 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
+from huaweicloudsdkeg.v1 import ListSubscriptionsRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
 from huaweicloudsdkeip.v3 import EipClient, ListPublicipsRequest
 from huaweicloudsdkeip.v2 import EipClient as EipClientV2
@@ -109,8 +110,15 @@ from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
+from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
+from huaweicloudsdkaom.v2 import (
+    AomClient,
+    ListMetricOrEventAlarmRuleRequest
+)
+from huaweicloudsdkaom.v2.region.aom_region import AomRegion
 
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
@@ -438,7 +446,7 @@ class Session:
                 .with_region(SwrRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'certificate':
+        elif service == 'scm':
             client = (
                 ScmClient.new_builder()
                 .with_credentials(globalCredentials)
@@ -473,7 +481,13 @@ class Session:
                 .with_region(RdsRegion.value_of(self.region))
                 .build()
             )
-
+        elif service == 'aom':
+            client = (
+                AomClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AomRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -589,13 +603,17 @@ class Session:
             request = ListReposDetailsRequest()
         elif service == 'swr-image':
             request = ListRepositoryTagsRequest()
-        elif service == 'certificate':
+        elif service == 'scm':
             request = ListCertificatesRequest()
+            request.expired_days_since = 1095
         elif service == 'dc':
             request = ListDirectConnectsRequest()
         elif service == "bms":
             request = ListBareMetalServerDetailsRequest()
         elif service == 'rds':
             request = RdsListInstancesRequest()
-
+        elif service == 'eg':
+            request = ListSubscriptionsRequest()
+        elif service == 'aom':
+            request = ListMetricOrEventAlarmRuleRequest()
         return request

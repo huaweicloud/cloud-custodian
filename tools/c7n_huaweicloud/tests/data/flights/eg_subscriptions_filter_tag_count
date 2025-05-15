@@ -1,0 +1,59 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250514T063435Z
+    method: GET
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/ap-southeat-1/subscriptions?limit=100&offset=0
+  response:
+    body:
+      string: '{"size":1,"total":1,"items":[{"id":"63cfd150-65fd-4180-ba32-e9710100d100","created_time":"2025-05-13T10:22:02Z","updated_time":"2025-05-13T10:22:02Z","name":"subscription-ppki","description":"","type":"EVENT","status":"ENABLED","channel_id":"65359a7e-3c46-431d-9629-f2a56a2a0380","channel_name":"test","sources":[{"id":"f2c3c223-dab2-4171-b864-c0ad17268257","created_time":"2025-05-13T10:22:02Z","updated_time":"2025-05-13T10:22:02Z","name":"test","provider_type":"CUSTOM","detail":{},"filter":{"source":[{"op":"StringIn","values":["test"]}]}}],"targets":[{"id":"d1500502-7781-4e39-b1e9-65a5aab661e1","created_time":"2025-05-13T10:22:02Z","updated_time":"2025-05-13T10:22:02Z","name":"HTTPS","provider_type":"CUSTOM","connection_id":"2f1b384d-b643-496f-b9ed-450f741984f3","detail":{"url":"http://1.1.1.1"},"transform":{"type":"ORIGINAL","value":""},"thread_num":20,"retry_times":16}],"used":[],"eps_id":"0"}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '909'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 06:34:36 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=e4839732205508c545; path=/
+      - HWWAFSESTIME=1747204476206; path=/
+      - HWWAFSESTIME=1747204476207; path=/
+      - HWWAFSESID=0d9f57376a5e43fd0f; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - b9367807496986d3c1cc9d45223d6ad1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1
