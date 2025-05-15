@@ -70,4 +70,3 @@ class DCAgeFilter(AgeFilter):
 
     # Specify the field name representing creation time in the resource dictionary
     date_attribute = "create_time"
-

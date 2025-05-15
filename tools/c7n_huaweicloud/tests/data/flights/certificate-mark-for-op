@@ -11,18 +11,18 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - evs.ap-southeast-1.myhuaweicloud.com
+      - scm.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
+      X-Domain-Id:
+      - mock-domain-id
       X-Sdk-Date:
-      - 20250430T100658Z
+      - 20250507T094811Z
     method: GET
-    uri: https://evs.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/cloudvolumes/detail?limit=100&offset=0
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"17009c2c75d16adf268ce12548134488"}
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"118ef6b3801ebb19285e7bd5bd55c613"}
 
         '
     headers:
@@ -31,12 +31,12 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Apr 2025 10:06:58 GMT
+      - Wed, 07 May 2025 09:48:11 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=85d4e73a470aa7d55f; path=/
-      - HWWAFSESTIME=1746007618594; path=/
+      - HWWAFSESID=71a247332f8ba6f14f; path=/
+      - HWWAFSESTIME=1746611291985; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -48,7 +48,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 17009c2c75d16adf268ce12548134488
+      - 118ef6b3801ebb19285e7bd5bd55c613
       X-XSS-Protection:
       - 1; mode=block;
     status:

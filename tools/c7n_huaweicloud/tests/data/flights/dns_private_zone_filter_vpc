@@ -1,0 +1,165 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093110Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones?limit=100&type=private
+  response:
+    body:
+      string: '{"links": {"self": "https://dns.huaweicloud.com/v2/zones?limit=100&type=private"},
+        "zones": [{"id": "2c9eb1538a138432018a13ggggg00001", "name": "associated.example.com.",
+        "description": "Associated private zone", "email": "admin@example.com", "zone_type":
+        "private", "ttl": 300, "serial": 1678886407, "status": "ACTIVE", "record_num":
+        1, "pool_id": "privpoolidassoc", "project_id": "0605dc51495c4447b48f5168309f9b5f",
+        "created_at": "2023-03-15T12:00:07Z", "updated_at": "2023-03-15T12:00:07Z",
+        "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13ggggg00001"},
+        "masters": [], "routers": [{"router_id": "vpc-c853fea981c3416c83181f7d01095375",
+        "router_region": "ap-southeast-1", "status": "ACTIVE"}], "tags": [], "enterprise_project_id":
+        "0"}, {"id": "2c9eb1538a138432018a13hhhhh00001", "name": "unassociated.example.com.",
+        "description": "Unassociated private zone", "email": "admin@example.com",
+        "zone_type": "private", "ttl": 300, "serial": 1678886408, "status": "ACTIVE",
+        "record_num": 1, "pool_id": "privpoolidunassoc", "project_id": "0605dc51495c4447b48f5168309f9b5f",
+        "created_at": "2023-03-15T12:00:08Z", "updated_at": "2023-03-15T12:00:08Z",
+        "links": {"self": "https://dns.huaweicloud.com/v2/zones/2c9eb1538a138432018a13hhhhh00001"},
+        "masters": [], "routers": [], "tags": [], "enterprise_project_id": "0"}],
+        "metadata": {"total_count": 2}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1200'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:10 GMT
+      X-Request-Id:
+      - ec1be591d58064622d820cddb96af219
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T094718Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones/2c9eb1538a138432018a13ggggg00001
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"52fbcd9eb578f37b060ba46619cda0a1"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 09 Apr 2025 09:47:19 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=bc8587c13d281fab37; path=/
+      - HWWAFSESTIME=1744192036386; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 52fbcd9eb578f37b060ba46619cda0a1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESID=bc8587c13d281fab37; HWWAFSESTIME=1744192036386
+      Host:
+      - dns.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T094719Z
+    method: GET
+    uri: https://dns.ap-southeast-1.myhuaweicloud.com/v2/zones/2c9eb1538a138432018a13hhhhh00001
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"e8e2bd9d63d394c046bb145c04aa7403"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 09 Apr 2025 09:47:19 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e8e2bd9d63d394c046bb145c04aa7403
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1
