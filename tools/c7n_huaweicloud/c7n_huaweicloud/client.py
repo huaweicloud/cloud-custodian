@@ -112,6 +112,11 @@ from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListReposit
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
+from huaweicloudsdkaom.v2 import (
+    AomClient,
+    ListMetricOrEventAlarmRuleRequest
+)
+from huaweicloudsdkaom.v2.region.aom_region import AomRegion
 
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
@@ -474,7 +479,13 @@ class Session:
                 .with_region(RdsRegion.value_of(self.region))
                 .build()
             )
-
+        elif service == 'aom':
+            client = (
+                AomClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AomRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -601,4 +612,6 @@ class Session:
             request = RdsListInstancesRequest()
         elif service == 'eg':
             request = ListSubscriptionsRequest()
+        elif service == 'aom':
+            request = ListMetricOrEventAlarmRuleRequest()
         return request
