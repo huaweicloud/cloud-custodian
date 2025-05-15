@@ -32,6 +32,8 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 log = logging.getLogger('custodian.huaweicloud.apig')
 
 # API Resource Management
+
+
 @resources.register('apig-api')
 class ApiResource(QueryResourceManager):
     """Huawei Cloud API Gateway API Resource Management
@@ -126,10 +128,11 @@ class ApiResource(QueryResourceManager):
                             api_dict["group_id"] = api.group_id
                             api_dict["instance_id"] = instance_id
                             api_dict['tag_resource_type'] = self.resource_type.tag_resource_type
-                            
+
                             resources.append(api_dict)
                 except exceptions.ClientRequestException as e:
-                    log.error(f"Failed to query API list: {str(e)}", exc_info=True)
+                    log.error(
+                        f"Failed to query API list: {str(e)}", exc_info=True)
                     break
 
                 offset += limit
@@ -172,7 +175,8 @@ class DeleteApiAction(HuaweiCloudBaseAction):
 
         if not instance_id:
             self.log.error(
-                f"No available instance found, using default instance ID from configuration: {instance_id}")
+                f"No available instance found, using default instance ID from configuration: "
+                f"{instance_id}")
             return
 
         try:
@@ -229,21 +233,21 @@ class UpdateApiAction(HuaweiCloudBaseAction):
                   match_mode: "NORMAL"  # NORMAL or SWA
                   cors: false
                   remark: "Updated API with complete parameters"
-                  
+
                   # Response examples
                   result_normal_sample: '{"result": "success", "data": {"id": 1}}'
                   result_failure_sample: '{"error_code": "APIG.0301", "error_msg": "Incorrect API parameters"}'
-                  
+
                   # Tracing configuration
                   trace_enabled: true
                   sampling_strategy: "RATE"
                   sampling_param: "10"
-                  
+
                   # Tags
                   tags: 
                     - "production"
                     - "api-gateway"
-                  
+
                   # Backend API configuration
                   backend_type: "HTTP"  # HTTP, FUNCTION, or MOCK
                   backend_api:
@@ -254,7 +258,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
                     retry_count: "3"
                     url_domain: "api.example.com"
                     host: "api.backend-service.com"
-                    
+
                   # Backend parameters
                   backend_params:
                     - name: "X-User-Id"
@@ -267,16 +271,16 @@ class UpdateApiAction(HuaweiCloudBaseAction):
                       location: "HEADER"
                       origin: "CONSTANT"
                       remark: "API version as a constant"
-                      
+
                   # Authentication options
                   auth_opt:
                     app_code_auth_type: "HEADER"
                     app_code_headers:
                       - "X-Api-Auth"
-                      
+
                   # SSL verification
                   disables_ssl_verification: false
-                  
+
                   # Mock response (when backend_type is MOCK)
                   mock_info:
                     status_code: 200
@@ -345,7 +349,8 @@ class UpdateApiAction(HuaweiCloudBaseAction):
     def _build_update_body(self, resource):
         """Build API update request body
 
-        Construct API update request body based on policy parameters while preserving necessary fields from the original API
+        Construct API update request body based on policy parameters while preserving necessary fields 
+        from the original API
 
         :param resource: API resource dictionary
         :return: Update request body object
@@ -372,7 +377,8 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
         if not instance_id:
             self.log.error(
-                f"No available instance found, using default instance ID from configuration: {instance_id}")
+                f"No available instance found, using default instance ID from configuration: "
+                f"{instance_id}")
             return
 
         try:
@@ -384,7 +390,8 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
             if not update_body:
                 self.log.error(
-                    f"No update parameters provided, skipping API update {resource.get('name')} (ID: {api_id})")
+                    f"No update parameters provided, skipping API update {resource.get('name')} "
+                    f"(ID: {api_id})")
                 return
 
             # Create update request, ensure instance_id is string type
@@ -399,15 +406,20 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
             # Send request
             response = client.update_api_v2(request)
+            api_name = resource.get('name')
             self.log.info(
-                f"Successfully updated API: {resource.get('name')} (ID: {api_id})")
+                f"Successfully updated API: {api_name} (ID: {api_id})")
             return response
         except exceptions.ClientRequestException as e:
+            api_name = resource.get('name')
             self.log.error(
-                f"Failed to update API {resource.get('name')} (ID: {api_id}): {e}", exc_info=True)
+                f"Failed to update API {api_name} (ID: {api_id}): {e}",
+                exc_info=True)
             raise
 
 # Environment Resource Management
+
+
 @resources.register('apig-stage')
 class StageResource(QueryResourceManager):
     """Huawei Cloud API Gateway Environment Resource Management
@@ -516,6 +528,8 @@ class StageResource(QueryResourceManager):
         return resources
 
 # Update Environment Resource
+
+
 @StageResource.action_registry.register('update')
 class UpdateStageAction(HuaweiCloudBaseAction):
     """Update environment action
@@ -551,7 +565,8 @@ class UpdateStageAction(HuaweiCloudBaseAction):
         if not instance_id:
             # When instance_id is not in the resource, use manager to get it
             self.log.error(
-                f"No available instance found, using default instance ID from configuration: {instance_id}")
+                f"No available instance found, using default instance ID from configuration: "
+                f"{instance_id}")
             return
 
         try:
@@ -579,12 +594,14 @@ class UpdateStageAction(HuaweiCloudBaseAction):
 
             # Send request
             response = client.update_environment_v2(request)
+            env_name = resource.get('name')
             self.log.info(
-                f"Successfully updated environment: {resource.get('name')} (ID: {env_id})")
+                f"Successfully updated environment: {env_name} (ID: {env_id})")
             return response
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"Failed to update environment {resource.get('name')} (ID: {env_id}): {e}", exc_info=True)
+                f"Failed to update environment {resource.get('name')} (ID: {env_id}): {e}",
+                exc_info=True)
             raise
 
 
@@ -616,7 +633,8 @@ class DeleteStageAction(HuaweiCloudBaseAction):
 
         if not instance_id:
             self.log.error(
-                f"No available instance found, using default instance ID from configuration: {instance_id}")
+                f"No available instance found, using default instance ID from configuration: "
+                f"{instance_id}")
             return
 
         try:
@@ -634,14 +652,18 @@ class DeleteStageAction(HuaweiCloudBaseAction):
             self.log.debug(f"Request object: {request}")
 
             client.delete_environment_v2(request)
+            env_name = resource.get('name')
             self.log.info(
-                f"Successfully deleted environment: {resource.get('name')} (ID: {env_id})")
+                f"Successfully deleted environment: {env_name} (ID: {env_id})")
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"Failed to delete environment {resource.get('name')} (ID: {env_id}): {e}", exc_info=True)
+                f"Failed to delete environment {resource.get('name')} (ID: {env_id}): {e}",
+                exc_info=True)
             raise
 
 # API Group Resource Management
+
+
 @resources.register('apig-api-groups')
 class ApiGroupResource(QueryResourceManager):
     """Huawei Cloud API Gateway Group Resource Management
@@ -714,9 +736,9 @@ class ApiGroupResource(QueryResourceManager):
         # Ensure instance_id is properly set
         if not instance_ids:
             log.error(
-                "Unable to get valid APIG instance ID, cannot continue querying API group list")
+                "Unable to get valid APIG instance ID, cannot continue querying "
+                "API group list")
             return []
-
 
         resources = []
         for instance_id in instance_ids:
@@ -748,7 +770,8 @@ class ApiGroupResource(QueryResourceManager):
                                 group_dict['url_domains'] = url_domains
                             resources.append(group_dict)
                 except exceptions.ClientRequestException as e:
-                    log.error(f"Failed to query API Group list: {str(e)}", exc_info=True)
+                    log.error(
+                        f"Failed to query API Group list: {str(e)}", exc_info=True)
                     break
 
                 offset += limit
@@ -763,6 +786,8 @@ class ApiGroupResource(QueryResourceManager):
         return resources
 
 # Update Security
+
+
 @ApiGroupResource.action_registry.register('update-domain')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
     """Update domain security policy action
@@ -790,9 +815,11 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
         is_http_redirect_to_https={'type': 'boolean'},
         verified_client_certificate_enabled={'type': 'boolean'},
         ingress_http_port={'type': 'integer', 'minimum': -1, 'maximum': 49151},
-        ingress_https_port={'type': 'integer', 'minimum': -1, 'maximum': 49151},
-        domain_id={'type':'string'}
+        ingress_https_port={'type': 'integer',
+                            'minimum': -1, 'maximum': 49151},
+        domain_id={'type': 'string'}
     )
+
     def perform_action(self, resource):
         client = self.manager.get_client()
         group_id = resource['id']
@@ -809,10 +836,11 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
         try:
             # Add more debug information
             self.log.debug(
-                f"Updating domain security policy Domain ID: {domain_id}, API group ID: {group_id} (Instance: {instance_id})")
+                f"Updating domain security policy Domain ID: {domain_id}, "
+                f"API group ID: {group_id} (Instance: {instance_id})")
 
             from huaweicloudsdkapig.v2.model.url_domain_modify import UrlDomainModify
-            
+
             update_info = {}
 
             # Required fields from original resource
@@ -832,10 +860,14 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
 
             # Send request
             response = client.update_domain_v2(request)
+            group_name = resource.get('name')
             self.log.info(
-                f"Successfully updated domain security policy: API group {resource.get('name')} (ID: {group_id}), Domain ID: {domain_id}")
+                f"Successfully updated domain security policy: API group {group_name} "
+                f"(ID: {group_id}), Domain ID: {domain_id}")
             return response
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"Failed to update domain security policy: API group {resource.get('name')} (ID: {group_id}), Domain ID: {domain_id}: {e}", exc_info=True)
+                f"Failed to update domain security policy: API group {resource.get('name')} "
+                f"(ID: {group_id}), Domain ID: {domain_id}: {e}",
+                exc_info=True)
             raise

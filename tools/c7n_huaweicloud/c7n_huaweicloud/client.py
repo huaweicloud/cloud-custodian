@@ -445,7 +445,8 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups', 'apig-instance']:
+        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups', 
+                                              'apig-instance']:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)

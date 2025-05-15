@@ -262,7 +262,8 @@ class ReusableFeaturesTest(BaseTest):
             {
                 "name": "apig-filter-name-match",
                 "resource": "huaweicloud.apig-api",
-                "filters": [{"type": "value", "key": "name", "value": "api-tagged.*", "op": "regex"}],
+                "filters": [{"type": "value", "key": "name", "value": "api-tagged.*",
+                             "op": "regex"}],
             },
             session_factory=factory,
         )
@@ -282,7 +283,8 @@ class ReusableFeaturesTest(BaseTest):
             {
                 "name": "apig-filter-name-match",
                 "resource": "huaweicloud.apig-api",
-                "filters": [{"type": "value", "key": "name", "value": "api-marked.*", "op": "regex"}],
+                "filters": [{"type": "value", "key": "name", "value": "api-marked.*",
+                             "op": "regex"}],
             },
             session_factory=factory,
         )
@@ -301,7 +303,8 @@ class ReusableFeaturesTest(BaseTest):
             {
                 "name": "apig-filter-name-match",
                 "resource": "huaweicloud.apig-api",
-                "filters": [{"type": "value", "key": "name", "value": "api-two-tags.*", "op": "regex"}],
+                "filters": [{"type": "value", "key": "name", "value": "api-two-tags.*",
+                             "op": "regex"}],
             },
             session_factory=factory,
         )
