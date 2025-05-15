@@ -36,6 +36,7 @@ class DC(QueryResourceManager):
         name = 'name'
         tag_resource_type = 'dc-directconnect'
 
+
 @DC.filter_registry.register('age')
 class DCAgeFilter(AgeFilter):
     """Direct Connect resource creation time filter
