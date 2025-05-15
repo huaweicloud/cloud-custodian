@@ -110,8 +110,6 @@ from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
-from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
-from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
 from huaweicloudsdkaom.v2 import (
