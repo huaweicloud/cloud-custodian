@@ -194,7 +194,7 @@ class RocketMQInstanceTest(BaseTest):
         p = self.load_policy({
             'name': 'rocketmq-action-remove-tag-test',
             'resource': 'huaweicloud.reliability',
-            'actions': [{'type': 'remove-tag', 'key': ['environment', 'temp-tag']}]},
+            'actions': [{'type': 'remove-tag', 'tags': ['environment', 'temp-tag']}]},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
