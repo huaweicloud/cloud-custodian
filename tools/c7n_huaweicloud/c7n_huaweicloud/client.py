@@ -451,6 +451,7 @@ class Session:
                 SwrClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(SwrRegion.value_of(self.region))
+                .build()
             )
         elif service == 'scm':
             client = (
