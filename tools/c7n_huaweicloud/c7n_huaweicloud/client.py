@@ -446,6 +446,12 @@ class Session:
                 .with_region(RocketMQRegion.value_of(self.region))
                 .build()
             )
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
+            )
         elif service == 'scm':
             client = (
                 ScmClient.new_builder()
@@ -480,12 +486,6 @@ class Session:
                 .with_credentials(credentials)
                 .with_region(RdsRegion.value_of(self.region))
                 .build()
-            )
-        elif service in ['swr', 'swr-image']:
-            client = (
-                SwrClient.new_builder()
-                .with_credentials(credentials)
-                .with_region(SwrRegion.value_of(self.region))
             )
         elif service == 'aom':
             client = (
