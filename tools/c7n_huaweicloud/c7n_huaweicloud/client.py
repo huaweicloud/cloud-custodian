@@ -116,6 +116,11 @@ from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListReposit
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
 from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
+from huaweicloudsdkaom.v2 import (
+    AomClient,
+    ListMetricOrEventAlarmRuleRequest
+)
+from huaweicloudsdkaom.v2.region.aom_region import AomRegion
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
@@ -448,11 +453,11 @@ class Session:
                 .with_region(SwrRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'certificate':
+        elif service == 'scm':
             client = (
                 ScmClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(ScmRegion.value_of(self.region))
+                .with_region(ScmRegion.value_of("ap-southeast-1"))
                 .build()
             )
         elif service == 'dc':
@@ -483,12 +488,17 @@ class Session:
                 .with_region(RdsRegion.value_of(self.region))
                 .build()
             )
-
         elif service in ['swr', 'swr-image']:
             client = (
                 SwrClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(SwrRegion.value_of(self.region))
+            )
+        elif service == 'aom':
+            client = (
+                AomClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AomRegion.value_of(self.region))
                 .build()
             )
         return client
@@ -608,8 +618,9 @@ class Session:
             request = ListReposDetailsRequest()
         elif service == 'swr-image':
             request = ListRepositoryTagsRequest()
-        elif service == 'certificate':
+        elif service == 'scm':
             request = ListCertificatesRequest()
+            request.expired_days_since = 1095
         elif service == 'dc':
             request = ListDirectConnectsRequest()
         elif service == "bms":
@@ -618,4 +629,6 @@ class Session:
             request = RdsListInstancesRequest()
         elif service == 'eg':
             request = ListSubscriptionsRequest()
+        elif service == 'aom':
+            request = ListMetricOrEventAlarmRuleRequest()
         return request

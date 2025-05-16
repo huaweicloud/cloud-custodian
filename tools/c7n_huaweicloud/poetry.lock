@@ -11,11 +11,6 @@ files = [
     {file = "certifi-2025.4.26.tar.gz", hash = "sha256:0a816057ea3cdefcef70270d2c515e4506bbc954f417fa5ade2021213bb8f0c6"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "charset-normalizer"
 version = "3.4.2"
@@ -117,11 +112,6 @@ files = [
     {file = "charset_normalizer-3.4.2.tar.gz", hash = "sha256:5baececa9ecba31eff645232d59845c07aa030f0c81ee70184a90d35099a0e63"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "colorama"
 version = "0.4.6"
@@ -133,11 +123,6 @@ files = [
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "crcmod"
 version = "1.7"
@@ -147,11 +132,6 @@ python-versions = "*"
 files = [
     {file = "crcmod-1.7.tar.gz", hash = "sha256:dc7051a0db5f2bd48665a990d3ec1cc305a466a77358ca4492826f41f283601e"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "dnspython"
@@ -173,11 +153,6 @@ idna = ["idna (>=3.6)"]
 trio = ["trio (>=0.23)"]
 wmi = ["wmi (>=1.5.1)"]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "esdk-obs-python"
 version = "3.25.3"
@@ -192,11 +167,6 @@ files = [
 crcmod = ">=1.7"
 pycryptodome = ">=3.10.1"
 requests = ">=2.27.0"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "exceptiongroup"
@@ -215,11 +185,6 @@ typing-extensions = {version = ">=4.6.0", markers = "python_version < \"3.13\""}
 [package.extras]
 test = ["pytest (>=6)"]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkantiddos"
 version = "3.1.147"
@@ -233,10 +198,18 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
+[[package]]
+name = "huaweicloudsdkaom"
+version = "3.1.147"
+description = "AOM"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkaom-3.1.147-py2.py3-none-any.whl", hash = "sha256:d12e7b85705f2581c12b3c4b9bacdff7c48fff5794d488ba4af04b9a01dfb9a0"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.147"
 
 [[package]]
 name = "huaweicloudsdkbms"
@@ -251,11 +224,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkcbr"
 version = "3.1.147"
@@ -268,11 +236,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkcc"
@@ -287,11 +250,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkces"
 version = "3.1.147"
@@ -304,11 +262,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkcoc"
@@ -323,11 +276,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkconfig"
 version = "3.1.147"
@@ -340,11 +288,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkcore"
@@ -365,11 +308,6 @@ simplejson = ">=3.18.0"
 six = ">=1.16.0"
 typing-extensions = "*"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkcts"
 version = "3.1.147"
@@ -382,11 +320,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkdc"
@@ -401,11 +334,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkdeh"
 version = "3.1.147"
@@ -418,11 +346,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkdns"
@@ -437,11 +360,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkecs"
 version = "3.1.147"
@@ -454,11 +372,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkeg"
@@ -473,11 +386,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkeip"
 version = "3.1.147"
@@ -490,11 +398,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkelb"
@@ -509,11 +412,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdker"
 version = "3.1.147"
@@ -526,11 +424,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkevs"
@@ -545,11 +438,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkfunctiongraph"
 version = "3.1.147"
@@ -562,11 +450,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkgeip"
@@ -581,11 +464,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkhss"
 version = "3.1.147"
@@ -598,11 +476,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkiam"
@@ -617,11 +490,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkims"
 version = "3.1.147"
@@ -634,11 +502,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkkafka"
@@ -653,11 +516,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkkms"
 version = "3.1.147"
@@ -670,11 +528,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdklts"
@@ -689,11 +542,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdknat"
 version = "3.1.147"
@@ -706,11 +554,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkobs"
@@ -725,11 +568,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkorganizations"
 version = "3.1.147"
@@ -742,11 +580,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkram"
@@ -761,10 +594,18 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
+[[package]]
+name = "huaweicloudsdkscm"
+version = "3.1.147"
+description = "SCM"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
+files = [
+    {file = "huaweicloudsdkscm-3.1.147-py2.py3-none-any.whl", hash = "sha256:a70d04c03e7b697d840c16fdb699502b75d63a36c8811d324cf0fff8c23dab13"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.147"
 
 [[package]]
 name = "huaweicloudsdkrds"
@@ -778,11 +619,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkrocketmq"
@@ -815,11 +651,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdksecmaster"
 version = "3.1.147"
@@ -832,11 +663,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdksfsturbo"
@@ -851,11 +677,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdksmn"
 version = "3.1.147"
@@ -869,28 +690,18 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkswr"
 version = "3.1.147"
 description = "SWR"
 optional = false
-python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
     {file = "huaweicloudsdkswr-3.1.147-py2.py3-none-any.whl", hash = "sha256:473a6c3f843484a5157a588a8bb2ba022db3016237ffbe88db7353a9c160e6d7"},
 ]
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdktms"
@@ -905,11 +716,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "huaweicloudsdkvpc"
 version = "3.1.147"
@@ -922,11 +728,6 @@ files = [
 
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "idna"
@@ -942,11 +743,6 @@ files = [
 [package.extras]
 all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "iniconfig"
 version = "2.1.0"
@@ -957,11 +753,6 @@ files = [
     {file = "iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760"},
     {file = "iniconfig-2.1.0.tar.gz", hash = "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "jsonpatch"
@@ -977,11 +768,6 @@ files = [
 [package.dependencies]
 jsonpointer = ">=1.9"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "jsonpointer"
 version = "3.0.0"
@@ -993,11 +779,6 @@ files = [
     {file = "jsonpointer-3.0.0.tar.gz", hash = "sha256:2b2d729f2091522d61c3b31f82e11870f60b68f43fbc705cb76bf4b832af59ef"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "packaging"
 version = "25.0"
@@ -1008,11 +789,6 @@ files = [
     {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
     {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "pluggy"
@@ -1029,11 +805,6 @@ files = [
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "pyasn1"
 version = "0.6.1"
@@ -1044,11 +815,6 @@ files = [
     {file = "pyasn1-0.6.1-py3-none-any.whl", hash = "sha256:0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629"},
     {file = "pyasn1-0.6.1.tar.gz", hash = "sha256:6f580d2bdd84365380830acf45550f2511469f673cb4a5ae3857a3170128b034"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "pycryptodome"
@@ -1087,11 +853,6 @@ files = [
     {file = "pycryptodome-3.22.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:a6cf9553b29624961cab0785a3177a333e09e37ba62ad22314ebdbb01ca79840"},
     {file = "pycryptodome-3.22.0.tar.gz", hash = "sha256:fd7ab568b3ad7b77c908d7c3f7e167ec5a8f035c64ff74f10d47a4edd043d723"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "pymongo"
@@ -1174,11 +935,6 @@ snappy = ["python-snappy"]
 test = ["pytest (>=8.2)", "pytest-asyncio (>=0.24.0)"]
 zstd = ["zstandard"]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "pytest"
 version = "7.4.4"
@@ -1201,11 +957,6 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 [package.extras]
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
@@ -1220,11 +971,6 @@ files = [
 [package.dependencies]
 six = ">=1.5"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "pytz"
 version = "2025.2"
@@ -1235,11 +981,6 @@ files = [
     {file = "pytz-2025.2-py2.py3-none-any.whl", hash = "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00"},
     {file = "pytz-2025.2.tar.gz", hash = "sha256:360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "pyyaml"
@@ -1303,11 +1044,6 @@ files = [
     {file = "pyyaml-6.0.2.tar.gz", hash = "sha256:d584d9ec91ad65861cc08d42e834324ef890a082e591037abe114850ff7bbc3e"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "requests"
 version = "2.32.3"
@@ -1329,11 +1065,6 @@ urllib3 = ">=1.21.1,<3"
 socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "requests-toolbelt"
 version = "1.0.0"
@@ -1347,11 +1078,6 @@ files = [
 
 [package.dependencies]
 requests = ">=2.0.1,<3.0.0"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "simplejson"
@@ -1472,11 +1198,6 @@ files = [
     {file = "simplejson-3.20.1.tar.gz", hash = "sha256:e64139b4ec4f1f24c142ff7dcafe55a22b811a74d86d66560c8815687143037d"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "six"
 version = "1.17.0"
@@ -1487,11 +1208,6 @@ files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "tomli"
@@ -1534,11 +1250,6 @@ files = [
     {file = "tomli-2.2.1.tar.gz", hash = "sha256:cd45e1dc79c835ce60f7404ec8119f2eb06d38b1deba146f07ced3bbc44505ff"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [[package]]
 name = "typing-extensions"
 version = "4.13.2"
@@ -1572,12 +1283,8 @@ h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
-
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "9361a47ecb5d07f72a4cb67887f69296b1b8643dd87387cc8ec878ca50ae801f"
+
+content-hash = "5e90a1f65035c0908b11f8eb7cc40ff2eae8e61e95215b46a3d178aa56c3ba69"

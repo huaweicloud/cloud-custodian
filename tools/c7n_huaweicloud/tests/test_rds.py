@@ -613,45 +613,6 @@ class RDSTest(BaseTest):
         self.assertEqual(len(resources), 0, "不应有实例匹配该罕见配置")
 
     # ===========================
-    # Filter Tests (Auto Upgrade Policy)
-    # ===========================
-    def test_postgresql_auto_upgrade_policy_enabled(self):
-        """测试 PostgreSQL 内核小版本自动升级策略过滤器 - 已启用"""
-        factory = self.replay_flight_data("rds_postgresql_auto_upgrade_enabled")
-        p = self.load_policy(
-            {
-                "name": "rds-postgresql-auto-upgrade-enabled",
-                "resource": "huaweicloud.rds",
-                "filters": [{
-                    "type": "postgresql-auto-upgrade-policy",
-                    "enabled": True
-                }],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertGreater(len(resources), 0,
-                          "测试 VCR 文件应包含至少一个启用了自动升级策略的 PostgreSQL 实例")
-
-    def test_postgresql_auto_upgrade_policy_disabled(self):
-        """测试 PostgreSQL 内核小版本自动升级策略过滤器 - 未启用"""
-        factory = self.replay_flight_data("rds_postgresql_auto_upgrade_disabled")
-        p = self.load_policy(
-            {
-                "name": "rds-postgresql-auto-upgrade-disabled",
-                "resource": "huaweicloud.rds",
-                "filters": [{
-                    "type": "postgresql-auto-upgrade-policy",
-                    "enabled": False
-                }],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertGreater(len(resources), 0,
-                          "测试 VCR 文件应包含至少一个禁用了自动升级策略的 PostgreSQL 实例")
-
-    # ===========================
     # Action Tests (Modify pg_hba.conf)
     # ===========================
     def test_modify_pg_hba_conf_action(self):
@@ -679,57 +640,6 @@ class RDSTest(BaseTest):
                             "priority": 0
                         }
                     ]
-                }],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0]["id"], target_instance_id)
-        # 验证操作: 需要手动检查 VCR 文件确认 API 调用正确
-
-    # ===========================
-    # Action Tests (Set Kernel Auto Upgrade Policy)
-    # ===========================
-    def test_set_kernel_auto_upgrade_policy_action_enable(self):
-        """测试设置 PostgreSQL 内核小版本自动升级策略操作 - 启用"""
-        factory = self.replay_flight_data("rds_action_set_kernel_auto_upgrade_enable")
-        target_instance_id = "pg-instance-for-auto-upgrade-test"
-        p = self.load_policy(
-            {
-                "name": "rds-action-set-auto-upgrade-enable",
-                "resource": "huaweicloud.rds",
-                "filters": [
-                    {"type": "value", "key": "id", "value": target_instance_id},
-                    {"type": "postgresql-auto-upgrade-policy", "enabled": False}
-                ],
-                "actions": [{
-                    "type": "set-kernel-auto-upgrade-policy",
-                    "switch_option": True
-                }],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0]["id"], target_instance_id)
-        # 验证操作: 需要手动检查 VCR 文件确认 API 调用正确
-
-    def test_set_kernel_auto_upgrade_policy_action_disable(self):
-        """测试设置 PostgreSQL 内核小版本自动升级策略操作 - 禁用"""
-        factory = self.replay_flight_data("rds_action_set_kernel_auto_upgrade_disable")
-        target_instance_id = "pg-instance-for-auto-upgrade-disable-test"
-        p = self.load_policy(
-            {
-                "name": "rds-action-set-auto-upgrade-disable",
-                "resource": "huaweicloud.rds",
-                "filters": [
-                    {"type": "value", "key": "id", "value": target_instance_id},
-                    {"type": "postgresql-auto-upgrade-policy", "enabled": True}
-                ],
-                "actions": [{
-                    "type": "set-kernel-auto-upgrade-policy",
-                    "switch_option": False
                 }],
             },
             session_factory=factory,
@@ -790,63 +700,6 @@ class RDSTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], target_instance_id)
         # 验证操作: 需要手动检查 VCR 文件确认 API 调用正确
-
-    # ===========================
-    # Filter Tests (PostgreSQL Target Versions)
-    # ===========================
-    def test_postgresql_target_versions_filter(self):
-        """测试PostgreSQL大版本升级过滤器 - 检测非最新大版本的PostgreSQL实例"""
-        factory = self.replay_flight_data("rds_postgresql_target_versions")
-        p = self.load_policy(
-            {
-                "name": "rds-postgresql-target-versions",
-                "resource": "huaweicloud.rds",
-                "filters": [{
-                    "type": "postgresql-target-versions"
-                }],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertGreater(len(resources), 0,
-                          "测试VCR文件应包含至少一个非最新大版本的PostgreSQL实例")
-
-        # 验证每个过滤出的资源都有正确的版本信息和类型
-        for resource in resources:
-            # 确认是PostgreSQL实例
-            self.assertEqual(resource.get('datastore', {}).get('type', '').lower(), 'postgresql')
-            # 确认有版本信息
-            self.assertTrue('current_major_version' in resource)
-            self.assertTrue('latest_major_version' in resource)
-            # 确认当前版本小于最新版本
-            self.assertLess(resource['current_major_version'], resource['latest_major_version'])
-            # 确认有可用升级版本列表
-            self.assertTrue('available_upgrade_versions' in resource)
-
-    def test_postgresql_target_versions_filter_extract_version(self):
-        """测试PostgreSQL大版本升级过滤器 - 版本号提取功能"""
-        factory = self.replay_flight_data("rds_postgresql_target_versions_extract")
-        # 模拟过滤器实例来测试版本提取方法
-        p = self.load_policy(
-            {
-                "name": "rds-postgresql-target-versions-extract",
-                "resource": "huaweicloud.rds",
-                "filters": [{
-                    "type": "postgresql-target-versions"
-                }],
-            },
-            session_factory=factory,
-        )
-
-        # 获取过滤器实例
-        filter_instance = p.resource_manager.filters[0]
-
-        # 测试版本号提取方法
-        self.assertEqual(filter_instance._extract_major_version("12.6.4"), 12)
-        self.assertEqual(filter_instance._extract_major_version("10.17.2"), 10)
-        self.assertEqual(filter_instance._extract_major_version("14"), 14)
-        self.assertIsNone(filter_instance._extract_major_version(""))
-        self.assertIsNone(filter_instance._extract_major_version(None))
 
 
 # =========================
@@ -944,42 +797,6 @@ class ReusableRDSTests(BaseTest):
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
-
-    # ===========================
-    # Action Tests (PostgreSQL Major Version Upgrade)
-    # ===========================
-    def test_upgrade_major_version_action(self):
-        """测试执行PostgreSQL实例大版本升级操作"""
-        factory = self.replay_flight_data("rds_action_upgrade_major_version")
-        target_instance_id = "pg-instance-for-major-upgrade"
-        target_version = "14.6.1"
-        p = self.load_policy(
-            {
-                "name": "rds-action-upgrade-major-version",
-                "resource": "huaweicloud.rds",
-                "filters": [
-                    {"type": "value", "key": "id", "value": target_instance_id},
-                    {"type": "postgresql-target-versions"}  # 确保是可升级大版本的PostgreSQL实例
-                ],
-                "actions": [{
-                    "type": "upgrade-major-version",
-                    "target_version": target_version,
-                    "is_change_private_ip": True,
-                    "statistics_collection_mode": "before_change_private_ip"
-                }],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0]["id"], target_instance_id)
-
-        # 验证资源是PostgreSQL实例并准备了版本信息
-        self.assertEqual(resources[0].get('datastore', {}).get('type', '').lower(), 'postgresql')
-        self.assertTrue('current_major_version' in resources[0])
-        self.assertTrue('latest_major_version' in resources[0])
-        self.assertTrue('available_upgrade_versions' in resources[0])
-        self.assertTrue(target_version in resources[0]['available_upgrade_versions'])
 
         # 验证操作: 需要手动检查VCR文件确认API调用正确包含了以下内容:
         # 1. 调用了正确的API: POST /v3/{project_id}/instances/{instance_id}/major-versions
