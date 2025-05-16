@@ -1,0 +1,110 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - workspace.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250427T114555Z
+    method: GET
+    uri: https://workspace.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/desktops/detail?limit=100&offset=0
+  response:
+    body:
+      string: '{"desktops":[{"desktop_id":"test-desktop-id-1","computer_name":"test-desktop-1","status":"ACTIVE","login_status":"UNREGISTER","user_name":"test-user-1","created":"2025-04-27T11:45:55Z","tags":[{"key":"environment","value":"testing"}],"security_groups":[{"id":"sg-12345678","name":"default"}],"product":{"product_id":"product-123","flavor_id":"flavor-123","type":"DEDICATED","cpu":"4","memory":"8GB"}},{"desktop_id":"test-desktop-id-2","computer_name":"test-desktop-2","status":"ACTIVE","login_status":"UNREGISTER","user_name":"test-user-2","created":"2025-04-27T11:45:55Z","tags":[{"key":"environment","value":"testing"}],"security_groups":[{"id":"sg-12345678","name":"default"}],"product":{"product_id":"product-123","flavor_id":"flavor-123","type":"DEDICATED","cpu":"4","memory":"8GB"}}],"total_count":2}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 27 Apr 2025 11:45:55 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=a229c737a1c276c37a; path=/
+      - HWWAFSESTIME=1745754355676; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - db3a35b0eeef70dd59c088b99005194d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"desktop_ids": ["test-desktop-id-1", "test-desktop-id-2"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '59'
+      Content-Type:
+      - application/json
+      Host:
+      - workspace.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250427T120725Z
+    method: POST
+    uri: https://workspace.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/desktops/batch-delete
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"eedf0f99a86539821010252a4cc67960"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 27 Apr 2025 12:07:25 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=e99e0736964012bd2b; path=/
+      - HWWAFSESTIME=1745755645470; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - eedf0f99a86539821010252a4cc67960
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

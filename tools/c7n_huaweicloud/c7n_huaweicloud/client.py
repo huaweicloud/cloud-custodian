@@ -133,6 +133,9 @@ from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
+from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailRequest
+from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
+
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -338,6 +341,13 @@ class Session:
                 ImsClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(ImsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "workspace":
+            client = (
+                WorkspaceClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(WorkspaceRegion.value_of(self.region))
                 .build()
             )
         elif (
@@ -570,7 +580,8 @@ class Session:
             request = ListOrganizationalUnitsRequest()
         elif service == "org-account":
             request = ListAccountsRequest()
-
+        elif service == "workspace":
+            request = ListDesktopsDetailRequest()
         elif service == "kms":
             request = ListKeysRequest()
             request.body = ListKeysRequestBody(key_spec="ALL")

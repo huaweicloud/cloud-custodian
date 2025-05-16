@@ -1,0 +1,55 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - workspace.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250427T114555Z
+    method: GET
+    uri: https://workspace.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/desktops/detail?limit=100&offset=0
+  response:
+    body:
+      string: '{"desktops":[{"desktop_id":"test-desktop-id","computer_name":"test-desktop","status":"ACTIVE","login_status":"UNREGISTER","user_name":"test-user","created":"2025-04-27T11:45:55Z","tags":[{"key":"environment","value":"testing"}],"security_groups":[{"id":"sg-12345678","name":"default"}],"product":{"product_id":"product-123","flavor_id":"flavor-123","type":"DEDICATED","cpu":"4","memory":"8GB"}}],"total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 27 Apr 2025 11:45:55 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745754355448; path=/
+      - HWWAFSESID=a452b73af1f922b862; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e81554430f5027311dda7372e5c00f0d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

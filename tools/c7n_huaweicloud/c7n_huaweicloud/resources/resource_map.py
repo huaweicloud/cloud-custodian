@@ -58,4 +58,5 @@ ResourceMap = {
     "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS",
     "huaweicloud.aom-alarm": "c7n_huaweicloud.resources.aom.AomAlarm",
     "huaweicloud.eg-subscription": "c7n_huaweicloud.resources.eg.Subscription",
+    "huaweicloud.workspace-desktop": "c7n_huaweicloud.resources.workspace.Workspace"
 }
