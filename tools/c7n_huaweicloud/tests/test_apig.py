@@ -122,7 +122,6 @@ class StageResourceTest(BaseTest):
         # Validate VCR: match 'id' in apig_stage_action_update
         stage_id_to_update = "7a1ad0c350844ee69479b47df9a881cb"
         new_name = "updated-test-env"
-        new_description = "Updated by Cloud Custodian"  # Updated description
         p = self.load_policy(
             {
                 "name": "apig-stage-action-update",
@@ -131,7 +130,6 @@ class StageResourceTest(BaseTest):
                 "actions": [{
                     "type": "update",
                     "name": new_name,
-                    "reamrk": new_description,
                 }],
             },
             session_factory=factory,
