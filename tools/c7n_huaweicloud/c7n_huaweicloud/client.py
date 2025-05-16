@@ -448,7 +448,7 @@ class Session:
             client = (
                 ScmClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(ScmRegion.value_of(self.region))
+                .with_region(ScmRegion.value_of("ap-southeast-1"))
                 .build()
             )
         elif service == 'dc':

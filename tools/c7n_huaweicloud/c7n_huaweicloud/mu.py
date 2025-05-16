@@ -221,14 +221,15 @@ class FunctionGraphManager:
     def update_function_config(self, old_config, need_update):
         old_config = old_config.to_dict()
         allow_parameters_list = [
-            "timeout", "handler", "memory_size", "gpu_memory", "gpu_type", "xrole", "app_xrole",
-            "description", "func_vpc", "peering_cidr", "mount_config", "strategy_config",
-            "custom_image", "extend_config", "initializer_handler", "initializer_timeout",
-            "pre_stop_handler", "pre_stop_timeout", "ephemeral_storage", "enterprise_project_id",
-            "log_config", "network_controller", "is_stateful_function", "enable_dynamic_memory",
-            "enable_auth_in_header", "domain_names", "restore_hook_handler",
-            "restore_hook_timeout", "heartbeat_handler", "enable_class_isolation",
-            "enable_lts_log", "lts_custom_tag", "user_data_encrypt_kms_key_id",
+            "timeout", "handler", "memory_size", "gpu_memory", "gpu_type", "user_data",
+            "encrypted_user_data", "xrole", "app_xrole", "description", "func_vpc", "peering_cidr",
+            "mount_config", "strategy_config", "custom_image", "extend_config",
+            "initializer_handler", "initializer_timeout", "pre_stop_handler", "pre_stop_timeout",
+            "ephemeral_storage", "enterprise_project_id", "log_config", "network_controller",
+            "is_stateful_function", "enable_dynamic_memory", "enable_auth_in_header",
+            "domain_names", "restore_hook_handler", "restore_hook_timeout", "heartbeat_handler",
+            "enable_class_isolation", "enable_lts_log", "lts_custom_tag",
+            "user_data_encrypt_kms_key_id",
         ]
         request = UpdateFunctionConfigRequest(function_urn=old_config["func_urn"])
         request_body = UpdateFunctionConfigRequestBody(
@@ -766,11 +767,11 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     @property
     def user_data_encrypt_kms_key_id(self):
-        return self.policy.data['mode'].get('user_data_encrypt_kms_key_id', "")
+        return self.policy.data['mode'].get('user_data_encrypt_kms_key_id', None)
 
     @property
     def code_encrypt_kms_key_id(self):
-        return self.policy.data['mode'].get('code_encrypt_kms_key_id', "")
+        return self.policy.data['mode'].get('code_encrypt_kms_key_id', None)
 
     def get_events(self, session_factory):
         events = []

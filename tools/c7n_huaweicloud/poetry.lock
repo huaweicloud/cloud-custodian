@@ -190,7 +190,7 @@ name = "huaweicloudsdkantiddos"
 version = "3.1.147"
 description = "AntiDDoS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkantiddos-3.1.147-py2.py3-none-any.whl", hash = "sha256:22ab3802267f5bb85a769ed4c99fe232ea22c9aa389304b187ece88b52821586"},
 ]
@@ -216,7 +216,7 @@ name = "huaweicloudsdkbms"
 version = "3.1.147"
 description = "BMS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkbms-3.1.147-py2.py3-none-any.whl", hash = "sha256:29a43ee695dccf1563faf06d524337a931cbf0a8f0df35b55909b829fc6dc84b"},
 ]
@@ -229,7 +229,7 @@ name = "huaweicloudsdkcbr"
 version = "3.1.147"
 description = "CBR"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkcbr-3.1.147-py2.py3-none-any.whl", hash = "sha256:e874625e87925ee8bf9a810d1fbe10aa491c7f7335bd7ce0d976bd0543a2181f"},
 ]
@@ -242,7 +242,7 @@ name = "huaweicloudsdkcc"
 version = "3.1.147"
 description = "CC"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkcc-3.1.147-py2.py3-none-any.whl", hash = "sha256:a7d9427b3cead7b7c244221d9d899912aabe34302883eb8f938c6cece156470d"},
 ]
@@ -255,7 +255,7 @@ name = "huaweicloudsdkces"
 version = "3.1.147"
 description = "CES"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkces-3.1.147-py2.py3-none-any.whl", hash = "sha256:6a0ae7b525bc6e5ec3891a7d898dd06c2b656728521ffea705be4e80f8a0423f"},
 ]
@@ -268,7 +268,7 @@ name = "huaweicloudsdkcoc"
 version = "3.1.147"
 description = "COC"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkcoc-3.1.147-py2.py3-none-any.whl", hash = "sha256:dca7602848a0727d35cce38a14bc4f41704005a8d07c51b2b4846a38e7c588d8"},
 ]
@@ -281,7 +281,7 @@ name = "huaweicloudsdkconfig"
 version = "3.1.147"
 description = "Config"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkconfig-3.1.147-py2.py3-none-any.whl", hash = "sha256:1848375cb524f2c767c6dfd0b2867e6e4fa9d464efb804e539fba5cb84031f97"},
 ]
@@ -294,7 +294,7 @@ name = "huaweicloudsdkcore"
 version = "3.1.147"
 description = "HuaweiCloud SDK Python Core"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkcore-3.1.147-py2.py3-none-any.whl", hash = "sha256:8041d1a465350a4baa4065ffe0c7a4b5431b1dbe2d4e67cc8dbcee132abc6da7"},
 ]
@@ -313,7 +313,7 @@ name = "huaweicloudsdkcts"
 version = "3.1.147"
 description = "CTS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkcts-3.1.147-py2.py3-none-any.whl", hash = "sha256:3893d983a1a78b4a660269d4f6c6fef3b303d9d68a6837f0dac471c22d7c7abc"},
 ]
@@ -326,7 +326,7 @@ name = "huaweicloudsdkdc"
 version = "3.1.147"
 description = "DC"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkdc-3.1.147-py2.py3-none-any.whl", hash = "sha256:14e4ec8d386c7c7642da3db518e64c43d9a3ea26320d97f160a4d40a28145ec6"},
 ]
@@ -339,7 +339,7 @@ name = "huaweicloudsdkdeh"
 version = "3.1.147"
 description = "DeH"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkdeh-3.1.147-py2.py3-none-any.whl", hash = "sha256:431c34f9ca6ff002a7c6bb8ab72588b2240fbfbf0bb3375eb125f447e5277877"},
 ]
@@ -365,7 +365,7 @@ name = "huaweicloudsdkecs"
 version = "3.1.147"
 description = "ECS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkecs-3.1.147-py2.py3-none-any.whl", hash = "sha256:a7493f8f0eed17d1cd2f6e9b53393fc9d47c16d4a3809112dfbe0ec0c38335c3"},
 ]
@@ -378,7 +378,7 @@ name = "huaweicloudsdkeg"
 version = "3.1.147"
 description = "EG"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkeg-3.1.147-py2.py3-none-any.whl", hash = "sha256:68b148f4c0f38db23703b74345467c6342994ee190b5b14dd7627abf10dfed0e"},
 ]
@@ -391,7 +391,7 @@ name = "huaweicloudsdkeip"
 version = "3.1.147"
 description = "EIP"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkeip-3.1.147-py2.py3-none-any.whl", hash = "sha256:513a08e6bf547ae754ecde116713fba2b11d569c52fc3f94e4f07a05130c88a4"},
 ]
@@ -404,7 +404,7 @@ name = "huaweicloudsdkelb"
 version = "3.1.147"
 description = "ELB"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkelb-3.1.147-py2.py3-none-any.whl", hash = "sha256:90ba5c3718ea37f97743edc6aa816dab2d4445c0ba4e5f618d3f2cd10ade6972"},
 ]
@@ -417,7 +417,7 @@ name = "huaweicloudsdker"
 version = "3.1.147"
 description = "ER"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdker-3.1.147-py2.py3-none-any.whl", hash = "sha256:ca609d6197392eef0821f386078c91786ef6c81fe6d2bc4ae8379465a5c0f1c0"},
 ]
@@ -430,7 +430,7 @@ name = "huaweicloudsdkevs"
 version = "3.1.147"
 description = "EVS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkevs-3.1.147-py2.py3-none-any.whl", hash = "sha256:ffb266ccdfaa52a06be7050896a538ffccfa3353632357bd031d44c736271be9"},
 ]
@@ -443,7 +443,7 @@ name = "huaweicloudsdkfunctiongraph"
 version = "3.1.147"
 description = "FunctionGraph"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkfunctiongraph-3.1.147-py2.py3-none-any.whl", hash = "sha256:23d0dfa69d18d73f99dd98610700ea370747b18d5e076d8cf00e2d5c98e47584"},
 ]
@@ -456,7 +456,7 @@ name = "huaweicloudsdkgeip"
 version = "3.1.147"
 description = "GEIP"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkgeip-3.1.147-py2.py3-none-any.whl", hash = "sha256:2895d70184996d7272f76eeab3b538f67c71cfc29531288a41049726783105a5"},
 ]
@@ -469,7 +469,7 @@ name = "huaweicloudsdkhss"
 version = "3.1.147"
 description = "HSS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkhss-3.1.147-py2.py3-none-any.whl", hash = "sha256:6d9a3a19771cea92a68a77db2234c4a120a5dac991e1b58045cc850ac022a32a"},
 ]
@@ -482,7 +482,7 @@ name = "huaweicloudsdkiam"
 version = "3.1.147"
 description = "IAM"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkiam-3.1.147-py2.py3-none-any.whl", hash = "sha256:94d91159a5c90a461ea0ffaa3d481ccc371e831d3cfa47fb08f8d0d124cf311c"},
 ]
@@ -495,7 +495,7 @@ name = "huaweicloudsdkims"
 version = "3.1.147"
 description = "IMS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkims-3.1.147-py2.py3-none-any.whl", hash = "sha256:806fa96ce6cfc11609baf8c3b703c7e5b4b508968978c336680a3ae1f1af9689"},
 ]
@@ -508,7 +508,7 @@ name = "huaweicloudsdkkafka"
 version = "3.1.147"
 description = "Kafka"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkkafka-3.1.147-py2.py3-none-any.whl", hash = "sha256:8423ccba54d69d928587dbae16a1336cc74bb1cace5aa108f0a76d87fbb3971e"},
 ]
@@ -521,7 +521,7 @@ name = "huaweicloudsdkkms"
 version = "3.1.147"
 description = "KMS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkkms-3.1.147-py2.py3-none-any.whl", hash = "sha256:0a0b5c9b2609d30180a430fc784b887122febc2c49dc5157a0ad76190310161f"},
 ]
@@ -534,7 +534,7 @@ name = "huaweicloudsdklts"
 version = "3.1.147"
 description = "LTS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdklts-3.1.147-py2.py3-none-any.whl", hash = "sha256:62612b23097c634e9dd311ae433e83713f0358ed23ecf45d5caf94fc526d9a1d"},
 ]
@@ -547,7 +547,7 @@ name = "huaweicloudsdknat"
 version = "3.1.147"
 description = "NAT"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdknat-3.1.147-py2.py3-none-any.whl", hash = "sha256:b9f6d478b84dea50081483d4d129f737666eb87b376bec86221bbbf8a95d78d6"},
 ]
@@ -560,7 +560,7 @@ name = "huaweicloudsdkobs"
 version = "3.1.147"
 description = "OBS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkobs-3.1.147-py2.py3-none-any.whl", hash = "sha256:f4387c48ddebed72e4b7d381226501410e207dd1cf45f6e96d5d61f9e03602c5"},
 ]
@@ -573,7 +573,7 @@ name = "huaweicloudsdkorganizations"
 version = "3.1.147"
 description = "Organizations"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkorganizations-3.1.147-py2.py3-none-any.whl", hash = "sha256:b1f18f47c1fa02c6e72105a2e3174cb586f22c8519049faf4ce4ebfaf32a4709"},
 ]
@@ -586,9 +586,22 @@ name = "huaweicloudsdkram"
 version = "3.1.147"
 description = "RAM"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkram-3.1.147-py2.py3-none-any.whl", hash = "sha256:371f3cf6343b01034fbbf1a02689c86511f8f8e1e097ef4cbbdaf5d43cd298fd"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.147"
+
+[[package]]
+name = "huaweicloudsdkscm"
+version = "3.1.147"
+description = "SCM"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
+files = [
+    {file = "huaweicloudsdkscm-3.1.147-py2.py3-none-any.whl", hash = "sha256:a70d04c03e7b697d840c16fdb699502b75d63a36c8811d324cf0fff8c23dab13"},
 ]
 
 [package.dependencies]
@@ -625,7 +638,7 @@ name = "huaweicloudsdksecmaster"
 version = "3.1.147"
 description = "SecMaster"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdksecmaster-3.1.147-py2.py3-none-any.whl", hash = "sha256:eebac18c6514794f5d69c13d71700202fccd0430b4033767e95b4f9a76f3e87e"},
 ]
@@ -638,7 +651,7 @@ name = "huaweicloudsdksfsturbo"
 version = "3.1.147"
 description = "SFSTurbo"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdksfsturbo-3.1.147-py2.py3-none-any.whl", hash = "sha256:6adf3876fb6eb88afd2c97d242f55be539149961f252956cd66315cd930d8d32"},
 ]
@@ -651,7 +664,7 @@ name = "huaweicloudsdksmn"
 version = "3.1.147"
 description = "SMN"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdksmn-3.1.147-py2.py3-none-any.whl", hash = "sha256:b7a45e5cdcae4a0bf100a904ca6971d731ce2d2a4cdf530a74df67aa47a55ff3"},
 ]
@@ -677,7 +690,7 @@ name = "huaweicloudsdktms"
 version = "3.1.147"
 description = "TMS"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdktms-3.1.147-py2.py3-none-any.whl", hash = "sha256:1eafd5caa180f056a85eeda9c79f6325c2e3f23b9b9901e4a901f9c6f7c88dcd"},
 ]
@@ -690,7 +703,7 @@ name = "huaweicloudsdkvpc"
 version = "3.1.147"
 description = "VPC"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 files = [
     {file = "huaweicloudsdkvpc-3.1.147-py2.py3-none-any.whl", hash = "sha256:8acc109e506c48154ea728211b8aa604c2561503508bd1904de7124f8450a901"},
 ]
@@ -790,7 +803,7 @@ name = "pycryptodome"
 version = "3.22.0"
 description = "Cryptographic library for Python"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*"
 files = [
     {file = "pycryptodome-3.22.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:96e73527c9185a3d9b4c6d1cfb4494f6ced418573150be170f6580cb975a7f5a"},
     {file = "pycryptodome-3.22.0-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:9e1bb165ea1dc83a11e5dbbe00ef2c378d148f3a2d3834fb5ba4e0f6fd0afe4b"},
@@ -1053,7 +1066,7 @@ name = "simplejson"
 version = "3.20.1"
 description = "Simple, fast, extensible JSON encoder/decoder for Python"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.5"
+python-versions = ">=2.5, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "simplejson-3.20.1-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:f5272b5866b259fe6c33c4a8c5073bf8b359c3c97b70c298a2f09a69b52c7c41"},
     {file = "simplejson-3.20.1-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:5c0de368f3052a59a1acf21f8b2dd28686a9e4eba2da7efae7ed9554cb31e7bc"},
@@ -1172,7 +1185,7 @@ name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
