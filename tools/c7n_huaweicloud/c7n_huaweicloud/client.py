@@ -109,7 +109,7 @@ from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInsta
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkapig.v2 import (
-    ApigClient, 
+    ApigClient,
     ListApisV2Request,
     ListEnvironmentsV2Request,
     ListApiGroupsV2Request,
@@ -445,7 +445,7 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups', 
+        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
                                               'apig-instance']:
             client = (
                 ApigClient.new_builder()

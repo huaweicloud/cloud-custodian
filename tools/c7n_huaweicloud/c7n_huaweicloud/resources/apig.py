@@ -96,7 +96,8 @@ class ApiResource(QueryResourceManager):
         return []
 
     def _fetch_resources(self, query):
-        """Override resource retrieval method to ensure instance_id parameter is included in the request"""
+        """Override resource retrieval method to ensure instance_id
+           parameter is included in the request"""
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
 
@@ -106,7 +107,8 @@ class ApiResource(QueryResourceManager):
         # Ensure instance_id is properly set
         if not instance_ids:
             log.error(
-                "Unable to get valid APIG instance ID, cannot continue querying API list")
+                "Unable to get valid APIG instance ID, "
+                "cannot continue querying API list")
             return []
 
         resources = []
@@ -205,7 +207,7 @@ class DeleteApiAction(HuaweiCloudBaseAction):
 class UpdateApiAction(HuaweiCloudBaseAction):
     """Update API action
 
-    This action allows updating various properties of an API in API Gateway, 
+    This action allows updating various properties of an API in API Gateway,
     including name, request protocol, request method, request URI, authentication type, etc.
 
     :example:
@@ -220,7 +222,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
                   key: id
                   value: 499e3bd193ba4db89a49f0ebdef19796
               actions:
-                - type: update          
+                - type: update
                   # Basic API properties
                   name: updated-api-name
                   api_type: 1  # 1 for public API, 2 for private API
@@ -236,7 +238,6 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
                   # Response examples
                   result_normal_sample: '{"result": "success", "data": {"id": 1}}'
-                  result_failure_sample: '{"error_code": "APIG.0301", "error_msg": "Incorrect API parameters"}'
 
                   # Tracing configuration
                   trace_enabled: true
@@ -244,7 +245,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
                   sampling_param: "10"
 
                   # Tags
-                  tags: 
+                  tags:
                     - "production"
                     - "api-gateway"
 
@@ -349,8 +350,8 @@ class UpdateApiAction(HuaweiCloudBaseAction):
     def _build_update_body(self, resource):
         """Build API update request body
 
-        Construct API update request body based on policy parameters while preserving necessary fields 
-        from the original API
+        Construct API update request body based on policy parameters while preserving 
+        necessary fields from the original API
 
         :param resource: API resource dictionary
         :return: Update request body object
@@ -390,8 +391,8 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
             if not update_body:
                 self.log.error(
-                    f"No update parameters provided, skipping API update {resource.get('name')} "
-                    f"(ID: {api_id})")
+                    f"No update parameters provided, skipping API update "
+                    f"{resource.get('name')} (ID: {api_id})")
                 return
 
             # Create update request, ensure instance_id is string type
@@ -482,7 +483,8 @@ class StageResource(QueryResourceManager):
         return []
 
     def _fetch_resources(self, query):
-        """Override resource retrieval method to ensure instance_id parameter is included in the request"""
+        """Override resource retrieval method to ensure 
+           instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
 
@@ -726,7 +728,8 @@ class ApiGroupResource(QueryResourceManager):
         return []
 
     def _fetch_resources(self, query):
-        """Override resource retrieval method to ensure instance_id parameter is included in the request"""
+        """Override resource retrieval method to ensure
+           instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
 
@@ -736,8 +739,8 @@ class ApiGroupResource(QueryResourceManager):
         # Ensure instance_id is properly set
         if not instance_ids:
             log.error(
-                "Unable to get valid APIG instance ID, cannot continue querying "
-                "API group list")
+                "Unable to get valid APIG instance ID, "
+                "cannot continue querying API group list")
             return []
 
         resources = []
@@ -830,7 +833,8 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
 
         if not domain_id:
             self.log.error(
-                f"No domain_id specified, cannot perform domain security policy update, API group ID: {group_id}")
+                f"No domain_id specified, cannot perform domain security policy update, "
+                f"API group ID: {group_id}")
             return
 
         try:
