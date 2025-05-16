@@ -767,11 +767,11 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     @property
     def user_data_encrypt_kms_key_id(self):
-        return self.policy.data['mode'].get('user_data_encrypt_kms_key_id', "")
+        return self.policy.data['mode'].get('user_data_encrypt_kms_key_id', None)
 
     @property
     def code_encrypt_kms_key_id(self):
-        return self.policy.data['mode'].get('code_encrypt_kms_key_id', "")
+        return self.policy.data['mode'].get('code_encrypt_kms_key_id', None)
 
     def get_events(self, session_factory):
         events = []
