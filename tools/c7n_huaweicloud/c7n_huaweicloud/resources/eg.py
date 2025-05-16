@@ -24,30 +24,8 @@ class Subscription(QueryResourceManager):
     .. code-block:: yaml
 
         policies:
-          - name: event-subscription-tags-autoadd
+          - name: event-subscription-resource
             resource: huaweicloud.eg-subscription
-            filters:
-              - type: tag-count
-                count: 0
-                op: eq
-            actions:
-              - type: tag
-                key: RequiredTag
-                value: RequiredValue
-
-        policies:
-          - name: event-subscription-untags
-            resource: huaweicloud.eg-subscription
-            filters:
-              - type: tag-count
-                count: 0
-                op: gt
-            actions:
-              - type: untag
-                tag_values:
-                  RequiredTag: RequiredValue
-
-    set HUAWEICLOUD_SDK_REGION_EG_SA_BRAZIL_1=https://eg.sa-brazil-1.myhuaweicloud.com
     """
 
     class resource_type(TypeInfo):
