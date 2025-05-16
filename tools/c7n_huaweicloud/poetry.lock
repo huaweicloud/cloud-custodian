@@ -633,10 +633,6 @@ files = [
 [package.dependencies]
 huaweicloudsdkcore = ">=3.1.147"
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "huaweicloudsdkscm"
@@ -1261,10 +1257,6 @@ files = [
     {file = "typing_extensions-4.13.2.tar.gz", hash = "sha256:e6c81219bd689f51865d9e372991c540bda33a0379d5573cddb9a3a23f7caaef"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "mirrors"
 
 [[package]]
 name = "urllib3"
