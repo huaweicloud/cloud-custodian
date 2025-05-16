@@ -139,12 +139,11 @@ class DeleteWorkspace(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-          - name: delete-inactive-workspaces
+          - name: delete-workspace-desktop
             resource: huaweicloud.workspace-desktop
             filters:
-              - type: connection-status
-                op: eq
-                value: UNREGISTER
+              - type: tag-count
+                count: 2
             actions:
               - delete
     """
@@ -191,82 +190,3 @@ class DeleteWorkspace(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         return super().perform_action(resource)
-
-# Example Policies
-"""
-Here are some common Huawei Cloud Workspace policy examples:
-
-1. Mark Inactive Desktops Policy:
-```yaml
-policies:
-  - name: delete-inactive-workspaces
-    resource: huaweicloud.workspace-desktop
-    filters:
-      - type: connection-status
-        op: eq
-        value: UNREGISTER
-    actions:
-      - delete
-```
-
-2. Delete Marked Inactive Desktops Policy:
-```yaml
-policies:
-  - name: delete-marked-workspaces
-    resource: huaweicloud.workspace-desktop
-    description: |
-      Delete desktops marked for cleanup
-    filters:
-      - type: marked-for-op
-        op: delete
-        tag: custodian_cleanup
-    actions:
-      - delete
-```
-
-3. Tag Untagged Desktops:
-```yaml
-policies:
-  - name: tag-untagged-workspaces
-    resource: huaweicloud.workspace-desktop
-    description: |
-      Add Owner tag to desktops missing it
-    filters:
-      - tag:Owner: absent
-    actions:
-      - type: tag
-        key: Owner
-        value: Unknown
-```
-
-4. Auto-tag Desktop Creator:
-```yaml
-policies:
-  - name: tag-workspace-creator
-    resource: huaweicloud.workspace-desktop
-    description: |
-      Listen for desktop creation events and auto-tag creator
-    mode:
-      type: cloudtrace
-      events:
-        - source: "Workspace"
-          event: "createDesktop"
-          ids: "desktop_id"
-    actions:
-      - type: auto-tag-user
-        tag: Creator
-```
-
-5. Find Non-compliant Desktops:
-```yaml
-policies:
-  - name: find-noncompliant-workspaces
-    resource: huaweicloud.workspace-desktop
-    description: |
-      Find desktops that don't comply with security rules
-    filters:
-      - type: config-compliance
-        rules:
-          - workspace-security-rule
-```
-"""
