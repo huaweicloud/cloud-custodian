@@ -10,7 +10,7 @@ class SwrRepositoryTest(BaseTest):
     """Test SWR Repository resources, filters, and actions."""
 
     def test_swr_repository_query(self):
-        """Test SWR Repository query and augment functionality."""
+        """Test SWR Repository query and basic resource attributes."""
         factory = self.replay_flight_data("swr_repository_query")
         p = self.load_policy(
             {
@@ -28,39 +28,8 @@ class SwrRepositoryTest(BaseTest):
         # Verify resource contains required fields
         self.assertTrue("id" in resources[0])
         self.assertTrue("tag_resource_type" in resources[0])
-
-        # Verify lifecycle policy is correctly augmented to the resource
-        self.assertTrue("c7n:lifecycle-policy" in resources[0])
-        lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
-        # Verify lifecycle policy is a list
-        self.assertTrue(isinstance(lifecycle_policy, list))
-        # Verify rules list length
-        self.assertEqual(len(lifecycle_policy), 1)
-
-        # Get the first rule
-        rule = lifecycle_policy[0]
-
-        # Verify rule properties
-        self.assertEqual(rule["algorithm"], "or")
-        self.assertEqual(rule["id"], 222)
-
-        # Verify inner rules
-        self.assertTrue("rules" in rule)
-        self.assertEqual(len(rule["rules"]), 1)
-        rule_detail = rule["rules"][0]
-        self.assertEqual(rule_detail["template"], "date_rule")
-        self.assertEqual(rule_detail["params"]["days"], "30")
-
-        # Verify tag selectors
-        self.assertTrue("tag_selectors" in rule_detail)
-        selectors = rule_detail["tag_selectors"]
-        self.assertEqual(len(selectors), 3)
-        self.assertEqual(selectors[0]["kind"], "label")
-        self.assertEqual(selectors[0]["pattern"], "v5")
-        self.assertEqual(selectors[1]["kind"], "label")
-        self.assertEqual(selectors[1]["pattern"], "1.0.1")
-        self.assertEqual(selectors[2]["kind"], "regexp")
-        self.assertEqual(selectors[2]["pattern"], "^123$")
+        # Lifecycle policy is now loaded on-demand by the lifecycle-rule filter,
+        # and not in the initial resource fetch
 
     def test_swr_filter_value(self):
         """Test SWR Repository value filter for filtering by field values."""
@@ -190,12 +159,39 @@ class LifecycleRuleFilterTest(BaseTest):
         # Verify VCR: There should be 1 resource with lifecycle rules
         self.assertEqual(len(resources), 1)
 
-        # Verify lifecycle policy
+        # Verify lifecycle policy is lazily loaded by the filter
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
         self.assertTrue(isinstance(lifecycle_policy, list))
         self.assertTrue(len(lifecycle_policy) > 0)
+
+        # Now that we've verified the lifecycle policies are loaded on-demand,
+        # we can test the specific policy details
+        # Get the first rule
+        rule = lifecycle_policy[0]
+
+        # Verify rule properties
+        self.assertEqual(rule["algorithm"], "or")
+        self.assertEqual(rule["id"], 222)
+
+        # Verify inner rules
+        self.assertTrue("rules" in rule)
+        self.assertEqual(len(rule["rules"]), 1)
+        rule_detail = rule["rules"][0]
+        self.assertEqual(rule_detail["template"], "date_rule")
+        self.assertEqual(rule_detail["params"]["days"], "30")
+
+        # Verify tag selectors
+        self.assertTrue("tag_selectors" in rule_detail)
+        selectors = rule_detail["tag_selectors"]
+        self.assertEqual(len(selectors), 3)
+        self.assertEqual(selectors[0]["kind"], "label")
+        self.assertEqual(selectors[0]["pattern"], "v5")
+        self.assertEqual(selectors[1]["kind"], "label")
+        self.assertEqual(selectors[1]["pattern"], "1.0.1")
+        self.assertEqual(selectors[2]["kind"], "regexp")
+        self.assertEqual(selectors[2]["pattern"], "^123$")
 
     def test_lifecycle_rule_filter_no_match(self):
         """Test Lifecycle Rule filter - Match repositories without lifecycle rules."""

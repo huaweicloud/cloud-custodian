@@ -4,10 +4,11 @@
 import logging
 import json
 import traceback
+import time
 
 from c7n.filters import Filter
 from c7n.filters.core import ValueFilter, AgeFilter
-from c7n.utils import type_schema
+from c7n.utils import local_session, type_schema
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
@@ -63,49 +64,18 @@ class Swr(QueryResourceManager):
         date = 'created_at'  # Specify field name for resource creation time
 
     def augment(self, resources):
-        """Augment resource information with lifecycle policies.
+        """Augment SWR repository resources with additional information.
 
-        This method enhances the original resource data by adding lifecycle policies
-        for each SWR repository.
+        This method adds tag_resource_type information to the resources.
+        Lifecycle policy information is no longer loaded here for efficiency,
+        and is instead loaded on-demand by the lifecycle-rule filter.
 
         :param resources: Original resource dictionary list obtained from API
-        :return: Enhanced resource dictionary list with lifecycle policies
+        :return: Enhanced resource dictionary list
         """
-        client = self.get_client()
         for resource in resources:
             resource['tag_resource_type'] = 'swr-repository'
-            self.get_lifecycle_policy(client, resource)
         return resources
-
-    def get_lifecycle_policy(self, client, resource):
-        """Get lifecycle policy for a specific repository.
-
-        :param client: HuaweiCloud SWR client
-        :param resource: SWR repository resource dictionary
-        :return: Resource with lifecycle policy added
-        """
-        try:
-            repository = resource['name']
-            namespace = resource['namespace']
-            request = ListRetentionsRequest()
-            request.repository = repository
-            request.namespace = namespace
-            response = client.list_retentions(request)
-            retention_list = []
-            if not response or not response.body:
-                resource['c7n:lifecycle-policy'] = []
-                return resource
-            for retention in response.body:
-                if hasattr(retention, 'to_dict'):
-                    retention_list.append(retention.to_dict())
-                else:
-                    retention_list.append(retention)
-            resource['c7n:lifecycle-policy'] = retention_list
-        except Exception as e:
-            log.warning(
-                "Exception getting lifecycle policy for %s: %s",
-                resource['name'], e)
-        return resource
 
 
 @Swr.filter_registry.register('lifecycle-rule')
@@ -114,6 +84,9 @@ class LifecycleRule(Filter):
 
     Filter repositories with or without specific lifecycle rules based on parameters
     such as days, tag selectors (kind, pattern), etc.
+
+    This filter lazily loads lifecycle policies only for repositories that need to be
+    processed, improving efficiency when dealing with many repositories.
 
     :example:
 
@@ -207,10 +180,29 @@ class LifecycleRule(Filter):
     def process(self, resources, event=None):
         """Process resources based on lifecycle rule criteria.
 
+        This method now lazily loads lifecycle policies for each repository
+        only when needed, improving efficiency.
+
         :param resources: List of resources to filter
         :param event: Optional event context
         :return: Filtered resource list
         """
+        client = local_session(self.manager.session_factory).client('swr')
+        # Lazily load lifecycle policies only when needed
+        for resource in resources:
+            # Skip if we've already loaded the lifecycle policy for this resource
+            if self.policy_annotation in resource:
+                continue
+
+            # Get lifecycle policy for this repository
+            try:
+                self._get_lifecycle_policy(client, resource)
+            except Exception as e:
+                log.warning(
+                    "Exception getting lifecycle policy for %s: %s",
+                    resource['name'], e)
+                resource[self.policy_annotation] = []
+
         state = self.data.get('state', True)
         results = []
 
@@ -255,6 +247,27 @@ class LifecycleRule(Filter):
                 results.append(resource)
 
         return results
+
+    def _get_lifecycle_policy(self, client, resource):
+        """Get lifecycle policy for a specific repository.
+
+        :param client: HuaweiCloud SWR client
+        :param resource: SWR repository resource dictionary
+        """
+        repository = resource['name']
+        namespace = resource['namespace']
+        request = ListRetentionsRequest()
+        request.repository = repository
+        request.namespace = namespace
+        response = client.list_retentions(request)
+        retention_list = []
+        if response and response.body:
+            for retention in response.body:
+                if hasattr(retention, 'to_dict'):
+                    retention_list.append(retention.to_dict())
+                else:
+                    retention_list.append(retention)
+        resource[self.policy_annotation] = retention_list
 
     def build_params_filters(self):
         """Build parameter filters.
@@ -405,6 +418,9 @@ class SwrImage(QueryResourceManager):
         taggable = False  # SWR images don't support tagging
         date = 'created'  # Creation time field
 
+    # 在每次API请求之间的延迟时间（秒）
+    api_request_delay = 0.2
+
     def _fetch_resources(self, query):
         """Fetch all SWR images by first getting repositories then images.
 
@@ -427,7 +443,7 @@ class SwrImage(QueryResourceManager):
             client = self.get_client()
 
             # For each repository, get its images
-            for repo in repositories:
+            for repo_index, repo in enumerate(repositories):
                 namespace = repo.get('namespace')
                 repository = repo.get('name')
 
@@ -438,7 +454,12 @@ class SwrImage(QueryResourceManager):
                 images = self._get_repository_tags_paginated(client, namespace, repository)
                 all_images.extend(images)
                 self.log.debug(
-                    f"Retrieved {len(images)} images for repository {namespace}/{repository}")
+                    f"Retrieved {len(images)} images for repository {namespace}/{repository} "
+                    f"({repo_index + 1}/{len(repositories)})")
+
+                # 对于多个仓库查询，添加延迟以避免API限流
+                if repo_index < len(repositories) - 1:
+                    time.sleep(self.api_request_delay)
 
         except Exception as e:
             self.log.error(f"Failed to fetch SWR images: {e}")
@@ -450,6 +471,7 @@ class SwrImage(QueryResourceManager):
         """Get all image tags for a repository with pagination.
 
         This uses the offset pagination mechanism that matches the SWR API.
+        A delay is added between API calls to avoid triggering rate limits.
 
         :param client: HuaweiCloud SWR client
         :param namespace: Repository namespace
@@ -459,9 +481,13 @@ class SwrImage(QueryResourceManager):
         tags = []
         offset = 0
         limit = 100  # Default page size
+        page_num = 0
 
         try:
             while True:
+                # 添加页码计数，方便日志记录
+                page_num += 1
+
                 # Build request with pagination parameters
                 request = ListRepositoryTagsRequest(
                     namespace=namespace,
@@ -503,7 +529,10 @@ class SwrImage(QueryResourceManager):
 
                 self.log.debug(
                     f"Retrieved {len(batch)} tags for {namespace}/{repository}, "
-                    f"total so far: {len(tags)}")
+                    f"page {page_num}, total so far: {len(tags)}")
+
+                # 添加请求延迟以避免API限流
+                time.sleep(self.api_request_delay)
 
         except Exception as e:
             self.log.error(
