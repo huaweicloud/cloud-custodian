@@ -108,6 +108,10 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
+from huaweicloudsdkrocketmq.v2 import (
+    RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
+)
+from huaweicloudsdkrocketmq.v2.region.rocketmq_region import RocketMQRegion
 from huaweicloudsdkapig.v2 import (
     ApigClient,
     ListApisV2Request,
@@ -125,10 +129,8 @@ from huaweicloudsdkaom.v2 import (
     ListMetricOrEventAlarmRuleRequest
 )
 from huaweicloudsdkaom.v2.region.aom_region import AomRegion
-
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
-
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
 
@@ -445,6 +447,13 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'reliability':
+            client = (
+                RocketMQClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RocketMQRegion.value_of(self.region))
+                .build()
+            )
         elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
                                               'apig-instance']:
             client = (
@@ -613,6 +622,8 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == 'reliability':
+            request = RocketMQListInstancesRequest()
         elif service == 'apig-api':
             request = ListApisV2Request()
         elif service == 'apig-stage':

@@ -4,10 +4,11 @@
 import logging
 import json
 import traceback
+import time
 
 from c7n.filters import Filter
 from c7n.filters.core import ValueFilter, AgeFilter
-from c7n.utils import type_schema
+from c7n.utils import local_session, type_schema
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
@@ -21,7 +22,6 @@ from huaweicloudsdkswr.v2.model.create_retention_request import CreateRetentionR
 from huaweicloudsdkswr.v2.model.create_retention_request_body import CreateRetentionRequestBody
 from huaweicloudsdkswr.v2.model.rule import Rule
 from huaweicloudsdkswr.v2.model.tag_selector import TagSelector
-from huaweicloudsdkswr.v2.model.list_repos_details_request import ListReposDetailsRequest
 
 log = logging.getLogger('custodian.huaweicloud.swr')
 
@@ -29,6 +29,7 @@ log = logging.getLogger('custodian.huaweicloud.swr')
 @resources.register('swr')
 class Swr(QueryResourceManager):
     """Huawei Cloud SWR (Software Repository) Resource Manager.
+
 
     :example:
 
@@ -47,48 +48,34 @@ class Swr(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = 'swr'
-        enum_spec = ('list_repos_details', 'body', None)
-        id = 'name'
-        name = 'name'
-        filter_name = 'name'
-        filter_type = 'scalar'
-        taggable = False
-        tag_resource_type = 'swr'
-        date = 'created_at'
+        """Define SWR resource metadata and type information"""
+        service = 'swr'  # Specify corresponding HuaweiCloud service name
+        # Specify API operation, result list key, and pagination for enumerating resources
+        # 'list_repos_details' is the API method name
+        # 'body' is the field name in the response containing the instance list
+        # 'offset' is the parameter name for pagination
+        enum_spec = ('list_repos_details', 'body', 'offset')
+        id = 'name'  # Specify resource unique identifier field name
+        name = 'name'  # Specify resource name field name
+        filter_name = 'name'  # Field name for filtering by name
+        filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
+        taggable = False  # Indicate that this resource doesn't support tagging directly
+        tag_resource_type = 'swr'  # Specify resource type for querying tags
+        date = 'created_at'  # Specify field name for resource creation time
 
     def augment(self, resources):
-        """Augment resource information with lifecycle policies."""
-        client = self.get_client()
+        """Augment SWR repository resources with additional information.
+
+        This method adds tag_resource_type information to the resources.
+        Lifecycle policy information is no longer loaded here for efficiency,
+        and is instead loaded on-demand by the lifecycle-rule filter.
+
+        :param resources: Original resource dictionary list obtained from API
+        :return: Enhanced resource dictionary list
+        """
         for resource in resources:
             resource['tag_resource_type'] = 'swr-repository'
-            self.get_lifecycle_policy(client, resource)
         return resources
-
-    def get_lifecycle_policy(self, client, resource):
-        """Get lifecycle policy for a specific repository."""
-        try:
-            repository = resource['name']
-            namespace = resource['namespace']
-            request = ListRetentionsRequest()
-            request.repository = repository
-            request.namespace = namespace
-            response = client.list_retentions(request)
-            retention_list = []
-            if not response or not response.body:
-                resource['c7n:lifecycle-policy'] = []
-                return resource
-            for retention in response.body:
-                if hasattr(retention, 'to_dict'):
-                    retention_list.append(retention.to_dict())
-                else:
-                    retention_list.append(retention)
-            resource['c7n:lifecycle-policy'] = retention_list
-        except Exception as e:
-            log.warning(
-                "Exception getting lifecycle policy for %s: %s",
-                resource['name'], e)
-        return resource
 
 
 @Swr.filter_registry.register('lifecycle-rule')
@@ -97,6 +84,9 @@ class LifecycleRule(Filter):
 
     Filter repositories with or without specific lifecycle rules based on parameters
     such as days, tag selectors (kind, pattern), etc.
+
+    This filter lazily loads lifecycle policies only for repositories that need to be
+    processed, improving efficiency when dealing with many repositories.
 
     :example:
 
@@ -188,6 +178,31 @@ class LifecycleRule(Filter):
     policy_annotation = 'c7n:lifecycle-policy'
 
     def process(self, resources, event=None):
+        """Process resources based on lifecycle rule criteria.
+
+        This method now lazily loads lifecycle policies for each repository
+        only when needed, improving efficiency.
+
+        :param resources: List of resources to filter
+        :param event: Optional event context
+        :return: Filtered resource list
+        """
+        client = local_session(self.manager.session_factory).client('swr')
+        # Lazily load lifecycle policies only when needed
+        for resource in resources:
+            # Skip if we've already loaded the lifecycle policy for this resource
+            if self.policy_annotation in resource:
+                continue
+
+            # Get lifecycle policy for this repository
+            try:
+                self._get_lifecycle_policy(client, resource)
+            except Exception as e:
+                log.warning(
+                    "Exception getting lifecycle policy for %s: %s",
+                    resource['name'], e)
+                resource[self.policy_annotation] = []
+
         state = self.data.get('state', True)
         results = []
 
@@ -233,8 +248,32 @@ class LifecycleRule(Filter):
 
         return results
 
+    def _get_lifecycle_policy(self, client, resource):
+        """Get lifecycle policy for a specific repository.
+
+        :param client: HuaweiCloud SWR client
+        :param resource: SWR repository resource dictionary
+        """
+        repository = resource['name']
+        namespace = resource['namespace']
+        request = ListRetentionsRequest()
+        request.repository = repository
+        request.namespace = namespace
+        response = client.list_retentions(request)
+        retention_list = []
+        if response and response.body:
+            for retention in response.body:
+                if hasattr(retention, 'to_dict'):
+                    retention_list.append(retention.to_dict())
+                else:
+                    retention_list.append(retention)
+        resource[self.policy_annotation] = retention_list
+
     def build_params_filters(self):
-        """Build parameter filters."""
+        """Build parameter filters.
+
+        :return: Dictionary of parameter filters
+        """
         params_filters = {}
         if 'params' in self.data:
             for param_key, param_config in self.data.get('params', {}).items():
@@ -259,7 +298,10 @@ class LifecycleRule(Filter):
         return params_filters
 
     def build_matchers(self):
-        """Build generic matchers."""
+        """Build generic matchers.
+
+        :return: List of value filter matchers
+        """
         matchers = []
         for matcher in self.data.get('match', []):
             vf = ValueFilter(matcher)
@@ -268,7 +310,12 @@ class LifecycleRule(Filter):
         return matchers
 
     def match_policy_with_matchers(self, policy, matchers):
-        """Check if policy matches using generic matchers."""
+        """Check if policy matches using generic matchers.
+
+        :param policy: Lifecycle policy to check
+        :param matchers: List of matchers to apply
+        :return: True if policy matches all matchers, False otherwise
+        """
         if not matchers:
             return True
 
@@ -278,7 +325,12 @@ class LifecycleRule(Filter):
         return True
 
     def match_policy_params(self, policy, params_filters):
-        """Check if policy parameters match filters."""
+        """Check if policy parameters match filters.
+
+        :param policy: Lifecycle policy to check
+        :param params_filters: Parameter filters to apply
+        :return: True if policy matches parameter filters, False otherwise
+        """
         for rule in policy.get('rules', []):
             rule_params = rule.get('params', {})
 
@@ -308,7 +360,12 @@ class LifecycleRule(Filter):
         return False
 
     def match_tag_selector(self, policy, tag_selector):
-        """Check if policy tag selector matches the filter."""
+        """Check if policy tag selector matches the filter.
+
+        :param policy: Lifecycle policy to check
+        :param tag_selector: Tag selector criteria
+        :return: True if policy matches tag selector, False otherwise
+        """
         for rule in policy.get('rules', []):
             for selector in rule.get('tag_selectors', []):
                 match = True
@@ -329,6 +386,10 @@ class LifecycleRule(Filter):
 class SwrImage(QueryResourceManager):
     """Huawei Cloud SWR Image Resource Manager.
 
+    This class is responsible for discovering, filtering, and managing SWR image resources
+    on HuaweiCloud. It implements a two-level query approach, first retrieving all SWR repositories,
+    then querying images for each repository.
+
     :example:
 
     .. code-block:: yaml
@@ -338,175 +399,144 @@ class SwrImage(QueryResourceManager):
             resource: huaweicloud.swr-image
             filters:
               - type: value
-                key: Tag
+                key: tag
                 value: latest
     """
 
     class resource_type(TypeInfo):
-        service = 'swr'
-        enum_spec = ('list_repository_tags', 'body', None)
-        id = 'id'
-        name = 'Tag'  # Tag field corresponds to image version name
-        filter_name = 'Tag'
-        filter_type = 'scalar'
+        """Define SWR Image resource metadata and type information"""
+        service = 'swr'  # Specify corresponding HuaweiCloud service name
+        # Specify API operation, result list key, and pagination for enumerating resources
+        # 'list_repository_tags' is the API method name
+        # 'body' is the field name in the response containing the tag list
+        # 'offset' is the parameter name for pagination
+        enum_spec = ('list_repository_tags', 'body', 'offset')
+        id = 'id'  # Specify resource unique identifier field name
+        name = 'tag'  # Tag field corresponds to image version name
+        filter_name = 'tag'  # Field name for filtering by tag
+        filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
         taggable = False  # SWR images don't support tagging
         date = 'created'  # Creation time field
 
-    def augment(self, resources):
-        """Enhance resource information."""
-        result = []
-        for resource in resources:
-            try:
-                # Ensure Tag field exists and provide compatibility for lowercase tag field
-                if 'Tag' in resource and 'tag' not in resource:
-                    resource['tag'] = resource['Tag']
-                elif 'tag' in resource and 'Tag' not in resource:
-                    resource['Tag'] = resource['tag']
+    # Delay time between API requests (seconds)
+    api_request_delay = 0.2
 
-                # Build complete ID
-                if 'namespace' in resource and 'repository' in resource:
-                    tag_val = resource.get('Tag') or resource.get('tag')
-                    if tag_val:
-                        # Use Tag value to build ID
-                        resource['id'] = (f"{resource['namespace']}/"
-                                          f"{resource['repository']}/{tag_val}")
+    def _fetch_resources(self, query):
+        """Fetch all SWR images by first getting repositories then images.
 
-                result.append(resource)
-            except Exception as e:
-                self.log.warning(
-                    f"Failed to enhance resource information: {e}")
+        This method overrides parent's _fetch_resources to implement the two-level query:
+        1. Query all SWR repositories
+        2. For each repository, query its images
 
-        return result
+        :param query: Query parameters (not used in this implementation)
+        :return: List of all SWR images
+        """
+        all_images = []
 
-    def get_resources(self, resource_ids):
-        """Get specific resources by ID."""
-        resources = []
+        # First get all SWR repositories
+        try:
+            # Use SWR resource manager to get all repositories with pagination handled
+            from c7n_huaweicloud.provider import resources as huaweicloud_resources
+            swr_manager = huaweicloud_resources.get('swr')(self.ctx, {})
+            repositories = swr_manager.resources()
 
-        if not resource_ids:
-            return resources
+            client = self.get_client()
 
-        client = self.get_client()
+            # For each repository, get its images
+            for repo_index, repo in enumerate(repositories):
+                namespace = repo.get('namespace')
+                repository = repo.get('name')
 
-        # Parse resource ID format: namespace/repository/tag
-        for resource_id in resource_ids:
-            try:
-                namespace, repository, tag = resource_id.split('/')
+                if not namespace or not repository:
+                    continue
 
+                # Get all images for this repository
+                images = self._get_repository_tags_paginated(client, namespace, repository)
+                all_images.extend(images)
+                self.log.debug(
+                    f"Retrieved {len(images)} images for repository {namespace}/{repository} "
+                    f"({repo_index + 1}/{len(repositories)})")
+
+                # Add delay between repository queries to avoid API rate limiting
+                if repo_index < len(repositories) - 1:
+                    time.sleep(self.api_request_delay)
+
+        except Exception as e:
+            self.log.error(f"Failed to fetch SWR images: {e}")
+
+        self.log.info(f"Retrieved a total of {len(all_images)} SWR images")
+        return all_images
+
+    def _get_repository_tags_paginated(self, client, namespace, repository):
+        """Get all image tags for a repository with pagination.
+
+        This uses the offset pagination mechanism that matches the SWR API.
+        A delay is added between API calls to avoid triggering rate limits.
+
+        :param client: HuaweiCloud SWR client
+        :param namespace: Repository namespace
+        :param repository: Repository name
+        :return: List of image tags
+        """
+        tags = []
+        offset = 0
+        limit = 100  # Default page size
+        page_num = 0
+
+        try:
+            while True:
+                # Add page counter for logging purposes
+                page_num += 1
+
+                # Build request with pagination parameters
                 request = ListRepositoryTagsRequest(
                     namespace=namespace,
                     repository=repository,
-                    tag=tag  # Directly filter the specified tag
+                    limit=limit,
+                    offset=offset
                 )
 
-                # Send request
+                # Execute request
                 response = client.list_repository_tags(request)
 
-                # Process response
-                if response.body:
-                    for image in response.body:
-                        image_dict = {}
-                        if hasattr(image, 'to_dict'):
-                            image_dict = image.to_dict()
-                        else:
-                            image_dict = image
+                # Break if no results
+                if not response.body or len(response.body) == 0:
+                    break
 
-                        # Add namespace and repository information
-                        image_dict['namespace'] = namespace
-                        image_dict['repository'] = repository
-
-                        resources.append(image_dict)
-            except Exception as e:
-                self.log.warning(f"Failed to get resource {resource_id}: {e}")
-
-        return self.augment(resources)
-
-    def resources(self, query=None):
-        """Get resource list by querying all repositories first."""
-        resources = []
-        client = self.get_client()
-
-        # First get all repository list
-        try:
-            # Query SWR repository list
-            repos_request = ListReposDetailsRequest()
-            repos_response = client.list_repos_details(repos_request)
-
-            if repos_response.body:
-                for repo in repos_response.body:
-                    repo_dict = repo
-                    if hasattr(repo, 'to_dict'):
-                        repo_dict = repo.to_dict()
-                    else:
-                        repo_dict = repo
-
-                    # Get repository's namespace and name
-                    namespace = repo_dict.get('namespace')
-                    repository = repo_dict.get('name')
-
-                    if namespace and repository:
-                        # Get all image tags for this repository
-                        repo_tags = self._get_repository_tags(
-                            client, namespace, repository)
-                        resources.extend(repo_tags)
-        except Exception as e:
-            self.log.error(
-                f"Failed to query SWR repository list: {e}")
-
-        with self.ctx.tracer.subsegment('filter'):
-            resources = self.filter_resources(resources)
-
-        return self.augment(resources)
-
-    def _get_repository_tags(self, client, namespace, repository):
-        """Get all image tags for the specified repository.
-
-        Fetches tag information for a SWR repository.
-        """
-        tags = []
-        try:
-            # Build request parameters
-            request_kwargs = {
-                'namespace': namespace,
-                'repository': repository
-            }
-
-            # Create and send request
-            request = ListRepositoryTagsRequest(**request_kwargs)
-            response = client.list_repository_tags(request)
-
-            # Process response
-            if response.body:
+                # Process results
+                batch = []
                 for image in response.body:
-                    image_dict = {}
                     if hasattr(image, 'to_dict'):
                         image_dict = image.to_dict()
                     else:
                         image_dict = image
 
-                    # Ensure image tag has namespace and repository information
+                    # Add repository context
                     image_dict['namespace'] = namespace
                     image_dict['repository'] = repository
 
-                    # Process Tag field - ensure Tag field exists
-                    # HuaweiCloud API returns Tag field in uppercase
-                    if 'Tag' in image_dict and not image_dict.get('tag'):
-                        image_dict['tag'] = image_dict['Tag']
-                    elif 'tag' in image_dict and not image_dict.get('Tag'):
-                        image_dict['Tag'] = image_dict['tag']
-                    elif 'Tag' not in image_dict and 'tag' not in image_dict:
-                        # If no Tag field, but path field exists, try to extract from path
-                        if 'path' in image_dict and ':' in image_dict['path']:
-                            tag_value = image_dict['path'].split(':')[-1]
-                            # Set both uppercase and lowercase tag fields
-                            image_dict['Tag'] = tag_value
-                            image_dict['tag'] = tag_value
+                    batch.append(image_dict)
 
-                    tags.append(image_dict)
+                # Add batch to results
+                tags.extend(batch)
+
+                # Check if we need to fetch more
+                if len(batch) < limit:
+                    break
+
+                # Move to next page
+                offset += limit
+
+                self.log.debug(
+                    f"Retrieved {len(batch)} tags for {namespace}/{repository}, "
+                    f"page {page_num}, total so far: {len(tags)}")
+
+                # Add delay between pagination requests to avoid API rate limiting
+                time.sleep(self.api_request_delay)
 
         except Exception as e:
             self.log.error(
-                f"Failed to query repository "
-                f"{namespace}/{repository} tags: {e}")
+                f"Failed to get tags for repository {namespace}/{repository}: {e}")
 
         return tags
 
@@ -627,7 +657,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
     permissions = ('swr:*:*:*',)  # SWR related permissions
 
     def process(self, resources):
-        """Process resources list, create lifecycle rules for each repository."""
+        """Process resources list, create lifecycle rules for each repository.
+
+        :param resources: List of resources to process
+        :return: Processed resources
+        """
         # Validate rule configuration
         if 'rules' not in self.data or not self.data['rules']:
             self.log.error("Missing required lifecycle rule configuration")
@@ -637,7 +671,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
         return super(SetLifecycle, self).process(resources)
 
     def perform_action(self, resource):
-        """Implement abstract method, perform action for a single resource."""
+        """Implement abstract method, perform action for a single resource.
+
+        :param resource: Single resource to process
+        :return: Updated resource with action results
+        """
         client = self.manager.get_client()
 
         # Get repository information

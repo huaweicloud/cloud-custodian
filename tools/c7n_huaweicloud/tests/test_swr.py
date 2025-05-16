@@ -7,10 +7,10 @@ from huaweicloud_common import BaseTest
 
 
 class SwrRepositoryTest(BaseTest):
-    """Test SWR Repository resources, filters, and actions"""
+    """Test SWR Repository resources, filters, and actions."""
 
     def test_swr_repository_query(self):
-        """Test SWR Repository query and augment"""
+        """Test SWR Repository query and basic resource attributes."""
         factory = self.replay_flight_data("swr_repository_query")
         p = self.load_policy(
             {
@@ -28,15 +28,146 @@ class SwrRepositoryTest(BaseTest):
         # Verify resource contains required fields
         self.assertTrue("id" in resources[0])
         self.assertTrue("tag_resource_type" in resources[0])
+        # Lifecycle policy is now loaded on-demand by the lifecycle-rule filter,
+        # and not in the initial resource fetch
 
-        # Verify lifecycle policy is correctly augmented to the resource
+    def test_swr_filter_value(self):
+        """Test SWR Repository value filter for filtering by field values."""
+        factory = self.replay_flight_data("swr_filter_value")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-value",
+                "resource": "huaweicloud.swr",
+                "filters": [{"type": "value", "key": "is_public", "value": False}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 resource matching is_public=False
+        self.assertEqual(len(resources), 1)
+        # Verify value matches
+        self.assertFalse(resources[0]["is_public"])
+
+    def test_swr_filter_age(self):
+        """Test SWR Repository age filter for filtering by creation time."""
+        factory = self.replay_flight_data("swr_filter_age")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-age",
+                "resource": "huaweicloud.swr",
+                # Verify VCR: Creation time should be greater than 90 days
+                "filters": [{"type": "age", "days": 90, "op": "gt"}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 repository older than 90 days
+        self.assertEqual(len(resources), 1)
+        # Verify repository name
+        self.assertEqual(resources[0]["name"], "test-repo")
+        # Verify creation date is more than 90 days in the past
+        created_date = datetime.strptime(
+            resources[0]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+        self.assertTrue((datetime.now() - created_date).days > 90)
+
+
+class SwrImageTest(BaseTest):
+    """Test SWR Image resources, filters, and actions."""
+
+    def test_swr_image_query(self):
+        """Test SWR Image query and resource enumeration."""
+        factory = self.replay_flight_data("swr_image_query")
+        p = self.load_policy(
+            {
+                "name": "swr-image-query",
+                "resource": "huaweicloud.swr-image",
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 6 images from multiple repositories
+        self.assertEqual(len(resources), 6)
+        # Verify VCR: Image tag should be 'latest'
+        self.assertEqual(resources[0]["tag"], "latest")
+        # Verify namespace and repository information
+        self.assertEqual(resources[0]["namespace"], "test-namespace")
+        self.assertEqual(resources[0]["repository"], "test-repo")
+        # Verify ID format
+        self.assertTrue("id" in resources[0])
+        # Verify image path is added
+        self.assertTrue("path" in resources[0])
+        # Verify image ID is included
+        self.assertTrue("image_id" in resources[0])
+        # Verify digest information is included
+        self.assertTrue("digest" in resources[0])
+
+    def test_swr_image_filter_age(self):
+        """Test SWR Image age filter for filtering by creation time."""
+        factory = self.replay_flight_data("swr_image_filter_age")
+        p = self.load_policy(
+            {
+                "name": "swr-image-filter-age",
+                "resource": "huaweicloud.swr-image",
+                # Verify VCR: Image creation time should be greater than 90 days
+                "filters": [{"type": "age", "days": 90, "op": "gt"}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 3 images older than 90 days
+        self.assertEqual(len(resources), 3)
+        # Verify image is from test-repo
+        self.assertEqual(resources[0]["repository"], "test-repo")
+        # Verify creation date is from 2022, which is more than 90 days in the past
+        created_date = datetime.strptime(
+            resources[0]["created"], "%Y-%m-%dT%H:%M:%SZ")
+        self.assertTrue(created_date.year == 2022)
+
+    def test_swr_image_filter_value(self):
+        """Test SWR Image value filter for filtering by field values."""
+        factory = self.replay_flight_data("swr_image_filter_value")
+        p = self.load_policy(
+            {
+                "name": "swr-image-filter-value",
+                "resource": "huaweicloud.swr-image",
+                "filters": [{"type": "value", "key": "image_id", "value": "sha256:abc123def456"}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 image matching the specified image_id
+        self.assertEqual(len(resources), 1)
+        # Verify image is from test-repo
+        self.assertEqual(resources[0]["repository"], "test-repo")
+
+
+class LifecycleRuleFilterTest(BaseTest):
+    """Test SWR Lifecycle Rule filter functionality."""
+
+    def test_lifecycle_rule_filter_match(self):
+        """Test Lifecycle Rule filter - Match repositories with lifecycle rules."""
+        factory = self.replay_flight_data("swr_filter_lifecycle_rule_match")
+        p = self.load_policy(
+            {
+                "name": "swr-filter-lifecycle-rule-match",
+                "resource": "huaweicloud.swr",
+                "filters": [{"type": "lifecycle-rule", "state": True}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: There should be 1 resource with lifecycle rules
+        self.assertEqual(len(resources), 1)
+
+        # Verify lifecycle policy is lazily loaded by the filter
         self.assertTrue("c7n:lifecycle-policy" in resources[0])
         lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
         # Verify lifecycle policy is a list
         self.assertTrue(isinstance(lifecycle_policy, list))
-        # Verify rules list length
-        self.assertEqual(len(lifecycle_policy), 1)
+        self.assertTrue(len(lifecycle_policy) > 0)
 
+        # Now that we've verified the lifecycle policies are loaded on-demand,
+        # we can test the specific policy details
         # Get the first rule
         rule = lifecycle_policy[0]
 
@@ -62,143 +193,8 @@ class SwrRepositoryTest(BaseTest):
         self.assertEqual(selectors[2]["kind"], "regexp")
         self.assertEqual(selectors[2]["pattern"], "^123$")
 
-    def test_swr_filter_value(self):
-        """Test SWR Repository value filter"""
-        factory = self.replay_flight_data("swr_filter_value")
-        p = self.load_policy(
-            {
-                "name": "swr-filter-value",
-                "resource": "huaweicloud.swr",
-                "filters": [{"type": "value", "key": "is_public", "value": False}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Verify VCR: There should be 1 resource matching is_public=False
-        self.assertEqual(len(resources), 1)
-        # Verify value matches
-        self.assertFalse(resources[0]["is_public"])
-
-    def test_swr_filter_age(self):
-        """Test SWR Repository age filter"""
-        factory = self.replay_flight_data("swr_filter_age")
-        p = self.load_policy(
-            {
-                "name": "swr-filter-age",
-                "resource": "huaweicloud.swr",
-                # Verify VCR: Creation time should be greater than 90 days
-                "filters": [{"type": "age", "days": 90, "op": "gt"}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Verify VCR: There should be 1 repository older than 90 days
-        self.assertEqual(len(resources), 1)
-        # Verify repository name
-        self.assertEqual(resources[0]["name"], "test-repo")
-        # Verify creation date is more than 90 days in the past
-        created_date = datetime.strptime(
-            resources[0]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
-        self.assertTrue((datetime.now() - created_date).days > 90)
-
-
-class SwrImageTest(BaseTest):
-    """Test SWR Image resources, filters, and actions"""
-
-    def test_swr_image_query(self):
-        """Test SWR Image query and augment"""
-        factory = self.replay_flight_data("swr_image_query")
-        p = self.load_policy(
-            {
-                "name": "swr-image-query",
-                "resource": "huaweicloud.swr-image",
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Verify VCR: There should be 6 images from multiple repositories
-        self.assertEqual(len(resources), 6)
-        # Verify VCR: Image tag should be 'latest'
-        self.assertEqual(resources[0]["Tag"], "latest")
-        # Verify namespace and repository information
-        self.assertEqual(resources[0]["namespace"], "test-namespace")
-        self.assertEqual(resources[0]["repository"], "test-repo")
-        # Verify ID format
-        self.assertTrue("id" in resources[0])
-        # Verify image path is added
-        self.assertTrue("path" in resources[0])
-        # Verify image ID is included
-        self.assertTrue("image_id" in resources[0])
-        # Verify digest information is included
-        self.assertTrue("digest" in resources[0])
-
-    def test_swr_image_filter_age(self):
-        """Test SWR Image age filter"""
-        factory = self.replay_flight_data("swr_image_filter_age")
-        p = self.load_policy(
-            {
-                "name": "swr-image-filter-age",
-                "resource": "huaweicloud.swr-image",
-                # Verify VCR: Image creation time should be greater than 90 days
-                "filters": [{"type": "age", "days": 90, "op": "gt"}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Verify VCR: There should be 3 images older than 90 days
-        self.assertEqual(len(resources), 3)
-        # Verify image is from test-repo
-        self.assertEqual(resources[0]["repository"], "test-repo")
-        # Verify creation date is from 2022, which is more than 90 days in the past
-        created_date = datetime.strptime(
-            resources[0]["created"], "%Y-%m-%dT%H:%M:%SZ")
-        self.assertTrue(created_date.year == 2022)
-
-    def test_swr_image_filter_value(self):
-        """Test SWR Image value filter"""
-        factory = self.replay_flight_data("swr_image_filter_value")
-        p = self.load_policy(
-            {
-                "name": "swr-image-filter-value",
-                "resource": "huaweicloud.swr-image",
-                "filters": [{"type": "value", "key": "image_id", "value": "sha256:abc123def456"}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Verify VCR: There should be 1 image matching the specified image_id
-        self.assertEqual(len(resources), 1)
-        # Verify image is from test-repo
-        self.assertEqual(resources[0]["repository"], "test-repo")
-
-
-class LifecycleRuleFilterTest(BaseTest):
-    """Test SWR Lifecycle Rule filter"""
-
-    def test_lifecycle_rule_filter_match(self):
-        """Test Lifecycle Rule filter - Match"""
-        factory = self.replay_flight_data("swr_filter_lifecycle_rule_match")
-        p = self.load_policy(
-            {
-                "name": "swr-filter-lifecycle-rule-match",
-                "resource": "huaweicloud.swr",
-                "filters": [{"type": "lifecycle-rule", "state": True}],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Verify VCR: There should be 1 resource with lifecycle rules
-        self.assertEqual(len(resources), 1)
-
-        # Verify lifecycle policy
-        self.assertTrue("c7n:lifecycle-policy" in resources[0])
-        lifecycle_policy = resources[0]["c7n:lifecycle-policy"]
-        # Verify lifecycle policy is a list
-        self.assertTrue(isinstance(lifecycle_policy, list))
-        self.assertTrue(len(lifecycle_policy) > 0)
-
     def test_lifecycle_rule_filter_no_match(self):
-        """Test Lifecycle Rule filter - No Match"""
+        """Test Lifecycle Rule filter - Match repositories without lifecycle rules."""
         factory = self.replay_flight_data("swr_filter_lifecycle_rule_no_match")
         p = self.load_policy(
             {
@@ -221,10 +217,10 @@ class LifecycleRuleFilterTest(BaseTest):
 
 
 class SetLifecycleActionTest(BaseTest):
-    """Test SWR Set Lifecycle Rule actions"""
+    """Test SWR Set Lifecycle Rule actions."""
 
     def test_create_lifecycle_rule(self):
-        """Test Create Lifecycle Rule"""
+        """Test creating lifecycle rules for SWR repositories."""
         factory = self.replay_flight_data("swr_lifecycle_action_success")
         p = self.load_policy(
             {
