@@ -418,7 +418,7 @@ class SwrImage(QueryResourceManager):
         taggable = False  # SWR images don't support tagging
         date = 'created'  # Creation time field
 
-    # 在每次API请求之间的延迟时间（秒）
+    # Delay time between API requests (seconds)
     api_request_delay = 0.2
 
     def _fetch_resources(self, query):
@@ -457,7 +457,7 @@ class SwrImage(QueryResourceManager):
                     f"Retrieved {len(images)} images for repository {namespace}/{repository} "
                     f"({repo_index + 1}/{len(repositories)})")
 
-                # 对于多个仓库查询，添加延迟以避免API限流
+                # Add delay between repository queries to avoid API rate limiting
                 if repo_index < len(repositories) - 1:
                     time.sleep(self.api_request_delay)
 
@@ -485,7 +485,7 @@ class SwrImage(QueryResourceManager):
 
         try:
             while True:
-                # 添加页码计数，方便日志记录
+                # Add page counter for logging purposes
                 page_num += 1
 
                 # Build request with pagination parameters
@@ -531,7 +531,7 @@ class SwrImage(QueryResourceManager):
                     f"Retrieved {len(batch)} tags for {namespace}/{repository}, "
                     f"page {page_num}, total so far: {len(tags)}")
 
-                # 添加请求延迟以避免API限流
+                # Add delay between pagination requests to avoid API rate limiting
                 time.sleep(self.api_request_delay)
 
         except Exception as e:
