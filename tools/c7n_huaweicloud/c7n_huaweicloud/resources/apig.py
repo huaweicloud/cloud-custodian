@@ -350,7 +350,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
     def _build_update_body(self, resource):
         """Build API update request body
 
-        Construct API update request body based on policy parameters while preserving 
+        Construct API update request body based on policy parameters while preserving
         necessary fields from the original API
 
         :param resource: API resource dictionary
@@ -483,7 +483,7 @@ class StageResource(QueryResourceManager):
         return []
 
     def _fetch_resources(self, query):
-        """Override resource retrieval method to ensure 
+        """Override resource retrieval method to ensure
            instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
