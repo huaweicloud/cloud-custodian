@@ -1,7 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from unittest.mock import patch
 from huaweicloud_common import BaseTest
 
 
@@ -116,4 +115,4 @@ class WorkspaceTest(BaseTest):
             'actions': ['delete']},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 2)  # Testing batch termination of 2 desktops
+        self.assertEqual(len(resources), 2)  # Testing batch delete 2 desktops

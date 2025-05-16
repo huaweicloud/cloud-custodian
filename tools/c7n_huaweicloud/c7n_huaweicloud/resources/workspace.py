@@ -43,25 +43,25 @@ class Workspace(QueryResourceManager):
             # Ensure each resource has an ID field
             if 'id' not in r and self.resource_type.id in r:
                 r['id'] = r[self.resource_type.id]
-            
+
             # Convert tags to standard format
             if 'tags' in r:
                 r['Tags'] = self.normalize_tags(r['tags'])
-        
+
         return resources
-    
+
     def normalize_tags(self, tags):
         """Convert tags to standard format
-        
+
         :param tags: Original tag data
         :return: Normalized tag dictionary
         """
         if not tags:
             return {}
-            
+
         if isinstance(tags, dict):
             return tags
-        
+
         normalized = {}
         for tag in tags:
             if isinstance(tag, dict):
@@ -73,7 +73,7 @@ class Workspace(QueryResourceManager):
             elif isinstance(tag, str) and '=' in tag:
                 k, v = tag.split('=', 1)
                 normalized[k] = v
-        
+
         return normalized
 
 
@@ -84,7 +84,7 @@ class ConnectionStatusFilter(Filter):
     :example:
 
     .. code-block:: yaml
-    
+
         policies:
           - name: find-unregister-desktops
             resource: huaweicloud.workspace-desktop
@@ -132,7 +132,7 @@ class ConnectionStatusFilter(Filter):
 class DeleteWorkspace(HuaweiCloudBaseAction):
     """Delete cloud desktops
 
-    This action uses DeleteDesktop or BatchDeleteDesktops API to delete one or more cloud desktop instances.
+    This action uses BatchDeleteDesktops API to delete one or more cloud desktop instances.
 
     :example:
 
@@ -157,7 +157,7 @@ class DeleteWorkspace(HuaweiCloudBaseAction):
         :return: Operation results
         """
         if not resources:
-            return []      
+            return []
 
         return self.batch_delete(resources)
 
@@ -176,13 +176,13 @@ class DeleteWorkspace(HuaweiCloudBaseAction):
         # Process up to 100 at a time
         results = []
         for i in range(0, len(desktop_ids), 100):
-            batch = desktop_ids[i:i+100]
+            batch = desktop_ids[i:i + 100]
             try:
                 request = BatchDeleteDesktopsRequest()
                 request.body = {"desktop_ids": batch}
                 response = client.batch_delete_desktops(request)
                 results.append(response.to_dict())
-                self.log.info(f"Successfully submitted termination request for {len(batch)} desktops")
+                self.log.info(f"Successfully submitted delete request for {len(batch)} desktops")
             except Exception as e:
                 self.log.error(f"Failed to delete desktops: {e}")
 
