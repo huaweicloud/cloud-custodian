@@ -115,4 +115,5 @@ class WorkspaceTest(BaseTest):
             'actions': ['delete']},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 2)  # Testing batch delete 2 desktops
+        # Testing batch delete 2 desktops
+        self.assertEqual(len(resources), 2)
