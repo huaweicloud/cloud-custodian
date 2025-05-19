@@ -128,7 +128,8 @@ class DeleteCdnDomain(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         domain_id = resource['id']
 
-        log.info(f"Preparing to delete CDN domain: id={domain_id}, domain_name={resource.get('domain_name')}")
+        log.info(f"Preparing to delete CDN domain: id={domain_id}, "
+                 f"domain_name={resource.get('domain_name')}")
 
         # Build delete domain request
         request = DeleteDomainRequest()
@@ -186,7 +187,8 @@ class EnableCdnDomain(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         domain_id = resource['id']
 
-        log.info(f"Preparing to enable CDN domain: id={domain_id}, domain_name={resource.get('domain_name')}")
+        log.info(f"Preparing to enable CDN domain: id={domain_id}, "
+                 f"domain_name={resource.get('domain_name')}")
 
         # Build enable domain request
         request = EnableDomainRequest()
@@ -248,7 +250,8 @@ class DisableCdnDomain(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         domain_id = resource['id']
 
-        log.info(f"Preparing to disable CDN domain: id={domain_id}, domain_name={resource.get('domain_name')}")
+        log.info(f"Preparing to disable CDN domain: id={domain_id}, "
+                 f"domain_name={resource.get('domain_name')}")
 
         # Build disable domain request
         request = DisableDomainRequest()
@@ -276,7 +279,7 @@ class UpdateCdnDomainConfig(HuaweiCloudBaseAction):
     """Update CDN domain configuration
 
     This action allows updating various configuration settings of a CDN domain.
-    
+
     The action supports modifying business type, service area, SSL settings, origin settings,
     caching rules, HTTP headers, and other CDN domain configurations.
 

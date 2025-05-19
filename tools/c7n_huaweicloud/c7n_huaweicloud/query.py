@@ -348,9 +348,10 @@ class ResourceQuery:
                 data["tag_resource_type"] = m.tag_resource_type
 
             resources = resources + res
-            
             page += 1
         return resources
+
+
 # abstract method for pagination
 class DefaultMarkerPagination(MarkerPagination):
     def __init__(self, limit):
