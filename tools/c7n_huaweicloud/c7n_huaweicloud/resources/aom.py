@@ -190,6 +190,8 @@ class UpdateAlarmRule(HuaweiCloudBaseAction):
                 # 准备更新请求
                 request = self._build_update_request(resource)
 
+                log.warning(resource)
+
                 # 调用API更新告警规则
                 response = client.add_or_update_metric_or_event_alarm_rule(request)
                 results.append({
@@ -219,97 +221,135 @@ class UpdateAlarmRule(HuaweiCloudBaseAction):
         body.alarm_rule_type = self.data.get('alarm_rule_type', resource['alarm_rule_type'])
 
         # 设置可选参数
-        if 'alarm_rule_description' in self.data:
-            body.alarm_rule_description = self.data['alarm_rule_description']
+        body.alarm_rule_description = self.data.get('alarm_rule_description',resource['alarm_rule_description'])
 
-        if 'alarm_rule_enable' in self.data:
-            body.alarm_rule_enable = self.data['alarm_rule_enable']
+        # 设置规则启停状态
+        body.alarm_rule_enable = self.data.get('alarm_rule_enable', resource['alarm_rule_enable'])
 
         # 设置Prometheus实例ID（可选）
         if 'prom_instance_id' in self.data:
             body.prom_instance_id = self.data['prom_instance_id']
+        elif 'prom_instance_id' in resource:
+            body.prom_instance_id = resource['prom_instance_id']
 
         # 设置告警通知
         if 'alarm_notifications' in self.data:
-            notification = AlarmNotification()
-
             notification_data = self.data['alarm_notifications']
+        else:
+            notification_data = resource['alarm_notifications']
 
-            # 设置通知类型
-            if 'notification_type' in notification_data:
-                notification.notification_type = notification_data['notification_type']
+        notification = AlarmNotification()
 
-            # 设置分组规则启用状态
-            if 'route_group_enable' in notification_data:
-                notification.route_group_enable = notification_data['route_group_enable']
+        # 设置通知类型
+        if 'notification_type' in notification_data:
+            notification.notification_type = notification_data['notification_type']
 
-            # 设置分组规则名称
-            if 'route_group_rule' in notification_data:
-                notification.route_group_rule = notification_data['route_group_rule']
+        # 设置分组规则启用状态
+        if 'route_group_enable' in notification_data:
+            notification.route_group_enable = notification_data['route_group_enable']
 
-            # 设置通知启用状态
-            if 'notification_enable' in notification_data:
-                notification.notification_enable = notification_data['notification_enable']
+        # 设置分组规则名称
+        if 'route_group_rule' in notification_data:
+            notification.route_group_rule = notification_data['route_group_rule']
 
-            # 设置绑定的通知规则ID
-            if 'bind_notification_rule_id' in notification_data:
-                notification.bind_notification_rule_id = notification_data[
-                    'bind_notification_rule_id']
+        # 设置通知启用状态
+        if 'notification_enable' in notification_data:
+            notification.notification_enable = notification_data['notification_enable']
 
-            # 设置告警解决是否通知
-            if 'notify_resolved' in notification_data:
-                notification.notify_resolved = notification_data['notify_resolved']
+        # 设置绑定的通知规则ID
+        if 'bind_notification_rule_id' in notification_data:
+            notification.bind_notification_rule_id = notification_data[
+                'bind_notification_rule_id']
 
-            # 设置告警触发是否通知
-            if 'notify_triggered' in notification_data:
-                notification.notify_triggered = notification_data['notify_triggered']
+        # 设置告警解决是否通知
+        if 'notify_resolved' in notification_data:
+            notification.notify_resolved = notification_data['notify_resolved']
 
-            # 设置通知频率
-            if 'notify_frequency' in notification_data:
-                notification.notify_frequency = notification_data['notify_frequency']
+        # 设置告警触发是否通知
+        if 'notify_triggered' in notification_data:
+            notification.notify_triggered = notification_data['notify_triggered']
 
-            body.alarm_notifications = notification
+        # 设置通知频率
+        if 'notify_frequency' in notification_data:
+            notification.notify_frequency = notification_data['notify_frequency']
+
+        body.alarm_notifications = notification
 
         # 根据告警规则类型设置相应的规格
-        if body.alarm_rule_type == 'metric' and 'metric_alarm_spec' in self.data:
-            body.metric_alarm_spec = self._build_metric_alarm_spec(self.data['metric_alarm_spec'])
-        elif body.alarm_rule_type == 'event' and 'event_alarm_spec' in self.data:
-            body.event_alarm_spec = self._build_event_alarm_spec(self.data['event_alarm_spec'])
+        if body.alarm_rule_type == 'metric':
+            if 'metric_alarm_spec' in self.data:
+                data_metric_alarm_spec = self.data['metric_alarm_spec']
+            else:
+                data_metric_alarm_spec = {}
+            body.metric_alarm_spec = self._build_metric_alarm_spec(data_metric_alarm_spec, resource['metric_alarm_spec'])
+        elif body.alarm_rule_type == 'event':
+            if 'event_alarm_spec' in self.data:
+                data_event_alarm_spec = self.data['event_alarm_spec']
+            else:
+                data_event_alarm_spec = {}
+            body.event_alarm_spec = self._build_event_alarm_spec(data_event_alarm_spec, resource['event_alarm_spec'])
 
         # 创建并返回请求
         return AddOrUpdateMetricOrEventAlarmRuleRequest(
             action_id="update-alarm-action",
+            enterprise_project_id=resource['enterprise_project_id'],
             body=body
         )
 
-    def _build_metric_alarm_spec(self, spec_data):
+    def _build_metric_alarm_spec(self, spec_data, resource_spec):
         """构建指标告警规格"""
         metric_spec = MetricAlarmSpec()
 
         # 设置监控类型
         if 'monitor_type' in spec_data:
             metric_spec.monitor_type = spec_data['monitor_type']
+        elif 'monitor_type' in resource_spec:
+            metric_spec.monitor_type = resource_spec['monitor_type']
 
         # 设置告警标签
         if 'alarm_tags' in spec_data and isinstance(spec_data['alarm_tags'], list):
-            tags = []
-            for tag_item in spec_data['alarm_tags']:
-                tag = AlarmTags()
-                if 'key' in tag_item:
-                    tag.key = tag_item['key']
-                if 'value' in tag_item:
-                    tag.value = tag_item['value']
-                tags.append(tag)
-            metric_spec.alarm_tags = tags
+            new_alarm_tags = []
+            for alarm_tag in spec_data['alarm_tags']:
+                new_tag = AlarmTags([], [], [])
+                if isinstance(alarm_tag, dict):
+                    for tag_item, tags in alarm_tag.items():
+                        new_tags = []
+                        if isinstance(tags, list):
+                            for tag in tags:
+                                if isinstance(tag, str):
+                                    new_tags.append(tag)
+                                if isinstance(tag, dict):
+                                    if 'key' in tag and 'value' in tag:
+                                        new_tags.append(f"{tag['key']}={tag['value']}")
+                        if tag_item == 'auto_tags':
+                            new_tag.auto_tags = new_tags
+                        if tag_item == 'custom_tags':
+                            new_tag.custom_tags = new_tags
+                        if tag_item == 'custom_annotations':
+                            new_tag.custom_annotations = new_tags
+                new_alarm_tags.append(new_tag.to_dict())
+            metric_spec.alarm_tags = new_alarm_tags
+        else:
+            metric_spec.alarm_tags = resource_spec['alarm_tags']
 
         # 设置监控对象
         if 'monitor_objects' in spec_data:
             metric_spec.monitor_objects = spec_data['monitor_objects']
+        elif 'monitor_objects' in resource_spec:
+            metric_spec.monitor_objects = resource_spec['monitor_objects']
 
         # 设置恢复条件
         if 'recovery_conditions' in spec_data:
             recovery = RecoveryCondition()
             recovery_data = spec_data['recovery_conditions']
+
+            for key, value in recovery_data.items():
+                setattr(recovery, key, value)
+
+            metric_spec.recovery_conditions = recovery
+        elif 'recovery_conditions' in resource_spec:
+            recovery = RecoveryCondition()
+            recovery_data = resource_spec['recovery_conditions']
 
             for key, value in recovery_data.items():
                 setattr(recovery, key, value)
@@ -325,29 +365,51 @@ class UpdateAlarmRule(HuaweiCloudBaseAction):
                     setattr(condition, key, value)
                 conditions.append(condition)
             metric_spec.trigger_conditions = conditions
+        elif 'trigger_conditions' in resource_spec and isinstance(resource_spec['trigger_conditions'], list):
+            conditions = []
+            for condition_item in resource_spec['trigger_conditions']:
+                condition = TriggerCondition()
+                for key, value in condition_item.items():
+                    setattr(condition, key, value)
+                conditions.append(condition)
+            metric_spec.trigger_conditions = conditions
 
         return metric_spec
 
-    def _build_event_alarm_spec(self, spec_data):
+    def _build_event_alarm_spec(self, spec_data, resource_spec):
         """构建事件告警规格"""
         event_spec = EventAlarmSpec()
 
         # 设置告警规则来源
         if 'alarm_source' in spec_data:
             event_spec.alarm_source = spec_data['alarm_source']
+        elif 'alarm_source' in resource_spec:
+            event_spec.alarm_source = resource_spec['alarm_source']
 
         # 设置告警来源
         if 'event_source' in spec_data:
             event_spec.event_source = spec_data['event_source']
+        elif 'event_source' in resource_spec:
+            event_spec.event_source = resource_spec['event_source']
 
         # 设置监控对象
         if 'monitor_objects' in spec_data:
             event_spec.monitor_objects = spec_data['monitor_objects']
+        elif 'monitor_objects' in resource_spec:
+            event_spec.monitor_objects = resource_spec['monitor_objects']
 
         # 设置触发条件
         if 'trigger_conditions' in spec_data and isinstance(spec_data['trigger_conditions'], list):
             conditions = []
             for condition_item in spec_data['trigger_conditions']:
+                condition = EventTriggerCondition()
+                for key, value in condition_item.items():
+                    setattr(condition, key, value)
+                conditions.append(condition)
+            event_spec.trigger_conditions = conditions
+        elif 'trigger_conditions' in resource_spec and isinstance(resource_spec['trigger_conditions'], list):
+            conditions = []
+            for condition_item in resource_spec['trigger_conditions']:
                 condition = EventTriggerCondition()
                 for key, value in condition_item.items():
                     setattr(condition, key, value)
@@ -444,6 +506,7 @@ class AddAlarmRule(HuaweiCloudBaseAction):
         metric_alarm_spec={'type': 'object'},
         event_alarm_spec={'type': 'object'},
         prom_instance_id={'type': 'string'},
+        enterprise_project_id={'type': 'string'},
         required=['alarm_rule_name', 'alarm_rule_type']
     )
 
@@ -539,9 +602,15 @@ class AddAlarmRule(HuaweiCloudBaseAction):
         elif body.alarm_rule_type == 'event' and 'event_alarm_spec' in self.data:
             body.event_alarm_spec = self._build_event_alarm_spec(self.data['event_alarm_spec'])
 
+        if "enterprise_project_id" in self.data:
+            enterprise_project_id = self.data['enterprise_project_id']
+        else:
+            enterprise_project_id = "0"
+
         # 创建并返回请求
         return AddOrUpdateMetricOrEventAlarmRuleRequest(
             action_id="add-alarm-action",
+            enterprise_project_id=enterprise_project_id,
             body=body
         )
 
@@ -555,15 +624,29 @@ class AddAlarmRule(HuaweiCloudBaseAction):
 
         # 设置告警标签
         if 'alarm_tags' in spec_data and isinstance(spec_data['alarm_tags'], list):
-            tags = []
-            for tag_item in spec_data['alarm_tags']:
-                tag = AlarmTags()
-                if 'key' in tag_item:
-                    tag.key = tag_item['key']
-                if 'value' in tag_item:
-                    tag.value = tag_item['value']
-                tags.append(tag)
-            metric_spec.alarm_tags = tags
+            new_alarm_tags = []
+            for alarm_tag in spec_data['alarm_tags']:
+                new_tag = AlarmTags([], [], [])
+                if isinstance(alarm_tag, dict):
+                    for tag_item, tags in alarm_tag.items():
+                        new_tags = []
+                        if isinstance(tags, list):
+                            for tag in tags:
+                                if isinstance(tag, str):
+                                    new_tags.append(tag)
+                                if isinstance(tag, dict):
+                                    if 'key' in tag and 'value' in tag:
+                                        new_tags.append(f"{tag['key']}={tag['value']}")
+                        if tag_item == 'auto_tags':
+                            new_tag.auto_tags = new_tags
+                        if tag_item == 'custom_tags':
+                            new_tag.custom_tags = new_tags
+                        if tag_item == 'custom_annotations':
+                            new_tag.custom_annotations = new_tags
+                new_alarm_tags.append(new_tag.to_dict())
+            metric_spec.alarm_tags = new_alarm_tags
+        else:
+            metric_spec.alarm_tags = [AlarmTags([], [], []).to_dict()]
 
         # 设置监控对象
         if 'monitor_objects' in spec_data:
