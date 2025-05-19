@@ -10,15 +10,12 @@ from dateutil.parser import parse
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkkafka.v2.model import (
     DeleteInstanceRequest,
-    BatchCreateOrDeleteKafkaTagRequest,
-    BatchCreateOrDeleteTagReq,
     ModifyInstanceConfigsRequest,
     ModifyInstanceConfigsReq,
     ShowInstanceConfigsRequest,
 )
 
-from c7n.filters import ValueFilter, AgeFilter, Filter, OPERATORS
-from c7n.filters.core import ListItemFilter
+from c7n.filters import ValueFilter, AgeFilter, OPERATORS
 from c7n.utils import type_schema, local_session
 
 log = logging.getLogger("custodian.huaweicloud.resources.kafka")
