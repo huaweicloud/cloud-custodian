@@ -69,7 +69,7 @@ interactions:
 - request:
     body: '{"alarm_rule_name": "aom_alarm_rule_1", "alarm_rule_type": "event", "event_alarm_spec":
       {"alarm_source": "systemEvent", "event_source": "AOM", "monitor_objects": [{"event_type":
-      "fault", "event_severity": "warning"}], "trigger_conditions": [{}]}}'
+      "fault", "event_severity": "warning"}], "trigger_conditions": [ { "count": 1, "severity": 2 } ]}}'
     headers:
       Accept:
       - '*/*'
