@@ -95,7 +95,7 @@ interactions:
     body:
       string: '{
   "alarm_rules" : [ {
-    "alarm_rule_name" : "aom_alarm_rule",
+    "alarm_rule_name" : "aom_alarm_rule_1",
     "result" : "success"
   } ],
   "error_code" : "200",
