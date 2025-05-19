@@ -8,8 +8,8 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 from huaweicloudsdkcdn.v2.model import (
-    DeleteDomainRequest, 
-    EnableDomainRequest, 
+    DeleteDomainRequest,
+    EnableDomainRequest,
     DisableDomainRequest,
     UpdateDomainFullConfigRequest,
 )
@@ -22,7 +22,8 @@ log = logging.getLogger('custodian.huaweicloud.cdn')
 class CdnDomain(QueryResourceManager):
     """Huawei Cloud Content Delivery Network (CDN) Domain Resource
 
-    This resource allows querying and managing Huawei Cloud CDN domains, supporting filtering by domain status, business type, etc.,
+    This resource allows querying and managing Huawei Cloud CDN domains,
+    supporting filtering by domain status, business type, etc.,
     and performing enable, disable, and delete operations.
 
     :example:
@@ -36,7 +37,7 @@ class CdnDomain(QueryResourceManager):
               - type: value
                 key: domain_status
                 value: offline
-          
+
           - name: find-download-cdn-domains
             resource: huaweicloud.cdn-domain
             filters:
@@ -47,27 +48,33 @@ class CdnDomain(QueryResourceManager):
 
     class resource_type(TypeInfo):
         """CDN domain resource type definition"""
-        service = 'cdn'  # Specify the corresponding Huawei Cloud service name
-        enum_spec = ('list_domains', 'domains', "cdn")  # API info for enumerating resources: (operation name, result list field, pagination type)
-        id = 'id'  # Resource unique identifier field name
-        name = 'domain_name'  # Resource name field name
-        date = 'create_time'  # Resource creation time field name
-        tag_resource_type = 'cdn'  # Resource type for tag queries
+        # Specify the corresponding Huawei Cloud service name
+        service = 'cdn'
+        # API info for enumerating resources: (operation name, result list field, pagination type)
+        enum_spec = ('list_domains', 'domains', "cdn")
+        # Resource unique identifier field name
+        id = 'id'
+        # Resource name field name
+        name = 'domain_name'
+        # Resource creation time field name
+        date = 'create_time'
+        # Resource type for tag queries
+        tag_resource_type = 'cdn'
 
     def augment(self, resources):
         """Enhance resource data, add extra information
 
         Process CDN domain resource data to ensure consistent format and add necessary tag info
-        
+
         Args:
             resources: original resource list
-            
+
         Returns:
             list: enhanced resource list
         """
         if not resources:
             return []
-            
+
         # Convert tags field to a dict for tag filtering
         for resource in resources:
             if 'tags' in resource:
@@ -355,7 +362,7 @@ class UpdateCdnDomainConfig(HuaweiCloudBaseAction):
             request.body = {
                 "configs": attributes
             }
-        
+
         # Perform update operation
         try:
             client.update_domain_full_config(request)
