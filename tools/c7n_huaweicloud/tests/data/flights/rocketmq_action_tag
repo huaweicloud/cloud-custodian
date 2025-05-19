@@ -1,0 +1,268 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250507T123510Z
+    method: GET
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
+  response:
+    body:
+      string: '{ "instances": [ { "instance_id": "87de1d04-40ed-4860-9898-deab0cf9e5f6",
+        "name": "rocketmq-instance-example", "engine": "reliability", "engine_version":
+        "5.x", "specification": "cluster", "storage_space": 600, "vpc_id": "66acfca2-3823-46de-aab0-f4f44e12da4d",
+        "security_group_id": "securityGroupId", "subnet_id": "a7c98b33-fcc5-4702-9bc2-69b4f0a17344",
+        "available_zones": ["cn-north-4a", "cn-north-4b"], "status": "RUNNING", "instance_version":
+        "300", "created_at": 1683460485000, "user_id": "db3f59c9f07e41e29231b5e33b844fe0",
+        "user_name": "root", "enable_publicip": false, "management_connect_address":
+        "10.128.0.67:9876", "connect_address": "10.128.0.77:9876", "resource_spec_code":
+        "rocketmq.cluster.small.2n", "tags": [ { "key": "environment", "value": "testing"
+        } ] } ], "total": 1 }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 07 May 2025 12:35:10 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746621310327; path=/
+      - HWWAFSESID=cf40876223ef116e66; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 36eb8c24b36f7a3f87559a0f39324708
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+- request:
+    body: '{"action": "create", "tags": [{"key": "CostCenter", "value": "Finance"}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '73'
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250507T123512Z
+    method: POST
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/rocketmq/87de1d04-40ed-4860-9898-deab0cf9e5f6/tags/action
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Date:
+      - Wed, 07 May 2025 12:35:12 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=4cc2773c4e45a34e25; path=/
+      - HWWAFSESTIME=1746621312642; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a2fbe480f59a40822ed04ba34eec2380
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: No Content
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250514T070535Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/projects?name=ap-southeast-1
+  response:
+    body:
+      string: '{"projects": [{"id": "0cf0a0a3b0af4a70916739860f557c05", "name": "ap-southeast-1",
+        "domain_id": "05b3b1ebad00256f4f1023abcd", "enabled": true, "description":
+        "Southeast Asia Region"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 07:05:35 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747206332472; path=/
+      - HWWAFSESID=4444976d180ecb11e3; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 4224ee6ede481d9a7e152dbb40ba1da0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250514T072637Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"Southeast Asia Domain","enabled":true,"id":"05b3b1ebad00256f4f1023abcd","links":{"self":"https://iam.ap-southeast-1.myhuaweicloud.com/v3/domains/05b3b1ebad00256f4f1023abcd"},"name":"SEADomain"}],"links":{"self":"https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 07:26:37 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=75c8f73303ce9c2a95; path=/
+      - HWWAFSESTIME=1747207597213; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 763fcf6758300a4580028879fd278e3e
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"project_id": "0cf0a0a3b0af4a70916739860f557c05", "resources": [{"resource_id":
+      "87de1d04-40ed-4860-9898-deab0cf9e5f6", "resource_type": "rocketmq"}], "tags":
+      [{"key": "CostCenter", "value": "Finance"}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '204'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - tms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - 05b3b1ebad00256f4f1023abcd
+      X-Sdk-Date:
+      - 20250514T084726Z
+    method: POST
+    uri: https://tms.ap-southeast-1.myhuaweicloud.com/v1.0/resource-tags/batch-create
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"ed3e586ca763d874c0ee3b200a745d24"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 08:47:26 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=21453731d6713edecc; path=/
+      - HWWAFSESTIME=1747212446700; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ed3e586ca763d874c0ee3b200a745d24
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

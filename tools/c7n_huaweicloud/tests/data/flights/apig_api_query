@@ -1,0 +1,104 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - apig.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Auth-Token:
+      - MIIGFQYJKoZIhvcNAQcCoIIGBjCCBgICAQExDTALBgNVBAMUBHRlc3Q=
+      X-Project-Id:
+      - 73d69ae0cfcf460190522d06b60f05ad
+      X-Sdk-Date:
+      - 20250514T110523Z
+    method: GET
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances?limit=500
+  response:
+    body:
+      string: '{"total":2,"size":2,"instances":[{"id":"eddc4d25480b4cd6b512f270a1b8b341",
+        "project_id":"73d69ae0cfcf460190522d06b60f05ad", "instance_name":"apig-Enterprise-Professional",
+        "status":"Running", "instance_status":6, "spec":"PROFESSIONAL", "create_time":1585302825070,
+        "enterprise_project_id":"0", "eip_address":"xxx.xxx.xxx.xxx", "charging_mode":1,
+        "cbc_metadata":"CS2006301043A28NF:00301-734023-0--0", "type":"apig"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 11:05:23 GMT
+      Server:
+      - API Gateway
+      X-Request-Id:
+      - a123b456c789d012e345f678g901h234
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - apig.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250428T083958Z
+    method: GET
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/eddc4d25480b4cd6b512f270a1b8b341/apis?limit=500&offset=0
+  response:
+    body:
+      string: '{"total": 1, "size": 1, "apis": [{"id": "5f918d104dc84480a75166ba99efff21",
+        "name": "test-api", "group_id": "c77f5e81d9cb4424bf704ef2b0ac7600", "group_name":
+        "api_group_001", "group_version": "V1", "match_mode": "NORMAL", "auth_type":
+        "AUTHORIZER", "auth_opt": {"app_code_auth_type": "DISABLE"}, "authorizer_id":
+        "8d0443832a194eaa84244e0c1c1912ac", "backend_type": "HTTP", "cors": false,
+        "status": 1, "req_protocol": "HTTPS", "req_method": "GET", "req_uri": "/test/http",
+        "type": 1, "version": "V0.0.1", "register_time": "2020-07-31T12:42:51Z", "update_time":
+        "2020-08-02T16:32:47.046289Z", "remark": "Web backend API", "tags": [{"key":
+        "Environment", "value": "Production"}, {"key": "filtertag", "value": "filtervalue"}]}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Apr 2025 08:39:58 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745829598782; path=/
+      - HWWAFSESID=35ef173b016aec80ee; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 8190fdf171c8dfea952a68630b0ad9fb
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success

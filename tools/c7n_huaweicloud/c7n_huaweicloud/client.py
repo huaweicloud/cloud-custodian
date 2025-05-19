@@ -11,6 +11,8 @@ from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredenti
 from huaweicloudsdkcore.auth.provider import MetadataCredentialProvider
 from huaweicloudsdkecs.v2 import EcsClient, ListServersDetailsRequest
 from huaweicloudsdkecs.v2.region.ecs_region import EcsRegion
+from huaweicloudsdkbms.v1 import BmsClient, ListBareMetalServerDetailsRequest
+from huaweicloudsdkbms.v1.region.bms_region import BmsRegion
 from huaweicloudsdkevs.v2 import EvsClient, ListVolumesRequest
 from huaweicloudsdkevs.v2.region.evs_region import EvsRegion
 from huaweicloudsdkiam.v5 import (
@@ -52,8 +54,11 @@ from huaweicloudsdkelb.v3 import (
     ListLoadBalancersRequest,
     ListListenersRequest,
 )
+from huaweicloudsdkeg.v1 import ListSubscriptionsRequest
 from huaweicloudsdkeip.v3.region.eip_region import EipRegion
-from huaweicloudsdkeip.v3 import EipClient
+from huaweicloudsdkeip.v3 import EipClient, ListPublicipsRequest
+from huaweicloudsdkeip.v2 import EipClient as EipClientV2
+from huaweicloudsdkeip.v2.region.eip_region import EipRegion as EipRegionV2
 from huaweicloudsdkgeip.v3.region.geip_region import GeipRegion
 from huaweicloudsdkgeip.v3 import GeipClient
 from huaweicloudsdkims.v2.region.ims_region import ImsRegion
@@ -100,11 +105,38 @@ from huaweicloudsdkram.v1 import (
     SearchResourceShareAssociationsRequest,
     SearchResourceShareAssociationsReqBody,
 )
+from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
+from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
+from huaweicloudsdkrocketmq.v2 import (
+    RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
+)
+from huaweicloudsdkrocketmq.v2.region.rocketmq_region import RocketMQRegion
+from huaweicloudsdkapig.v2 import (
+    ApigClient,
+    ListApisV2Request,
+    ListEnvironmentsV2Request,
+    ListApiGroupsV2Request,
+    ListInstancesV2Request,
+)
+from huaweicloudsdkapig.v2.region.apig_region import ApigRegion
+from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
+from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
+from huaweicloudsdkscm.v3.region.scm_region import ScmRegion
+from huaweicloudsdkaom.v2 import (
+    AomClient,
+    ListMetricOrEventAlarmRuleRequest
+)
+from huaweicloudsdkaom.v2.region.aom_region import AomRegion
+from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
+from huaweicloudsdkdc.v3.region.dc_region import DcRegion
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
 from huaweicloudsdkcdn.v2 import CdnClient, ListDomainsRequest
 from huaweicloudsdkcdn.v2.region.cdn_region import CdnRegion
+from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailRequest
+from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -115,21 +147,24 @@ class Session:
     def __init__(self, options=None):
         self.token = None
         self.domain_id = None
+        self.region = None
+        self.ak = None
+        self.sk = None
 
         if options is not None:
             self.ak = options.get("access_key_id")
             self.sk = options.get("secret_access_key")
             self.token = options.get("security_token")
-            self.domain_id = options.get("account_id")
+            self.domain_id = options.get("domain_id")
             self.region = options.get("region")
 
-        self.ak = os.getenv("HUAWEI_ACCESS_KEY_ID") or self.ak
-        self.sk = os.getenv("HUAWEI_SECRET_ACCESS_KEY") or self.sk
-        self.region = os.getenv("HUAWEI_DEFAULT_REGION") or self.region
+        self.ak = self.ak or os.getenv("HUAWEI_ACCESS_KEY_ID")
+        self.sk = self.sk or os.getenv("HUAWEI_SECRET_ACCESS_KEY")
+        self.region = self.region or os.getenv("HUAWEI_DEFAULT_REGION")
 
         if not self.region:
             log.error(
-                "No default region set. Specify a default via HUAWEI_DEFAULT_REGION"
+                "No default region set. Specify a default via HUAWEI_DEFAULT_REGION."
             )
             sys.exit(1)
 
@@ -152,7 +187,7 @@ class Session:
             ).with_security_token(self.token)
             globalCredentials = (GlobalCredentials(self.ak, self.sk, self.domain_id)
                                  .with_security_token(self.token))
-
+        client = None
         if service == "vpc":
             client = (
                 VpcClientV3.new_builder()
@@ -288,6 +323,13 @@ class Session:
                 .with_region(EipRegion.value_of(self.region))
                 .build()
             )
+        elif service == "eip_v2":
+            client = (
+                EipClientV2.new_builder()
+                .with_credentials(credentials)
+                .with_region(EipRegionV2.value_of(self.region))
+                .build()
+            )
         elif service == "geip":
             client = (
                 GeipClient.new_builder()
@@ -302,8 +344,15 @@ class Session:
                 .with_region(ImsRegion.value_of(self.region))
                 .build()
             )
+        elif service == "workspace":
+            client = (
+                WorkspaceClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(WorkspaceRegion.value_of(self.region))
+                .build()
+            )
         elif (
-            service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
             client = (
                 CbrClient.new_builder()
@@ -409,6 +458,42 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'reliability':
+            client = (
+                RocketMQClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RocketMQRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
+                                              'apig-instance']:
+            client = (
+                ApigClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(ApigRegion.value_of(self.region))
+                .build()
+            )
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'scm':
+            client = (
+                ScmClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(ScmRegion.value_of("ap-southeast-1"))
+                .build()
+            )
+        elif service == 'dc':
+            client = (
+                DcClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DcRegion.value_of(self.region))
+                .build()
+            )
         elif service == "cc":
             client = (
                 CcClient.new_builder()
@@ -423,7 +508,27 @@ class Session:
                 .with_region(CdnRegion.CN_NORTH_1)
                 .build()
             )
-
+        elif service == "bms":
+            client = (
+                BmsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(BmsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "rds":
+            client = (
+                RdsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RdsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'aom':
+            client = (
+                AomClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AomRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -483,7 +588,8 @@ class Session:
             request = ListOrganizationalUnitsRequest()
         elif service == "org-account":
             request = ListAccountsRequest()
-
+        elif service == "workspace":
+            request = ListDesktopsDetailRequest()
         elif service == "kms":
             request = ListKeysRequest()
             request.body = ListKeysRequestBody(key_spec="ALL")
@@ -493,6 +599,8 @@ class Session:
             request = ListLoadBalancersRequest()
         elif service == "elb_listener":
             request = ListListenersRequest()
+        elif service == "eip":
+            request = ListPublicipsRequest()
         elif service == "ims":
             request = ListImagesRequest()
         elif service == "smn":
@@ -535,5 +643,31 @@ class Session:
             request = ListInstancesRequest()
         elif service == "cdn":
             request = ListDomainsRequest()
-
+        elif service == 'reliability':
+            request = RocketMQListInstancesRequest()
+        elif service == 'apig-api':
+            request = ListApisV2Request()
+        elif service == 'apig-stage':
+            request = ListEnvironmentsV2Request()
+        elif service == 'apig-api-groups':
+            request = ListApiGroupsV2Request()
+        elif service == 'apig-instance':
+            request = ListInstancesV2Request()
+        elif service == 'swr':
+            request = ListReposDetailsRequest()
+        elif service == 'swr-image':
+            request = ListRepositoryTagsRequest()
+        elif service == 'scm':
+            request = ListCertificatesRequest()
+            request.expired_days_since = 1095
+        elif service == 'dc':
+            request = ListDirectConnectsRequest()
+        elif service == "bms":
+            request = ListBareMetalServerDetailsRequest()
+        elif service == 'rds':
+            request = RdsListInstancesRequest()
+        elif service == 'eg':
+            request = ListSubscriptionsRequest()
+        elif service == 'aom':
+            request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
         return request
