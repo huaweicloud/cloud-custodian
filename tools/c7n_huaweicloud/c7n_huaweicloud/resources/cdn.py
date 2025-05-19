@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from c7n.filters.core import type_schema
+
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-
 from huaweicloudsdkcdn.v2.model import (
     DeleteDomainRequest,
     EnableDomainRequest,
@@ -14,6 +13,8 @@ from huaweicloudsdkcdn.v2.model import (
     UpdateDomainFullConfigRequest,
 )
 from huaweicloudsdkcore.exceptions import exceptions
+
+from c7n.filters.core import type_schema
 
 log = logging.getLogger('custodian.huaweicloud.cdn')
 
@@ -83,7 +84,7 @@ class CdnDomain(QueryResourceManager):
                     if isinstance(tag, dict) and 'key' in tag and 'value' in tag:
                         tags_map[tag['key']] = tag['value']
                 resource['tags'] = tags_map
-                
+
         return resources
 
 
@@ -112,12 +113,12 @@ class DeleteCdnDomain(HuaweiCloudBaseAction):
             actions:
               - delete
     """
-    
+
     schema = type_schema(
         'delete',
         enterprise_project_id={'type': 'string'}
     )
-    
+
     def perform_action(self, resource):
         """Perform delete operation
 
@@ -126,17 +127,17 @@ class DeleteCdnDomain(HuaweiCloudBaseAction):
         """
         client = self.manager.get_client()
         domain_id = resource['id']
-        
+
         log.info(f"Preparing to delete CDN domain: id={domain_id}, domain_name={resource.get('domain_name')}")
-        
+
         # Build delete domain request
         request = DeleteDomainRequest()
         request.domain_id = domain_id
-        
+
         # If enterprise project ID is needed
         if self.data.get('enterprise_project_id'):
             request.enterprise_project_id = self.data.get('enterprise_project_id')
-        
+
         # Perform delete operation
         try:
             client.delete_domain(request)
@@ -148,7 +149,7 @@ class DeleteCdnDomain(HuaweiCloudBaseAction):
                 f"ErrorMsg={e.error_msg}"
             )
             raise
-        
+
 
 @CdnDomain.action_registry.register('enable')
 class EnableCdnDomain(HuaweiCloudBaseAction):
@@ -170,12 +171,12 @@ class EnableCdnDomain(HuaweiCloudBaseAction):
             actions:
               - enable
     """
-    
+
     schema = type_schema(
         'enable',
         enterprise_project_id={'type': 'string'}
     )
-    
+
     def perform_action(self, resource):
         """Perform enable operation
 
@@ -184,17 +185,17 @@ class EnableCdnDomain(HuaweiCloudBaseAction):
         """
         client = self.manager.get_client()
         domain_id = resource['id']
-        
+
         log.info(f"Preparing to enable CDN domain: id={domain_id}, domain_name={resource.get('domain_name')}")
-        
+
         # Build enable domain request
         request = EnableDomainRequest()
         request.domain_id = domain_id
-        
+
         # If enterprise project ID is needed
         if self.data.get('enterprise_project_id'):
             request.enterprise_project_id = self.data.get('enterprise_project_id')
-        
+
         # Perform enable operation
         try:
             client.enable_domain(request)
@@ -232,12 +233,12 @@ class DisableCdnDomain(HuaweiCloudBaseAction):
             actions:
               - disable
     """
-    
+
     schema = type_schema(
         'disable',
         enterprise_project_id={'type': 'string'}
     )
-    
+
     def perform_action(self, resource):
         """Perform disable operation
 
@@ -246,17 +247,17 @@ class DisableCdnDomain(HuaweiCloudBaseAction):
         """
         client = self.manager.get_client()
         domain_id = resource['id']
-        
+
         log.info(f"Preparing to disable CDN domain: id={domain_id}, domain_name={resource.get('domain_name')}")
-        
+
         # Build disable domain request
         request = DisableDomainRequest()
         request.domain_id = domain_id
-        
+
         # If enterprise project ID is needed
         if self.data.get('enterprise_project_id'):
             request.enterprise_project_id = self.data.get('enterprise_project_id')
-        
+
         # Perform disable operation
         try:
             client.disable_domain(request)
@@ -317,7 +318,7 @@ class UpdateCdnDomainConfig(HuaweiCloudBaseAction):
                         active_standby: 1
                     origin_protocol: https
     """
-    
+
     schema = type_schema(
         'set-attributes',
         required=['attributes'],
@@ -330,7 +331,7 @@ class UpdateCdnDomainConfig(HuaweiCloudBaseAction):
         },
         enterprise_project_id={'type': 'string'}
     )
-    
+
     def perform_action(self, resource):
         """Perform update configuration operation
 
@@ -340,17 +341,17 @@ class UpdateCdnDomainConfig(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         domain_name = resource['domain_name']
         attributes = self.data.get('attributes', {})
-        
+
         log.info(f"Updating configuration for CDN domain: {domain_name}")
-        
+
         # Build update domain full config request
         request = UpdateDomainFullConfigRequest()
         request.domain_name = domain_name
-        
+
         # If enterprise project ID is needed
         if self.data.get('enterprise_project_id'):
             request.enterprise_project_id = self.data.get('enterprise_project_id')
-        
+
         # Construct the request body
         if 'configs' in attributes:
             # Create a simple dict as the request body
