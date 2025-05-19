@@ -648,5 +648,5 @@ class Session:
         elif service == 'eg':
             request = ListSubscriptionsRequest()
         elif service == 'aom':
-            request = ListMetricOrEventAlarmRuleRequest()
+            request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
         return request
