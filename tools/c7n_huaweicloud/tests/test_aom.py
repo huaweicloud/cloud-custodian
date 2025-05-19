@@ -240,7 +240,6 @@ class AomTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["alarm_rule_id"], 1)
 
-
     def test_add_metric_alarm_rule(self):
         """测试添加新的指标类告警规则操作"""
         factory = self.replay_flight_data("aom_add_metric_alarm_rule")
