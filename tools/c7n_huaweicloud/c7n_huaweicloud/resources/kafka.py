@@ -16,7 +16,6 @@ from huaweicloudsdkkafka.v2.model import (
     ModifyInstanceConfigsReq,
     ShowInstanceConfigsRequest,
 )
-from huaweicloudsdkkafka.v2.model import TagEntity as SDKTagEntity
 
 from c7n.filters import ValueFilter, AgeFilter, Filter, OPERATORS
 from c7n.filters.core import ListItemFilter
