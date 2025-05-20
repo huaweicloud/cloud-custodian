@@ -34,7 +34,7 @@ class Swr(QueryResourceManager):
 
     class resource_type(TypeInfo):
         """Define SWR resource metadata and type information"""
-        service = 'swr'  # Specify corresponding HuaweiCloud service name
+        service = 'swr'
         # Specify API operation, result list key, and pagination for enumerating resources
         # 'list_repos_details' is the API method name
         # 'body' is the field name in the response containing the instance list
