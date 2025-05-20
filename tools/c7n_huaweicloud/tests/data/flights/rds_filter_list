@@ -1,0 +1,72 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T103924Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "rds-list-filter-id-1", "name": "rds-list-1",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-05-15T08:00:00+0000",
+        "updated": "2023-05-16T10:30:00+0000", "private_ips": ["192.168.0.18"], "public_ips":
+        [], "vpc_id": "vpc-list-id", "subnet_id": "subnet-list-id", "security_group_id":
+        "sg-list-id", "volume": {"type": "ULTRAHIGH", "size": 40}},
+        {"id": "rds-list-filter-id-2", "name": "rds-list-2",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-05-15T09:00:00+0000",
+        "updated": "2023-05-16T11:30:00+0000", "private_ips": ["192.168.0.19"], "public_ips":
+        [], "vpc_id": "vpc-list-id", "subnet_id": "subnet-list-id", "security_group_id":
+        "sg-list-id", "volume": {"type": "ULTRAHIGH", "size": 40}},
+        {"id": "rds-list-filter-id-3", "name": "rds-list-3",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-05-15T10:00:00+0000",
+        "updated": "2023-05-16T12:30:00+0000", "private_ips": ["192.168.0.20"], "public_ips":
+        [], "vpc_id": "vpc-list-id", "subnet_id": "subnet-list-id", "security_group_id":
+        "sg-list-id", "volume": {"type": "ULTRAHIGH", "size": 40}}], "total_count": 3}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 10:39:24 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=d72817cb4b07d1c039; path=/
+      - HWWAFSESTIME=1745923162438; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 76290e6652ea0f5e4f35bec9cd568fa0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

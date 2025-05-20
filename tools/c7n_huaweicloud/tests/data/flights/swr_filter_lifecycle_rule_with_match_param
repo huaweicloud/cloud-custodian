@@ -1,0 +1,86 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T022319Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos?limit=100&offset=0
+  response:
+    body:
+      string: '[ { "name": "test-repo", "category": "linux", "description": "Test
+        repository", "size": 12345, "is_public": true, "num_images": 1, "num_download":
+        0, "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z",
+        "logo": "", "url": "", "path": "swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo",
+        "internal_path": "10.125.0.198:20202/test-namespace/test-repo", "domain_name":
+        "test-domain", "namespace": "test-namespace", "tags": ["latest"], "status":
+        false, "total_range": 1 } ]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Range:
+      - 0-1/1
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 03 Apr 2025 04:43:25 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T033356Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/retentions
+  response:
+    body:
+      string: '[{"algorithm": "or", "id": 222, "rules": [{"params": {"days": "30"}, "tag_selectors": [{"kind": "label", "pattern": "v5"}, {"kind": "label", "pattern": "1.0.1"}, {"kind": "regexp", "pattern": "^123$"}], "template": "date_rule"}], "scope": ""}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 03:33:56 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 1ea37ea86ad0ad2620906d79066f71ea
+    status:
+      code: 200
+      message: OK
+version: 1

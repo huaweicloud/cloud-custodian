@@ -1,0 +1,172 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250506T081800Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "rds-auto-expansion-on-id", "name": "rds-auto-expansion-on",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-08-15T08:00:00+0000",
+        "updated": "2023-08-16T10:30:00+0000", "private_ips": ["192.168.0.26"], "public_ips":
+        [], "vpc_id": "vpc-expansion-id", "subnet_id": "subnet-expansion-id", "security_group_id":
+        "sg-expansion-id", "volume": {"type": "ULTRAHIGH", "size": 40}, "disk_auto_expansion":
+        true}, {"id": "rds-auto-expansion-off-id", "name": "rds-auto-expansion-off",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-08-15T09:00:00+0000",
+        "updated": "2023-08-16T11:30:00+0000", "private_ips": ["192.168.0.27"], "public_ips":
+        [], "vpc_id": "vpc-expansion-id", "subnet_id": "subnet-expansion-id", "security_group_id":
+        "sg-expansion-id", "volume": {"type": "ULTRAHIGH", "size": 40}, "disk_auto_expansion":
+        false}], "total_count": 2}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 06 May 2025 08:18:00 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746519480497; path=/
+      - HWWAFSESID=7bf5273365e11659f6; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a1c26e255053302d3ea81588dc697543
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250506T081910Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-auto-expansion-on-id/auditlog-policy
+  response:
+    body:
+      string: '{ "keep_days":7, "audit_types":["CREATE_USER"], "all_audit_log_action":
+        {"DCL":"CREATE_USER,DROP_USER,RENAME_USER,GRANT,REVOKE,ALTER_USER,ALTER_USER_DEFAULT_ROLE","DDL":"CREATE,ALTER,DROP,RENAME,TRUNCATE,REPAIR,OPTIMIZE","DML":"INSERT,DELETE,UPDATE,REPLACE,SELECT","OTHER":"BEGIN/COMMIT/ROLLBACK,PREPARED_STATEMENT,CALL_PROCEDURE,KILL,SET_OPTION,CHANGE_DB,UNINSTALL_PLUGIN,UNINSTALL_PLUGIN,INSTALL_PLUGIN,SHUTDOWN,SLAVE_START,SLAVE_STOP,LOCK_TABLES,UNLOCK_TABLES,FLUSH,XA"}
+        } '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 06 May 2025 08:19:10 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746519550873; path=/
+      - HWWAFSESID=b3de573b74d48bd3ec; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6923586b3b292308b2454f1493d964e1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESTIME=1746519550873; HWWAFSESID=b3de573b74d48bd3ec
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250506T083634Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-auto-expansion-off-id/auditlog-policy
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"c19232d806c18fb9a4b6cbdce77281df"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 06 May 2025 08:36:34 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - c19232d806c18fb9a4b6cbdce77281df
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

@@ -1,0 +1,79 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250409T093100Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Wed, 09 Apr 2025 09:31:00 GMT
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - req-mock-request-id
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - scm.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250409T093110Z
+    method: GET
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates?expired_days_since=1095
+  response:
+    body:
+      string: "{\"certificates\":[{\"id\":\"scs1554192131150\",\"name\":\"test\",\"domain\":\"www.zx.com\",
+        \"sans\":\"a.zx.com;b.zx.com\",\"type\":\"OV_SSL_CERT\",\"deploy_support\":true,
+        \"signature_algorithm\":\"SHA256WITHRSA\",\"brand\":\"GEOTRUST\", \"expire_time\":\"2021-05-27
+        16:46:25.0\",\"domain_type\":\"MULTI_DOMAIN\", \"validity_period\":12,\"status\":\"ISSUED\",\"domain_count\":2,\"wildcard_count\":0,
+        \"description\":\"\u6D4B\u8BD5\u8BC1\u4E66\",\"tags\":[{\"key\":\"env\",\"value\":\"production\"},{\"key\":\"project\",\"value\":\"cloud-custodian\"}]}],\"total_count\":1}"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '450'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:10 GMT
+      X-Request-Id:
+      - 5c5ebe6e9b3644710c7fd433a182d7d3
+    status:
+      code: 200
+      message: OK

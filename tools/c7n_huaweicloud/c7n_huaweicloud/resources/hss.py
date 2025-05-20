@@ -121,6 +121,7 @@ class SwitchHostsProtectStatusAction(HuaweiCloudBaseAction):
             if resource_id:
                 request_info.resource_id = resource_id
 
+            print(request_info)
             # Create request
             request = SwitchHostsProtectStatusRequest(body=request_info)
 

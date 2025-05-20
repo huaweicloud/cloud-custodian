@@ -33,7 +33,7 @@ class CloudConnectionDelete(HuaweiCloudBaseAction):
     .. code-block:: yaml
         policies:
           - name: delete-cc-cloud-connection
-            resource: huaweicloud.cc-cloudconnection
+            resource: huaweicloud.cc-cloud-connection
             filters:
               - type: value
                 key: need_delete
