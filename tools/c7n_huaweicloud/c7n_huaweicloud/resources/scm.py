@@ -28,7 +28,7 @@ class Scm(QueryResourceManager):
         filter_type = 'scalar'
         taggable = True
         # Set tag resource type for TMS operations
-        tag_resource_type = 'scm_cert'
+        tag_resource_type = 'scm'
 
 
 @Scm.action_registry.register('delete')
