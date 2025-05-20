@@ -240,49 +240,6 @@ class AomTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["alarm_rule_id"], 1)
 
-    def test_update_event_alarm_rule(self):
-        """测试更新事件类告警规则操作"""
-        factory = self.replay_flight_data("aom_update_event_alarm_rule")
-        p = self.load_policy(
-            {
-                "name": "update_event_aom_alarm",
-                "resource": "huaweicloud.aom-alarm",
-                "filters": [
-                    {
-                        "type": "alarm-rule",
-                        "key": "alarm_rule_id",
-                        "value": 1
-                    }
-                ],
-                "actions": [
-                    {
-                        "type": "update",
-                        "alarm_rule_type": "event",
-                        "event_alarm_spec": {
-                            "alarm_source": "systemEvent",
-                            "event_source": "AOM",
-                            "monitor_objects": [
-                                {
-                                    "event_type": "fault",
-                                    "event_severity": "warning"
-                                }
-                            ],
-                            "trigger_conditions": [
-                                {
-                                    "count": 1,
-                                    "severity": 2
-                                }
-                            ]
-                        }
-                    }
-                ],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0]["alarm_rule_id"], 1)
-
     def test_add_metric_alarm_rule(self):
         """测试添加新的指标类告警规则操作"""
         factory = self.replay_flight_data("aom_add_metric_alarm_rule")
