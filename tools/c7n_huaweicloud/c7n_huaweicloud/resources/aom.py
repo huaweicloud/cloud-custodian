@@ -34,7 +34,7 @@ class AomAlarm(QueryResourceManager):
         enum_spec = ("list_metric_or_event_alarm_rule", "alarm_rules", "offset")
         id = "alarm_rule_id"
         tag_resource_type = "alarm-rules"
-        def augment(self, resources):
+    def augment(self, resources):
         # This method is called by the QueryResourceManager to allow
         # modification of resources after they are fetched from the API.
         # We will add a 'tags' field to each resource, formatted as a dictionary,
