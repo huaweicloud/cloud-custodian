@@ -46,7 +46,7 @@ class Bms(QueryResourceManager):
         service = "bms"
         enum_spec = ("list_bare_metal_servers", "servers", "page")
         id = "id"
-        tag_resource_type = "bms"
+        tag_resource_type = "bms_server"
 
 
 # ----------------------- BMS Filters -----------------------
