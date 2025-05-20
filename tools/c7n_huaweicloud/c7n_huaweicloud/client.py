@@ -108,10 +108,6 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
-from huaweicloudsdkrocketmq.v2 import (
-    RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
-)
-from huaweicloudsdkrocketmq.v2.region.rocketmq_region import RocketMQRegion
 from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
@@ -121,8 +117,10 @@ from huaweicloudsdkaom.v2 import (
     ListMetricOrEventAlarmRuleRequest
 )
 from huaweicloudsdkaom.v2.region.aom_region import AomRegion
+
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
+
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
 
@@ -439,13 +437,6 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'reliability':
-            client = (
-                RocketMQClient.new_builder()
-                .with_credentials(credentials)
-                .with_region(RocketMQRegion.value_of(self.region))
-                .build()
-            )
         elif service in ['swr', 'swr-image']:
             client = (
                 SwrClient.new_builder()
@@ -487,12 +478,6 @@ class Session:
                 .with_credentials(credentials)
                 .with_region(RdsRegion.value_of(self.region))
                 .build()
-            )
-        elif service in ['swr', 'swr-image']:
-            client = (
-                SwrClient.new_builder()
-                .with_credentials(credentials)
-                .with_region(SwrRegion.value_of(self.region))
             )
         elif service == 'aom':
             client = (
@@ -612,8 +597,6 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
-        elif service == 'reliability':
-            request = RocketMQListInstancesRequest()
         elif service == 'swr':
             request = ListReposDetailsRequest()
         elif service == 'swr-image':
