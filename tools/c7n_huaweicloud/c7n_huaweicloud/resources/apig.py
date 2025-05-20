@@ -36,20 +36,8 @@ log = logging.getLogger('custodian.huaweicloud.apig')
 
 @resources.register('apig-api')
 class ApiResource(QueryResourceManager):
-    """Huawei Cloud API Gateway API Resource Management
-
-    :example:
-    Define a simple policy to get all API Gateway APIs with status 1:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-api-list
-            resource: huaweicloud.apig-api
-            filters:
-              - type: value
-                key: status
-                value: 1
+    """
+    Huawei Cloud API Gateway API Resource Management
     """
 
     class resource_type(TypeInfo):
@@ -62,10 +50,8 @@ class ApiResource(QueryResourceManager):
         taggable = False
 
     def get_instance_id(self):
-        """Query and get API Gateway instance ID
-
-        Get available instance ID by querying apig-instance API, prioritizing running instances
-        If no available instance is found, return default instance ID
+        """
+        Query and get API Gateway instance ID
         """
         session = local_session(self.session_factory)
 
@@ -84,7 +70,6 @@ class ApiResource(QueryResourceManager):
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
-                # Use the first running instance
                 instance_ids = []
                 for instance in response.instances:
                     instance_ids.append(instance.id)
@@ -96,8 +81,6 @@ class ApiResource(QueryResourceManager):
         return []
 
     def _fetch_resources(self, query):
-        """Override resource retrieval method to ensure instance_id
-           parameter is included in the request"""
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
 
@@ -140,11 +123,6 @@ class ApiResource(QueryResourceManager):
                 if not response.total or offset >= response.total:
                     break
 
-        return resources
-
-    def augment(self, resources):
-        """Enhance resource information"""
-        # Return processed resources directly
         return resources
 
 
@@ -362,7 +340,6 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         # Extract necessary fields from the original API to ensure critical information is preserved
         update_info = {}
 
-        # Required fields from original resource
         for field in self.data:
             if field == "api_type":
                 update_info["type"] = self.data[field]
@@ -424,20 +401,8 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
 @resources.register('apig-stage')
 class StageResource(QueryResourceManager):
-    """Huawei Cloud API Gateway Environment Resource Management
-
-    :example:
-    Define a simple policy to get all API Gateway environments with name 'TEST':
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-stage-list
-            resource: huaweicloud.apig-stage
-            filters:
-              - type: value
-                key: name
-                value: TEST
+    """
+    Huawei Cloud API Gateway Environment Resource Management
     """
 
     class resource_type(TypeInfo):
@@ -450,10 +415,8 @@ class StageResource(QueryResourceManager):
         taggable = False
 
     def get_instance_id(self):
-        """Query and get API Gateway instance ID
-
-        Get available instance ID by querying apig-instance API, prioritizing running instances
-        If no available instance is found, return default instance ID
+        """
+        Query and get API Gateway instance ID
         """
         session = local_session(self.session_factory)
 
@@ -472,7 +435,6 @@ class StageResource(QueryResourceManager):
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
-                # Use the first running instance
                 instance_ids = []
                 for instance in response.instances:
                     instance_ids.append(instance.id)
@@ -524,10 +486,6 @@ class StageResource(QueryResourceManager):
                 return []
         return resources
 
-    def augment(self, resources):
-        """Enhance resource information"""
-        # Return processed resources directly
-        return resources
 
 # Update Environment Resource
 
@@ -566,7 +524,6 @@ class UpdateStageAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            # When instance_id is not in the resource, use manager to get it
             self.log.error(
                 f"No available instance found, using default instance ID from configuration: "
                 f"{instance_id}")
@@ -670,20 +627,8 @@ class DeleteStageAction(HuaweiCloudBaseAction):
 
 @resources.register('apig-api-groups')
 class ApiGroupResource(QueryResourceManager):
-    """Huawei Cloud API Gateway Group Resource Management
-
-    :example:
-    Define a simple policy to get all API Gateway groups with status 1:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-group-list
-            resource: huaweicloud.apig-api-groups
-            filters:
-              - type: value
-                key: status
-                value: 1
+    """
+    Huawei Cloud API Gateway Group Resource Management
     """
 
     class resource_type(TypeInfo):
@@ -696,10 +641,8 @@ class ApiGroupResource(QueryResourceManager):
         taggable = False
 
     def get_instance_id(self):
-        """Query and get API Gateway instance ID
-
-        Get available instance ID by querying apig-instance API, prioritizing running instances
-        If no available instance is found, return default instance ID
+        """
+        Query and get API Gateway instance ID
         """
         session = local_session(self.session_factory)
 
@@ -718,7 +661,6 @@ class ApiGroupResource(QueryResourceManager):
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
-                # Use the first running instance
                 instance_ids = []
                 for instance in response.instances:
                     instance_ids.append(instance.id)
@@ -776,10 +718,6 @@ class ApiGroupResource(QueryResourceManager):
 
         return resources
 
-    def augment(self, resources):
-        """Enhance resource information"""
-        # Return processed resources directly
-        return resources
 
 # Update Security
 
