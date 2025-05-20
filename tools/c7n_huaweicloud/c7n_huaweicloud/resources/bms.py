@@ -46,10 +46,19 @@ class Bms(QueryResourceManager):
         service = "bms"
         enum_spec = ("list_bare_metal_servers", "servers", "page")
         id = "id"
-        tag_resource_type = "bms"
+        tag_resource_type = "bms_server"
 
-
+    def augment(self, resources):
+        if not resources:
+            return resources
+        for resource in resources:
+            if "tags" in resource and isinstance(resource["tags"], list):
+                if "__type_baremetal" in resource["tags"]:
+                    index = resource["tags"].index("__type_baremetal")
+                    del resource["tags"][index]
+        return resources
 # ----------------------- BMS Filters -----------------------
+
 
 @Bms.filter_registry.register("instance-age")
 class BmsInstanceAgeFilter(AgeFilter):
