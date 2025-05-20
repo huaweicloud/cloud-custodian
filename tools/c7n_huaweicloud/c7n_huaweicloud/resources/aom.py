@@ -31,7 +31,7 @@ class AomAlarm(QueryResourceManager):
 
     class resource_type(TypeInfo):
         service = "aom"
-        enum_spec = ("list_metric_or_event_alarm_rule", "alarm_rules", offset)
+        enum_spec = ("list_metric_or_event_alarm_rule", "alarm_rules", "offset")
         id = "alarm_rule_id"
         tag_resource_type = "aom"
 
