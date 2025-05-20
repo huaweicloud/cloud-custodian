@@ -36,19 +36,8 @@ log = logging.getLogger('custodian.huaweicloud.apig')
 
 @resources.register('apig-api')
 class ApiResource(QueryResourceManager):
-    """Huawei Cloud API Gateway API Resource Management
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-api-list
-            resource: huaweicloud.apig-api
-            filters:
-              - type: value
-                key: status
-                value: 1
+    """
+    Huawei Cloud API Gateway API Resource Management
     """
 
     class resource_type(TypeInfo):
@@ -58,14 +47,11 @@ class ApiResource(QueryResourceManager):
         name = 'name'
         filter_name = 'name'
         filter_type = 'scalar'
-        taggable = True
-        tag_resource_type = 'apig'
+        taggable = False
 
     def get_instance_id(self):
-        """Query and get API Gateway instance ID
-
-        Get available instance ID by querying apig-instance API, prioritizing running instances
-        If no available instance is found, return default instance ID
+        """
+        Query and get API Gateway instance ID
         """
         session = local_session(self.session_factory)
 
@@ -84,7 +70,6 @@ class ApiResource(QueryResourceManager):
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
-                # Use the first running instance
                 instance_ids = []
                 for instance in response.instances:
                     instance_ids.append(instance.id)
@@ -96,8 +81,6 @@ class ApiResource(QueryResourceManager):
         return []
 
     def _fetch_resources(self, query):
-        """Override resource retrieval method to ensure instance_id
-           parameter is included in the request"""
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
 
@@ -122,16 +105,15 @@ class ApiResource(QueryResourceManager):
                 # Call client method to process request
                 try:
                     response = client.list_apis_v2(request)
-                    if hasattr(response, 'apis'):
-                        for api in response.apis:
-                            api_dict = {}
-                            api_dict["id"] = api.id
-                            api_dict["name"] = api.name
-                            api_dict["group_id"] = api.group_id
-                            api_dict["instance_id"] = instance_id
-                            api_dict['tag_resource_type'] = self.resource_type.tag_resource_type
-
-                            resources.append(api_dict)
+                    resource = eval(
+                        str(response.apis)
+                        .replace("null", "None")
+                        .replace("false", "False")
+                        .replace("true", "True")
+                    )
+                    for item in resource:
+                        item["instance_id"] = instance_id
+                    resources = resources + resource
                 except exceptions.ClientRequestException as e:
                     log.error(
                         f"Failed to query API list: {str(e)}", exc_info=True)
@@ -143,11 +125,6 @@ class ApiResource(QueryResourceManager):
 
         return resources
 
-    def augment(self, resources):
-        """Enhance resource information"""
-        # Return processed resources directly
-        return resources
-
 
 # API Resource Actions
 @ApiResource.action_registry.register('delete')
@@ -155,6 +132,7 @@ class DeleteApiAction(HuaweiCloudBaseAction):
     """Delete API action
 
     :example:
+    Define a policy to delete API Gateway APIs with name 'test-api':
 
     .. code-block:: yaml
 
@@ -211,6 +189,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
     including name, request protocol, request method, request URI, authentication type, etc.
 
     :example:
+    Define a policy to update an API Gateway API with comprehensive configuration options:
 
     .. code-block:: yaml
 
@@ -361,7 +340,6 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         # Extract necessary fields from the original API to ensure critical information is preserved
         update_info = {}
 
-        # Required fields from original resource
         for field in self.data:
             if field == "api_type":
                 update_info["type"] = self.data[field]
@@ -423,19 +401,8 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
 @resources.register('apig-stage')
 class StageResource(QueryResourceManager):
-    """Huawei Cloud API Gateway Environment Resource Management
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-stage-list
-            resource: huaweicloud.apig-stage
-            filters:
-              - type: value
-                key: name
-                value: TEST
+    """
+    Huawei Cloud API Gateway Environment Resource Management
     """
 
     class resource_type(TypeInfo):
@@ -445,14 +412,11 @@ class StageResource(QueryResourceManager):
         name = 'name'
         filter_name = 'name'
         filter_type = 'scalar'
-        taggable = True
-        tag_resource_type = 'apig'
+        taggable = False
 
     def get_instance_id(self):
-        """Query and get API Gateway instance ID
-
-        Get available instance ID by querying apig-instance API, prioritizing running instances
-        If no available instance is found, return default instance ID
+        """
+        Query and get API Gateway instance ID
         """
         session = local_session(self.session_factory)
 
@@ -471,7 +435,6 @@ class StageResource(QueryResourceManager):
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
-                # Use the first running instance
                 instance_ids = []
                 for instance in response.instances:
                     instance_ids.append(instance.id)
@@ -506,16 +469,15 @@ class StageResource(QueryResourceManager):
             # Call client method to process request
             try:
                 response = client.list_environments_v2(request)
-
-                if hasattr(response, 'envs'):
-                    for env in response.envs:
-                        env_dict = {}
-                        env_dict['id'] = env.id
-                        env_dict['name'] = env.name
-                        env_dict['instance_id'] = instance_id
-                        env_dict['tag_resource_type'] = self.resource_type.tag_resource_type
-
-                        resources.append(env_dict)
+                resource = eval(
+                    str(response.envs)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                )
+                for item in resource:
+                    item["instance_id"] = instance_id
+                resources = resources + resource
 
                 return resources
             except exceptions.ClientRequestException as e:
@@ -524,10 +486,6 @@ class StageResource(QueryResourceManager):
                 return []
         return resources
 
-    def augment(self, resources):
-        """Enhance resource information"""
-        # Return processed resources directly
-        return resources
 
 # Update Environment Resource
 
@@ -537,6 +495,7 @@ class UpdateStageAction(HuaweiCloudBaseAction):
     """Update environment action
 
     :example:
+    Define a policy to update an API Gateway environment's name and description:
 
     .. code-block:: yaml
 
@@ -565,7 +524,6 @@ class UpdateStageAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            # When instance_id is not in the resource, use manager to get it
             self.log.error(
                 f"No available instance found, using default instance ID from configuration: "
                 f"{instance_id}")
@@ -612,6 +570,7 @@ class DeleteStageAction(HuaweiCloudBaseAction):
     """Delete environment action
 
     :example:
+    Define a policy to delete API Gateway environments with name 'TEST':
 
     .. code-block:: yaml
 
@@ -668,19 +627,8 @@ class DeleteStageAction(HuaweiCloudBaseAction):
 
 @resources.register('apig-api-groups')
 class ApiGroupResource(QueryResourceManager):
-    """Huawei Cloud API Gateway Group Resource Management
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-group-list
-            resource: huaweicloud.apig-api-groups
-            filters:
-              - type: value
-                key: status
-                value: 1
+    """
+    Huawei Cloud API Gateway Group Resource Management
     """
 
     class resource_type(TypeInfo):
@@ -690,14 +638,11 @@ class ApiGroupResource(QueryResourceManager):
         name = 'name'
         filter_name = 'name'
         filter_type = 'scalar'
-        taggable = True
-        tag_resource_type = 'apig'
+        taggable = False
 
     def get_instance_id(self):
-        """Query and get API Gateway instance ID
-
-        Get available instance ID by querying apig-instance API, prioritizing running instances
-        If no available instance is found, return default instance ID
+        """
+        Query and get API Gateway instance ID
         """
         session = local_session(self.session_factory)
 
@@ -716,7 +661,6 @@ class ApiGroupResource(QueryResourceManager):
             response = client.list_instances_v2(instances_request)
 
             if hasattr(response, 'instances') and response.instances:
-                # Use the first running instance
                 instance_ids = []
                 for instance in response.instances:
                     instance_ids.append(instance.id)
@@ -754,24 +698,15 @@ class ApiGroupResource(QueryResourceManager):
                 # Call client method to process request
                 try:
                     response = client.list_api_groups_v2(request)
-                    if hasattr(response, 'groups'):
-                        for group in response.groups:
-                            group_dict = {}
-                            group_dict["id"] = group.id
-                            group_dict["name"] = group.name
-                            group_dict["instance_id"] = instance_id
-                            group_dict['tag_resource_type'] = self.resource_type.tag_resource_type
-                            # Special handling for url_domains attribute, extract as separate list
-                            if hasattr(group, 'url_domains') and group.url_domains is not None:
-                                url_domains = []
-                                for domain in group.url_domains:
-                                    domain_dict = {}
-                                    domain_dict['id'] = domain.id
-                                    url_domains.append(domain_dict)
-
-                                # Add processed url_domains
-                                group_dict['url_domains'] = url_domains
-                            resources.append(group_dict)
+                    resource = eval(
+                        str(response.groups)
+                        .replace("null", "None")
+                        .replace("false", "False")
+                        .replace("true", "True")
+                    )
+                    for item in resource:
+                        item["instance_id"] = instance_id
+                    resources = resources + resource
                 except exceptions.ClientRequestException as e:
                     log.error(
                         f"Failed to query API Group list: {str(e)}", exc_info=True)
@@ -783,10 +718,6 @@ class ApiGroupResource(QueryResourceManager):
 
         return resources
 
-    def augment(self, resources):
-        """Enhance resource information"""
-        # Return processed resources directly
-        return resources
 
 # Update Security
 
@@ -796,6 +727,7 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
     """Update domain security policy action
 
     :example:
+    Define a policy to update security settings for an API Gateway domain:
 
     .. code-block:: yaml
 
