@@ -663,6 +663,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.148"
 
 [[package]]
+name = "huaweicloudsdkscm"
+version = "3.1.147"
+description = "SCM"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
+files = [
+    {file = "huaweicloudsdkscm-3.1.147-py2.py3-none-any.whl", hash = "sha256:a70d04c03e7b697d840c16fdb699502b75d63a36c8811d324cf0fff8c23dab13"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.147"
+
+[[package]]
 name = "huaweicloudsdkrds"
 version = "3.1.148"
 description = "RDS"

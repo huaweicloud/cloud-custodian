@@ -31,9 +31,34 @@ class AomAlarm(QueryResourceManager):
 
     class resource_type(TypeInfo):
         service = "aom"
-        enum_spec = ("list_metric_or_event_alarm_rule", "alarm_rules", None)
+        enum_spec = ("list_metric_or_event_alarm_rule", "alarm_rules", "offset")
         id = "alarm_rule_id"
-        tag_resource_type = "aom"
+        tag_resource_type = "alarm-rules"
+
+    def augment(self, resources):
+        # This method is called by the QueryResourceManager to allow
+        # modification of resources after they are fetched from the API.
+        # We will add a 'tags' field to each resource, formatted as a dictionary,
+        # derived from 'custom_tags' within 'metric_alarm_spec.alarm_tags'.
+        # This 'tags' field will be used by TMS (Tag Management Service) filters.
+
+        for r_dict in resources:
+            processed_tags = {}
+            metric_spec = r_dict.get('metric_alarm_spec')
+            if isinstance(metric_spec, dict):
+                alarm_tags_list = metric_spec.get('alarm_tags')
+                if isinstance(alarm_tags_list, list):
+                    for alarm_tag_item_dict in alarm_tags_list:
+                        if isinstance(alarm_tag_item_dict, dict):
+                            custom_tags_str_list = alarm_tag_item_dict.get('custom_tags')
+                            if isinstance(custom_tags_str_list, list):
+                                for tag_str in custom_tags_str_list:
+                                    if isinstance(tag_str, str) and '=' in tag_str:
+                                        key, value = tag_str.split('=', 1)
+                                        processed_tags[key] = value
+
+            r_dict['tags'] = processed_tags
+        return super(AomAlarm, self).augment(resources)
 
 
 @AomAlarm.filter_registry.register('alarm-rule')

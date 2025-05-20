@@ -19,7 +19,7 @@ interactions:
       X-Sdk-Date:
       - 20250514T033045Z
     method: GET
-    uri: https://aom.ap-southeast-1.myhuaweicloud.com/v4/ap-southeat-1/alarm-rules
+    uri: https://aom.ap-southeast-1.myhuaweicloud.com/v4/ap-southeat-1/alarm-rules?limit=100&offset=0
   response:
     body:
       string: '{
