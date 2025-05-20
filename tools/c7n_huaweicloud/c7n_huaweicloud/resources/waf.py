@@ -20,14 +20,6 @@ log = logging.getLogger('custodian.huaweicloud.resources.waf')
 @resources.register('waf-policy')
 class WafPolicy(QueryResourceManager):
     """Huawei Cloud Web Application Firewall (WAF) Policy Resource
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: waf-policy-list
-            resource: huaweicloud.waf-policy
     """
 
     class resource_type(TypeInfo):
@@ -48,14 +40,6 @@ class WafPolicy(QueryResourceManager):
 @resources.register('waf-log-config')
 class WafLogConfig(QueryResourceManager):
     """Huawei Cloud Web Application Firewall (WAF) Log Configuration Resource
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: waf-log-config-list
-            resource: huaweicloud.waf-log-config
     """
 
     class resource_type(TypeInfo):
