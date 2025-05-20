@@ -128,7 +128,8 @@ class ApiResource(QueryResourceManager):
                         .replace("false", "False")
                         .replace("true", "True")
                     )
-                    resource[0]["instance_id"] = instance_id
+                    for item in resource:
+                        item["instance_id"] = instance_id
                     resources = resources + resource
                 except exceptions.ClientRequestException as e:
                     log.error(
@@ -512,7 +513,8 @@ class StageResource(QueryResourceManager):
                     .replace("false", "False")
                     .replace("true", "True")
                 )
-                resource[0]["instance_id"] = instance_id
+                for item in resource:
+                    item["instance_id"] = instance_id
                 resources = resources + resource
 
                 return resources
@@ -760,7 +762,8 @@ class ApiGroupResource(QueryResourceManager):
                         .replace("false", "False")
                         .replace("true", "True")
                     )
-                    resource[0]["instance_id"] = instance_id
+                    for item in resource:
+                        item["instance_id"] = instance_id
                     resources = resources + resource
                 except exceptions.ClientRequestException as e:
                     log.error(
