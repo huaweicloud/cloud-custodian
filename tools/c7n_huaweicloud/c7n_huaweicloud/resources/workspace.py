@@ -27,8 +27,6 @@ class Workspace(QueryResourceManager):
         name = 'computer_name'
         tag_resource_type = 'workspace-desktop'
         date = 'created'
-        # Enable configuration audit support
-        config_resource_support = True
 
     def augment(self, resources):
         """Enhance resource data
