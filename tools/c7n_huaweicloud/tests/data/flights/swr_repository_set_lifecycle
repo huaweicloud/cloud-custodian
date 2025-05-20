@@ -1,0 +1,104 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.29.0
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos?limit=100&offset=0
+  response:
+    body:
+      string: '[{"name":"test-repo","category":"app","size":102400,"is_public":false,"num_images":1,"num_download":10,"url":"http://swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo","path":"swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo","internal_path":"swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo","domain_name":"test-namespace","namespace":"test-namespace","created_at":"2023-01-01T00:00:00Z"}]'
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 03 May 2024 08:35:00 GMT
+      Server:
+      - OpenResty
+      X-Request-Id:
+      - 6e0a977e12b3ba641c4db24a76f32cc6
+      content-length:
+      - '350'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T093927Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/retentions
+  response:
+    body:
+      string: '[]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 09:39:27 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - b7de4aaa5ab48bb66bf012584aad5f6a
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"algorithm":"or","rules":[{"template":"date_rule","params":{"days":90},"tag_selectors":[{"kind":"label","pattern":"v1"}]}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '124'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.29.0
+    method: POST
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/retentions
+  response:
+    body:
+      string: '{"id":42}'
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 03 May 2024 08:35:01 GMT
+      Server:
+      - OpenResty
+      X-Request-Id:
+      - 5a7b654f219c9ff43e6b1c290348a7dc
+      content-length:
+      - '9'
+    status:
+      code: 201
+      message: Created
+version: 1

@@ -1,0 +1,227 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20240430T012508Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos?limit=100&offset=0
+  response:
+    body:
+      string: '[{"id":235,"name":"test-repo","namespace":"test-namespace","category":"other","description":"Test
+        repository","size":25678,"is_public":false,"num_images":1,"num_download":0,"create_time":"2022-01-01T00:00:00Z","url":"https://swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo","path":"swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo","internal_path":"100.125.0.28:20202/test-namespace/test-repo","domain":"100.125.0.28:20202","creator_name":"user","status":true},{"id":237,"name":"new-repo","namespace":"new-namespace","category":"other","description":"New
+        repository","size":15678,"is_public":false,"num_images":2,"num_download":5,"create_time":"2023-10-01T00:00:00Z","url":"https://swr.ap-southeast-1.myhuaweicloud.com/new-namespace/new-repo","path":"swr.ap-southeast-1.myhuaweicloud.com/new-namespace/new-repo","internal_path":"100.125.0.28:20202/new-namespace/new-repo","domain":"100.125.0.28:20202","creator_name":"new-user","status":true}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2024 01:25:07 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - fc7842dba01f64be79e1cef33f97a143
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20240430T012508Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/tags?limit=100&offset=0
+  response:
+    body:
+      string: '[{"id":124,"Tag":"v1.0.0","image_id":"sha256:1234567890abcdef","digest":"sha256:abcdef1234567890","path":"swr.ap-southeast-1.myhuaweicloud.com/test-namespace/test-repo:v1.0.0","created":"2022-01-01T00:00:00Z","updated":"2022-01-01T00:00:00Z","is_trusted":false,"namespace":"test-namespace","repository":"test-repo"}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2024 01:25:08 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20240430T012509Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/new-namespace/repos/new-repo/tags?limit=100&offset=0
+  response:
+    body:
+      string: '[{"id":125,"Tag":"latest","image_id":"sha256:5234567890abcdef","digest":"sha256:dbcdef1234567890","path":"swr.ap-southeast-1.myhuaweicloud.com/new-namespace/new-repo:latest","created":"2023-10-01T00:00:00Z","updated":"2023-10-01T00:00:00Z","is_trusted":false,"namespace":"new-namespace","repository":"new-repo"},{"id":126,"Tag":"v1.0.0","image_id":"sha256:6234567890abcdef","digest":"sha256:ebcdef1234567890","path":"swr.ap-southeast-1.myhuaweicloud.com/new-namespace/new-repo:v1.0.0","created":"2023-11-01T00:00:00Z","updated":"2023-11-01T00:00:00Z","is_trusted":false,"namespace":"new-namespace","repository":"new-repo"}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2024 01:25:09 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250515T083816Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/test-namespace/repos/test-repo/retentions
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"d3971b3df387ee9963d4716d65cc9556"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 15 May 2025 08:38:16 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=9e25c7368849c2eb27; path=/
+      - HWWAFSESTIME=1747298296175; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - d3971b3df387ee9963d4716d65cc9556
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESID=9e25c7368849c2eb27; HWWAFSESTIME=1747298296175
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250515T083816Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/namespaces/new-namespace/repos/new-repo/retentions
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"82ffc356b6582c523a4b20633848adb2"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 15 May 2025 08:38:16 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 82ffc356b6582c523a4b20633848adb2
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

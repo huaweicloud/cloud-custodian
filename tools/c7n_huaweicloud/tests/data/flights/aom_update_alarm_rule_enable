@@ -1,0 +1,154 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - aom.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250514T033046Z
+    method: GET
+    uri: https://aom.ap-southeast-1.myhuaweicloud.com/v4/ap-southeat-1/alarm-rules?limit=100&offset=0
+  response:
+    body:
+      string: '{ "alarm_rules": [ { "alarm_create_time": 1711458243395, "alarm_notifications":
+        { "bind_notification_rule_id": "", "notification_enable": false, "notification_type":
+        "direct", "notify_frequency": 0, "notify_resolved": false, "notify_triggered":
+        false, "route_group_enable": false, "route_group_rule": "" }, "alarm_rule_description":
+        "", "alarm_rule_enable": false, "alarm_rule_id": 1, "alarm_rule_name": "aom_alarm_rule_1",
+        "alarm_rule_status": "Invalid", "alarm_rule_type": "metric", "alarm_update_time":
+        0, "enterprise_project_id": "0", "metric_alarm_spec": { "alarm_rule_template_bind_enable":
+        false, "alarm_rule_template_id": "", "alarm_tags": [ { "auto_tags": [
+
+        ], "custom_annotations": [
+
+        ], "custom_tags": [
+
+        ] } ], "monitor_objects": [
+
+        ], "monitor_type": "all_metric", "no_data_conditions": [ { "no_data_timeframe":
+        0, "notify_no_data": false } ], "recovery_conditions": { "recovery_timeframe":
+        1 }, "trigger_conditions": [ { "aggregate_type": "by", "aggregation_type":
+        "average", "aggregation_window": "30s", "aom_monitor_level": "", "cmdb": {
+        "app_id": "", "node_ids": [
+
+        ] }, "expression": "", "metric_labels": [
+
+        ], "metric_name": "container_memory_rss", "metric_namespace": "", "metric_query_mode":
+        "PROM", "metric_statistic_method": "single", "metric_unit": "", "mix_promql":
+        "", "operator": ">", "promql": "label_replace(container_memory_rss{node=\"172.**.**.206\"},\"__name__\",\"container_memory_rss\",\"\",\"\")
+        or label_replace(avg_over_time(container_memory_rss{node=\"172.**.**.206\"}[29999ms]),\"__name__\",\"container_memory_rss\",\"\",\"\")",
+        "promql_for": "1m", "query_match": "[{\"conditionList\":[{\"name\":\"172.**.**.206\"},{\"name\":\"172.**.**.133\"}],\"addMode\":\"first\",\"conditionValue\":[{\"name\":\"172.**.**.206\"}],\"id\":\"first\",\"conditionCompare\":\"=\",\"dimension\":\"node\"}]",
+        "query_param": { "apmMetricReg": "", "code": "a" }, "thresholds": { "Critical":
+        "1" }, "trigger_interval": "15s", "trigger_times": 1, "trigger_type": "FIXED_RATE"
+        } ] }, "prom_instance_id": "90e***88-1**4-4**9-9**3-1f*******cd3", "user_id":
+        "2a****56****48****73****1b****cf" } ], "count": 29, "metadata": { "alarm_rule_template_id":
+        [
+
+        ], "bind_notification_rule_id": [ "aom_notification_rule", "1", "00********qq",
+        "00*****3", "m***m" ], "event_source": [ "CCE", "DCS", "ES", "AOM" ], "prom_instance_id":
+        [ "0", "796***7d-1**8-4**9-a**0-99*******ca0", "6cc***c8-f**f-4**4-9**2-90*******fcf",
+        "90e***88-1**4-4**9-9**3-1f*******cd3" ], "resource_kind": [ "HC:DCS:REDIS_3.0",
+        "CCE", "HC:ES:METRICS", "AOM" ] } }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 03:30:46 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747193445484; path=/
+      - HWWAFSESID=dbbfc76a58d5154d82; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 47da6624f9a5daa801a8c53a73f72984
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"alarm_rule_enable": false, "alarm_rule_name": "aom_alarm_rule_1", "alarm_rule_type":
+      "metric"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '96'
+      Content-Type:
+      - application/json
+      Host:
+      - aom.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250514T063342Z
+    method: POST
+    uri: https://aom.ap-southeast-1.myhuaweicloud.com/v4/ap-southeat-1/alarm-rules?action_id=update-alarm-action
+  response:
+    body:
+      string: '{
+  "alarm_rules" : [ {
+    "alarm_rule_name" : "aom_alarm_rule",
+    "result" : "success"
+  } ],
+  "error_code" : "200",
+  "error_message" : "success"
+}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 06:33:42 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747204422616; path=/
+      - HWWAFSESID=e4b6973055d846c597; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 85a0551a56695d8d33790e6251a2cbcf
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

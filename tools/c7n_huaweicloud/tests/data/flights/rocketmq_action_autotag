@@ -17,55 +17,51 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250403T042925Z
+      - 20250507T123510Z
     method: GET
     uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
   response:
     body:
       string: '{
-"instances" : [ {
-"name" : "kafka-instance-example",
-"engine" : "kafka",
-"port" : 9092,
-"status" : "RUNNING",
-"type" : "cluster",
-"specification" : "100MB",
-"engine_version" : "1.1.0",
-"connect_address" : "192.168.0.100,192.168.0.61,192.168.0.72",
-"instance_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-"resource_spec_code" : "dms.instance.kafka.cluster.c3.mini",
-"charging_mode" : 1,
-"vpc_id" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-"vpc_name" : "dms-test",
-"created_at" : "1585518587087",
-"product_id" : "00300-30308-0--0",
-"security_group_id" : "securityGroupId",
-"security_group_name" : "Sys-default",
-"subnet_id" : "subnet-testing-kafka",
-"available_zones" : [ "cn-north-4a" ],
-"user_id" : "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-"user_name" : "paas_dms",
-"tags": [
-{
-"key": "totest",
-"value": "delete"
-}
-]
-} ],
-"instance_num" : 1
-}'
+        "instances": [
+          {
+            "instance_id": "87de1d04-40ed-4860-9898-deab0cf9e5f6",
+            "name": "rocketmq-instance-example",
+            "engine": "reliability",
+            "engine_version": "5.x",
+            "specification": "cluster", 
+            "storage_space": 600,
+            "vpc_id": "66acfca2-3823-46de-aab0-f4f44e12da4d",
+            "security_group_id": "securityGroupId",
+            "subnet_id": "a7c98b33-fcc5-4702-9bc2-69b4f0a17344",
+            "available_zones": ["cn-north-4a", "cn-north-4b"],
+            "status": "RUNNING",
+            "instance_version": "300",
+            "created_at": 1683460485000,
+            "user_id": "db3f59c9f07e41e29231b5e33b844fe0",
+            "user_name": "root",
+            "creator": "admin@example.com",
+            "enable_publicip": false,
+            "management_connect_address": "10.128.0.67:9876",
+            "connect_address": "10.128.0.77:9876",
+            "resource_spec_code": "rocketmq.cluster.small.2n",
+            "tags": []
+          }
+        ],
+        "total": 1
+      }'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Thu, 03 Apr 2025 04:29:26 GMT
+      - Wed, 07 May 2025 12:35:10 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=4faa173fb5d81d10ad; path=/
-      - HWWAFSESTIME=1743654566283; path=/
+      - HWWAFSESTIME=1746621310327; path=/
+      - HWWAFSESID=cf40873223ef116e66; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -77,14 +73,14 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 8feb534caf767d9e39e57a8c14a68fc9
+      - b28c0a7f6cd772a3b9e56067dc9e15c2
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
-      message: ""
+      message: Success
 - request:
-    body: ''
+    body: '{"action": "create", "tags": [{"key": "CreatorName", "value": "admin@example.com"}]}'
     headers:
       Accept:
       - '*/*'
@@ -93,7 +89,7 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '0'
+      - '82'
       Content-Type:
       - application/json
       Host:
@@ -103,28 +99,24 @@ interactions:
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250403T042927Z
-    method: DELETE
-    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      - 20250507T123512Z
+    method: POST
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/rocketmq/87de1d04-40ed-4860-9898-deab0cf9e5f6/tags/action
   response:
     body:
-      string: '{"job_id": "a2fbe480f59a40822ed04ba34eec2380"}'
+      string: ''
     headers:
       Connection:
       - keep-alive
-      Content-Type:
-      - application/json
       Date:
-      - Thu, 03 Apr 2025 04:29:27 GMT
+      - Wed, 07 May 2025 12:35:12 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=8b1977331fcb2d74bc; path=/
-      - HWWAFSESTIME=1743654567943; path=/
+      - HWWAFSESID=4cc2773c4e45a34e25; path=/
+      - HWWAFSESTIME=1746621312642; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -132,10 +124,10 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - bd442ee1e7d542e4b34532c08bcff252
+      - a2fbe480f59a40822ed04ba34eec2380
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 202
-      message: Accepted
+      code: 204
+      message: No Content
 version: 1

@@ -1,0 +1,183 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T060242Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [
+                {"id": "rds-instance-param-test-1", "name": "rds-instance-1", 
+                 "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1", 
+                 "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-01-15T08:00:00+0000", 
+                 "updated": "2023-01-16T10:30:00+0000", "private_ips": ["192.168.0.10"]},
+                {"id": "rds-instance-param-test-2", "name": "rds-instance-2", 
+                 "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1", 
+                 "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-01-16T08:00:00+0000", 
+                 "updated": "2023-01-17T10:30:00+0000", "private_ips": ["192.168.0.11"]}
+               ], 
+        "total_count": 2}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 06:02:42 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=08c777657e6a5dbb1f; path=/
+      - HWWAFSESTIME=1745992961309; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ff95b0da8bfd54351a2cc2132ee907ee
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T060243Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-param-test-1/configurations
+  response:
+    body:
+      string: '{"configuration_parameters": [
+                 {"name": "max_connections", "value": "500", "restart_required": true, 
+                  "readonly": false, "type": "integer", "description": "The maximum permitted number of simultaneous client connections"},
+                 {"name": "innodb_buffer_pool_size", "value": "134217728", "restart_required": true, 
+                  "readonly": false, "type": "integer", "description": "The size of the memory buffer InnoDB uses to cache data and indexes of its tables"}
+               ]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 06:02:43 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745992963311; path=/
+      - HWWAFSESID=19c777658e6a6dbb20; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 00a6b1db9c0e65462b3dd3243ff018ff
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T060244Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-param-test-2/configurations
+  response:
+    body:
+      string: '{"configuration_parameters": [
+                 {"name": "max_connections", "value": "800", "restart_required": true, 
+                  "readonly": false, "type": "integer", "description": "The maximum permitted number of simultaneous client connections"},
+                 {"name": "innodb_buffer_pool_size", "value": "268435456", "restart_required": true, 
+                  "readonly": false, "type": "integer", "description": "The size of the memory buffer InnoDB uses to cache data and indexes of its tables"}
+               ]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 06:02:44 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745992964312; path=/
+      - HWWAFSESID=20d777658e6a7dbb21; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 11b7c2ec0d1f76573c4ee4354001900
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

@@ -1,0 +1,231 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dcaas.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250428T121240Z
+    method: GET
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects?limit=100
+  response:
+    body:
+      string: "{ \"request_id\":\"862ca7320592346f4b2efe19ee26b43d\", \"direct_connects\":[
+        { \"id\":\"dc-123456789abcdef\", \"tenant_id\":\"ap-southeat-1\", \"name\":\"dc-tags-connection\",
+        \"description\":\"\u6709\u4E24\u4E2A\u6807\u7B7E\u7684\u4E13\u7EBF\u8FDE\u63A5\",
+        \"status\":\"ACTIVE\", \"create_time\":\"2025-01-01T00:00:00Z\", \"tags\":[
+        {\"key\":\"environment\", \"value\":\"production\"}, {\"key\":\"project\",
+        \"value\":\"demo\"} ] }, { \"id\":\"dc-987654321fedcba\", \"tenant_id\":\"ap-southeat-1\",
+        \"name\":\"dc-one-tag-connection\", \"description\":\"\u6709\u4E00\u4E2A\u6807\u7B7E\u7684\u4E13\u7EBF\u8FDE\u63A5\",
+        \"status\":\"ACTIVE\", \"create_time\":\"2025-01-15T00:00:00Z\", \"tags\":[{\"key\":\"environment\",
+        \"value\":\"testing\"}] }, { \"id\":\"dc-abcdef123456789\", \"tenant_id\":\"ap-southeat-1\",
+        \"name\":\"dc-three-tags-connection\", \"description\":\"\u6709\u4E09\u4E2A\u6807\u7B7E\u7684\u4E13\u7EBF\u8FDE\u63A5\",
+        \"status\":\"ACTIVE\", \"create_time\":\"2025-02-15T00:00:00Z\", \"tags\":[
+        {\"key\":\"environment\", \"value\":\"development\"}, {\"key\":\"project\",
+        \"value\":\"prototype\"}, {\"key\":\"owner\", \"value\":\"team-a\"} ] } ]
+        }"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 28 Apr 2025 12:12:40 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745842360989; path=/
+      - HWWAFSESID=20cc27385564aa7352; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 862ca7320592346f4b2efe19ee26b43d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dcaas.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T012049Z
+    method: GET
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects/dc-123456789abcdef
+  response:
+    body:
+      string: "{ \"request_id\":\"31ada89be2f69c050bf14a5ea0700c70\", \"direct_connect\":
+        { \"id\":\"dc-123456789abcdef\", \"tenant_id\":\"ap-southeat-1\", \"name\":\"dc-tags-connection\",
+        \"description\":\"\u6709\u4E24\u4E2A\u6807\u7B7E\u7684\u4E13\u7EBF\u8FDE\u63A5\",
+        \"status\":\"ACTIVE\", \"create_time\":\"2025-01-01T00:00:00Z\", \"tags\":[
+        {\"key\":\"environment\", \"value\":\"production\"}, {\"key\":\"project\",
+        \"value\":\"demo\"} ] } }"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 01:20:49 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=e300373101925a2fa4; path=/
+      - HWWAFSESTIME=1745889649509; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 31ada89be2f69c050bf14a5ea0700c70
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESID=e300373101925a2fa4; HWWAFSESTIME=1745889649509
+      Host:
+      - dcaas.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T012049Z
+    method: GET
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects/dc-987654321fedcba
+  response:
+    body:
+      string: "{ \"request_id\":\"4ee651bc9be7f8dfc247bdc109a1b224\", \"direct_connect\":
+        { \"id\":\"dc-987654321fedcba\", \"tenant_id\":\"ap-southeat-1\",
+        \"name\":\"dc-one-tag-connection\", \"description\":\"\u6709\u4E00\u4E2A\u6807\u7B7E\u7684\u4E13\u7EBF\u8FDE\u63A5\",
+        \"status\":\"ACTIVE\", \"create_time\":\"2025-01-15T00:00:00Z\", \"tags\":[{\"key\":\"environment\",
+        \"value\":\"testing\"}] } }"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 01:20:49 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 4ee651bc9be7f8dfc247bdc109a1b224
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESID=e300373101925a2fa4; HWWAFSESTIME=1745889649509
+      Host:
+      - dcaas.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T012049Z
+    method: GET
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects/dc-abcdef123456789
+  response:
+    body:
+      string: "{ \"request_id\":\"d60f626a471476a14a842853da0172d4\", \"direct_connect\":
+        { \"id\":\"dc-abcdef123456789\", \"tenant_id\":\"ap-southeat-1\",
+        \"name\":\"dc-three-tags-connection\", \"description\":\"\u6709\u4E09\u4E2A\u6807\u7B7E\u7684\u4E13\u7EBF\u8FDE\u63A5\",
+        \"status\":\"ACTIVE\", \"create_time\":\"2025-02-15T00:00:00Z\", \"tags\":[
+        {\"key\":\"environment\", \"value\":\"development\"}, {\"key\":\"project\",
+        \"value\":\"prototype\"}, {\"key\":\"owner\", \"value\":\"team-a\"} ] } }"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 01:20:49 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - d60f626a471476a14a842853da0172d4
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

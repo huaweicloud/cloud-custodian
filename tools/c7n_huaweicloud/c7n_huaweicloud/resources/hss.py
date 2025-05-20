@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from c7n.filters import Filter
 from c7n.utils import type_schema, local_session, chunks
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -24,29 +23,21 @@ log = logging.getLogger("custodian.huaweicloud.hss")
 
 @resources.register("hss")
 class Hss(QueryResourceManager):
-    """Huawei Cloud Host Security Service (Hss) Resource Manager
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: hss-protection-status
-            resource: huaweicloud.hss
-            filters:
-              - type: host-status
-                status: unprotected
-    """
+    """Huawei Cloud Host Security Service (Hss) Resource Manager"""
 
     class resource_type(TypeInfo):
         service = "hss"
-        enum_spec = ("list_host_status", "data_list", None)  # Use ListHostStatus API
+        enum_spec = (
+            "list_host_status",
+            "data_list",
+            "offset",
+        )  # Use ListHostStatus API
         id = "host_id"
         name = "host_name"
         filter_name = "host_id"
         filter_type = "scalar"
-        taggable = True
-        tag_resource_type = "hss"
+        taggable = False
+        tag_resource_type = None
 
     def augment(self, resources):
         # Ensure all important fields are present in resource objects
@@ -180,13 +171,12 @@ class SetWtpProtectionStatusAction(HuaweiCloudBaseAction):
     def process(self, resources):
         client = local_session(self.manager.session_factory).client("hss")
         status = self.data.get("status")
-
         for resource in resources:
             host_id = resource["host_id"]
-
             try:
                 # Create request body
                 request_info = SetWtpProtectionStatusRequestInfo(
+                    charging_mode="packet_cycle",
                     status=True if status == "enabled" else False,
                     host_id_list=[host_id],
                 )
@@ -228,40 +218,3 @@ class SetWtpProtectionStatusAction(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         # Individual resource processing will be handled by the process method
         pass
-
-
-@Hss.filter_registry.register("host-status")
-class HostStatusFilter(Filter):
-    """Filter Hss resources based on host protection status
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: unprotected-hosts
-            resource: huaweicloud.hss
-            filters:
-              - type: host-status
-                status: unprotected
-    """
-
-    schema = type_schema(
-        "host-status",
-        required=["status"],
-        status={"type": "string", "enum": ["protected", "unprotected"]},
-    )
-
-    def process(self, resources, event=None):
-        status = self.data.get("status")
-
-        results = []
-        for resource in resources:
-            agent_status = resource.get("agent_status", "").upper()
-
-            if status == "protected" and agent_status == "RUNNING":
-                results.append(resource)
-            elif status == "unprotected" and agent_status != "RUNNING":
-                results.append(resource)
-
-        return results
