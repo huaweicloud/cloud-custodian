@@ -221,12 +221,20 @@ class DatabaseVersionFilter(Filter):
             # 提取主版本号
             major_version = '.'.join(version_parts[:2])
 
+            # 截取前三部分作为比较版本号（如8.0.28.231003 -> 8.0.28）
+            instance_version_to_compare = '.'.join(version_parts[:3]) \
+                if len(version_parts) >= 3 else complete_version
+
             # 检查主版本是否有对应的最新小版本
             if major_version in latest_versions:
                 latest_version = latest_versions[major_version]
+                latest_version_parts = latest_version.split('.')
+                latest_version_to_compare = '.'.join(latest_version_parts[:3]) \
+                    if len(latest_version_parts) >= 3 else latest_version
 
-                # 如果实例版本不是最新的小版本，添加到结果中
-                if complete_version != latest_version:
+                # 比较版本时只比较前三部分，忽略后面的构建号
+                if self._compare_versions(instance_version_to_compare,
+                                          latest_version_to_compare) < 0:
                     self.log.debug(
                         f"实例 {resource['name']} "
                         f"的版本 {complete_version} 不是最新小版本 {latest_version}")
@@ -238,14 +246,15 @@ class DatabaseVersionFilter(Filter):
         return outdated_resources
 
     def _compare_versions(self, version1, version2):
-        """比较两个版本号的大小
+        """比较两个版本号的大小，只比较前三个部分（如8.0.28），忽略后面的构建号
         返回值:
             -1: version1 < version2
              0: version1 = version2
              1: version1 > version2
         """
-        v1_parts = version1.split('.')
-        v2_parts = version2.split('.')
+        # 确保只比较前三个版本号部分
+        v1_parts = version1.split('.')[:3]
+        v2_parts = version2.split('.')[:3]
         for i in range(max(len(v1_parts), len(v2_parts))):
             # 如果一个版本号部分不存在，则视为0
             v1 = int(v1_parts[i]) if i < len(v1_parts) else 0
@@ -527,7 +536,7 @@ class SwitchSSLAction(HuaweiCloudBaseAction):
         try:
             request = SwitchSslRequest()
             request.instance_id = instance_id
-            ssl_option = "true" if ssl_option else "false"
+            ssl_option = True if ssl_option else False
             request_body = {
                 'ssl_option': ssl_option
             }
