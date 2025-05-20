@@ -1,0 +1,167 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T032342Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "pg-instance-for-major-upgrade", "name": "postgres-hba-conf-no-match",
+        "status": "ACTIVE", "datastore": {"type": "PostgreSQL", "version": "13.4"},
+        "private_ips": ["192.168.1.40"], "port": 5432, "pg_hba_conf": [ {"field":
+        "host", "type": "host", "database": "all", "user": "all", "address": "192.168.1.0/24",
+        "auth_method": "md5"}], "type": "Single"}], "total_count": 1} '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 03:23:43 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=c26a076c928b5fea87; path=/
+      - HWWAFSESTIME=1747020220076; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - bdebc5a5495c64dca5700042f0783f46
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T032432Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/pg-instance-for-major-upgrade/major-version/available-version
+  response:
+    body:
+      string: '{ "available_versions": ["13.9", "14.4","14.6.1"] } '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 03:24:32 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747020272393; path=/
+      - HWWAFSESID=f4b5d73e1e21adc4d6; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 245af8e659f02aa011d2a497dd680166
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"target_version": "14.6.1", "is_change_private_ip": true, "statistics_collection_mode":
+      "before_change_private_ip"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '116'
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250512T032740Z
+    method: POST
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/pg-instance-for-major-upgrade/major-version/upgrade
+  response:
+    body:
+      string: '{
+   "job_id": "3afe25b7-4523-4d3b-8236-7121be922691"
+}
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 May 2025 03:27:40 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=217fd73cbfc3b3a9ea; path=/
+      - HWWAFSESTIME=1747020460845; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ce0ce12854d62ccdebbedd4fe1cfc64e
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

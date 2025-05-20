@@ -1,0 +1,206 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250511T123510Z
+    method: GET
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
+  response:
+    body:
+      string: '{ "instances": [ { "instance_id": "87de1d04-40ed-4860-9898-deab0cf9e5f6",
+        "name": "rocketmq-instance-example", "engine": "reliability", "engine_version":
+        "5.x", "specification": "cluster", "storage_space": 600, "vpc_id": "66acfca2-3823-46de-aab0-f4f44e12da4d",
+        "security_group_id": "securityGroupId", "subnet_id": "a7c98b33-fcc5-4702-9bc2-69b4f0a17344",
+        "available_zones": ["cn-north-4a", "cn-north-4b"], "status": "RUNNING", "instance_version":
+        "300", "created_at": 1683460485000, "user_id": "db3f59c9f07e41e29231b5e33b844fe0",
+        "user_name": "root", "enable_publicip": false, "management_connect_address":
+        "10.128.0.67:9876", "connect_address": "10.128.0.77:9876", "resource_spec_code":
+        "rocketmq.cluster.small.2n", "tags": {"totest": "delete"} } ], "total": 1 }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 11 May 2025 12:35:10 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746966910427; path=/
+      - HWWAFSESID=cfaf9ea23fc4616e99; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 8dceb42abf6f7a3f8752943f98324708
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250511T070535Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/projects?name=ap-southeast-1
+  response:
+    body:
+      string: '{"projects": [{"id": "0cf0a0a3b0af4a70916739860f557c05", "name": "ap-southeast-1",
+        "domain_id": "05b3b1ebad00256f4f1023abcd", "enabled": true, "description":
+        "Southeast Asia Region"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 11 May 2025 07:05:35 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746951932472; path=/
+      - HWWAFSESID=4444976d180ecb11e3; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 4224ee6ede481d9a7e152dbb40ba1da0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250511T072637Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"Southeast Asia Domain","enabled":true,"id":"05b3b1ebad00256f4f1023abcd","links":{"self":"https://iam.ap-southeast-1.myhuaweicloud.com/v3/domains/05b3b1ebad00256f4f1023abcd"},"name":"SEADomain"}],"links":{"self":"https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 11 May 2025 07:26:37 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=75c8f73303ce9c2a95; path=/
+      - HWWAFSESTIME=1746953197213; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 763fcf6758300a4580028879fd278e3e
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250511T123512Z
+    method: DELETE
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances/87de1d04-40ed-4860-9898-deab0cf9e5f6
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Date:
+      - Wed, 11 May 2025 12:35:12 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=da3e67e7ad4cf43e66; path=/
+      - HWWAFSESTIME=1746966912642; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 09c83e9ee7f4ae2b91c76d08f79a0381
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: No Content
+version: 1

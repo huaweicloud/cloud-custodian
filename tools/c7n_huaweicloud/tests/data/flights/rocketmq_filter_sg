@@ -1,0 +1,86 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250507T123445Z
+    method: GET
+    uri: https://dms.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=10&offset=0
+  response:
+    body:
+      string: '{
+        "instances": [
+          {
+            "instance_id": "87de1d04-40ed-4860-9898-deab0cf9e5f6",
+            "name": "rocketmq-instance-example",
+            "engine": "reliability",
+            "engine_version": "5.x",
+            "specification": "cluster",
+            "storage_space": 600,
+            "vpc_id": "66acfca2-3823-46de-aab0-f4f44e12da4d",
+            "security_group_id": "securityGroupId",
+            "subnet_id": "a7c98b33-fcc5-4702-9bc2-69b4f0a17344",
+            "available_zones": ["cn-north-4a", "cn-north-4b"],
+            "status": "RUNNING",
+            "instance_version": "300",
+            "created_at": 1683460485000,
+            "user_id": "db3f59c9f07e41e29231b5e33b844fe0",
+            "user_name": "root",
+            "enable_publicip": false,
+            "management_connect_address": "10.128.0.67:9876",
+            "connect_address": "10.128.0.77:9876",
+            "resource_spec_code": "rocketmq.cluster.small.2n",
+            "tags": [
+              {
+                "key": "environment",
+                "value": "testing"
+              }
+            ]
+          }
+        ],
+        "total": 1
+      }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 07 May 2025 12:34:45 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1746621285932; path=/
+      - HWWAFSESID=d38067384de1f85efc; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e26d4553e47d947e08547ed7b0c661a9
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+version: 1
