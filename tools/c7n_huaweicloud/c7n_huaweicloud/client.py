@@ -108,6 +108,18 @@ from huaweicloudsdkram.v1 import (
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
+from huaweicloudsdkrocketmq.v2 import (
+    RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
+)
+from huaweicloudsdkrocketmq.v2.region.rocketmq_region import RocketMQRegion
+from huaweicloudsdkapig.v2 import (
+    ApigClient,
+    ListApisV2Request,
+    ListEnvironmentsV2Request,
+    ListApiGroupsV2Request,
+    ListInstancesV2Request,
+)
+from huaweicloudsdkapig.v2.region.apig_region import ApigRegion
 from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
 from huaweicloudsdkswr.v2.region.swr_region import SwrRegion
 from huaweicloudsdkscm.v3 import ScmClient, ListCertificatesRequest
@@ -117,12 +129,14 @@ from huaweicloudsdkaom.v2 import (
     ListMetricOrEventAlarmRuleRequest
 )
 from huaweicloudsdkaom.v2.region.aom_region import AomRegion
-
 from huaweicloudsdkdc.v3 import DcClient, ListDirectConnectsRequest
 from huaweicloudsdkdc.v3.region.dc_region import DcRegion
-
 from huaweicloudsdkcc.v3 import CcClient, ListCentralNetworksRequest
 from huaweicloudsdkcc.v3.region.cc_region import CcRegion
+from huaweicloudsdkcdn.v2 import CdnClient, ListDomainsRequest
+from huaweicloudsdkcdn.v2.region.cdn_region import CdnRegion
+from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailRequest
+from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -330,6 +344,13 @@ class Session:
                 .with_region(ImsRegion.value_of(self.region))
                 .build()
             )
+        elif service == "workspace":
+            client = (
+                WorkspaceClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(WorkspaceRegion.value_of(self.region))
+                .build()
+            )
         elif (
                 service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
         ):
@@ -437,6 +458,21 @@ class Session:
                 .with_region(KafkaRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'reliability':
+            client = (
+                RocketMQClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RocketMQRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
+                                              'apig-instance']:
+            client = (
+                ApigClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(ApigRegion.value_of(self.region))
+                .build()
+            )
         elif service in ['swr', 'swr-image']:
             client = (
                 SwrClient.new_builder()
@@ -463,6 +499,13 @@ class Session:
                 CcClient.new_builder()
                 .with_credentials(globalCredentials)
                 .with_region(CcRegion.CN_NORTH_4)
+                .build()
+            )
+        elif service == "cdn":
+            client = (
+                CdnClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CdnRegion.CN_NORTH_1)
                 .build()
             )
         elif service == "bms":
@@ -545,7 +588,8 @@ class Session:
             request = ListOrganizationalUnitsRequest()
         elif service == "org-account":
             request = ListAccountsRequest()
-
+        elif service == "workspace":
+            request = ListDesktopsDetailRequest()
         elif service == "kms":
             request = ListKeysRequest()
             request.body = ListKeysRequestBody(key_spec="ALL")
@@ -597,6 +641,18 @@ class Session:
             request = ListDDosStatusRequest()
         elif service == 'kafka':
             request = ListInstancesRequest()
+        elif service == "cdn":
+            request = ListDomainsRequest()
+        elif service == 'reliability':
+            request = RocketMQListInstancesRequest()
+        elif service == 'apig-api':
+            request = ListApisV2Request()
+        elif service == 'apig-stage':
+            request = ListEnvironmentsV2Request()
+        elif service == 'apig-api-groups':
+            request = ListApiGroupsV2Request()
+        elif service == 'apig-instance':
+            request = ListInstancesV2Request()
         elif service == 'swr':
             request = ListReposDetailsRequest()
         elif service == 'swr-image':
@@ -613,5 +669,5 @@ class Session:
         elif service == 'eg':
             request = ListSubscriptionsRequest()
         elif service == 'aom':
-            request = ListMetricOrEventAlarmRuleRequest()
+            request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
         return request

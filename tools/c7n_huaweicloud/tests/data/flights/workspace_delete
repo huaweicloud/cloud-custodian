@@ -5,40 +5,36 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate
+      - gzip, deflate, zstd
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Host:
-      - rds.ap-southeast-1.myhuaweicloud.com
+      - workspace.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250509T083804Z
+      - 20250427T114555Z
     method: GET
-    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+    uri: https://workspace.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/desktops/detail?limit=100&offset=0
   response:
     body:
-      string: '{"instances": [{"id": "postgres-instance-01", "name": "postgres-auto-upgrade-disabled",
-        "status": "ACTIVE", "datastore": {"type": "PostgreSQL", "version": "13"},
-        "private_ips": ["192.168.1.10"], "port": 5432, "configuration_parameters":
-        [ {"name": "auto_upgrade", "value": "false", "restart_required": true}], "type":
-        "Single"}], "total_count": 1}'
+      string: '{"desktops":[{"desktop_id":"test-desktop-id","computer_name":"test-desktop","status":"ACTIVE","login_status":"UNREGISTER","user_name":"test-user","created":"2025-04-27T11:45:55Z","tags":[{"key":"environment","value":"testing"}],"security_groups":[{"id":"sg-12345678","name":"default"}],"product":{"product_id":"product-123","flavor_id":"flavor-123","type":"DEDICATED","cpu":"4","memory":"8GB"}}],"total_count":1}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Fri, 09 May 2025 08:38:04 GMT
+      - Sun, 27 Apr 2025 11:45:55 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=96f5573f9d636691d8; path=/
-      - HWWAFSESTIME=1746779884472; path=/
+      - HWWAFSESID=b7801762f626697290; path=/
+      - HWWAFSESTIME=1745754355553; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       X-Content-Type-Options:
@@ -48,38 +44,39 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 42ee244d15e04bfd4fee2287967cdb18
+      - fcc96c424f11bd09a7f7a1b2bb2a8d49
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
       message: success
 - request:
-    body: null
+    body: '{"desktop_ids": ["test-desktop-id"]}'
     headers:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate
+      - gzip, deflate, zstd
       Connection:
       - keep-alive
+      Content-Length:
+      - '36'
       Content-Type:
       - application/json
       Host:
-      - rds.ap-southeast-1.myhuaweicloud.com
+      - workspace.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250509T092835Z
-    method: GET
-    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/postgres-instance-01/db-auto-upgrade
+      - 20250427T120725Z
+    method: POST
+    uri: https://workspace.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/desktops/batch-delete
   response:
     body:
-      string: '{
-  "switch_option" : false
-}
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"40640f4489b9cf59b776b28e30523ef5"}
+
         '
     headers:
       Connection:
@@ -87,12 +84,12 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 09 May 2025 09:28:35 GMT
+      - Sun, 27 Apr 2025 12:07:25 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=dbb5e73ab3db2d8f32; path=/
-      - HWWAFSESTIME=1746782915789; path=/
+      - HWWAFSESTIME=1745755645420; path=/
+      - HWWAFSESID=fa78a731a06dec85e0; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -104,10 +101,10 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 1dca94b1b81b9acf8e623ef52df9bb40
+      - 40640f4489b9cf59b776b28e30523ef5
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 200
-      message: success
+      code: 401
+      message: Unauthorized
 version: 1

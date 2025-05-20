@@ -5,41 +5,36 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate
+      - gzip, deflate, zstd
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Host:
-      - rds.ap-southeast-1.myhuaweicloud.com
+      - workspace.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250509T083805Z
+      - 20250427T114555Z
     method: GET
-    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+    uri: https://workspace.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/desktops/detail?limit=100&offset=0
   response:
     body:
-      string: '{"instances": [{"id": "postgres-instance-06", "name": "postgres-target-versions-specific",
-        "status": "ACTIVE", "datastore": {"type": "PostgreSQL", "version": "9.6", 
-        "complete_version": "9.6.14"},
-        "private_ips": ["192.168.1.60"], "port": 5432, "target_major_versions": ["10", "11"],
-        "type": "Single"}], 
-        "total_count": 1}'
+      string: '{"desktops":[{"desktop_id":"test-desktop-id","computer_name":"test-desktop","status":"ACTIVE","login_status":"UNREGISTER","user_name":"test-user","created":"2025-04-27T11:45:55Z","tags":[{"key":"environment","value":"testing"}],"security_groups":[{"id":"sg-12345678","name":"default"}],"product":{"product_id":"product-123","flavor_id":"flavor-123","type":"DEDICATED","cpu":"4","memory":"8GB"}}],"total_count":1}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Fri, 09 May 2025 08:38:05 GMT
+      - Sun, 27 Apr 2025 11:45:55 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=96f5579f9d636691d8; path=/
-      - HWWAFSESTIME=1746779884472; path=/
+      - HWWAFSESTIME=1745754355448; path=/
+      - HWWAFSESID=a452b73af1f922b862; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -51,7 +46,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 30bb6a683d989977ac55be547247360a
+      - e81554430f5027311dda7372e5c00f0d
       X-XSS-Protection:
       - 1; mode=block;
     status:

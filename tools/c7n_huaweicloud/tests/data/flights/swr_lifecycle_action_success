@@ -19,7 +19,7 @@ interactions:
       X-Sdk-Date:
       - 20250430T022319Z
     method: GET
-    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos?limit=100&offset=0
   response:
     body:
       string: '[ { "name": "test-repo", "category": "linux", "description": "Test
@@ -123,59 +123,4 @@ interactions:
     status:
       code: 201
       message: Created
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Host:
-      - swr-api.ap-southeast-1.myhuaweicloud.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
-      X-Sdk-Date:
-      - 20250513T021559Z
-    method: GET
-    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/manage/repos
-  response:
-    body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"93542e3d16a762cce36dd56e3e78f7e5"}
-
-        '
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 13 May 2025 02:15:59 GMT
-      Server:
-      - CloudWAF
-      Set-Cookie:
-      - HWWAFSESTIME=1747102559407; path=/
-      - HWWAFSESID=cc65573a8fab95966e; path=/
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - 93542e3d16a762cce36dd56e3e78f7e5
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 401
-      message: Unauthorized
 version: 1

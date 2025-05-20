@@ -41,20 +41,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.bms")
 
 @resources.register("bms")
 class Bms(QueryResourceManager):
-    """Huawei Cloud Bare Metal Server Resources
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: list_bare_metal_servers
-            resource: huaweicloud.bms
-            filters:
-              - type: value
-                key: id
-                value: your_bms_server_id
-    """
+    """Huawei Cloud Bare Metal Server Resources"""
     class resource_type(TypeInfo):
         service = "bms"
         enum_spec = ("list_bare_metal_servers", "servers", "page")
