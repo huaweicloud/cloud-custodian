@@ -1,8 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
-import logging
 from huaweicloud_common import BaseTest
 
 
@@ -34,7 +32,7 @@ class WafLogConfigTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        
+
         self.assertEqual(len(resources), 1)  # Expect to return 1 log configuration
         # Verify ID field exists
         self.assertTrue("id" in resources[0])
