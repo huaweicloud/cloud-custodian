@@ -48,6 +48,16 @@ class Swr(QueryResourceManager):
         tag_resource_type = None
         date = 'created_at'  # Specify field name for resource creation time
 
+    def get_resources(self, resource_ids):
+        resources = (
+            self.augment(self.source.get_resources(self.get_resource_query())) or []
+        )
+        result = []
+        for resource in resources:
+            resource_id = resource["namespace"] + "/" + resource["id"]
+            if resource_id in resource_ids:
+                result.append(resource)
+        return result
 
 @Swr.filter_registry.register('lifecycle-rule')
 class LifecycleRule(Filter):
