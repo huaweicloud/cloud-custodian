@@ -50,7 +50,7 @@ class Swr(QueryResourceManager):
 
     def get_resources(self, resource_ids):
         resources = (
-            self.augment(self.source.get_resources(self.get_resource_query())) or []
+                self.augment(self.source.get_resources(self.get_resource_query())) or []
         )
         result = []
         for resource in resources:
@@ -58,6 +58,7 @@ class Swr(QueryResourceManager):
             if resource_id in resource_ids:
                 result.append(resource)
         return result
+
 
 @Swr.filter_registry.register('lifecycle-rule')
 class LifecycleRule(Filter):
