@@ -82,7 +82,7 @@ class ApiResource(QueryResourceManager):
 
     def get_resources(self, query):
         return self.get_api_resources(query)
-    
+
     def _fetch_resources(self, query):
         return self.get_api_resources(query)
 
@@ -453,7 +453,7 @@ class StageResource(QueryResourceManager):
 
     def get_resources(self, query):
         return self.get_stage_resources(query)
-    
+
     def _fetch_resources(self, query):
         return self.get_stage_resources(query)
 
@@ -685,7 +685,7 @@ class ApiGroupResource(QueryResourceManager):
 
     def get_resources(self, query):
         return self.get_api_groups_resources(query)
-    
+
     def _fetch_resources(self, query):
         return self.get_api_groups_resources(query)
 
