@@ -80,7 +80,13 @@ class ApiResource(QueryResourceManager):
 
         return []
 
+    def get_resources(self, query):
+        return self.get_api_resources(query)
+
     def _fetch_resources(self, query):
+        return self.get_api_resources(query)
+
+    def get_api_resources(self, query):
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
 
@@ -445,7 +451,13 @@ class StageResource(QueryResourceManager):
 
         return []
 
+    def get_resources(self, query):
+        return self.get_stage_resources(query)
+
     def _fetch_resources(self, query):
+        return self.get_stage_resources(query)
+
+    def get_stage_resources(self, query):
         """Override resource retrieval method to ensure
            instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
@@ -671,7 +683,13 @@ class ApiGroupResource(QueryResourceManager):
 
         return []
 
+    def get_resources(self, query):
+        return self.get_api_groups_resources(query)
+
     def _fetch_resources(self, query):
+        return self.get_api_groups_resources(query)
+
+    def get_api_groups_resources(self, query):
         """Override resource retrieval method to ensure
            instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
