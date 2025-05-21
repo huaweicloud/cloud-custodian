@@ -30,26 +30,11 @@ log = logging.getLogger('custodian.huaweicloud.swr')
 class Swr(QueryResourceManager):
     """Huawei Cloud SWR (Software Repository) Resource Manager.
 
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: swr-repository-filter
-            resource: huaweicloud.swr
-            filters:
-              - type: age
-                days: 90
-                op: gt
-              - type: value
-                key: is_public
-                value: true
     """
 
     class resource_type(TypeInfo):
         """Define SWR resource metadata and type information"""
-        service = 'swr'  # Specify corresponding HuaweiCloud service name
+        service = 'swr'
         # Specify API operation, result list key, and pagination for enumerating resources
         # 'list_repos_details' is the API method name
         # 'body' is the field name in the response containing the instance list
@@ -60,22 +45,8 @@ class Swr(QueryResourceManager):
         filter_name = 'name'  # Field name for filtering by name
         filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
         taggable = False  # Indicate that this resource doesn't support tagging directly
-        tag_resource_type = 'swr'  # Specify resource type for querying tags
+        tag_resource_type = None
         date = 'created_at'  # Specify field name for resource creation time
-
-    def augment(self, resources):
-        """Augment SWR repository resources with additional information.
-
-        This method adds tag_resource_type information to the resources.
-        Lifecycle policy information is no longer loaded here for efficiency,
-        and is instead loaded on-demand by the lifecycle-rule filter.
-
-        :param resources: Original resource dictionary list obtained from API
-        :return: Enhanced resource dictionary list
-        """
-        for resource in resources:
-            resource['tag_resource_type'] = 'swr-repository'
-        return resources
 
 
 @Swr.filter_registry.register('lifecycle-rule')
@@ -390,17 +361,6 @@ class SwrImage(QueryResourceManager):
     on HuaweiCloud. It implements a two-level query approach, first retrieving all SWR repositories,
     then querying images for each repository.
 
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: swr-image-filter
-            resource: huaweicloud.swr-image
-            filters:
-              - type: value
-                key: tag
-                value: latest
     """
 
     class resource_type(TypeInfo):
