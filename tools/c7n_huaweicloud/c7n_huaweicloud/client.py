@@ -546,147 +546,145 @@ class Session:
 
         return client
 
+    def region_client(self, service, region):
+        ak = self.ak
+        sk = self.sk
+        token = self.token
 
-def region_client(self, service, region):
-    ak = self.ak
-    sk = self.sk
-    token = self.token
+        if self.ak is None or self.sk is None:
+            basic_provider = (
+                MetadataCredentialProvider.get_basic_credential_metadata_provider()
+            )
+            credentials = basic_provider.get_credentials()
+            ak = credentials.ak
+            sk = credentials.sk
+            token = credentials.security_token
 
-    if self.ak is None or self.sk is None:
-        basic_provider = (
-            MetadataCredentialProvider.get_basic_credential_metadata_provider()
-        )
-        credentials = basic_provider.get_credentials()
-        ak = credentials.ak
-        sk = credentials.sk
-        token = credentials.security_token
+        if service == "obs":
+            server = "https://obs." + region + ".myhuaweicloud.com"
+            client = ObsClient(
+                access_key_id=ak,
+                secret_access_key=sk,
+                server=server,
+                security_token=token,
+            )
+        return client
 
-    if service == "obs":
-        server = "https://obs." + region + ".myhuaweicloud.com"
-        client = ObsClient(
-            access_key_id=ak,
-            secret_access_key=sk,
-            server=server,
-            security_token=token,
-        )
-    return client
-
-
-def request(self, service):
-    if service == "vpc" or service == "vpc_v2":
-        request = ListSecurityGroupsRequest()
-    elif service == "evs":
-        request = ListVolumesRequest()
-    elif service == "er":
-        request = ListEnterpriseRoutersRequest()
-    elif service == "cc":
-        request = ListCentralNetworksRequest()
-    elif service == "lts-transfer":
-        request = ListTransfersRequest()
-    elif service == "lts-logstream":
-        request = ListLogGroupsRequest()
-    elif service == "config":
-        request = ShowTrackerConfigRequest()
-    elif service == "ecs":
-        request = ListServersDetailsRequest(
-            not_tags="__type_baremetal"
-        )
-    elif service == "deh":
-        request = ListDedicatedHostsRequest()
-    elif service == "obs":
-        request = True
-    elif service == "iam-user":
-        request = ListUsersV5Request()
-    elif service == "iam-policy":
-        request = ListPoliciesV5Request()
-    elif service == "ces":
-        request = ListAlarmRulesRequest()
-    elif service == "org-policy":
-        request = ListPoliciesRequest()
-    elif service == "org-unit":
-        request = ListOrganizationalUnitsRequest()
-    elif service == "org-account":
-        request = ListAccountsRequest()
-    elif service == "workspace":
-        request = ListDesktopsDetailRequest()
-    elif service == "kms":
-        request = ListKeysRequest()
-        request.body = ListKeysRequestBody(key_spec="ALL")
-    elif service == "functiongraph":
-        request = ListFunctionsRequest()
-    elif service == "elb_loadbalancer":
-        request = ListLoadBalancersRequest()
-    elif service == "elb_listener":
-        request = ListListenersRequest()
-    elif service == "eip":
-        request = ListPublicipsRequest()
-    elif service == "ims":
-        request = ListImagesRequest()
-    elif service == "smn":
-        request = ListTopicsRequest()
-    elif service == "nat_gateway":
-        request = ListNatGatewaysRequest()
-    elif service == "nat_snat_rule":
-        request = ListNatGatewaySnatRulesRequest()
-    elif service == "nat_dnat_rule":
-        request = ListNatGatewayDnatRulesRequest()
-    elif service == "secmaster":
-        request = ListWorkspacesRequest()
-    elif service == "hss":
-        request = ListHostStatusRequest()
-    elif service == "cts-tracker":
-        request = ListTrackersRequest()
-    elif service == "cts-notification-smn":
-        request = ListNotificationsRequest()
-        request.notification_type = "smn"
-    elif service == "cts-notification-func":
-        request = ListNotificationsRequest()
-        request.notification_type = "fun"
-    elif service == "cbr-backup":
-        request = ListBackupsRequest()
-        request.show_replication = True
-    elif service == "cbr-vault":
-        request = ListVaultRequest()
-    elif service == "sfsturbo":
-        request = ListSharesRequest()
-    elif service == "coc":
-        request = ListInstanceCompliantRequest()
-    elif service == "ram":
-        request = SearchResourceShareAssociationsRequest()
-        request.body = SearchResourceShareAssociationsReqBody(
-            association_type="principal", association_status="associated"
-        )
-    elif service == "antiddos":
-        request = ListDDosStatusRequest()
-    elif service == 'kafka':
-        request = ListInstancesRequest()
-    elif service == "cdn":
-        request = ListDomainsRequest()
-    elif service == 'reliability':
-        request = RocketMQListInstancesRequest()
-    elif service == 'apig-api':
-        request = ListApisV2Request()
-    elif service == 'apig-stage':
-        request = ListEnvironmentsV2Request()
-    elif service == 'apig-api-groups':
-        request = ListApiGroupsV2Request()
-    elif service == 'apig-instance':
-        request = ListInstancesV2Request()
-    elif service == 'swr':
-        request = ListReposDetailsRequest()
-    elif service == 'swr-image':
-        request = ListRepositoryTagsRequest()
-    elif service == 'scm':
-        request = ListCertificatesRequest()
-        request.expired_days_since = 1095
-    elif service == 'dc':
-        request = ListDirectConnectsRequest()
-    elif service == "bms":
-        request = ListBareMetalServerDetailsRequest()
-    elif service == 'rds':
-        request = RdsListInstancesRequest()
-    elif service == 'eg':
-        request = ListSubscriptionsRequest()
-    elif service == 'aom':
-        request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
-    return request
+    def request(self, service):
+        if service == "vpc" or service == "vpc_v2":
+            request = ListSecurityGroupsRequest()
+        elif service == "evs":
+            request = ListVolumesRequest()
+        elif service == "er":
+            request = ListEnterpriseRoutersRequest()
+        elif service == "cc":
+            request = ListCentralNetworksRequest()
+        elif service == "lts-transfer":
+            request = ListTransfersRequest()
+        elif service == "lts-logstream":
+            request = ListLogGroupsRequest()
+        elif service == "config":
+            request = ShowTrackerConfigRequest()
+        elif service == "ecs":
+            request = ListServersDetailsRequest(
+                not_tags="__type_baremetal"
+            )
+        elif service == "deh":
+            request = ListDedicatedHostsRequest()
+        elif service == "obs":
+            request = True
+        elif service == "iam-user":
+            request = ListUsersV5Request()
+        elif service == "iam-policy":
+            request = ListPoliciesV5Request()
+        elif service == "ces":
+            request = ListAlarmRulesRequest()
+        elif service == "org-policy":
+            request = ListPoliciesRequest()
+        elif service == "org-unit":
+            request = ListOrganizationalUnitsRequest()
+        elif service == "org-account":
+            request = ListAccountsRequest()
+        elif service == "workspace":
+            request = ListDesktopsDetailRequest()
+        elif service == "kms":
+            request = ListKeysRequest()
+            request.body = ListKeysRequestBody(key_spec="ALL")
+        elif service == "functiongraph":
+            request = ListFunctionsRequest()
+        elif service == "elb_loadbalancer":
+            request = ListLoadBalancersRequest()
+        elif service == "elb_listener":
+            request = ListListenersRequest()
+        elif service == "eip":
+            request = ListPublicipsRequest()
+        elif service == "ims":
+            request = ListImagesRequest()
+        elif service == "smn":
+            request = ListTopicsRequest()
+        elif service == "nat_gateway":
+            request = ListNatGatewaysRequest()
+        elif service == "nat_snat_rule":
+            request = ListNatGatewaySnatRulesRequest()
+        elif service == "nat_dnat_rule":
+            request = ListNatGatewayDnatRulesRequest()
+        elif service == "secmaster":
+            request = ListWorkspacesRequest()
+        elif service == "hss":
+            request = ListHostStatusRequest()
+        elif service == "cts-tracker":
+            request = ListTrackersRequest()
+        elif service == "cts-notification-smn":
+            request = ListNotificationsRequest()
+            request.notification_type = "smn"
+        elif service == "cts-notification-func":
+            request = ListNotificationsRequest()
+            request.notification_type = "fun"
+        elif service == "cbr-backup":
+            request = ListBackupsRequest()
+            request.show_replication = True
+        elif service == "cbr-vault":
+            request = ListVaultRequest()
+        elif service == "sfsturbo":
+            request = ListSharesRequest()
+        elif service == "coc":
+            request = ListInstanceCompliantRequest()
+        elif service == "ram":
+            request = SearchResourceShareAssociationsRequest()
+            request.body = SearchResourceShareAssociationsReqBody(
+                association_type="principal", association_status="associated"
+            )
+        elif service == "antiddos":
+            request = ListDDosStatusRequest()
+        elif service == 'kafka':
+            request = ListInstancesRequest()
+        elif service == "cdn":
+            request = ListDomainsRequest()
+        elif service == 'reliability':
+            request = RocketMQListInstancesRequest()
+        elif service == 'apig-api':
+            request = ListApisV2Request()
+        elif service == 'apig-stage':
+            request = ListEnvironmentsV2Request()
+        elif service == 'apig-api-groups':
+            request = ListApiGroupsV2Request()
+        elif service == 'apig-instance':
+            request = ListInstancesV2Request()
+        elif service == 'swr':
+            request = ListReposDetailsRequest()
+        elif service == 'swr-image':
+            request = ListRepositoryTagsRequest()
+        elif service == 'scm':
+            request = ListCertificatesRequest()
+            request.expired_days_since = 1095
+        elif service == 'dc':
+            request = ListDirectConnectsRequest()
+        elif service == "bms":
+            request = ListBareMetalServerDetailsRequest()
+        elif service == 'rds':
+            request = RdsListInstancesRequest()
+        elif service == 'eg':
+            request = ListSubscriptionsRequest()
+        elif service == 'aom':
+            request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
+        return request
