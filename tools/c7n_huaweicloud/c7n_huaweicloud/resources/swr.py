@@ -511,6 +511,18 @@ class SwrImage(QueryResourceManager):
 
         return tags
 
+    def get_resources(self, resource_ids):
+        resources = (
+                self.augment(self.source.get_resources(self.get_resource_query())) or []
+        )
+        result = []
+        for resource in resources:
+            resource_id = resource["namespace"] + "/" + resource["repository"] + "/" + resource[
+                "tag"]
+            if resource_id in resource_ids:
+                result.append(resource)
+        return result
+
 
 @SwrImage.filter_registry.register('age')
 class SwrImageAgeFilter(AgeFilter):
