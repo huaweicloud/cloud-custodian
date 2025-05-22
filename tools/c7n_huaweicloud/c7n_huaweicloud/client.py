@@ -137,6 +137,8 @@ from huaweicloudsdkcdn.v2 import CdnClient, ListDomainsRequest
 from huaweicloudsdkcdn.v2.region.cdn_region import CdnRegion
 from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailRequest
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
+from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
+from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -529,6 +531,13 @@ class Session:
                 .with_region(AomRegion.value_of(self.region))
                 .build()
             )
+        elif service in ['ccm-certificateAuthority', 'ccm-privateCertificate']:
+            client = (
+                CcmClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CcmRegion.value_of("ap-southeast-3"))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -670,4 +679,8 @@ class Session:
             request = ListSubscriptionsRequest()
         elif service == 'aom':
             request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
+        elif service == 'ccm-certificateAuthority':
+            request = ListCertificateAuthorityRequest()
+        elif service == 'ccm-privateCertificate':
+            request = ListCertificateRequest()
         return request
