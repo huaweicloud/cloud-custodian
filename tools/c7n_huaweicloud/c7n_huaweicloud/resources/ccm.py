@@ -50,7 +50,7 @@ class CertificateAuthority(QueryResourceManager):
 
         # Query tags for each CA and add them to the resource properties
         session = local_session(self.session_factory)
-        client = session.client('ccm-certificateAuthority')
+        client = session.client('ccm-private-ca')
 
         for resource in resources:
             try:
@@ -387,7 +387,7 @@ class PrivateCertificate(QueryResourceManager):
 
         # Query tags for each certificate and add them to the resource properties
         session = local_session(self.session_factory)
-        client = session.client('ccm-privateCertificate')
+        client = session.client('ccm-private-certificate')
 
         for resource in resources:
             try:
