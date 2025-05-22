@@ -1,0 +1,63 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - lts.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250522T035239Z
+    method: GET
+    uri: https://lts.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/groups
+  response:
+    body:
+      string: '{
+  "log_groups" : [ {
+    "creation_time" : 1630547141853,
+    "log_group_name" : "lts-group-01nh",
+    "log_group_id" : "b6b9332b-091f-4b22-b810-264318d2d664",
+    "ttl_in_days" : 7
+  } ]
+}
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 May 2025 03:52:39 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=0f01573f3e34c0cbac; path=/
+      - HWWAFSESTIME=1747885959452; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - b27a5e1c0b027c080442987e7f556d0b
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
