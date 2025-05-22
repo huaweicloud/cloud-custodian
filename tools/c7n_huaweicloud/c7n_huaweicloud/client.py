@@ -137,6 +137,8 @@ from huaweicloudsdkcdn.v2 import CdnClient, ListDomainsRequest
 from huaweicloudsdkcdn.v2.region.cdn_region import CdnRegion
 from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailRequest
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
+from huaweicloudsdkwaf.v1 import WafClient, ListPolicyRequest, ShowLtsInfoConfigRequest
+from huaweicloudsdkwaf.v1.region.waf_region import WafRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -513,6 +515,12 @@ class Session:
                 BmsClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(BmsRegion.value_of(self.region))
+            )
+        elif service in ["waf", "waf-policy", "waf-log-config"]:
+            client = (
+                WafClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(WafRegion.value_of(self.region))
                 .build()
             )
         elif service == "rds":
@@ -670,4 +678,9 @@ class Session:
             request = ListSubscriptionsRequest()
         elif service == 'aom':
             request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
+        elif service == 'waf-policy':
+            request = ListPolicyRequest()
+        elif service == 'waf-log-config':
+            request = ShowLtsInfoConfigRequest()
+
         return request
