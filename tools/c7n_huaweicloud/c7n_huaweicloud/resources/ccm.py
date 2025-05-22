@@ -421,9 +421,8 @@ class PrivateCertificate(QueryResourceManager):
                     resource['tags'] = []
             except Exception as e:
                 log.error(
-                        f"Error retrieving tags for certificate " \
-                        f"{resource.get('certificate_id')}: {str(e)}"
-                    )
+                    f"Error retrieving tags for cert {resource.get('certificate_id')}: {str(e)}"
+                )
                 resource['tags'] = []
 
         return resources
