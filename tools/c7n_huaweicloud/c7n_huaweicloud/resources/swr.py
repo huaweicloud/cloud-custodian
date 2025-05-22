@@ -517,7 +517,7 @@ class SwrImage(QueryResourceManager):
         )
         result = []
         for resource in resources:
-            resource_id = resource["namespace"] + "/" + resource["repository"] + "/" + resource[
+            resource_id = resource["namespace"] + "/" + resource["repository"] + ":" + resource[
                 "tag"]
             if resource_id in resource_ids:
                 result.append(resource)
