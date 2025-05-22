@@ -683,7 +683,4 @@ class Session:
             request = ListCertificateAuthorityRequest()
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
-        elif service == 'ccm-ssl-certificate':
-            request = ListCertificatesRequest()
-            request.expired_days_since = 1095
         return request
