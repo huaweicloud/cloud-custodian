@@ -126,7 +126,8 @@ class CertificateAuthorityStatusFilter(ValueFilter):
 class CertificateAuthorityCrlObsBucketFilter(Filter):
     """Filter certificate authorities by OBS bucket name in CRL configuration
 
-    This filter filters certificate authorities based on the OBS bucket name in the CRL configuration
+    This filter filters certificate authorities based
+    on the OBS bucket name in the CRL configuration
     and BPA response values.
 
     :example:
@@ -203,7 +204,8 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
                         }
 
                         # Analyze policy to determine permissions
-                        # Simplified policy analysis; actual implementation should parse OBS policy format in detail
+                        # Simplified policy analysis; actual implementation
+                        # should parse OBS policy format in detail
                         if 'Statement' in policy:
                             for statement in policy['Statement']:
                                 if 'Effect' in statement and statement['Effect'] == 'Allow':
@@ -245,7 +247,8 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
 class CertificateAuthorityKeyAlgorithmFilter(Filter):
     """Filter certificate authorities by key algorithm
 
-    This filter allows filtering CAs by key algorithm type, such as RSA2048, RSA4096, EC256, EC384, etc.
+    This filter allows filtering CAs by key algorithm type,
+    such as RSA2048, RSA4096, EC256, EC384, etc.
 
     :example:
 
@@ -283,7 +286,8 @@ class CertificateAuthorityKeyAlgorithmFilter(Filter):
 class CertificateAuthoritySignatureAlgorithmFilter(Filter):
     """Filter certificate authorities by signature algorithm
 
-    This filter allows filtering CAs by signature algorithm type, such as SHA256, SHA384, SHA512, etc.
+    This filter allows filtering CAs by signature algorithm type,
+    such as SHA256, SHA384, SHA512, etc.
 
     :example:
 
@@ -417,7 +421,9 @@ class PrivateCertificate(QueryResourceManager):
                     resource['tags'] = []
             except Exception as e:
                 log.error(
-                    f"Error retrieving tags for certificate {resource.get('certificate_id')}: {str(e)}")
+                        f"Error retrieving tags for certificate " \
+                        f"{resource.get('certificate_id')}: {str(e)}"
+                    )
                 resource['tags'] = []
 
         return resources
@@ -427,7 +433,8 @@ class PrivateCertificate(QueryResourceManager):
 class PrivateCertificateKeyAlgorithmFilter(Filter):
     """Filter private certificates by key algorithm
 
-    This filter allows filtering certificates by key algorithm type, such as RSA2048, RSA4096, EC256, EC384, etc.
+    This filter allows filtering certificates by key algorithm type,
+    such as RSA2048, RSA4096, EC256, EC384, etc.
 
     :example:
 
@@ -465,7 +472,8 @@ class PrivateCertificateKeyAlgorithmFilter(Filter):
 class PrivateCertificateSignatureAlgorithmFilter(Filter):
     """Filter private certificates by signature algorithm
 
-    This filter allows filtering certificates by signature algorithm type, such as SHA256, SHA384, SHA512, etc.
+    This filter allows filtering certificates by signature algorithm type,
+    such as SHA256, SHA384, SHA512, etc.
 
     :example:
 

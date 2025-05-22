@@ -20,7 +20,8 @@ class CcmCertificateAuthorityTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)  # Expect to return one CA resource
-        self.assertEqual(resources[0]["status"], "ACTIVED")  # Expect the CA status to be ACTIVED
+        # Expect the CA status to be ACTIVED
+        self.assertEqual(resources[0]["status"], "ACTIVED")
 
     def test_certificate_authority_status_filter(self):
         """Test filtering certificate authorities by status"""
@@ -159,8 +160,10 @@ class CcmPrivateCertificateTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Expect to return one certificate resource
-        self.assertEqual(resources[0]["status"], "ISSUED")  # Expect the certificate status to be ISSUED
+        # Expect to return one certificate resource
+        self.assertEqual(len(resources), 1)
+        # Expect the certificate status to be ISSUED
+        self.assertEqual(resources[0]["status"], "ISSUED")
 
     def test_private_certificate_key_algorithm_filter(self):
         """Test filtering private certificates by key algorithm"""
