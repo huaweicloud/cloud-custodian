@@ -33,7 +33,7 @@ from huaweicloudsdkfunctiongraph.v2.region.functiongraph_region import (
 )
 from huaweicloudsdktms.v1 import TmsClient
 from huaweicloudsdktms.v1.region.tms_region import TmsRegion
-from huaweicloudsdklts.v2 import LtsClient, ListTransfersRequest
+from huaweicloudsdklts.v2 import LtsClient, ListTransfersRequest, ListLogGroupsRequest
 from huaweicloudsdklts.v2.region.lts_region import LtsRegion
 from huaweicloudsdkdeh.v1 import DeHClient, ListDedicatedHostsRequest
 from huaweicloudsdkdeh.v1.region.deh_region import DeHRegion
@@ -230,6 +230,14 @@ class Session:
                 .with_region(LtsRegion.value_of(self.region))
                 .build()
             )
+        elif service == "lts-logstream":
+            client = (
+                LtsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(LtsRegion.value_of(self.region))
+                .build()
+            )
+
         elif service == "tms":
             client = (
                 TmsClient.new_builder()
@@ -237,6 +245,7 @@ class Session:
                 .with_region(TmsRegion.value_of("ap-southeast-1"))
                 .build()
             )
+
         elif service == "cbr":
             client = (
                 CbrClient.new_builder()
@@ -244,6 +253,7 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region))
                 .build()
             )
+
         elif service in ["iam-user", "iam-policy"]:
             client = (
                 IamClientV5.new_builder()
@@ -251,6 +261,7 @@ class Session:
                 .with_region(iam_region_v5.IamRegion.value_of(self.region))
                 .build()
             )
+
         elif service == "iam-v3":
             client = (
                 IamClientV3.new_builder()
@@ -258,6 +269,7 @@ class Session:
                 .with_region(iam_region_v3.value_of(self.region))
                 .build()
             )
+
         elif service == "config":
             client = (
                 ConfigClient.new_builder()
@@ -265,6 +277,7 @@ class Session:
                 .with_region(ConfigRegion.value_of("cn-north-4"))
                 .build()
             )
+
         elif service == "deh":
             client = (
                 DeHClient.new_builder()
@@ -272,6 +285,7 @@ class Session:
                 .with_region(DeHRegion.value_of(self.region))
                 .build()
             )
+
         elif service == "obs":
             client = self.region_client(service, self.region)
         elif service == "ces":
@@ -529,6 +543,7 @@ class Session:
                 .with_region(AomRegion.value_of(self.region))
                 .build()
             )
+
         return client
 
     def region_client(self, service, region):
@@ -566,6 +581,8 @@ class Session:
             request = ListCentralNetworksRequest()
         elif service == "lts-transfer":
             request = ListTransfersRequest()
+        elif service == "lts-logstream":
+            request = ListLogGroupsRequest()
         elif service == "config":
             request = ShowTrackerConfigRequest()
         elif service == "ecs":

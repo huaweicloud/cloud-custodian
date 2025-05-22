@@ -3,6 +3,7 @@
 
 ResourceMap = {
     "huaweicloud.lts-transfer": "c7n_huaweicloud.resources.transfer.Transfer",
+    "huaweicloud.lts-logstream": "c7n_huaweicloud.resources.lts_streams.LogStream",
     "huaweicloud.evs-volume": "c7n_huaweicloud.resources.evs.Volume",
     "huaweicloud.er": "c7n_huaweicloud.resources.er.ERInstance",
     "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
