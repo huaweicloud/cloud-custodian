@@ -57,7 +57,7 @@ class WafLogConfig(QueryResourceManager):
         id = 'id'  # Specify the resource unique identifier field name
         name = 'id'  # Specify the resource name field
         arn_type = 'waf-log-config'  # Resource ARN type
-        tag_resource_type = None #  Tag not supported
+        tag_resource_type = None  # Tag not supported
 
 
 @WafLogConfig.filter_registry.register('enabled')
@@ -151,7 +151,7 @@ class UpdateLogConfig(HuaweiCloudBaseAction):
             enabled=self.data.get('enabled'),
             lts_id_info=lts_id_info
         )
-        
+
         # Construct request
         request = UpdateLtsInfoConfigRequest(
             ltsconfig_id=resource_id,
