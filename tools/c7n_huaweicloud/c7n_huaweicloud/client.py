@@ -230,315 +230,321 @@ class Session:
                 .with_region(LtsRegion.value_of(self.region))
                 .build()
             )
-            elif service == "lts-logstream":
-        client = (
-            LtsClient.new_builder()
-            .with_credentials(credentials)
-            .with_region(LtsRegion.value_of(self.region))
-            .build()
-        )
+        elif service == "lts-logstream":
+            client = (
+                LtsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(LtsRegion.value_of(self.region))
+                .build()
+            )
 
-    elif service == "tms":
-    client = (
-        TmsClient.new_builder()
-        .with_credentials(globalCredentials)
-        .with_region(TmsRegion.value_of("ap-southeast-1"))
-        .build()
-    )
+        elif service == "tms":
+            client = (
+                TmsClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(TmsRegion.value_of("ap-southeast-1"))
+                .build()
+            )
 
-elif service == "cbr":
-client = (
-    CbrClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(CbrRegion.value_of(self.region))
-    .build()
-)
-elif service in ["iam-user", "iam-policy"]:
-client = (
-    IamClientV5.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(iam_region_v5.IamRegion.value_of(self.region))
-    .build()
-)
-elif service == "iam-v3":
-client = (
-    IamClientV3.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(iam_region_v3.value_of(self.region))
-    .build()
-)
-elif service == "config":
-client = (
-    ConfigClient.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(ConfigRegion.value_of("cn-north-4"))
-    .build()
-)
-elif service == "deh":
-client = (
-    DeHClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(DeHRegion.value_of(self.region))
-    .build()
-)
-elif service == "obs":
-client = self.region_client(service, self.region)
-elif service == "ces":
-client = (
-    CesClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(CesRegion.value_of(self.region))
-    .build()
-)
-elif service == "smn":
-client = (
-    SmnClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(SmnRegion.value_of(self.region))
-    .build()
-)
-elif service == "kms":
-client = (
-    KmsClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(KmsRegion.value_of(self.region))
-    .build()
-)
-elif service == "functiongraph":
-client = (
-    FunctionGraphClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(FunctionGraphRegion.value_of(self.region))
-    .build()
-)
-elif service == "eg":
-client = (
-    EgClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(EgRegion.value_of(self.region))
-    .build()
-)
-elif service in ["elb_loadbalancer", "elb_listener"]:
-client = (
-    ElbClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(ElbRegion.value_of(self.region))
-    .build()
-)
-elif service == "eip":
-client = (
-    EipClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(EipRegion.value_of(self.region))
-    .build()
-)
-elif service == "eip_v2":
-client = (
-    EipClientV2.new_builder()
-    .with_credentials(credentials)
-    .with_region(EipRegionV2.value_of(self.region))
-    .build()
-)
-elif service == "geip":
-client = (
-    GeipClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(GeipRegion.value_of(self.region))
-    .build()
-)
-elif service == "ims":
-client = (
-    ImsClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(ImsRegion.value_of(self.region))
-    .build()
-)
-elif service == "workspace":
-client = (
-    WorkspaceClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(WorkspaceRegion.value_of(self.region))
-    .build()
-)
-elif (
-        service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
-):
-client = (
-    CbrClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(CbrRegion.value_of(self.region))
-    .build()
-)
-elif service == "smn":
-client = (
-    SmnClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(SmnRegion.value_of(self.region))
-    .build()
-)
-elif service in ["nat_gateway", "nat_snat_rule", "nat_dnat_rule"]:
-client = (
-    NatClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(NatRegion.value_of(self.region))
-    .build()
-)
-elif service == "secmaster":
-client = (
-    SecMasterClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(SecMasterRegion.value_of(self.region))
-    .build()
-)
-elif service == "hss":
-client = (
-    HssClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(HssRegion.value_of(self.region))
-    .build()
-)
-elif service == "cts-tracker":
-client = (
-    CtsClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(CtsRegion.value_of(self.region))
-    .build()
-)
-elif service == "cts-notification-smn":
-client = (
-    CtsClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(CtsRegion.value_of(self.region))
-    .build()
-)
-elif service == "cts-notification-func":
-client = (
-    CtsClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(CtsRegion.value_of(self.region))
-    .build()
-)
-elif service == "sfsturbo":
-client = (
-    SFSTurboClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(SFSTurboRegion.value_of(self.region))
-    .build()
-)
-elif service == "cbr":
-client = (
-    CbrClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(CbrRegion.value_of(self.region))
-    .build()
-)
-elif service == "coc":
-client = (
-    CocClient.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(CocRegion.value_of("cn-north-4"))
-    .build()
-)
-elif service in ["org-policy", "org-unit", "org-account"]:
-client = (
-    OrganizationsClient.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(OrganizationsRegion.CN_NORTH_4)
-    .build()
-)
-elif service == "ram":
-client = (
-    RamClient.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(RamRegion.CN_NORTH_4)
-    .build()
-)
-elif service == "antiddos":
-client = (
-    AntiDDoSClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(AntiDDoSRegion.value_of(self.region))
-    .build()
-)
-elif service == 'kafka':
-client = (
-    KafkaClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(KafkaRegion.value_of(self.region))
-    .build()
-)
-elif service == 'reliability':
-client = (
-    RocketMQClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(RocketMQRegion.value_of(self.region))
-    .build()
-)
-elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
-                                      'apig-instance']:
-client = (
-    ApigClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(ApigRegion.value_of(self.region))
-    .build()
-)
-elif service in ['swr', 'swr-image']:
-client = (
-    SwrClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(SwrRegion.value_of(self.region))
-    .build()
-)
-elif service == 'scm':
-client = (
-    ScmClient.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(ScmRegion.value_of("ap-southeast-1"))
-    .build()
-)
-elif service == 'dc':
-client = (
-    DcClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(DcRegion.value_of(self.region))
-    .build()
-)
-elif service == "cc":
-client = (
-    CcClient.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(CcRegion.CN_NORTH_4)
-    .build()
-)
-elif service == "cdn":
-client = (
-    CdnClient.new_builder()
-    .with_credentials(globalCredentials)
-    .with_region(CdnRegion.CN_NORTH_1)
-    .build()
-)
-elif service == "bms":
-client = (
-    BmsClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(BmsRegion.value_of(self.region))
-    .build()
-)
-elif service == "rds":
-client = (
-    RdsClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(RdsRegion.value_of(self.region))
-    .build()
-)
-elif service == 'aom':
-client = (
-    AomClient.new_builder()
-    .with_credentials(credentials)
-    .with_region(AomRegion.value_of(self.region))
-    .build()
-)
-return client
+        elif service == "cbr":
+            client = (
+                CbrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CbrRegion.value_of(self.region))
+                .build()
+            )
+
+        elif service in ["iam-user", "iam-policy"]:
+            client = (
+                IamClientV5.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(iam_region_v5.IamRegion.value_of(self.region))
+                .build()
+            )
+
+        elif service == "iam-v3":
+            client = (
+                IamClientV3.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(iam_region_v3.value_of(self.region))
+                .build()
+            )
+
+        elif service == "config":
+            client = (
+                ConfigClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(ConfigRegion.value_of("cn-north-4"))
+                .build()
+            )
+
+        elif service == "deh":
+            client = (
+                DeHClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DeHRegion.value_of(self.region))
+                .build()
+            )
+
+        elif service == "obs":
+            client = self.region_client(service, self.region)
+        elif service == "ces":
+            client = (
+                CesClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CesRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "smn":
+            client = (
+                SmnClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SmnRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "kms":
+            client = (
+                KmsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(KmsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "functiongraph":
+            client = (
+                FunctionGraphClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(FunctionGraphRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "eg":
+            client = (
+                EgClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(EgRegion.value_of(self.region))
+                .build()
+            )
+        elif service in ["elb_loadbalancer", "elb_listener"]:
+            client = (
+                ElbClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(ElbRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "eip":
+            client = (
+                EipClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(EipRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "eip_v2":
+            client = (
+                EipClientV2.new_builder()
+                .with_credentials(credentials)
+                .with_region(EipRegionV2.value_of(self.region))
+                .build()
+            )
+        elif service == "geip":
+            client = (
+                GeipClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(GeipRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "ims":
+            client = (
+                ImsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(ImsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "workspace":
+            client = (
+                WorkspaceClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(WorkspaceRegion.value_of(self.region))
+                .build()
+            )
+        elif (
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+        ):
+            client = (
+                CbrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CbrRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "smn":
+            client = (
+                SmnClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SmnRegion.value_of(self.region))
+                .build()
+            )
+        elif service in ["nat_gateway", "nat_snat_rule", "nat_dnat_rule"]:
+            client = (
+                NatClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(NatRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "secmaster":
+            client = (
+                SecMasterClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SecMasterRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "hss":
+            client = (
+                HssClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(HssRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "cts-tracker":
+            client = (
+                CtsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CtsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "cts-notification-smn":
+            client = (
+                CtsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CtsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "cts-notification-func":
+            client = (
+                CtsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CtsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "sfsturbo":
+            client = (
+                SFSTurboClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SFSTurboRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "cbr":
+            client = (
+                CbrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CbrRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "coc":
+            client = (
+                CocClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CocRegion.value_of("cn-north-4"))
+                .build()
+            )
+        elif service in ["org-policy", "org-unit", "org-account"]:
+            client = (
+                OrganizationsClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(OrganizationsRegion.CN_NORTH_4)
+                .build()
+            )
+        elif service == "ram":
+            client = (
+                RamClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(RamRegion.CN_NORTH_4)
+                .build()
+            )
+        elif service == "antiddos":
+            client = (
+                AntiDDoSClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AntiDDoSRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'kafka':
+            client = (
+                KafkaClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(KafkaRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'reliability':
+            client = (
+                RocketMQClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RocketMQRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
+                                              'apig-instance']:
+            client = (
+                ApigClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(ApigRegion.value_of(self.region))
+                .build()
+            )
+        elif service in ['swr', 'swr-image']:
+            client = (
+                SwrClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(SwrRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'scm':
+            client = (
+                ScmClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(ScmRegion.value_of("ap-southeast-1"))
+                .build()
+            )
+        elif service == 'dc':
+            client = (
+                DcClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DcRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "cc":
+            client = (
+                CcClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CcRegion.CN_NORTH_4)
+                .build()
+            )
+        elif service == "cdn":
+            client = (
+                CdnClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CdnRegion.CN_NORTH_1)
+                .build()
+            )
+        elif service == "bms":
+            client = (
+                BmsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(BmsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "rds":
+            client = (
+                RdsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(RdsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == 'aom':
+            client = (
+                AomClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AomRegion.value_of(self.region))
+                .build()
+            )
+
+        return client
 
 
 def region_client(self, service, region):
