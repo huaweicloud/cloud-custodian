@@ -482,7 +482,7 @@ class Session:
                 .with_region(SwrRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'scm':
+        elif service == 'ccm-ssl-certificate':
             client = (
                 ScmClient.new_builder()
                 .with_credentials(globalCredentials)
@@ -531,7 +531,7 @@ class Session:
                 .with_region(AomRegion.value_of(self.region))
                 .build()
             )
-        elif service in ['ccm-certificateAuthority', 'ccm-privateCertificate']:
+        elif service in ['ccm-private-ca', 'ccm-private-certificate']:
             client = (
                 CcmClient.new_builder()
                 .with_credentials(globalCredentials)
@@ -666,7 +666,7 @@ class Session:
             request = ListReposDetailsRequest()
         elif service == 'swr-image':
             request = ListRepositoryTagsRequest()
-        elif service == 'scm':
+        elif service == 'ccm-ssl-certificate':
             request = ListCertificatesRequest()
             request.expired_days_since = 1095
         elif service == 'dc':
@@ -679,8 +679,11 @@ class Session:
             request = ListSubscriptionsRequest()
         elif service == 'aom':
             request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
-        elif service == 'ccm-certificateAuthority':
+        elif service == 'ccm-private-ca':
             request = ListCertificateAuthorityRequest()
-        elif service == 'ccm-privateCertificate':
+        elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
+        elif service == 'ccm-ssl-certificate':
+            request = ListCertificatesRequest()
+            request.expired_days_since = 1095
         return request

@@ -94,3 +94,65 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ccm.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250522T083140Z
+    method: GET
+    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
+  response:
+    body:
+     string: '{
+        "tags" : [ {
+          "key" : "key1",
+          "value" : "value1"
+        }, {
+          "key" : "key2",
+          "value" : "value2"
+        } ]
+      }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 May 2025 08:31:41 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747902701137; path=/
+      - HWWAFSESID=f7047732f6a9245202; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 427c981ef5bc9767ddc76446eb35795a
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

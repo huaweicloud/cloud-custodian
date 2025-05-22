@@ -14,7 +14,7 @@ class CcmCertificateAuthorityTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "list-certificate-authorities",
-                "resource": "huaweicloud.ccm-certificateAuthority"
+                "resource": "huaweicloud.ccm-private-ca"
             },
             session_factory=factory,
         )
@@ -30,7 +30,7 @@ class CcmCertificateAuthorityTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "find-active-cas",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [
                     {
                         "type": "status",
@@ -62,7 +62,7 @@ class CcmCertificateAuthorityTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "find-cas-with-obs-bucket",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [
                     {
                         "type": "crl-obs-bucket",
@@ -78,7 +78,7 @@ class CcmCertificateAuthorityTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         # Verify OBS client call
-        mock_local_session.assert_called_once()
+        mock_local_session.assert_called()
 
     def test_certificate_authority_key_algorithm_filter(self):
         """Test filtering certificate authorities by key algorithm"""
@@ -87,7 +87,7 @@ class CcmCertificateAuthorityTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "find-rsa-cas",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [
                     {
                         "type": "key-algorithm",
@@ -108,7 +108,7 @@ class CcmCertificateAuthorityTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "find-sha256-cas",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [
                     {
                         "type": "signature-algorithm",
@@ -128,7 +128,7 @@ class CcmCertificateAuthorityTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "disable-cas",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [
                     {
                         "type": "value",
@@ -154,7 +154,7 @@ class CcmPrivateCertificateTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "list-certificates",
-                "resource": "huaweicloud.ccm-privateCertificate"
+                "resource": "huaweicloud.ccm-private-certificate"
             },
             session_factory=factory,
         )
@@ -169,7 +169,7 @@ class CcmPrivateCertificateTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "find-rsa-certificates",
-                "resource": "huaweicloud.ccm-privateCertificate",
+                "resource": "huaweicloud.ccm-private-certificate",
                 "filters": [
                     {
                         "type": "key-algorithm",
@@ -190,7 +190,7 @@ class CcmPrivateCertificateTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "find-sha256-certificates",
-                "resource": "huaweicloud.ccm-privateCertificate",
+                "resource": "huaweicloud.ccm-private-certificate",
                 "filters": [
                     {
                         "type": "signature-algorithm",
@@ -221,7 +221,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "ccm-filter-value-match",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [{"type": "value", "key": "ca_id", "value": target_id}],
             },
             session_factory=factory,
@@ -238,7 +238,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "ccm-filter-value-no-match",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [{"type": "value", "key": "status", "value": wrong_status}],
             },
             session_factory=factory,
@@ -257,7 +257,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "ccm-filter-name-match",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [{"type": "value", "key": "issuer_name", "value": "ca-tagged.*",
                              "op": "regex"}],
             },
@@ -278,7 +278,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "ccm-filter-name-match",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [{"type": "value", "key": "issuer_name", "value": "ca-marked.*",
                              "op": "regex"}],
             },
@@ -297,7 +297,7 @@ class ReusableFeaturesTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "ccm-filter-name-match",
-                "resource": "huaweicloud.ccm-certificateAuthority",
+                "resource": "huaweicloud.ccm-private-ca",
                 "filters": [{"type": "value", "key": "issuer_name", "value": "ca-two-tags.*",
                              "op": "regex"}],
             },

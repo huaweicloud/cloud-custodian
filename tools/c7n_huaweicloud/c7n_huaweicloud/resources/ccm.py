@@ -11,12 +11,14 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkccm.v1.model import (
     DisableCertificateAuthorityRequest,
+    ListCaTagsRequest,
+    ListCertTagsRequest,
 )
 
 log = logging.getLogger('custodian.huaweicloud.resources.ccm')
 
 
-@resources.register('ccm-certificateAuthority')
+@resources.register('ccm-private-ca')
 class CertificateAuthority(QueryResourceManager):
     """Huawei Cloud Certificate Authority Resource Manager
 
@@ -27,10 +29,10 @@ class CertificateAuthority(QueryResourceManager):
 
         policies:
           - name: list-certificate-authorities
-            resource: huaweicloud.ccm-certificateAuthority
+            resource: huaweicloud.ccm-private-ca
     """
     class resource_type(TypeInfo):
-        service = 'ccm-certificateAuthority'
+        service = 'ccm-private-ca'
         enum_spec = ('list_certificate_authority',
                      'certificate_authorities', 'offset')
         id = 'ca_id'
@@ -38,16 +40,53 @@ class CertificateAuthority(QueryResourceManager):
         filter_name = 'name'
         filter_type = 'scalar'
         taggable = True
-        tag_resource_type = 'ccm-certificateAuthority'
+        tag_resource_type = 'private-certificate-authorities'
 
     def augment(self, resources):
         """Process resource information, ensure id field is correctly set"""
         for r in resources:
             if 'id' not in r and 'ca_id' in r:
                 r['id'] = r['ca_id']
-            # Ensure tags are properly handled
-            if 'tags' in r and r['tags'] is None:
-                r['tags'] = []
+
+        # Query tags for each CA and add them to the resource properties
+        session = local_session(self.session_factory)
+        client = session.client('ccm-certificateAuthority')
+
+        for resource in resources:
+            try:
+                # Get CA ID
+                ca_id = resource.get('ca_id')
+                if not ca_id:
+                    continue
+
+                # Use ListCaTagsRequest to query tags for this CA
+                request = ListCaTagsRequest()
+                request.ca_id = ca_id
+
+                try:
+                    # Call the API to get tags
+                    response = client.list_ca_tags(request)
+
+                    # Check if tags are available in the response
+                    if hasattr(response, 'tags') and response.tags is not None:
+                        # Convert response tags to standard dict format
+                        tags = []
+                        for tag in response.tags:
+                            if hasattr(tag, 'key') and hasattr(tag, 'value'):
+                                tags.append(
+                                    {'key': tag.key, 'value': tag.value})
+                        resource['tags'] = tags
+                    else:
+                        resource['tags'] = []
+                except exceptions.ClientRequestException as e:
+                    log.warning(
+                        f"Failed to retrieve tags for CA {ca_id}: {e.error_msg}")
+                    resource['tags'] = []
+            except Exception as e:
+                log.error(
+                    f"Error retrieving tags for CA {resource.get('ca_id')}: {str(e)}")
+                resource['tags'] = []
+
         return resources
 
 
@@ -64,7 +103,7 @@ class CertificateAuthorityStatusFilter(ValueFilter):
 
         policies:
           - name: find-disabled-cas
-            resource: huaweicloud.ccm-certificateAuthority
+            resource: huaweicloud.ccm-private-ca
             filters:
               - type: status
                 value: DISABLED
@@ -96,7 +135,7 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
 
         policies:
           - name: find-cas-with-obs-bucket
-            resource: huaweicloud.ccm-certificateAuthority
+            resource: huaweicloud.ccm-private-ca
             filters:
               - type: crl-obs-bucket
                 bucket_name: my-certificate-bucket
@@ -214,7 +253,7 @@ class CertificateAuthorityKeyAlgorithmFilter(Filter):
 
         policies:
           - name: find-cas-with-specific-key-algorithm
-            resource: huaweicloud.ccm-certificateAuthority
+            resource: huaweicloud.ccm-private-ca
             filters:
               - type: key-algorithm
                 algorithms:
@@ -252,7 +291,7 @@ class CertificateAuthoritySignatureAlgorithmFilter(Filter):
 
         policies:
           - name: find-cas-with-specific-signature-algorithm
-            resource: huaweicloud.ccm-certificateAuthority
+            resource: huaweicloud.ccm-private-ca
             filters:
               - type: signature-algorithm
                 algorithms:
@@ -287,7 +326,7 @@ class DisableCertificateAuthority(HuaweiCloudBaseAction):
 
         policies:
           - name: disable-cas
-            resource: huaweicloud.ccm-certificateAuthority
+            resource: huaweicloud.ccm-private-ca
             filters:
               - type: status
                 value: ACTIVED
@@ -313,7 +352,7 @@ class DisableCertificateAuthority(HuaweiCloudBaseAction):
             raise
 
 
-@resources.register('ccm-privateCertificate')
+@resources.register('ccm-private-certificate')
 class PrivateCertificate(QueryResourceManager):
     """Huawei Cloud Private Certificate Resource Manager
 
@@ -324,23 +363,63 @@ class PrivateCertificate(QueryResourceManager):
 
         policies:
           - name: list-certificates
-            resource: huaweicloud.ccm-privateCertificate
+            resource: huaweicloud.ccm-private-certificate
     """
     class resource_type(TypeInfo):
-        service = 'ccm-privateCertificate'
+        service = 'ccm-private-certificate'
         enum_spec = ('list_certificate', 'certificates', 'offset')
         id = 'certificate_id'
         name = 'common_name'
         filter_name = 'name'
         filter_type = 'scalar'
         taggable = True
-        tag_resource_type = 'ccm-privateCertificate'
+        tag_resource_type = 'private-certificates'
 
     def augment(self, resources):
         """Process resource information, ensure id field is correctly set"""
         for r in resources:
             if 'id' not in r and 'certificate_id' in r:
                 r['id'] = r['certificate_id']
+
+        # Query tags for each certificate and add them to the resource properties
+        session = local_session(self.session_factory)
+        client = session.client('ccm-privateCertificate')
+
+        for resource in resources:
+            try:
+                # Get certificate ID
+                certificate_id = resource.get('certificate_id')
+                if not certificate_id:
+                    continue
+
+                # Use ListCertTagsRequest to query tags for this certificate
+                request = ListCertTagsRequest()
+                request.certificate_id = certificate_id
+
+                try:
+                    # Call the API to get tags
+                    response = client.list_cert_tags(request)
+
+                    # Check if tags are available in the response
+                    if hasattr(response, 'tags') and response.tags is not None:
+                        # Convert response tags to standard dict format
+                        tags = []
+                        for tag in response.tags:
+                            if hasattr(tag, 'key') and hasattr(tag, 'value'):
+                                tags.append(
+                                    {'key': tag.key, 'value': tag.value})
+                        resource['tags'] = tags
+                    else:
+                        resource['tags'] = []
+                except exceptions.ClientRequestException as e:
+                    log.warning(
+                        f"Failed to retrieve tags for certificate {certificate_id}: {e.error_msg}")
+                    resource['tags'] = []
+            except Exception as e:
+                log.error(
+                    f"Error retrieving tags for certificate {resource.get('certificate_id')}: {str(e)}")
+                resource['tags'] = []
+
         return resources
 
 
@@ -356,7 +435,7 @@ class PrivateCertificateKeyAlgorithmFilter(Filter):
 
         policies:
           - name: find-certificates-with-specific-key-algorithm
-            resource: huaweicloud.ccm-privateCertificate
+            resource: huaweicloud.ccm-private-certificate
             filters:
               - type: key-algorithm
                 algorithms:
@@ -394,7 +473,7 @@ class PrivateCertificateSignatureAlgorithmFilter(Filter):
 
         policies:
           - name: find-certificates-with-specific-signature-algorithm
-            resource: huaweicloud.ccm-privateCertificate
+            resource: huaweicloud.ccm-private-certificate
             filters:
               - type: signature-algorithm
                 algorithms:

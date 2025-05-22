@@ -37,7 +37,7 @@ class CertificateTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "certificate-query",
-                "resource": "huaweicloud.scm",
+                "resource": "huaweicloud.ccm-ssl-certificate",
             },
             session_factory=factory,
         )
@@ -82,7 +82,7 @@ class CertificateTest(BaseTest):
             p = self.load_policy(
                 {
                     "name": "certificate-filter-list-item-match",
-                    "resource": "huaweicloud.scm",
+                    "resource": "huaweicloud.ccm-ssl-certificate",
                     "filters": [
                         {
                             "type": "list-item",
@@ -120,7 +120,7 @@ class CertificateTest(BaseTest):
         p = self.load_policy(
             {
                 "name": "certificate-delete",
-                "resource": "huaweicloud.scm",
+                "resource": "huaweicloud.ccm-ssl-certificate",
                 # Use value filter to precisely target the certificate to delete
                 "filters": [{"type": "value", "key": "id", "value": cert_id_to_delete}],
                 "actions": ["delete"],
