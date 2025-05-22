@@ -39,6 +39,7 @@ class HuaweiCloudBaseAction(BaseAction, ABC):
                     f" RequestId: {ex.request_id}, Reason: {ex.error_msg}"
                 )
                 self.handle_exception(resource, resources)
+                raise
         return self.process_result(resources)
 
     # All the HuaweiCloud actions that extends the HuaweiCloudBaseAction should implement

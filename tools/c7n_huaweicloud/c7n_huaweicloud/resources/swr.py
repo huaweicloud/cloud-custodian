@@ -30,26 +30,11 @@ log = logging.getLogger('custodian.huaweicloud.swr')
 class Swr(QueryResourceManager):
     """Huawei Cloud SWR (Software Repository) Resource Manager.
 
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: swr-repository-filter
-            resource: huaweicloud.swr
-            filters:
-              - type: age
-                days: 90
-                op: gt
-              - type: value
-                key: is_public
-                value: true
     """
 
     class resource_type(TypeInfo):
         """Define SWR resource metadata and type information"""
-        service = 'swr'  # Specify corresponding HuaweiCloud service name
+        service = 'swr'
         # Specify API operation, result list key, and pagination for enumerating resources
         # 'list_repos_details' is the API method name
         # 'body' is the field name in the response containing the instance list
@@ -60,22 +45,19 @@ class Swr(QueryResourceManager):
         filter_name = 'name'  # Field name for filtering by name
         filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
         taggable = False  # Indicate that this resource doesn't support tagging directly
-        tag_resource_type = 'swr'  # Specify resource type for querying tags
+        tag_resource_type = None
         date = 'created_at'  # Specify field name for resource creation time
 
-    def augment(self, resources):
-        """Augment SWR repository resources with additional information.
-
-        This method adds tag_resource_type information to the resources.
-        Lifecycle policy information is no longer loaded here for efficiency,
-        and is instead loaded on-demand by the lifecycle-rule filter.
-
-        :param resources: Original resource dictionary list obtained from API
-        :return: Enhanced resource dictionary list
-        """
+    def get_resources(self, resource_ids):
+        resources = (
+                self.augment(self.source.get_resources(self.get_resource_query())) or []
+        )
+        result = []
         for resource in resources:
-            resource['tag_resource_type'] = 'swr-repository'
-        return resources
+            resource_id = resource["namespace"] + "/" + resource["id"]
+            if resource_id in resource_ids:
+                result.append(resource)
+        return result
 
 
 @Swr.filter_registry.register('lifecycle-rule')
@@ -390,17 +372,6 @@ class SwrImage(QueryResourceManager):
     on HuaweiCloud. It implements a two-level query approach, first retrieving all SWR repositories,
     then querying images for each repository.
 
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: swr-image-filter
-            resource: huaweicloud.swr-image
-            filters:
-              - type: value
-                key: tag
-                value: latest
     """
 
     class resource_type(TypeInfo):
@@ -435,10 +406,13 @@ class SwrImage(QueryResourceManager):
 
         # First get all SWR repositories
         try:
-            # Use SWR resource manager to get all repositories with pagination handled
-            from c7n_huaweicloud.provider import resources as huaweicloud_resources
-            swr_manager = huaweicloud_resources.get('swr')(self.ctx, {})
-            repositories = swr_manager.resources()
+            if query and 'namespace' in query and 'name' in query:
+                repositories = [{"namespace": query['namespace'], "name": query['name']}]
+            else:
+                # Use SWR resource manager to get all repositories with pagination handled
+                from c7n_huaweicloud.provider import resources as huaweicloud_resources
+                swr_manager = huaweicloud_resources.get('swr')(self.ctx, {})
+                repositories = swr_manager.resources()
 
             client = self.get_client()
 
@@ -539,6 +513,18 @@ class SwrImage(QueryResourceManager):
                 f"Failed to get tags for repository {namespace}/{repository}: {e}")
 
         return tags
+
+    def get_resources(self, resource_ids):
+
+        resources = []
+        for resource_id in resource_ids:
+            namespace_repo = resource_id.split(':')[0]
+            namespace = namespace_repo.split('/')[0]
+            repository = "/".join(namespace_repo.split('/')[1:])
+            temp_resources = self._fetch_resources({"namespace": namespace, "name": repository})
+            resources.append(temp_resources)
+
+        return self.filter_resources(resources)
 
 
 @SwrImage.filter_registry.register('age')

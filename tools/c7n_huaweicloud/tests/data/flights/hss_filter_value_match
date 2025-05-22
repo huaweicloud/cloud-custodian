@@ -19,7 +19,7 @@ interactions:
       X-Sdk-Date:
       - 20250423T054806Z
     method: GET
-    uri: https://hss.ap-southeast-1.myhuaweicloud.com/v5/ap-southeat-1/host-management/hosts
+    uri: https://hss.ap-southeast-1.myhuaweicloud.com/v5/ap-southeat-1/host-management/hosts?limit=100&offset=0
   response:
     body:
       string: '{"data_list":[{"host_id":"test-host-id-123","host_name":"test-host","agent_status":"RUNNING","os_type":"Linux","protect_info":{"wtp_protection":true,"aad_protection":true,"hips_protection":true,"vul_protection":true,"rap_protection":true},"public_ip":"10.0.0.1","private_ip":"192.168.0.1","agent_version":"1.0.0","tags":[{"key":"environment","value":"prod"},{"key":"owner","value":"security-team"}],"enterprise_project_id":"0","register_status":"bind","hostname":"test-host","machine_type":"ECS","os_bit":"64","cpu_cores":2,"agent_create_time":1672531200,"agent_register_time":1672531200,"private_ipv6":"","public_ipv6":"","auto_pay_switch":true,"support_features":[],"created_at":1672531200}],"total_count":1}'

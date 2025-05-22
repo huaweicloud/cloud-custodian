@@ -153,7 +153,7 @@ class FunctionGraphManager:
 
         return response
 
-    def get_custodian_depend_version_id(self, runtime="Python3.10") -> list[str]:
+    def get_custodian_depend_version_id(self, runtime="Python3.10"):
         depend_name = f'custodian-huaweicloud-{runtime}'
         list_dependencies_request = ListDependenciesRequest(runtime=runtime, name=depend_name)
         try:
