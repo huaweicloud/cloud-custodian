@@ -5,7 +5,7 @@ import logging
 from c7n.utils import type_schema
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from c7n.filters import Filter, ValueFilter
+from c7n.filters import ValueFilter
 
 log = logging.getLogger('custodian.huaweicloud.resources.lts')
 
