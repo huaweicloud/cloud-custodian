@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import json
 from c7n.utils import type_schema, local_session
-from c7n.filters import ValueFilter, Filter
+from c7n.filters import Filter
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -160,10 +159,10 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
     - blockPublicPolicy: Blocks public policies for the bucket
     - restrictPublicBuckets: Restricts public access to the bucket
 
-    By default (with no parameters), this filter will return resources where ANY of the 
+    By default (with no parameters), this filter will return resources where ANY of the
     four BPA properties are set to false (not secure).
 
-    You can specify one or more BPA properties to filter on. When multiple properties are 
+    You can specify one or more BPA properties to filter on. When multiple properties are
     specified, resources will be returned if ANY of the specified properties are false.
 
     :example:
@@ -177,7 +176,7 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
             filters:
               - type: crl-obs-bucket
 
-        # Example 2: Filter CAs where any of blockPublicAcls, 
+        # Example 2: Filter CAs where any of blockPublicAcls,
         # ignorePublicAcls, or blockPublicPolicy is false
         policies:
           - name: find-cas-with-multiple-bpa-issues
