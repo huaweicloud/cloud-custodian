@@ -3,8 +3,6 @@
 from unittest.mock import patch
 
 from huaweicloud_common import BaseTest
-from c7n_huaweicloud.resources.ccm import DisableCertificateAuthority
-
 
 class CcmCertificateAuthorityTest(BaseTest):
     """Huawei Cloud Certificate Authority (CertificateAuthority) resource related tests"""
@@ -70,7 +68,7 @@ class CcmCertificateAuthorityTest(BaseTest):
         factory = self.replay_flight_data(
             "ccm_certificate_authority_crl_bucket_filter")
 
-        # Test case 1: Filter without specifying properties 
+        # Test case 1: Filter without specifying properties
         # (should return resources where any property is false)
         p = self.load_policy(
             {
