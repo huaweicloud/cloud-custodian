@@ -90,7 +90,7 @@ class CertificateAuthority(QueryResourceManager):
 
 
 @CertificateAuthority.filter_registry.register('status')
-class CertificateAuthorityStatusFilter(Filter):
+class CertificateAuthorityFilter(Filter):
     """Filter certificate authorities by CA status and issuer_name
 
     Statuses include: ACTIVED (activated), DISABLED (disabled), PENDING (pending activation),
@@ -357,6 +357,8 @@ class CertificateAuthoritySignatureAlgorithmFilter(Filter):
 class DisableCertificateAuthority(HuaweiCloudBaseAction):
     """Disable Certificate Authority
 
+    This action will only disable CAs that have an empty or null issuer_name.
+
     :example:
     .. code-block:: yaml
 
@@ -364,6 +366,8 @@ class DisableCertificateAuthority(HuaweiCloudBaseAction):
           - name: disable-cas
             resource: huaweicloud.ccm-private-ca
             filters:
+              - type: ca_id
+                value: 1234567890
               - type: status
                 value: ACTIVED
               - type: issuer_name
@@ -373,6 +377,21 @@ class DisableCertificateAuthority(HuaweiCloudBaseAction):
     """
     schema = type_schema('disable')
     permissions = ('ccm:disableCertificateAuthority',)
+
+    def process(self, resources):
+        filtered_resources = []
+
+        for resource in resources:
+            # Only process resources with empty or null issuer_name
+            issuer_name = resource.get('issuer_name')
+            if not issuer_name or (isinstance(issuer_name, str) and not issuer_name.strip()):
+                filtered_resources.append(resource)
+            else:
+                self.log.info(
+                    f"Skipping CA: {resource.get('name')} (ID: {resource.get('ca_id')}) - "
+                    f"issuer_name is not empty: {issuer_name}")
+
+        return super(DisableCertificateAuthority, self).process(filtered_resources)
 
     def perform_action(self, resource):
         client = self.manager.get_client()

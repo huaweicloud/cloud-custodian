@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 from huaweicloud_common import BaseTest
+from c7n_huaweicloud.resources.ccm import DisableCertificateAuthority
 
 
 class CcmCertificateAuthorityTest(BaseTest):
