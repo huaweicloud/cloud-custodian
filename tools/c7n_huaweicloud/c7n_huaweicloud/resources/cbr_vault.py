@@ -77,9 +77,10 @@ class CbrVaultAddTags(HuaweiCloudBaseAction):
 
 
 @CbrVault.filter_registry.register('unassociated')
-# class CbrVaultFilter(AssociatedVaultsFilter):
-#     schema = type_schema('associated_vaults', op={'enum': ['ni', 'in']})
-class CbrVaultFilter(Filter):
+class CbrVaultUnassociatedFilter(Filter):
+    '''
+        Filter the vault unassociated with backup policy.
+    '''
     schema = type_schema('unassociated')
 
     def process(self, resources, event=None):
@@ -128,8 +129,6 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
                   retention_duration_days: 30
                   full_backup_interval: -1
                   timezone: "UTC+08:00"
-
-
     '''
 
     schema = type_schema('associate_vault_policy',
