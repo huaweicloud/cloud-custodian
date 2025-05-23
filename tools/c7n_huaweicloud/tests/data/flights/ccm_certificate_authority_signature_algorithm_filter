@@ -1,0 +1,158 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250521T094204Z
+    method: GET
+    uri: https://iam.ap-southeast-3.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 21 May 2025 09:42:04 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=ea5a297d481ff8ae30; path=/
+      - HWWAFSESTIME=1747820520879; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 94063fc0a9ad943369eccb09c18c1bf8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ok
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ccm.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250409T093110Z
+    method: GET
+    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
+  response:
+    body:
+      string: '{ "total" : 1, "certificate_authorities" : [ { "signature_algorithm"
+        : "SHA256", "issuer_id" : null, "issuer_name" : null, "not_after" : 1678159435000,
+        "not_before" : 1646623375000, "status" : "ACTIVED", "freeze_flag" : 0, "gen_mode"
+        : "GENERATE", "serial_number" : "202203070322544291829058", "distinguished_name"
+        : { "country" : "cn", "state" : "shanghai", "locality" : "shanghai", "organization"
+        : "shanghai", "organizational_unit" : "shanghai", "common_name" : "CSR_123"
+        }, "key_algorithm" : "RSA2048", "create_time" : 1646623375000, "delete_time"
+        : null, "ca_id" : "a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe", "type" : "ROOT",
+        "path_length" : 7, "crl_configuration" : { "enabled" : false, "obs_bucket_name"
+        : null, "valid_days" : null, "crl_name" : null, "crl_dis_point" : null } }]
+        }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '373'
+      Content-Type:
+      - application/json;charset=utf8
+      Date:
+      - Wed, 09 Apr 2025 09:31:10 GMT
+      X-Request-Id:
+      - 5c5ebe6e9b3644710c7fd433a182d7d3
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ccm.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250522T083140Z
+    method: GET
+    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
+  response:
+    body:
+      string: '{
+        "tags" : [ {
+          "key" : "key1",
+          "value" : "value1"
+        }, {
+          "key" : "key2",
+          "value" : "value2"
+        } ]
+      }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 May 2025 08:31:40 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=52a2173c0c88eb9957; path=/
+      - HWWAFSESTIME=1747902700698; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 953b54a137db78f85fd73dc4fd5d1140
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

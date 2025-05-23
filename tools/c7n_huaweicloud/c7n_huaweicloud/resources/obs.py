@@ -1102,10 +1102,10 @@ class OBSMissingTagFilter(Filter):
             'items': {
                 'type': 'object',
                 'additionalProperties': False,
-                'required': ['key', 'value'],
+                'required': ['key'],
                 'properties': {
-                    'key': {'type': 'string'},
-                    'value': {'type': 'string'}
+                    'key': {'type': 'string', 'minLength': 1, 'maxLength': 35},
+                    'value': {'type': 'string', 'minLength': 1, 'maxLength': 42}
                 }
             }
         },
@@ -1120,7 +1120,7 @@ class OBSMissingTagFilter(Filter):
             return results
 
     def process_bucket(self, bucket):
-        expected_tags = {(t['key'], t['value']) for t in self.data.get('tags', [])}
+        expected_tags = {(t.get('key'), t.get('value')) for t in self.data.get('tags', [])}
         match_mode = self.data.get('match', 'missing-any')
 
         bucket_tags = self.get_bucket_tags(bucket)
@@ -1133,10 +1133,10 @@ class OBSMissingTagFilter(Filter):
         client = get_obs_client(self.manager.session_factory, bucket)
         resp = client.getBucketTagging(bucket['name'])
         if resp.status < 300:
-            return {(tag['key'], tag['value']) for tag in resp.body.get('tagSet', [])}
+            return {(tag.key, tag.value) for tag in resp.body.get('tagSet', [])}
         else:
             if 'NoSuchTagSet' == resp.errorCode:
-                return {}
+                return set()
             raise_exception(resp, 'getBucketTagging', bucket)
 
     def _is_match(self, expected, actual, match_mode):
