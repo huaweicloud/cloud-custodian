@@ -157,7 +157,10 @@ class CertificateAuthorityIssuerNameFilter(Filter):
 
             # Handle the case where we're looking for empty/null issuer_name
             if issuer_name is None or issuer_name == 'null':
-                if not resource_issuer or (isinstance(resource_issuer, str) and not resource_issuer.strip()):
+                # Check for None or empty string or whitespace only string
+                is_empty = not resource_issuer
+                is_blank = isinstance(resource_issuer, str) and not resource_issuer.strip()
+                if is_empty or is_blank:
                     results.append(resource)
             # Otherwise do an exact match
             elif resource_issuer == issuer_name:
