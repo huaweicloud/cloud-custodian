@@ -91,71 +91,117 @@ class CertificateAuthority(QueryResourceManager):
 
 
 @CertificateAuthority.filter_registry.register('status')
-class CertificateAuthorityStatusFilter(ValueFilter):
-    """Filter certificate authorities by CA status
+class CertificateAuthorityStatusFilter(Filter):
+    """Filter certificate authorities by CA status and issuer_name
 
     Statuses include: ACTIVED (activated), DISABLED (disabled), PENDING (pending activation),
     DELETED (scheduled for deletion), EXPIRED (expired)
 
+    Also supports filtering by issuer_name, including handling empty or null issuer_name values.
+
     :example:
 
     .. code-block:: yaml
-
+        # Filter by both status and issuer_name
         policies:
-          - name: find-disabled-cas
+          - name: find-active-cas-with-specific-issuer
             resource: huaweicloud.ccm-private-ca
             filters:
               - type: status
-                value: DISABLED
+                value: ACTIVED
+              - type: issuer_name
+                value: null
     """
     schema = type_schema(
         'status',
-        rinherit=ValueFilter.schema
+        status={'type': 'string'},
+        issuer_name={'type': ['string', 'null']}
     )
-    schema_alias = True
-
-    def __init__(self, data, manager=None):
-        super(CertificateAuthorityStatusFilter, self).__init__(data, manager)
-        self.data['key'] = 'status'
 
     def process(self, resources, event=None):
-        return super(CertificateAuthorityStatusFilter, self).process(resources, event)
+        status_value = self.data.get('status')
+        issuer_name = self.data.get('issuer_name')
+
+        results = []
+
+        for resource in resources:
+            # Check status condition if specified
+            if status_value and resource.get('status') != status_value:
+                continue
+
+            # Handle issuer_name filtering
+            if issuer_name is not None:
+                resource_issuer = resource.get('issuer_name')
+
+                # Handle the case where we're looking for empty/null issuer_name
+                if issuer_name == 'null' or issuer_name is None:
+                    if resource_issuer and resource_issuer.strip():
+                        continue
+                # Otherwise do a regular match
+                elif resource_issuer != issuer_name:
+                    continue
+
+            # If we got here, all conditions matched
+            results.append(resource)
+
+        return results
 
 
 @CertificateAuthority.filter_registry.register('crl-obs-bucket')
 class CertificateAuthorityCrlObsBucketFilter(Filter):
-    """Filter certificate authorities by OBS bucket name in CRL configuration
+    """Filter certificate authorities by OBS bucket BPA configuration
 
-    This filter filters certificate authorities based
-    on the OBS bucket name in the CRL configuration
-    and BPA response values.
+    This filter filters certificate authorities based on the OBS bucket BPA configuration
+    of the bucket specified in the CRL configuration.
+
+    The BPA (Block Public Access) configuration consists of four boolean properties:
+    - blockPublicAcls: Blocks public ACLs for the bucket
+    - ignorePublicAcls: Ignores public ACLs for the bucket
+    - blockPublicPolicy: Blocks public policies for the bucket
+    - restrictPublicBuckets: Restricts public access to the bucket
+
+    By default (with no parameters), this filter will return resources where ANY of the 
+    four BPA properties are set to false (not secure).
+
+    You can specify one or more BPA properties to filter on. When multiple properties are 
+    specified, resources will be returned if ANY of the specified properties are false.
 
     :example:
 
     .. code-block:: yaml
 
+        # Example 1: Filter CAs with any BPA property set to false (default behavior)
         policies:
-          - name: find-cas-with-obs-bucket
+          - name: find-cas-with-insecure-bpa
             resource: huaweicloud.ccm-private-ca
             filters:
               - type: crl-obs-bucket
-                bucket_name: my-certificate-bucket
-                bpa_response:
-                  read: true
-                  write: true
-                  list: true
-                  delete: true
+
+        # Example 2: Filter CAs where any of blockPublicAcls, 
+        # ignorePublicAcls, or blockPublicPolicy is false
+        policies:
+          - name: find-cas-with-multiple-bpa-issues
+            resource: huaweicloud.ccm-private-ca
+            filters:
+              - type: crl-obs-bucket
+                bpa_properties:
+                  - blockPublicAcls
+                  - ignorePublicAcls
+                  - blockPublicPolicy
     """
     schema = type_schema(
         'crl-obs-bucket',
         bucket_name={'type': 'string'},
-        bpa_response={
-            'type': 'object',
-            'properties': {
-                'read': {'type': 'boolean'},
-                'write': {'type': 'boolean'},
-                'list': {'type': 'boolean'},
-                'delete': {'type': 'boolean'}
+        bpa_properties={
+            'type': 'array',
+            'items': {
+                'type': 'string',
+                'enum': [
+                    'blockPublicAcls',
+                    'ignorePublicAcls',
+                    'blockPublicPolicy',
+                    'restrictPublicBuckets'
+                ]
             }
         }
     )
@@ -165,7 +211,10 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
         obs_client = session.client('obs')
 
         bucket_name = self.data.get('bucket_name')
-        bpa_response = self.data.get('bpa_response', {})
+        bpa_properties = self.data.get('bpa_properties', [])
+
+        # If no properties specified, check all four properties
+        check_all = not bpa_properties
 
         results = []
 
@@ -184,61 +233,45 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
             if bucket_name and obs_bucket_name != bucket_name:
                 continue
 
-            # Check bucket permissions
-            if bpa_response:
-                try:
-                    resp = obs_client.getBucketPolicy(
-                        bucketName=obs_bucket_name)
-                    # Check response status
-                    if resp.status < 300:
-                        # Parse bucket policy
-                        policy = json.loads(resp.body.buffer) if hasattr(
-                            resp, 'body') and hasattr(resp.body, 'buffer') else {}
+            # Get the bucket's BPA configuration
+            try:
+                resp = obs_client.getBucketPublicAccessBlock(obs_bucket_name)
 
-                        # Default all permissions to False
-                        actual_bpa = {
-                            'read': False,
-                            'write': False,
-                            'list': False,
-                            'delete': False
-                        }
+                # Check response status
+                if resp.status < 300 and hasattr(resp, 'body'):
+                    # Set the BPA configuration on the resource for reference
+                    resource['obs_bpa_config'] = {
+                        'blockPublicAcls': getattr(resp.body, 'blockPublicAcls', False),
+                        'ignorePublicAcls': getattr(resp.body, 'ignorePublicAcls', False),
+                        'blockPublicPolicy': getattr(resp.body, 'blockPublicPolicy', False),
+                        'restrictPublicBuckets': getattr(resp.body, 'restrictPublicBuckets', False)
+                    }
 
-                        # Analyze policy to determine permissions
-                        # Simplified policy analysis; actual implementation
-                        # should parse OBS policy format in detail
-                        if 'Statement' in policy:
-                            for statement in policy['Statement']:
-                                if 'Effect' in statement and statement['Effect'] == 'Allow':
-                                    if 'Action' in statement:
-                                        actions = statement['Action'] if isinstance(
-                                            statement['Action'], list) else [statement['Action']]
-                                        for action in actions:
-                                            if 'obs:object:Get' in action:
-                                                actual_bpa['read'] = True
-                                            if 'obs:object:Put' in action:
-                                                actual_bpa['write'] = True
-                                            if 'obs:bucket:ListBucket' in action:
-                                                actual_bpa['list'] = True
-                                            if 'obs:object:Delete' in action:
-                                                actual_bpa['delete'] = True
+                    # Check if any of the specified properties (or all if none specified) are false
+                    should_include = False
 
-                        # Compare user specified BPA response with actual BPA response
-                        match = True
-                        for key, value in bpa_response.items():
-                            if actual_bpa.get(key) != value:
-                                match = False
+                    if check_all:
+                        # Check if any of the four properties are false
+                        if (not resource['obs_bpa_config']['blockPublicAcls'] or
+                            not resource['obs_bpa_config']['ignorePublicAcls'] or
+                            not resource['obs_bpa_config']['blockPublicPolicy'] or
+                                not resource['obs_bpa_config']['restrictPublicBuckets']):
+                            should_include = True
+                    else:
+                        # Check only the specified properties
+                        for prop in bpa_properties:
+                            if not resource['obs_bpa_config'].get(prop, False):
+                                should_include = True
                                 break
 
-                        if match:
-                            results.append(resource)
+                    if should_include:
+                        results.append(resource)
 
-                except exceptions.ClientRequestException as e:
-                    log.error(
-                        f"Failed to get bucket policy for {obs_bucket_name}: {e.error_msg}")
-                    continue
-            else:
-                # If no BPA response specified, return all CAs with OBS buckets by default
-                results.append(resource)
+            except exceptions.ClientRequestException as e:
+                # Log the error but don't include the resource in results
+                log.error(
+                    f"Failed to get bucket PublicAccessBlock for {obs_bucket_name}: {e.error_msg}")
+                continue
 
         return results
 
@@ -334,6 +367,8 @@ class DisableCertificateAuthority(HuaweiCloudBaseAction):
             filters:
               - type: status
                 value: ACTIVED
+              - type: issuer_name
+                value: null
             actions:
               - disable
     """

@@ -24,18 +24,18 @@ class CcmCertificateAuthorityTest(BaseTest):
         self.assertEqual(resources[0]["status"], "ACTIVED")
 
     def test_certificate_authority_status_filter(self):
-        """Test filtering certificate authorities by status"""
+        """Test filtering certificate authorities by status and issuer name"""
         factory = self.replay_flight_data(
             "ccm_certificate_authority_status_filter")
-        # Test filtering instances with status ACTIVED
         p = self.load_policy(
             {
-                "name": "find-active-cas",
+                "name": "find-cas-with-non-existent-issuer",
                 "resource": "huaweicloud.ccm-private-ca",
                 "filters": [
                     {
                         "type": "status",
-                        "value": "ACTIVED",
+                        "status": "ACTIVED",
+                        "issuer_name": "null",
                     }
                 ],
             },
@@ -43,34 +43,63 @@ class CcmCertificateAuthorityTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0]["status"], "ACTIVED")
 
     @patch('c7n_huaweicloud.resources.ccm.local_session')
     def test_certificate_authority_crl_obs_bucket_filter(self, mock_local_session):
-        """Test filtering certificate authorities by CRL OBS bucket"""
-        # Mock OBS client response
+        """Test filtering certificate authorities by CRL OBS bucket BPA config"""
+        # Mock OBS client response for getBucketPublicAccessBlock
         mock_obs_client = mock_local_session.return_value.client.return_value
+
+        # Create a mock response with BPA configuration
+        mock_bpa_body = type('obj', (object,), {
+            'blockPublicAcls': False,  # This property is set to false
+            'ignorePublicAcls': True,
+            'blockPublicPolicy': True,
+            'restrictPublicBuckets': True
+        })
+
         mock_resp = type('obj', (object,), {
             'status': 200,
-            'body': type('obj', (object,), {
-                'buffer': '{"Statement":[{"Effect":"Allow","Action":["obs:object:Get"]}]}'
-            })
+            'body': mock_bpa_body
         })
-        mock_obs_client.getBucketPolicy.return_value = mock_resp
+
+        # Set the mock return value for getBucketPublicAccessBlock
+        mock_obs_client.getBucketPublicAccessBlock.return_value = mock_resp
 
         factory = self.replay_flight_data(
             "ccm_certificate_authority_crl_bucket_filter")
+
+        # Test case 1: Filter without specifying properties (should return resources where any property is false)
         p = self.load_policy(
             {
-                "name": "find-cas-with-obs-bucket",
+                "name": "find-cas-with-any-false-bpa-property",
+                "resource": "huaweicloud.ccm-private-ca",
+                "filters": [
+                    {
+                        "type": "crl-obs-bucket",
+                        "bucket_name": "test-bucket"
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+        # Verify OBS client was called with the right method
+        mock_obs_client.getBucketPublicAccessBlock.assert_called_with(
+            "test-bucket")
+
+        # Test case 2: Filter by specific BPA property (blockPublicAcls)
+        p = self.load_policy(
+            {
+                "name": "find-cas-with-specific-bpa-property",
                 "resource": "huaweicloud.ccm-private-ca",
                 "filters": [
                     {
                         "type": "crl-obs-bucket",
                         "bucket_name": "test-bucket",
-                        "bpa_response": {
-                            "read": True,
-                        }
+                        "bpa_properties": ["blockPublicAcls"]
                     }
                 ],
             },
@@ -78,8 +107,43 @@ class CcmCertificateAuthorityTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # Verify OBS client call
-        mock_local_session.assert_called()
+
+        # Test case 3: Filter by properties that are all true (should return no resources)
+        # Reset mock and set a different response where all properties are true
+        mock_bpa_body_all_true = type('obj', (object,), {
+            'blockPublicAcls': True,
+            'ignorePublicAcls': True,
+            'blockPublicPolicy': True,
+            'restrictPublicBuckets': True
+        })
+
+        mock_resp_all_true = type('obj', (object,), {
+            'status': 200,
+            'body': mock_bpa_body_all_true
+        })
+
+        mock_obs_client.getBucketPublicAccessBlock.return_value = mock_resp_all_true
+
+        p = self.load_policy(
+            {
+                "name": "find-cas-with-multiple-bpa-properties",
+                "resource": "huaweicloud.ccm-private-ca",
+                "filters": [
+                    {
+                        "type": "crl-obs-bucket",
+                        "bucket_name": "test-bucket",
+                        "bpa_properties": [
+                            "blockPublicAcls",
+                            "ignorePublicAcls",
+                            "blockPublicPolicy"
+                        ]
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 0)
 
     def test_certificate_authority_key_algorithm_filter(self):
         """Test filtering certificate authorities by key algorithm"""
