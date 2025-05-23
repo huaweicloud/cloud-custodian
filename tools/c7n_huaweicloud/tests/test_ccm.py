@@ -69,7 +69,8 @@ class CcmCertificateAuthorityTest(BaseTest):
         factory = self.replay_flight_data(
             "ccm_certificate_authority_crl_bucket_filter")
 
-        # Test case 1: Filter without specifying properties (should return resources where any property is false)
+        # Test case 1: Filter without specifying properties 
+        # (should return resources where any property is false)
         p = self.load_policy(
             {
                 "name": "find-cas-with-any-false-bpa-property",
