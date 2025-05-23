@@ -24,18 +24,17 @@ class CcmCertificateAuthorityTest(BaseTest):
         self.assertEqual(resources[0]["status"], "ACTIVED")
 
     def test_certificate_authority_status_filter(self):
-        """Test filtering certificate authorities by status and issuer name"""
+        """Test filtering certificate authorities by status"""
         factory = self.replay_flight_data(
             "ccm_certificate_authority_status_filter")
         p = self.load_policy(
             {
-                "name": "find-cas-with-non-existent-issuer",
+                "name": "find-active-cas",
                 "resource": "huaweicloud.ccm-private-ca",
                 "filters": [
                     {
                         "type": "status",
-                        "status": "ACTIVED",
-                        "issuer_name": "null",
+                        "value": "ACTIVED"
                     }
                 ],
             },
@@ -43,6 +42,70 @@ class CcmCertificateAuthorityTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]["status"], "ACTIVED")
+
+        # Test with non-matching status
+        p = self.load_policy(
+            {
+                "name": "find-disabled-cas",
+                "resource": "huaweicloud.ccm-private-ca",
+                "filters": [
+                    {
+                        "type": "status",
+                        "value": "DISABLED"
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Expect no resources with DISABLED status
+        self.assertEqual(len(resources), 0)
+
+    def test_certificate_authority_issuer_name_filter(self):
+        """Test filtering certificate authorities by issuer name"""
+        factory = self.replay_flight_data(
+            "ccm_certificate_authority_issuer_filter")
+
+        # Test with a null issuer_name (should find CAs with empty issuer_name)
+        p = self.load_policy(
+            {
+                "name": "find-cas-with-empty-issuer",
+                "resource": "huaweicloud.ccm-private-ca",
+                "filters": [
+                    {
+                        "type": "issuer-name",
+                        "value": None
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify that all returned resources have empty issuer_name
+        for resource in resources:
+            issuer_name = resource.get('issuer_name')
+            self.assertTrue(issuer_name is None or (isinstance(
+                issuer_name, str) and not issuer_name.strip()))
+
+        # Test with a specific issuer_name
+        p = self.load_policy(
+            {
+                "name": "find-cas-with-specific-issuer",
+                "resource": "huaweicloud.ccm-private-ca",
+                "filters": [
+                    {
+                        "type": "issuer-name",
+                        "value": "test-issuer"
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify that all returned resources have the specified issuer_name
+        for resource in resources:
+            self.assertEqual(resource.get('issuer_name'), "test-issuer")
 
     @patch('c7n_huaweicloud.resources.ccm.local_session')
     def test_certificate_authority_crl_obs_bucket_filter(self, mock_local_session):

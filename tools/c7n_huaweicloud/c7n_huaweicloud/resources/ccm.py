@@ -90,58 +90,78 @@ class CertificateAuthority(QueryResourceManager):
 
 
 @CertificateAuthority.filter_registry.register('status')
-class CertificateAuthorityFilter(Filter):
-    """Filter certificate authorities by CA status and issuer_name
+class CertificateAuthorityStatusFilter(Filter):
+    """Filter certificate authorities by CA status
 
     Statuses include: ACTIVED (activated), DISABLED (disabled), PENDING (pending activation),
     DELETED (scheduled for deletion), EXPIRED (expired)
 
-    Also supports filtering by issuer_name, including handling empty or null issuer_name values.
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: find-disabled-cas
+            resource: huaweicloud.ccm-private-ca
+            filters:
+              - type: status
+                value: DISABLED
+    """
+    schema = type_schema(
+        'status',
+        value={'type': 'string'}
+    )
+
+    def process(self, resources, event=None):
+        status_value = self.data.get('value')
+        if not status_value:
+            return resources
+
+        results = []
+        for resource in resources:
+            if resource.get('status') == status_value:
+                results.append(resource)
+
+        return results
+
+
+@CertificateAuthority.filter_registry.register('issuer-name')
+class CertificateAuthorityIssuerNameFilter(Filter):
+    """Filter certificate authorities by issuer_name
+
+    Supports finding resources with specific issuer_name
+    or with empty/null issuer_name using value: null
 
     :example:
 
     .. code-block:: yaml
-        # Filter by both status and issuer_name
+        # Find CAs with empty/null issuer_name
         policies:
-          - name: find-active-cas-with-specific-issuer
+          - name: find-cas-with-empty-issuer
             resource: huaweicloud.ccm-private-ca
             filters:
-              - type: status
-                value: ACTIVED
-              - type: issuer_name
+              - type: issuer-name
                 value: null
     """
     schema = type_schema(
-        'status',
-        status={'type': 'string'},
-        issuer_name={'type': ['string', 'null']}
+        'issuer-name',
+        value={'type': ['string', 'null']}
     )
 
     def process(self, resources, event=None):
-        status_value = self.data.get('status')
-        issuer_name = self.data.get('issuer_name')
+        issuer_name = self.data.get('value')
 
         results = []
-
         for resource in resources:
-            # Check status condition if specified
-            if status_value and resource.get('status') != status_value:
-                continue
+            resource_issuer = resource.get('issuer_name')
 
-            # Handle issuer_name filtering
-            if issuer_name is not None:
-                resource_issuer = resource.get('issuer_name')
-
-                # Handle the case where we're looking for empty/null issuer_name
-                if issuer_name == 'null' or issuer_name is None:
-                    if resource_issuer and resource_issuer.strip():
-                        continue
-                # Otherwise do a regular match
-                elif resource_issuer != issuer_name:
-                    continue
-
-            # If we got here, all conditions matched
-            results.append(resource)
+            # Handle the case where we're looking for empty/null issuer_name
+            if issuer_name is None or issuer_name == 'null':
+                if not resource_issuer or (isinstance(resource_issuer, str) and not resource_issuer.strip()):
+                    results.append(resource)
+            # Otherwise do an exact match
+            elif resource_issuer == issuer_name:
+                results.append(resource)
 
         return results
 
@@ -366,11 +386,9 @@ class DisableCertificateAuthority(HuaweiCloudBaseAction):
           - name: disable-cas
             resource: huaweicloud.ccm-private-ca
             filters:
-              - type: ca_id
-                value: 1234567890
               - type: status
                 value: ACTIVED
-              - type: issuer_name
+              - type: issuer-name
                 value: null
             actions:
               - disable
