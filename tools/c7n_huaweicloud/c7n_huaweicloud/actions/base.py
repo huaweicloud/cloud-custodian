@@ -7,6 +7,7 @@ from abc import ABC
 
 from c7n.actions import BaseAction
 from huaweicloudsdkcore.exceptions import exceptions
+from huaweicloudsdkcore.retry.backoff_strategy import BackoffStrategies
 
 from c7n.utils import local_session
 
@@ -47,3 +48,28 @@ class HuaweiCloudBaseAction(BaseAction, ABC):
     @abc.abstractmethod
     def perform_action(self, resource):
         raise NotImplementedError("Base action class does not implement this behavior")
+
+    def _invoke_client_request(self, client, op, request):
+        _invoker = getattr(client, op)
+        if not op.endswith("_invoker"):
+            return _invoker(request)
+
+        def should_retry(resp, exc):
+            # network connection exception
+            if isinstance(exc, exceptions.ConnectionException):
+                return True
+            # 429 too many requests
+            if isinstance(exc, exceptions.ClientRequestException) and exc.status_code == 429:
+                return True
+
+            return False
+
+        try:
+            return _invoker(request).with_retry(
+                retry_condition=should_retry,
+                max_retries=3,
+                backoff_strategy=BackoffStrategies.EQUAL_JITTER
+            ).invoke()
+        except Exception as e:
+            log.exception(f"Failed after max retries: {str(e)}")
+            raise
