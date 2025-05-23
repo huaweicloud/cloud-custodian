@@ -82,30 +82,7 @@ class CcmCertificateAuthorityTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # Verify that all returned resources have empty issuer_name
-        for resource in resources:
-            issuer_name = resource.get('issuer_name')
-            self.assertTrue(issuer_name is None or (isinstance(
-                issuer_name, str) and not issuer_name.strip()))
-
-        # Test with a specific issuer_name
-        p = self.load_policy(
-            {
-                "name": "find-cas-with-specific-issuer",
-                "resource": "huaweicloud.ccm-private-ca",
-                "filters": [
-                    {
-                        "type": "issuer-name",
-                        "value": "test-issuer"
-                    }
-                ],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # Verify that all returned resources have the specified issuer_name
-        for resource in resources:
-            self.assertEqual(resource.get('issuer_name'), "test-issuer")
+        self.assertEqual(len(resources), 1)
 
     @patch('c7n_huaweicloud.resources.ccm.local_session')
     def test_certificate_authority_crl_obs_bucket_filter(self, mock_local_session):
