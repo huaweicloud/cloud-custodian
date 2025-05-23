@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from huaweicloud_common import BaseTest
 
+
 class CcmCertificateAuthorityTest(BaseTest):
     """Huawei Cloud Certificate Authority (CertificateAuthority) resource related tests"""
 
