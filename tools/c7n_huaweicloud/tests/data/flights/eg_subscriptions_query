@@ -1,0 +1,171 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - eg.cn-north-4.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250514T062412Z
+    method: GET
+    uri: https://eg.cn-north-4.myhuaweicloud.com/v1/ap-southeat-1/subscriptions?limit=100&offset=0
+  response:
+    body:
+      string: '{"size":1,"total":1,"items":[{"id":"63cfd150-65fd-4180-ba32-e9710100d100","created_time":"2025-05-13T10:22:02Z","updated_time":"2025-05-13T10:22:02Z","name":"subscription-ppki","description":"","type":"EVENT","status":"ENABLED","channel_id":"65359a7e-3c46-431d-9629-f2a56a2a0380","channel_name":"test","sources":[{"id":"f2c3c223-dab2-4171-b864-c0ad17268257","created_time":"2025-05-13T10:22:02Z","updated_time":"2025-05-13T10:22:02Z","name":"test","provider_type":"CUSTOM","detail":{},"filter":{"source":[{"op":"StringIn","values":["test"]}]}}],"targets":[{"id":"d1500502-7781-4e39-b1e9-65a5aab661e1","created_time":"2025-05-13T10:22:02Z","updated_time":"2025-05-13T10:22:02Z","name":"HTTPS","provider_type":"CUSTOM","connection_id":"2f1b384d-b643-496f-b9ed-450f741984f3","detail":{"url":"http://1.1.1.1"},"transform":{"type":"ORIGINAL","value":""},"thread_num":20,"retry_times":16}],"used":[],"eps_id":"0"}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '909'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 06:24:16 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=fb17573ec020c3646c; path=/
+      - HWWAFSESTIME=1747203853743; path=/
+      - HWWAFSESTIME=1747203853748; path=/
+      - HWWAFSESID=806b173fa9bc29f0be; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - b6b75b23de1b3abc1750cf42ce7fa906
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250514T062416Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"","enabled":true,"id":"e5a81532221b408b85d7b656675d888d","links":{"self":"https://iam.myhuaweicloud.com/v3/domains/e5a81532221b408b85d7b656675d888d"},"name":"hwstaff_intl_a00421997"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '277'
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Wed, 14 May 2025 06:24:16 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-IAM-Trace-Id:
+      - token_ap-southeast-1_null_22b98a7bf124e8859cf5265fd9a1a409
+      X-Request-Id:
+      - 22b98a7bf124e8859cf5265fd9a1a409
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - tms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - e5a81532221b408b85d7b656675d888d
+      X-Sdk-Date:
+      - 20250514T062416Z
+    method: GET
+    uri: https://tms.ap-southeast-1.myhuaweicloud.com/v2.0/resources/63cfd150-65fd-4180-ba32-e9710100d100/tags?project_id=ap-southeat-1&resource_type=SUBSCRIPTION
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKklML1ayiq5Wyk6tVLJSCkotLM0sSk0JSUxX0lEqS8wpTUUSDQPza2NrAY4k
+        B5c4AAAA
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      - no-cache, no-store, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 06:24:18 GMT
+      Expires:
+      - '0'
+      Pragma:
+      - no-cache
+      - no-cache
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - b052c22d0655b08ff5884e454ea2c62a
+      X-XSS-Protection:
+      - 1; mode=block;
+      request_id:
+      - ap-southeast-1c-TMS-SVR-026150053100.b052c22d0655b08ff5884e454ea2c62a
+    status:
+      code: 200
+      message: ''
+version: 1

@@ -1,0 +1,158 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cdn.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - d78cbac186b744899480f25bd022f468
+      X-Sdk-Date:
+      - 20250429T073109Z
+    method: GET
+    uri: https://cdn.myhuaweicloud.com/v1.0/cdn/domains?page_number=1
+  response:
+    body:
+      string: '{"total": 1, "domains": [{"id": "domain-id-123", "domain_name": "example.com",
+        "business_type": "web", "domain_status": "online", "cname": "example.com.c.cdnhwc1.com",
+        "sources": [{"ip_or_domain": "1.1.1.1", "origin_type": "ipaddr", "active_standby":
+        1}], "domain_origin_host": {"domain_id": "domain-id-123", "origin_host_type":
+        "customize", "customize_domain": "example.com"}, "https_status": 1, "create_time":
+        1745909500000, "modify_time": 1745909500000, "disabled": 0, "locked": 0, "auto_refresh_preheat":
+        0, "service_area": "mainland_china", "enterprise_project_id": "0", "tags":
+        [{"key": "Environment", "value": "production"}]}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 07:31:09 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745911864828; path=/
+      - HWWAFSESID=eadd31b735a757e6ac1; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7263f2e3a4593f67d3af3e62a428d7f0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Host:
+      - iam.cn-north-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250429T080005Z
+    method: GET
+    uri: https://iam.cn-north-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains": [{"description": "", "enabled": true, "id": "0970d7b7d400f2470fbec00316a03560",
+        "links": {"self": "https://iam.myhuaweicloud.com/v3/domains/0970d7b7d400f2470fbec00316a03560"},
+        "name": "hwstaff_zhenguo"}], "links": {"self": "https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 08:00:06 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e127a988565e24efe8e676ec1c3ca447
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESTIME=1745911864828; HWWAFSESID=eadd31b735a757e6ac1
+      Host:
+      - cdn.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - 0970d7b7d400f2470fbec00316a03560
+      X-Sdk-Date:
+      - 20250429T083016Z
+    method: GET
+    uri: https://cdn.myhuaweicloud.com/v1.0/cdn/domains?page_number=2
+  response:
+    body:
+      string: '{"total": 1, "domains": null}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 08:30:16 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 5bb21a4fa6c0d5911c93780d887d029e
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

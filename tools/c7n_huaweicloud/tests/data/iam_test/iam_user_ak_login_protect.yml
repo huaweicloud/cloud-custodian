@@ -9,7 +9,7 @@ policies:
         - type: access-key
           key: created_at
           value_type: age
-          value: 300
+          value: 3
           op: ge
     actions:
       - type: set-login-protect

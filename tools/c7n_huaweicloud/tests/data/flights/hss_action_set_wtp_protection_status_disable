@@ -1,0 +1,216 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - hss.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250423T014840Z
+    method: GET
+    uri: https://hss.ap-southeast-1.myhuaweicloud.com/v5/ap-southeat-1/host-management/hosts?limit=100&offset=0
+  response:
+    body:
+      string: '{"data_list":[{"host_id":"test-host-id-123","host_name":"test-host","agent_status":"RUNNING","os_type":"Linux","protect_info":{"wtp_protection":true,"aad_protection":true,"hips_protection":true,"vul_protection":true,"rap_protection":true},"public_ip":"10.0.0.1","private_ip":"192.168.0.1","agent_version":"1.0.0","tags":[{"key":"environment","value":"prod"},{"key":"owner","value":"security-team"}],"enterprise_project_id":"0","register_status":"bind","hostname":"test-host","machine_type":"ECS","os_bit":"64","cpu_cores":2,"agent_create_time":1672531200,"agent_register_time":1672531200,"private_ipv6":"","public_ipv6":"","auto_pay_switch":true,"support_features":[],"created_at":1672531200}],"total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Apr 2025 01:48:40 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745372920101; path=/
+      - HWWAFSESID=1322273470389ad038; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - bd40d6b34db3d32df99bbf6f0746cb8i
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - hss.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250423T014845Z
+    method: GET
+    uri: https://hss.ap-southeast-1.myhuaweicloud.com/v5/ap-southeat-1/host-management/wtp-protection/test-host-id-123
+  response:
+    body:
+      string: '{"data_list":[{"id":"wtp-123","host_id":"test-host-id-123","host_name":"test-host","directory":"/var/www/html","status":"PROTECTED"}],"total":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Apr 2025 01:48:45 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=a91bc7265437698e20; path=/
+      - HWWAFSESTIME=1745372925346; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7c53aef9142a97ba5e19cdb3c4ff6dbe
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"status":false,"host_id_list":["test-host-id-123"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '51'
+      Content-Type:
+      - application/json
+      Host:
+      - hss.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250423T014850Z
+      region:
+      - ap-southeast-1
+    method: POST
+    uri: https://hss.ap-southeast-1.myhuaweicloud.com/v5/ap-southeat-1/webtamper/static/status
+  response:
+    body:
+      string: '{}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Apr 2025 01:48:50 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745372930201; path=/
+      - HWWAFSESID=1422273470389ad039; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - bd40d6b34db3d32df99bbf6f0746cb8j
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - hss.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250423T080500Z
+    method: GET
+    uri: https://hss.ap-southeast-1.myhuaweicloud.com/v5/ap-southeat-1/webtamper/hosts?host_id=test-host-id-123
+  response:
+    body:
+      string: '{"data_list":[],"total":0}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Apr 2025 08:05:00 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745395500813; path=/
+      - HWWAFSESID=689cd73ff0655dd197; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - f5e70847a9952d62c96173cf0b0202a6
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1
