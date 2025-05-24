@@ -11,7 +11,6 @@ from huaweicloudsdkcbr.v1 import (
     AddVaultResourceRequest, VaultAddResourceReq
 )
 
-from c7n.filters import Filter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
@@ -94,7 +93,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         self.failed_resources.extend(resources)
 
     def perform_action(self, resources):
-        client = local_session(self.manager.get_client()).client('cbr-vault')
+        client = self.manager.get_client()
         try:
             request = ListVaultRequest()
             request.object_type = "server"
@@ -130,21 +129,25 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                     request.body = VaultAddResourceReq(
                         resources=listResourcesbody
                     )
-                    client.add_vault_resource(request)
+                    response = client.add_vault_resource(request)
             except exceptions.ClientRequestException as e:
                 log.info(
                     f"Unable to add resource to {vaults[vault_num]['id']}. RequestId: {e.request_id},"
-                    f" Reason: The number of instances in the repository has reached the upper limit,"
-                    f"a new vault will be created."
+                    f" Reason: {e.error_msg}"
                 )
             vault_num += 1
 
-        if resources and vault_num == len(vaults):
-            self.create_new_vault(resources)
-
+        while resources:
+            log.info("All vaults are unable to be associated, a new vault will be created.")
+            server_list = []
+            for _ in range(self.max_count):
+                if resources:
+                    server_list.append(resources.pop())
+            response = self.create_new_vault(server_list)
+        return response
 
     def create_new_vault(self, resources):
-        client = local_session(self.manager.get_client()).client('cbr-vault')
+        client = self.manager.get_client()
         try:
             request = CreateVaultRequest()
             listResourcesVault = []

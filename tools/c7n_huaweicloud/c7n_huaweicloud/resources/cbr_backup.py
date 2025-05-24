@@ -7,7 +7,6 @@ from huaweicloudsdkcbr.v1 import (DeleteBackupRequest,
                                   BackupReplicateReq,
                                   )
 
-from c7n.filters import Filter
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
