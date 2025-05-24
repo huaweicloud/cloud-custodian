@@ -111,7 +111,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 if space == 0:
                     log.info(
                         f"Unable to add resource to {vaults[vault_num]['id']}. "
-                        f"Because the number of instances in the repository has reached the upper limit."
+                        f"Because the number of instances in the repository "
+                        f"has reached the upper limit."
                     )
                 else:
                     listResourcesbody = []
@@ -129,13 +130,15 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                     response = client.add_vault_resource(request)
             except exceptions.ClientRequestException as e:
                 log.info(
-                    f"Unable to add resource to {vaults[vault_num]['id']}. RequestId: {e.request_id},"
+                    f"Unable to add resource to {vaults[vault_num]['id']}. "
+                    f"RequestId: {e.request_id},"
                     f" Reason: {e.error_msg}"
                 )
             vault_num += 1
 
         while resources:
-            log.info("All vaults are unable to be associated, a new vault will be created.")
+            log.info("All vaults are unable to be associated, "
+                     "a new vault will be created.")
             server_list = []
             for _ in range(self.max_count):
                 if resources:
