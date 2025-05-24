@@ -198,41 +198,41 @@ class createKey(HuaweiCloudBaseAction):
 policies:
   - name: create-key
     resource: huaweicloud.kms
-    filters:
-      - not:
-        - type: value
-          key: key_alias
-          value: "aaa"
     actions:
-      - create-key
+      - type: create-key
+        key_aliases: ["bbb"]
+      - type: create-key
+        obs_url: ""
     """
 
-    schema = type_schema("create-key")
+    schema = type_schema("create-key",
+                         key_aliases={"type": "array"},
+                         obs_url={"type": "string"})
+
+    def process(self, resource):
+        client = self.manager.get_client()
+        key_aliases = self.data.get("key_aliases", [])
+        request = ListKeysRequest()
+        request.body = ListKeysRequestBody(
+            key_spec="ALL",
+            limit="1000")
+        listKeyResponse = client.list_keys(request)
+        arr = {"default"}
+        for data in listKeyResponse.key_details:
+            arr.add(data.key_alias)
+        for alias in key_aliases:
+            if alias not in arr:
+                request = CreateKeyRequest()
+                request.body = CreateKeyRequestBody(
+                    key_alias=alias
+                )
+                try:
+                    print(client.create_key(request))
+                except Exception as e:
+                    raise e
 
     def perform_action(self, resource):
-        client = self.manager.get_client()
-        flag = True
-        request = ListKeysRequest()
-        request.body = ListKeysRequestBody(key_spec="ALL", limit=1000)
-        response = client.list_keys()
-        for data in response.key_details:
-            if data.key_alias != resource["key_alias"]:
-                continue
-            else:
-                flag = False
-                break
-
-        if flag:
-            request = CreateKeyRequest()
-            request.body = CreateKeyRequestBody(
-                key_alias=resource["key_alias"]
-            )
-            try:
-                response = client.create_key(request)
-            except Exception as e:
-                raise e
-
-        return response
+        return super().perform_action(resource)
 
 
 @Kms.filter_registry.register("all_keys_disable")
