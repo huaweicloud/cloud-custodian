@@ -6,7 +6,8 @@ import uuid
 
 from huaweicloudsdkkms.v2 import (EnableKeyRotationRequest, OperateKeyRequestBody,
                                   DisableKeyRotationRequest, EnableKeyRequest,
-                                  DisableKeyRequest)
+                                  DisableKeyRequest, CreateKeyRequest, CreateKeyRequestBody,
+                                  ListKeysRequest, ListKeysRequestBody)
 from c7n.filters import ValueFilter
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -23,6 +24,7 @@ class Kms(QueryResourceManager):
         enum_spec = ("list_keys", 'key_details', 'offset')
         id = 'key_id'
         tag_resource_type = 'kms'
+        config_resource_support = True
 
 
 @Kms.action_registry.register("enable_key_rotation")
@@ -181,6 +183,54 @@ class disableKey(HuaweiCloudBaseAction):
             response = client.disable_key(request)
         except Exception as e:
             raise e
+
+        return response
+
+
+@Kms.action_registry.register("create-key")
+class createKey(HuaweiCloudBaseAction):
+    """rotation kms key.
+
+    :Example:
+
+    .. code-block:: yaml
+
+policies:
+  - name: create-key
+    resource: huaweicloud.kms
+    filters:
+      - not:
+        - type: value
+          key: key_alias
+          value: "aaa"
+    actions:
+      - create-key
+    """
+
+    schema = type_schema("create-key")
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        flag = True
+        request = ListKeysRequest()
+        request.body = ListKeysRequestBody(key_spec="ALL", limit=1000)
+        response = client.list_keys()
+        for data in response.key_details:
+            if data.key_alias != resource["key_alias"]:
+                continue
+            else:
+                flag = False
+                break
+
+        if flag:
+            request = CreateKeyRequest()
+            request.body = CreateKeyRequestBody(
+                key_alias=resource["key_alias"]
+            )
+            try:
+                response = client.create_key(request)
+            except Exception as e:
+                raise e
 
         return response
 
