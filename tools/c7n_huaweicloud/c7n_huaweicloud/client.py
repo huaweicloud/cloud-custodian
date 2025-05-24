@@ -80,7 +80,7 @@ from huaweicloudsdkcts.v3 import (
     ListNotificationsRequest,
 )
 from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
-from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest
+from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest, ListProtectableRequest
 from huaweicloudsdksfsturbo.v1 import SFSTurboClient, ListSharesRequest
 from huaweicloudsdksfsturbo.v1.region.sfsturbo_region import SFSTurboRegion
 from huaweicloudsdkcoc.v1 import CocClient, ListInstanceCompliantRequest
@@ -354,7 +354,7 @@ class Session:
                 .build()
             )
         elif (
-                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-policy"
+                service == "cbr-backup" or service == "cbr-vault" or service == "cbr-protectable"
         ):
             client = (
                 CbrClient.new_builder()
@@ -637,6 +637,9 @@ class Session:
             request.show_replication = True
         elif service == "cbr-vault":
             request = ListVaultRequest()
+        elif service == "cbr-protectable":
+            request = ListProtectableRequest()
+            request.protectable_type = "server"
         elif service == "sfsturbo":
             request = ListSharesRequest()
         elif service == "coc":
