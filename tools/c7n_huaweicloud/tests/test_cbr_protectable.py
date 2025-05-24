@@ -91,5 +91,4 @@ class CbrProtectableTest(BaseTest):
             },
             session_factory=factory)
         resources = p.run()
-        print(resources)
         self.assertEqual(len(resources), 0)

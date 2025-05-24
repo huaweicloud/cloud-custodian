@@ -1,11 +1,7 @@
 import logging
 from huaweicloudsdkcore.exceptions import exceptions
 
-from huaweicloudsdkcbr.v1 import (DeleteBackupRequest,
-                                  CopyBackupRequest,
-                                  BackupReplicateReqBody,
-                                  BackupReplicateReq,
-                                  )
+from huaweicloudsdkcbr.v1 import DeleteBackupRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
