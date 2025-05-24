@@ -148,7 +148,7 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             request = AssociateVaultPolicyRequest()
             request.vault_id = resource['id']
             request.body = VaultAssociate(
-                policy_id=self.create_policy(
+                policy_id=self.create_new_policy(
                     day_backups=self.data.get('day_backups'),
                     week_backups=self.data.get('week_backups'),
                     month_backups=self.data.get('month_backups'),
@@ -166,7 +166,7 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             raise
         return response
 
-    def create_policy(self,
+    def create_new_policy(self,
                       day_backups,
                       week_backups,
                       month_backups,
@@ -176,7 +176,7 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
                       full_backup_interval,
                       timezone,
                       operation_type):
-        client = local_session(self.manager.get_client()).client('cbr-policy')
+        client = self.manager.get_client()
 
         try:
             request = CreatePolicyRequest()
@@ -215,3 +215,27 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return response.to_dict()
+
+
+@CbrVault.filter_registry.register('unassociated_with_replication_policy')
+class CbrVaultUnassociatedReplicationFilter(Filter):
+    '''
+        Filter the vault unassociated with backup policy.
+    '''
+    schema = type_schema('unassociated_with_replication_policy')
+
+    def process(self, resources, event=None):
+        results = []
+        client = self.manager.get_client()
+        for r in resources:
+            try:
+                request = ListPoliciesRequest()
+                request.operation_type = "replication"
+                request.vault_id = r['id']
+                response = client.list_policies(request).to_dict()['policies']
+                if not response:
+                    results.append(r)
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                raise
+        return results

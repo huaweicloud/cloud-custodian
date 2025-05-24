@@ -30,34 +30,6 @@ class CbrProtectable(QueryResourceManager):
         tag_resource_type = 'ecs'
 
 
-@CbrProtectable.filter_registry.register('unassociated_server_with_vault')
-class CbrProtectableUnassociatedServer(Filter):
-    '''
-        Filter the server unassociated with vault and tags is illegal.
-    '''
-
-    schema = type_schema('unassociated_server_with_vault',
-                         legal_keys={'type': 'array',
-                                     'items': {'type': 'string'}},
-                         legal_values={'type': 'array',
-                                       'items': {'type': 'string'}})
-
-    def process(self, resources, event=None):
-        results = []
-        legal_keys = self.data.get('legal_keys')
-        legal_values = self.data.get('legal_values')
-        legal_items = ["{}={}".format(legal_key, legal_value)
-                       for legal_key, legal_value in zip(legal_keys, legal_values)]
-        for r in resources:
-            try:
-                if set(r['detail']['tags']) & set(legal_items) and not r['protectable'].get('vault', None):
-                    results.append(r)
-            except exceptions.ClientRequestException as e:
-                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                raise
-        return results
-
-
 @CbrProtectable.action_registry.register('associate_server_with_vault')
 class CbrAssociateServerVault(HuaweiCloudBaseAction):
     '''
@@ -89,6 +61,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 name: "new_vault"
 
     '''
+    max_count = 2  # the maximum count of instance of vault
+
     schema = type_schema('associate_server_with_vault',
                          backup_policy_id={'type': 'string'},
                          consistent_level={'type': 'string'},
@@ -112,58 +86,41 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 f"Unable to submit action against the resource - {res} servers"
                 f" RequestId: {ex.request_id}, Reason: {ex.error_msg}"
             )
-            self.handle_exception(resources, resources)
+            self.handle_exception(resources)
             raise
         return self.process_result(resources)
-        while resources:
-            count = 0
-            server_list = []
-            while count < 256 and resources:
-                server_list.append(resources.pop())
-                count += 1
-                try:
-                    self.perform_action(server_list)
-                except exceptions.ClientRequestException as ex:
-                    res = len(server_list)
-                    log.exception(
-                        f"Unable to submit action against the resource - {res} servers"
-                        f" RequestId: {ex.request_id}, Reason: {ex.error_msg}"
-                    )
-                    self.handle_exception(server_list, resources)
-                    raise
 
-    def handle_exception(self, server_list, resources):
-        self.failed_resources.extend(server_list)
+    def handle_exception(self, resources):
+        self.failed_resources.extend(resources)
 
     def perform_action(self, resources):
-        client = self.manager.get_client()
+        client = local_session(self.manager.get_client()).client('cbr-vault')
+        try:
+            request = ListVaultRequest()
+            request.object_type = "server"
+            response = client.list_vault(request)
+            vaults = response.to_dict()['vaults']
+        except exceptions.ClientRequestException as e:
+            log.exception(
+                f"Unable to list vaults. RequestId: {e.request_id}, Reason: {e.error_msg}"
+            )
 
-        while resources:
-            count = 0
-            server_list = []
-            while count < 256 and resources:
-                server_list.append(resources.pop())
-                count += 1
+        vault_num = 0
+        while resources and vault_num < len(vaults):
             try:
-                request = ListVaultRequest()
-                request.object_type = "server"
-                response = client.list_vault(request)
-                vaults = response.to_dict()['vaults']
-            except exceptions.ClientRequestException as e:
-                log.exception(
-                    f"Unable to list vaults. RequestId: {e.request_id}, Reason: {e.error_msg}"
-                )
-
-            vault_num = 0
-            while server_list:
-                try:
-                    request = AddVaultResourceRequest()
-                    request.vault_id = vaults[vault_num]['id']
-                    num_resource = len(vaults[vault_num]['resources'])
-                    space = 256 - num_resource
+                request = AddVaultResourceRequest()
+                request.vault_id = vaults[vault_num]['id']
+                num_resource = len(vaults[vault_num]['resources'])
+                space = self.max_count - num_resource
+                if space == 0:
+                    log.info(
+                        f"Unable to add resource to {vaults[vault_num]['id']}. "
+                        f"Because the number of instances in the repository has reached the upper limit."
+                    )
+                else:
                     listResourcesbody = []
-                    for _ in range(min(space, len(server_list))):
-                        server = server_list.pop()
+                    for _ in range(min(space, len(resources))):
+                        server = resources.pop()
                         listResourcesbody.append(
                             ResourceCreate(
                                 id=server['id'],
@@ -173,45 +130,53 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                     request.body = VaultAddResourceReq(
                         resources=listResourcesbody
                     )
-                    response = client.add_vault_resource(request)
-                    vault_num += 1
-                except exceptions.ClientRequestException as e:
-                    log.info(
-                        f"Unable to add resource to {vaults[vault_num]['id']}. RequestId: {e.request_id}, Reason: {e.error_msg}"
+                    client.add_vault_resource(request)
+            except exceptions.ClientRequestException as e:
+                log.info(
+                    f"Unable to add resource to {vaults[vault_num]['id']}. RequestId: {e.request_id},"
+                    f" Reason: The number of instances in the repository has reached the upper limit,"
+                    f"a new vault will be created."
+                )
+            vault_num += 1
+
+        if resources and vault_num == len(vaults):
+            self.create_new_vault(resources)
+
+
+    def create_new_vault(self, resources):
+        client = local_session(self.manager.get_client()).client('cbr-vault')
+        try:
+            request = CreateVaultRequest()
+            listResourcesVault = []
+            for server in resources:
+                listResourcesVault.append(
+                    ResourceCreate(
+                        id=server['id'],
+                        type="OS::Nova::Server"
                     )
-            if vault_num == len(vaults):
-                try:
-                    request = CreateVaultRequest()
-                    listResourcesVault = []
-                    for server in server_list:
-                        listResourcesVault.append(
-                            ResourceCreate(
-                                id=server['id'],
-                                type="OS::Nova::Server"
-                            )
-                        )
-                    billingVault = BillingCreate(
-                        consistent_level=self.data.get('consistent_level'),
-                        object_type=self.data.get('object_type'),
-                        protect_type=self.data.get('protect_type'),
-                        size=self.data.get('size'),
-                        charging_mode=self.data.get('charging_mode'),
-                        period_type=self.data.get('period_type'),
-                        period_num=self.data.get('period_num'),
-                        is_auto_renew=self.data.get('is_auto_renew'),
-                        is_auto_pay=self.data.get('is_auto_pay'),
-                    )
-                    vaultbody = VaultCreate(
-                        backup_policy_id=self.data.get('backup_policy_id'),
-                        billing=billingVault,
-                        name=self.data.get('name'),
-                        resources=listResourcesVault
-                    )
-                    request.body = VaultCreateReq(
-                        vault=vaultbody
-                    )
-                    response = client.create_vault(request)
-                except exceptions.ClientRequestException as e:
-                    log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                    raise
+                )
+            billingVault = BillingCreate(
+                consistent_level=self.data.get('consistent_level'),
+                object_type=self.data.get('object_type'),
+                protect_type=self.data.get('protect_type'),
+                size=self.data.get('size'),
+                charging_mode=self.data.get('charging_mode'),
+                period_type=self.data.get('period_type'),
+                period_num=self.data.get('period_num'),
+                is_auto_renew=self.data.get('is_auto_renew'),
+                is_auto_pay=self.data.get('is_auto_pay'),
+            )
+            vaultbody = VaultCreate(
+                backup_policy_id=self.data.get('backup_policy_id'),
+                billing=billingVault,
+                name=self.data.get('name'),
+                resources=listResourcesVault
+            )
+            request.body = VaultCreateReq(
+                vault=vaultbody
+            )
+            response = client.create_vault(request)
+        except exceptions.ClientRequestException as e:
+            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+            raise
         return response
