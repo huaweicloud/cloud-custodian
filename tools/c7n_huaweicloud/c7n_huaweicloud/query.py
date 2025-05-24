@@ -291,7 +291,7 @@ class ResourceQuery:
             if isinstance(exc, exceptions.ConnectionException):
                 return True
             # 429 too many requests
-            if isinstance(exc, exceptions.ServerResponseException) and exc.status_code == 429:
+            if isinstance(exc, exceptions.ClientRequestException) and exc.status_code == 429:
                 return True
 
             return False
@@ -299,11 +299,11 @@ class ResourceQuery:
         try:
             return _invoker(request).with_retry(
                 retry_condition=should_retry,
-                max_retries=5,
+                max_retries=3,
                 backoff_strategy=BackoffStrategies.EQUAL_JITTER
             ).invoke()
         except Exception as e:
-            logging.error(f"Failed after max retries: {str(e)}")
+            log.exception(f"Failed after max retries: {str(e)}")
             raise
 
     def _pagination_ims(self, m, enum_op, path):
