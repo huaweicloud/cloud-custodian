@@ -22,6 +22,12 @@ policies:
         - source: "CBR.vault"
           event: "removeResources"
           ids: "resource_id"
+        - source: "CBR.vault"
+          event: "addVault"
+          ids: "resource_id"
+        - source: "CBR.vault"
+          event: "deleteVault"
+          ids: "resource_id"
     filters:
       - and:
         - type: value

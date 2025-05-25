@@ -19,5 +19,11 @@ policies:
         - source: "CBR.vault"
           event: "dissociatePolicy"
           ids: "resource_id"
+        - source: "CBR.vault"
+          event: "addPolicy"
+          ids: "resource_id"
+        - source: "CBR.vault"
+          event: "deletePolicy"
+          ids: "resource_id"
     filters:
       - type: unassociated_with_replication_policy
