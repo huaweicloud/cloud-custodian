@@ -129,61 +129,11 @@ class SecMasterWorkspace(QueryResourceManager):
     
     class resource_type(TypeInfo):
         service = "secmaster"
-        enum_spec = ("list_workspaces", "workspaces", "offset")
+        enum_spec = ("list_workspaces", "workspaces", "offset", 500)
         id = "id"
         name = "name"
         date = "create_time"
         tag_resource_type = ""
-
-    def _fetch_resources(self, query):
-        """获取工作空间资源列表。"""
-        client = self.get_client()
-        resources = []
-        offset = 0
-        limit = 500  # 每页最大数量
-        
-        while True:
-            try:
-                request = ListWorkspacesRequest(
-                    offset=offset,
-                    limit=limit
-                )
-                response = client.list_workspaces(request)
-                
-                if not response.workspaces:
-                    break
-                    
-                # 转换响应数据为字典格式
-                for workspace in response.workspaces:
-                    if hasattr(workspace, 'to_dict'):
-                        workspace_dict = workspace.to_dict()
-                    else:
-                        workspace_dict = workspace
-                    resources.append(workspace_dict)
-                
-                # 检查是否还有更多数据
-                if len(response.workspaces) < limit:
-                    break
-                    
-                offset += limit
-                
-            except Exception as e:
-                error_msg = str(e).lower()
-                # 区分不同类型的错误
-                if any(x in error_msg for x in ['unauthorized', '401', 'authentication', 'credential']):
-                    log.error(f"SecMaster工作空间查询认证失败: {e}")
-                    raise  # 重新抛出认证错误
-                elif any(x in error_msg for x in ['not found', '404', 'resource not exist']):
-                    log.info(f"SecMaster工作空间不存在，返回空列表: {e}")
-                    break  # 资源不存在是正常情况
-                elif any(x in error_msg for x in ['forbidden', '403', 'permission']):
-                    log.error(f"SecMaster工作空间查询权限不足: {e}")
-                    raise  # 重新抛出权限错误
-                else:
-                    log.error(f"SecMaster工作空间查询失败: {e}")
-                    raise  # 其他未知错误也重新抛出
-                
-        return resources
 
 
 @SecMasterWorkspace.action_registry.register("send-msg") 
