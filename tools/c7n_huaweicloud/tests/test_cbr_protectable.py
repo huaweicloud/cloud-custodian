@@ -66,15 +66,6 @@ class CbrProtectableTest(BaseTest):
             {
                 'name': 'associate_server_with_inadequate_vault',
                 'resource': 'huaweicloud.cbr-protectable',
-                'filters': [{'and':
-                                 [{'type': 'value',
-                                   'op': 'contains',
-                                   'key': 'detail.tags',
-                                   'value': "backup_policy=45Dd"},
-                                  {'type': 'value',
-                                   'key': 'protectable.vault',
-                                   'value': None},
-                                  ]}],
                 'actions': [{'type': 'associate_server_with_vault',
                              'backup_policy_id': "a88a3421-f57e-49a4-b0ab-0ba334313b48",
                              'consistent_level': "crash_consistent",

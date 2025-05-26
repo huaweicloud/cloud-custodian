@@ -29,8 +29,10 @@ class CbrProtectable(QueryResourceManager):
 @CbrProtectable.action_registry.register('associate_server_with_vault')
 class CbrAssociateServerVault(HuaweiCloudBaseAction):
     '''
-        While Creating a new server, checks if the legally tagged servers is protected by a vault.
-        if not, create a new vaults with periodical backup policy to protect them.
+        Checks if the legally tagged servers is protected by a vault.
+        if not, associate it with an existing vault.
+        if the number of instances in all existing vaults has reached the upper limit,
+        create a new vaults with periodical backup policy to protect them.
     : Example:
 
     .. code-block:: yaml
@@ -39,12 +41,17 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
           - name: cbr_protectable_associate_server_with_vault
             resource: huaweicloud.cbr-protectable
             filters:
-              - type: unassociated_server_with_vault
-                legal_keys: ['backup_policy']
-                legal_values: ['45Dd']
+              - and:
+                - type: value
+                  op: contains
+                  key: detail.tags
+                  value: "backup_policy=45Dd"
+                - type: value
+                  key: protectable.vault
+                  value: empty
             actions:
               - type: associate_server_with_vault
-                backup_policy_id: "a88a3421-f57e-49a4-b0ab-0ba334313b48"
+                backup_policy_id: "bc715c62-f4ed-4fc0-9e78-ce43b9409a39"
                 consistent_level: "crash_consistent"
                 object_type: "server"
                 protect_type: "backup"
@@ -111,8 +118,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 if space == 0:
                     log.info(
                         f"Unable to add resource to {vaults[vault_num]['id']}. "
-                        f"Because the number of instances in the repository "
-                        f"has reached the upper limit."
+                        f"Because the number of instances in the vault {vaults[vault_num]['id']}"
+                        "has reached the upper limit."
                     )
                 else:
                     listResourcesbody = []
@@ -137,7 +144,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
             vault_num += 1
 
         while resources:
-            log.info("All vaults are unable to be associated, "
+            log.info("All existing vaults are unable to be associated, "
                      "a new vault will be created.")
             server_list = []
             for _ in range(self.max_count):
