@@ -68,7 +68,7 @@ def get_cbr_vault_of_volume(client, volume_id):
 class Volume(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'evs'
-        enum_spec = ("list_volumes", 'volumes', 'offset')
+        enum_spec = ("list_volumes_invoker", 'volumes', 'offset')
         id = 'id'
         tag_resource_type = 'disk'
 
@@ -202,7 +202,11 @@ class VolumeDelete(HuaweiCloudBaseAction):
         volume_id = resource["id"]
         log.info("delete Volume %s" % volume_id)
         request = DeleteVolumeRequest(volume_id=volume_id)
-        response = client.delete_volume(request)
+
+        # request with retry
+        response = self._invoke_client_request(
+            client, "delete_volume_invoker", request
+        )
         job_id = response.job_id
         log.info(f"Received Job ID:{job_id}")
         wait_job_end(client, job_id)

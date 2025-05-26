@@ -1,0 +1,264 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250424T092453Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "instance-12345678", "name": "mysql-instance-test",
+        "status": "ACTIVE", "type": "MySQL", "vpc_id": "vpc-12345678", "subnet_id":
+        "subnet-12345678", "security_group_id": "sg-12345678", "flavor_ref": "rds.mysql.m1.large",
+        "tags": [{"key": "env", "value": "tag_value"}]}], "total_count": 1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 24 Apr 2025 09:24:53 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=6bb2c73db09db378d7; path=/
+      - HWWAFSESTIME=1745486693325; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 62349128bdd81b9b74e66e750b333ad1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250425T033507Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"description":"","enabled":true,"id":"domain-12345678", "links":{"self":"https://iam.myhuaweicloud.com/v3/domains/domain-12345678"},
+        "name":"domainname1"}],"links":{"self":"https://iam.myhuaweicloud.com/v3/auth/domains"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 03:35:07 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1745552106495; path=/
+      - HWWAFSESID=2208076192b09db11c; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 56c69228792ce3ce6ed7c9a156f181f2
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESTIME=1745552106495; HWWAFSESID=2208076192b09db11c
+      Host:
+      - iam.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - domainid1
+      X-Sdk-Date:
+      - 20250425T033731Z
+    method: GET
+    uri: https://iam.ap-southeast-1.myhuaweicloud.com/v3/projects?name=ap-southeast-1
+  response:
+    body:
+      string: '{"projects": [{"id": "project-12345678", "name": "ap-southeast-1",
+        "domain_id": "domain-12345678"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 03:37:31 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ea8ee800ee168cb6677489a5d7617f95
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+- request:
+    body: '{"project_id": "project-12345678", "resources": [{"resource_id": "instance-12345678",
+      "resource_type": "rds"}], "tags": [{"key": "env", "value": "tag_value"}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '159'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - tms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - domainid1
+      X-Sdk-Date:
+      - 20250425T033814Z
+    method: POST
+    uri: https://tms.ap-southeast-1.myhuaweicloud.com/v1.0/resource-tags/batch-delete
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 03:38:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=a9fb9735bb1851f397; path=/
+      - HWWAFSESTIME=1745552294847; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - f23ceca35b954bddd4e89d33d9843692
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+- request:
+    body: '{"project_id": "project-12345678", "resources": [{"resource_id": "instance-12345678",
+      "resource_type": "rds"}], "tags": [{"key": "Environment", "value": "tag_value"}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '167'
+      Content-Type:
+      - application/json;charset=utf-8
+      Cookie:
+      - HWWAFSESID=a9fb9735bb1851f397; HWWAFSESTIME=1745552294847
+      Host:
+      - tms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - domainid1
+      X-Sdk-Date:
+      - 20250425T035747Z
+    method: POST
+    uri: https://tms.ap-southeast-1.myhuaweicloud.com/v1.0/resource-tags/batch-create
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 25 Apr 2025 03:57:47 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 314e6cc33438d9c0ce8282a7956fba15
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Success
+version: 1

@@ -1,0 +1,169 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250521T094204Z
+    method: GET
+    uri: https://iam.ap-southeast-3.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 21 May 2025 09:42:04 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=ea5a297d481ff8ae30; path=/
+      - HWWAFSESTIME=1747820520879; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 94063fc0a9ad943369eccb09c18c1bf8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ok
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ccm.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250521T110014Z
+    method: GET
+    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificates?limit=100&offset=0
+  response:
+    body:
+      string: '{ "total" : 1, "certificates" : [ { "signature_algorithm" : "SHA256",
+        "issuer_id" : "ef5d84d1-4f52-47d2-b1c8-a91a672487a0", "issuer_name" : "12",
+        "not_after" : 1665539214000, "not_before" : 1634295475000, "status" : "ISSUED",
+        "freeze_flag" : 0, "gen_mode" : "GENERATE", "serial_number" : "202110151057541266081861",
+        "distinguished_name" : { "country" : "cn", "state" : "guizhou", "locality"
+        : "guiyang", "organization" : "TestA", "organizational_unit" : "IT", "common_name"
+        : "test.test.com" }, "key_algorithm" : "RSA2048", "create_time" : 1634295475000,
+        "delete_time" : null, "certificate_id" : "6434f74f-2d13-4e6a-89eb-93ee313f1a43",
+        "enc_cert_info" : { "enc_serial_number" : "2ad6c3e393a95bf13f95" } }] }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 21 May 2025 11:00:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=44a7173a7ce7b4faec; path=/
+      - HWWAFSESTIME=1747825214315; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6be95f85eaa9a24b53e1a5a9ac4f857c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ccm.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250522T083707Z
+    method: GET
+    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificates/6434f74f-2d13-4e6a-89eb-93ee313f1a43/tags
+  response:
+    body:
+      string: '{
+        "tags" : [ {
+          "key" : "key1",
+          "value" : "value1"
+        }, {
+          "key" : "key2",
+          "value" : "value2"
+        } ]
+      }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 May 2025 08:37:07 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1747903027231; path=/
+      - HWWAFSESID=a8be873f90f6f8bee3; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 3b0ec3a9a0318f05ee9c22192bd1d1b8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

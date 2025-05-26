@@ -1,0 +1,113 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T103922Z
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances": [{"id": "rds-instance-for-auto-enlarge-on", "name": "rds-auto-on",
+        "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
+        "datastore": {"type": "MySQL", "version": "5.7"}, "created": "2023-03-15T08:00:00+0000",
+        "updated": "2023-03-16T10:30:00+0000", "private_ips": ["192.168.2.20"], "public_ips": [],
+        "vpc_id": "vpc-test-id", "subnet_id": "subnet-test-id", "security_group_id":
+        "sg-test-id"}], "total_count": 1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 10:39:22 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=64b0e7953e0eb1c619; path=/
+      - HWWAFSESTIME=1745923162023; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6226bce143f6725a3fd71b205623dfe1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"enlarge_volume_auto": true}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - rds.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T103923Z
+    method: PUT
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-for-auto-enlarge-on/volume/action
+  response:
+    body:
+      string: '{}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 10:39:23 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=64b0e7953e0eb1c620; path=/
+      - HWWAFSESTIME=1745923163023; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7226bce143f6725a3fd71b205623dfe3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

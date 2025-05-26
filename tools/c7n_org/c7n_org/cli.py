@@ -682,6 +682,8 @@ def run_account(account, region, policies_config, output_path,
         config['agency_urn'] = account['agency_urn']
         config['duration_seconds'] = account['duration_seconds']
         config['regions'] = account['regions']
+        config['domain_id'] = account['domain_id']
+        config['name'] = account['name']
 
     policies = PolicyCollection.from_data(policies_config, config)
     policy_counts = {}

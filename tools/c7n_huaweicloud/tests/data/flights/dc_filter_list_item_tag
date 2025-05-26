@@ -1,0 +1,186 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dcaas.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T012028Z
+    method: GET
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects?limit=100
+  response:
+    body:
+      string: "{\"request_id\":\"aa82160c1affb650e816e5301a26c155\", \"direct_connects\":[
+        {\"id\":\"dc-123456789abcdef\", \"tenant_id\":\"ap-southeat-1\", \"name\":\"dc-tagged-connection\",
+        \"description\":\"\u6807\u7B7E\u4E13\u7EBF\u8FDE\u63A5\", \"port_type\":\"10G\",
+        \"bandwidth\":1000, \"location\":\"Huawei DC Location\", \"peer_location\":\"Customer
+        DC Location\", \"device_id\":\"dc-device-001\", \"interface_name\":\"interface-1\",
+        \"redundant_id\":null, \"provider\":\"Huawei Cloud\", \"provider_status\":\"ACTIVE\",
+        \"type\":\"standard\", \"hosting_id\":null, \"vlan\":100, \"charge_mode\":\"Prepaid\",
+        \"order_id\":\"123456789\", \"product_id\":\"dc-product-001\", \"status\":\"ACTIVE\",
+        \"admin_state_up\":true, \"spec_code\":\"dc.10g\", \"applicant\":\"admin\",
+        \"create_time\":\"2025-01-01T00:00:00Z\", \"enterprise_project_id\":\"0\",
+        \"region_id\":\"ap-southeast-1\", \"building_line_status\":\"COMPLETED\",
+        \"accept_time\":\"2025-01-01T01:00:00Z\", \"port_spec_code\":\"xxx-port-spec\",
+        \"port_type_name\":\"10G-\u7535\u53E3\", \"tags\":[{\"key\":\"environment\",
+        \"value\":\"production\"}] },\n{\"id\":\"dc-987654321fedcba\", \"tenant_id\":\"ap-southeat-1\",
+        \"name\":\"dc-untagged-connection\", \"description\":\"\u65E0\u6807\u7B7E\u4E13\u7EBF\u8FDE\u63A5\",
+        \"port_type\":\"1G\", \"bandwidth\":500, \"location\":\"Huawei DC Location
+        2\", \"peer_location\":\"Customer DC Location 2\", \"device_id\":\"dc-device-002\",
+        \"interface_name\":\"interface-2\", \"redundant_id\":null, \"provider\":\"Huawei
+        Cloud\", \"provider_status\":\"ACTIVE\", \"type\":\"standard\", \"hosting_id\":null,
+        \"vlan\":200, \"charge_mode\":\"Prepaid\", \"order_id\":\"987654321\", \"product_id\":\"dc-product-002\",
+        \"status\":\"ACTIVE\", \"admin_state_up\":true, \"spec_code\":\"dc.1g\", \"applicant\":\"admin\",
+        \"create_time\":\"2025-01-15T00:00:00Z\", \"enterprise_project_id\":\"0\",
+        \"region_id\":\"ap-southeast-1\", \"building_line_status\":\"COMPLETED\",
+        \"accept_time\":\"2025-01-15T01:00:00Z\", \"port_spec_code\":\"xxx-port-spec\",
+        \"port_type_name\":\"1G-\u7535\u53E3\" } ] } "
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 01:20:28 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=2406073be07627d308; path=/
+      - HWWAFSESTIME=1745889628302; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - aa82160c1affb650e816e5301a26c155
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - dcaas.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T012543Z
+    method: GET
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects/dc-123456789abcdef
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"72401790df86efc779fefa1a167f44fc"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 01:25:43 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=870c87356a86c6f3de; path=/
+      - HWWAFSESTIME=1745889943802; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 72401790df86efc779fefa1a167f44fc
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESID=870c87356a86c6f3de; HWWAFSESTIME=1745889943802
+      Host:
+      - dcaas.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T012543Z
+    method: GET
+    uri: https://dcaas.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/dcaas/direct-connects/dc-987654321fedcba
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"1b1eecdf4aff1eb8a604dba3e6dd11ab"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 01:25:43 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 1b1eecdf4aff1eb8a604dba3e6dd11ab
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

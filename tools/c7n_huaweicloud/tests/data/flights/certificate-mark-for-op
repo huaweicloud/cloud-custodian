@@ -1,0 +1,57 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - scm.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250507T094811Z
+    method: GET
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"118ef6b3801ebb19285e7bd5bd55c613"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 07 May 2025 09:48:11 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=71a247332f8ba6f14f; path=/
+      - HWWAFSESTIME=1746611291985; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 118ef6b3801ebb19285e7bd5bd55c613
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

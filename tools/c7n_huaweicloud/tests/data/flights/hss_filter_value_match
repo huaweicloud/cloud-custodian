@@ -1,0 +1,55 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - hss.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250423T054806Z
+    method: GET
+    uri: https://hss.ap-southeast-1.myhuaweicloud.com/v5/ap-southeat-1/host-management/hosts?limit=100&offset=0
+  response:
+    body:
+      string: '{"data_list":[{"host_id":"test-host-id-123","host_name":"test-host","agent_status":"RUNNING","os_type":"Linux","protect_info":{"wtp_protection":true,"aad_protection":true,"hips_protection":true,"vul_protection":true,"rap_protection":true},"public_ip":"10.0.0.1","private_ip":"192.168.0.1","agent_version":"1.0.0","tags":[{"key":"environment","value":"prod"},{"key":"owner","value":"security-team"}],"enterprise_project_id":"0","register_status":"bind","hostname":"test-host","machine_type":"ECS","os_bit":"64","cpu_cores":2,"agent_create_time":1672531200,"agent_register_time":1672531200,"private_ipv6":"","public_ipv6":"","auto_pay_switch":true,"support_features":[],"created_at":1672531200}],"total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Apr 2025 05:48:06 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=15b007938b124ab4fe; path=/
+      - HWWAFSESTIME=1745387284867; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - d688738caeb5c181d48ccd2c59a45ea4
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

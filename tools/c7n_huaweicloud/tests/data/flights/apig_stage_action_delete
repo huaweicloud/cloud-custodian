@@ -1,0 +1,151 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - apig.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Auth-Token:
+      - MIIGFQYJKoZIhvcNAQcCoIIGBjCCBgICAQExDTALBgNVBAMUBHRlc3Q=
+      X-Project-Id:
+      - 73d69ae0cfcf460190522d06b60f05ad
+      X-Sdk-Date:
+      - 20250514T110523Z
+    method: GET
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances?limit=500
+  response:
+    body:
+      string: '{"total":2,"size":2,"instances":[{"id":"eddc4d25480b4cd6b512f270a1b8b341",
+        "project_id":"73d69ae0cfcf460190522d06b60f05ad", "instance_name":"apig-Enterprise-Professional",
+        "status":"Running", "instance_status":6, "spec":"PROFESSIONAL", "create_time":1585302825070,
+        "enterprise_project_id":"0", "eip_address":"xxx.xxx.xxx.xxx", "charging_mode":1,
+        "cbc_metadata":"CS2006301043A28NF:00301-734023-0--0", "type":"apig"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 May 2025 11:05:23 GMT
+      Server:
+      - API Gateway
+      X-Request-Id:
+      - a123b456c789d012e345f678g901h234
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - apig.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250508T065506Z
+    method: GET
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/eddc4d25480b4cd6b512f270a1b8b341/envs?limit=500
+  response:
+    body:
+      string: '{"total": 1, "size": 1, "envs": [{"id": "7a1ad0c350844ee69479b47df9a881cb",
+        "name": "TEST", "remark": "Original description", "create_time": "2020-07-31T06:41:43Z",
+        "enable_metrics": false, "is_waf_enabled": false, "is_client_certificate_required":
+        false}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 08 May 2025 06:55:06 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=05c59737c5f630c38c; path=/
+      - HWWAFSESTIME=1746687306553; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 2f32778ccf6c6d71bb8f7a279e3bb061
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - apig.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250508T072233Z
+    method: DELETE
+    uri: https://apig.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/apigw/instances/eddc4d25480b4cd6b512f270a1b8b341/envs/7a1ad0c350844ee69479b47df9a881cb
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 08 May 2025 07:22:33 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=badfb73c3d5f07299c; path=/
+      - HWWAFSESTIME=1746688953928; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 83e3f237e9f30b47391da348a6de5b4d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 204
+      message: No Content
+version: 1
