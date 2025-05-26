@@ -631,7 +631,8 @@ class PrivateCertificateCreateTimeFilter(Filter):
             # Get resource creation time (millisecond timestamp)
             create_time = resource.get('create_time')
 
-            # Only include resources where create_time exists and is greater than or equal to the specified timestamp
+            # Only include resources where create_time exists and
+            # is greater than or equal to the specified timestamp
             if create_time and create_time >= timestamp_ms:
                 results.append(resource)
 
