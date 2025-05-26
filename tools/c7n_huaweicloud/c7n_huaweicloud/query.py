@@ -231,9 +231,7 @@ class ResourceQuery:
         if "id" not in resources[0]:
             for data in resources:
                 data["id"] = data[manager.id]
-        if "tag_resource_type" not in resources[0]:
-            for data in resources:
-                data["tag_resource_type"] = manager.tag_resource_type
+
         self._get_obs_account_id(response, manager, resources)
 
         return resources
