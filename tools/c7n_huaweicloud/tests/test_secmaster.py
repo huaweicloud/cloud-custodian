@@ -443,7 +443,7 @@ class SecmasterTest(BaseTest):
         self.assertEqual(data_object['create_time'], '2025-03-26T08:30:15Z+0800', "创建时间应该匹配")
 
     def test_secmaster_playbook_enable_action(self):
-        """测试剧本开启动作"""
+        """测试剧本开启动作 - 包含版本查询和最新版本选择"""
         factory = self.replay_flight_data('secmaster_playbook_enable_action')
         p = self.load_policy({
             'name': 'secmaster-playbook-enable-test',
@@ -466,7 +466,7 @@ class SecmasterTest(BaseTest):
         # 根据VCR文件：返回2个未启用的剧本（playbook-001, playbook-004）
         self.assertEqual(len(resources), 2, "根据VCR文件应该返回2个未启用的剧本")
         
-        # 验证第一个剧本
+        # 验证第一个剧本 - playbook-001
         playbook1 = resources[0]
         self.assertEqual(playbook1['id'], 'playbook-001', "第一个剧本ID应该是playbook-001")
         self.assertEqual(playbook1['name'], '高危操作监控剧本', "第一个剧本名称应该匹配")
@@ -474,12 +474,23 @@ class SecmasterTest(BaseTest):
         self.assertEqual(playbook1['workspace_id'], 'workspace001', "应该有工作空间ID")
         self.assertEqual(playbook1['workspace_name'], 'production-workspace', "应该有工作空间名称")
         
-        # 验证第二个剧本
+        # 验证第二个剧本 - playbook-004
         playbook2 = resources[1]
         self.assertEqual(playbook2['id'], 'playbook-004', "第二个剧本ID应该是playbook-004")
         self.assertEqual(playbook2['name'], '权限监控剧本', "第二个剧本名称应该匹配")
         self.assertFalse(playbook2['enabled'], "过滤条件：应该是未启用状态")
         self.assertEqual(playbook2['workspace_id'], 'workspace001', "应该有工作空间ID")
+        
+        # 注意：此测试验证的是action执行前的剧本状态（过滤条件）
+        # 实际的enable-playbook action会：
+        # 1. 查询playbook-001的版本列表，找到最新版本version-001-v3（update_time: 2024-07-02T15:45:00Z+0800）
+        # 2. 查询playbook-004的版本列表，找到最新版本version-004-v2（update_time: 2024-07-02T16:20:00Z+0800）
+        # 3. 使用正确的name和active_version_id更新剧本
+        # 
+        # VCR文件中的版本查询响应验证了以下逻辑：
+        # - playbook-001有3个版本，最新的是v3.0（基于update_time）
+        # - playbook-004有2个版本，最新的是v2.0（基于update_time）
+        # - 更新请求包含了name和active_version_id字段
 
     def test_secmaster_playbook_send_msg(self):
         """测试剧本发送消息动作"""

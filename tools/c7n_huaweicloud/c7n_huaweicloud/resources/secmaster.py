@@ -20,6 +20,8 @@ from huaweicloudsdksecmaster.v2 import (
     ListAlertsResponse, 
     ListPlaybooksRequest,
     ListPlaybooksResponse,
+    ListPlaybookVersionsRequest,
+    ListPlaybookVersionsResponse,
     UpdatePlaybookRequest,
     ModifyPlaybookInfo,
     DataobjectSearch,
@@ -496,15 +498,73 @@ class EnablePlaybook(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         workspace_id = resource.get("workspace_id")
         playbook_id = resource.get("id")
+        playbook_name = resource.get("name")
         
         if not workspace_id or not playbook_id:
             log.error(f"工作空间ID或剧本ID缺失: workspace_id={workspace_id}, playbook_id={playbook_id}")
             return {"status": "error", "message": "工作空间ID或剧本ID缺失"}
         
         try:
+            # 首先查询剧本版本列表，找到最新版本
+            log.info(f"查询剧本 {playbook_name} 的版本列表...")
+            
+            offset = 0
+            limit = 500
+            latest_version = None
+            latest_update_time = None
+            
+            while True:
+                version_request = ListPlaybookVersionsRequest(
+                    workspace_id=workspace_id,
+                    playbook_id=playbook_id,
+                    offset=offset,
+                    limit=limit
+                )
+                
+                version_response = client.list_playbook_versions(version_request)
+                
+                if not version_response.data:
+                    break
+                
+                # 遍历版本列表，找到 update_time 最新的版本
+                for version in version_response.data:
+                    if hasattr(version, 'to_dict'):
+                        version_dict = version.to_dict()
+                    else:
+                        version_dict = version
+                    
+                    update_time_str = version_dict.get('update_time')
+                    if update_time_str:
+                        try:
+                            # 解析时间字符串
+                            from dateutil.parser import parse
+                            update_time = parse(update_time_str)
+                            
+                            if latest_update_time is None or update_time > latest_update_time:
+                                latest_update_time = update_time
+                                latest_version = version_dict
+                        except Exception as e:
+                            log.warning(f"解析版本更新时间失败: {update_time_str}, 错误: {e}")
+                            continue
+                
+                # 检查是否还有更多数据
+                if len(version_response.data) < limit:
+                    break
+                    
+                offset += limit
+            
+            if not latest_version:
+                log.error(f"未找到剧本 {playbook_name} 的任何版本")
+                return {"status": "error", "message": "未找到剧本版本"}
+            
+            active_version_id = latest_version.get('id')
+            log.info(f"找到最新版本: {latest_version.get('version')} (ID: {active_version_id})")
+            
             # 构建修改剧本信息，开启剧本
             modify_info = ModifyPlaybookInfo(
+                name=playbook_name,  # 设置剧本名称
                 enabled=True,  # 开启剧本
+                active_version_id=active_version_id,  # 设置启用的版本ID
                 description=resource.get("description", "") + " [已通过策略自动开启]"
             )
             
@@ -516,11 +576,13 @@ class EnablePlaybook(HuaweiCloudBaseAction):
             
             response = client.update_playbook(request)
             
-            log.info(f"成功开启剧本: {resource.get('name')} (ID: {playbook_id})")
+            log.info(f"成功开启剧本: {playbook_name} (ID: {playbook_id}), 启用版本: {latest_version.get('version')}")
             return {
                 "status": "success", 
-                "message": f"剧本 {resource.get('name')} 已开启",
-                "playbook_id": playbook_id
+                "message": f"剧本 {playbook_name} 已开启，启用版本: {latest_version.get('version')}",
+                "playbook_id": playbook_id,
+                "active_version_id": active_version_id,
+                "active_version": latest_version.get('version')
             }
             
         except Exception as e:

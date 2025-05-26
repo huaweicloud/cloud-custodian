@@ -81,9 +81,50 @@ interactions:
     status:
       code: 200
       message: ''
+# 查询剧本版本列表
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/playbooks/playbook-001/versions?limit=500&offset=0
+  response:
+    body:
+      string: '{"code":"0","message":null,"total":2,"size":2,"page":1,"data":[{"id":"version-001-v1","description":"初始版本","create_time":"2024-07-02T10:00:00Z+0800","update_time":"2024-07-02T10:00:00Z+0800","project_id":"15projectda6","creator_id":"b4admin46a","modifier_id":"b4admin46a","playbook_id":"playbook-001","version":"v1.0","enabled":true,"status":"PUBLISHED","action_strategy":"ASYNC","rule_enable":false,"dataclass_id":"dataclass-security","trigger_type":"EVENT","dataobject_create":true,"dataobject_update":false,"dataobject_delete":false,"version_type":1,"rule_id":"","dataclass_name":"security","approve_name":"admin"},{"id":"version-001-v2","description":"最新版本","create_time":"2024-07-02T11:00:00Z+0800","update_time":"2024-07-02T14:30:00Z+0800","project_id":"15projectda6","creator_id":"b4admin46a","modifier_id":"b4admin46a","playbook_id":"playbook-001","version":"v2.0","enabled":true,"status":"PUBLISHED","action_strategy":"ASYNC","rule_enable":false,"dataclass_id":"dataclass-security","trigger_type":"EVENT","dataobject_create":true,"dataobject_update":false,"dataobject_delete":false,"version_type":1,"rule_id":"","dataclass_name":"security","approve_name":"admin"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - eafbccedf4d9f64e03701cc558fc2599
+    status:
+      code: 200
+      message: ''
 # 开启剧本
 - request:
-    body: '{"enabled": true, "description": "监控高危系统操作并自动响应 [已通过策略自动开启]"}'
+    body: '{"name": "高危操作监控剧本", "enabled": true, "active_version_id": "version-001-v2", "description": "监控高危系统操作并自动响应 [已通过策略自动开启]"}'
     headers:
       Accept:
       - '*/*'
@@ -105,7 +146,7 @@ interactions:
     uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/playbooks/playbook-001
   response:
     body:
-      string: '{"code":"0","message":null,"data":{"id":"playbook-001","name":"高危操作监控剧本","description":"监控高危系统操作并自动响应 [已通过策略自动开启]","create_time":"2024-07-02T10:00:00Z+0800","update_time":"2024-07-02T15:30:25Z+0800","project_id":"15projectda6","version_id":"version-001","enabled":true,"workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v1.0","dataclass_name":"security","dataclass_id":"dataclass-security","unaudited_version_id":"","reject_version_id":""}}'
+      string: '{"code":"0","message":null,"data":{"id":"playbook-001","name":"高危操作监控剧本","description":"监控高危系统操作并自动响应 [已通过策略自动开启]","create_time":"2024-07-02T10:00:00Z+0800","update_time":"2024-07-02T15:30:25Z+0800","project_id":"15projectda6","version_id":"version-001-v2","enabled":true,"workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v2.0","dataclass_name":"security","dataclass_id":"dataclass-security","unaudited_version_id":"","reject_version_id":"","active_version_id":"version-001-v2"}}'
     headers:
       Connection:
       - keep-alive
@@ -118,7 +159,7 @@ interactions:
       Transfer-Encoding:
       - chunked
       X-Request-Id:
-      - eafbccedf4d9f64e03701cc558fc2599
+      - eafbccedf4d9f64e03701cc558fc2600
     status:
       code: 200
       message: ''
