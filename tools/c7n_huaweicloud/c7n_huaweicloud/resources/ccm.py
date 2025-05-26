@@ -159,7 +159,8 @@ class CertificateAuthorityIssuerNameFilter(Filter):
             if issuer_name is None or issuer_name == 'null':
                 # Check for None or empty string or whitespace only string
                 is_empty = not resource_issuer
-                is_blank = isinstance(resource_issuer, str) and not resource_issuer.strip()
+                is_blank = isinstance(
+                    resource_issuer, str) and not resource_issuer.strip()
                 if is_empty or is_blank:
                     results.append(resource)
             # Otherwise do an exact match
@@ -575,6 +576,63 @@ class PrivateCertificateSignatureAlgorithmFilter(Filter):
         for resource in resources:
             signature_algorithm = resource.get('signature_algorithm')
             if signature_algorithm in algorithms:
+                results.append(resource)
+
+        return results
+
+
+@PrivateCertificate.filter_registry.register('create-time')
+class PrivateCertificateCreateTimeFilter(Filter):
+    """Filter private certificates created after a specified datetime
+
+    This filter allows finding certificates created after a specified datetime.
+    Users can input a standard datetime string (e.g., 2025-5-26 09:27:25),
+    and the filter will convert it to a timestamp to compare with
+    the create_time returned by the API.
+
+    :example:
+
+    .. code-block:: yaml
+
+        # Find all certificates created after May 26, 2025, 9:27:25 AM
+        policies:
+          - name: find-certificates-created-after-specific-time
+            resource: huaweicloud.ccm-private-certificate
+            filters:
+              - type: create-time
+                value: "2025-5-26 09:27:25"
+    """
+    schema = type_schema(
+        'create-time',
+        value={'type': 'string'}
+    )
+
+    def process(self, resources, event=None):
+        import datetime
+        import time
+
+        date_str = self.data.get('value')
+        if not date_str:
+            return resources
+
+        # Convert user input datetime string to timestamp (milliseconds)
+        try:
+            # Try to parse the user input datetime string
+            dt = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+            # Convert to millisecond timestamp
+            timestamp_ms = int(time.mktime(dt.timetuple()) * 1000)
+        except ValueError as e:
+            log.error(
+                f"Date format error: {date_str}. Should be 'YYYY-MM-DD HH:MM:SS'. Error: {e}")
+            return []
+
+        results = []
+        for resource in resources:
+            # Get resource creation time (millisecond timestamp)
+            create_time = resource.get('create_time')
+
+            # Only include resources where create_time exists and is greater than or equal to the specified timestamp
+            if create_time and create_time >= timestamp_ms:
                 results.append(resource)
 
         return results

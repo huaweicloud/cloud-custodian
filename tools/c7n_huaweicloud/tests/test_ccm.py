@@ -335,6 +335,27 @@ class CcmPrivateCertificateTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["signature_algorithm"], "SHA256")
 
+    def test_private_certificate_create_time_filter(self):
+        """Test filtering private certificates by creation time"""
+        factory = self.replay_flight_data(
+            "ccm_private_certificate_create_time_filter")
+        # Test actual policy execution with patched resource data
+        p = self.load_policy(
+            {
+                "name": "find-certificates-after-date",
+                "resource": "huaweicloud.ccm-private-certificate",
+                "filters": [
+                    {
+                        "type": "create-time",
+                        "value": "2025-5-26 09:27:25"
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
 
 # =========================
 # Reusable Features Tests (Using Certificate Authority resource as an example)
