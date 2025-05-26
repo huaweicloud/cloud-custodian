@@ -40,7 +40,7 @@ class AlarmTest(BaseTest):
     def test_batch_start_stopped_alarm_rules(self):
         factory = self.replay_flight_data('ces_batch_start_stopped_alarm_rules')
         p = self.load_policy({
-            'name': 'batch-start-stopped-alarm-rules',
+            'name': 'batch-start-alarm-rules',
             'resource': 'huaweicloud.ces-alarm',
             "filters": [{
                 "type": "value",
@@ -48,7 +48,7 @@ class AlarmTest(BaseTest):
                 "value": "false"
             }],
             "actions": [{
-                "type": "batch-start-stopped-alarm-rules",
+                "type": "batch-start-alarm-rules",
                 "parameters": {
                     "message": "You have the following alarms that have not been started, "
                                "please check the system. The tasks have been started, "
