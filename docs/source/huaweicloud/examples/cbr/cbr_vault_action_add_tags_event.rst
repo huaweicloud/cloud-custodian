@@ -1,5 +1,5 @@
 policies:
-  - name: cbr_vault_action_add_tags
+  - name: cbr_vault_action_add_tags_event
     resource: huaweicloud.cbr-vault
     mode:
       type: cloudtrace

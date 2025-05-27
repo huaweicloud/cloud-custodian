@@ -66,7 +66,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 name: "new_vault"
 
     '''
-    max_count = 2  # the maximum count of instance of vault
+    max_count = 200  # the maximum count of instance of vault
 
     schema = type_schema('associate_server_with_vault',
                          backup_policy_id={'type': 'string'},

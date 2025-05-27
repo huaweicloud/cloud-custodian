@@ -1,12 +1,12 @@
 policies:
-  - name: cbr_protectable_associate_server_with_vault
+  - name: cbr_protectable_associate_server_with_vault_schedule
     resource: huaweicloud.cbr-protectable
     mode:
       type: huaweicloud-periodic
       xrole: fgs_admin
       eg_agency: EG_TARGET_AGENCY
       enable_lts_log: true
-      schedule: "2m"
+      schedule: "1h"
       schedule_type: Rate
     filters:
       - and:
