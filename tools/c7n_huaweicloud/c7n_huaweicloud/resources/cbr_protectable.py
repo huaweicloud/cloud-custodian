@@ -195,7 +195,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 is_auto_pay=self.data.get('is_auto_pay'),
             )
             if policy_id is None or policy_id == "":
-                raise Exception(f"no backup_policy_id specified.")
+                raise Exception("no backup_policy_id specified.")
             vaultbody = VaultCreate(
                 backup_policy_id=self.data.get('backup_policy_id', policy_id),
                 billing=billingVault,
