@@ -264,6 +264,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.149"
 
 [[package]]
+name = "huaweicloudsdkccm"
+version = "3.1.149"
+description = "CCM"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkccm-3.1.149-py2.py3-none-any.whl", hash = "sha256:caaf0f3257023cc51bd96a654ff34f0bcba33407bc8d2dfdbb41d8b22e146dae"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.149"
+
+[[package]]
 name = "huaweicloudsdkcdn"
 version = "3.1.149"
 description = "CDN"
@@ -1314,4 +1327,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "f1e2e56fbbf60813d149c44277fcd64f460502ec7938d8c0ae47533488286400"
+content-hash = "af6a6904561d54cd3a60efbf935b42cab8aeebccf4593107d0631425531dd3fd"
