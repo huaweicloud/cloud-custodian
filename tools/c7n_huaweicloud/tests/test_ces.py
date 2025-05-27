@@ -49,7 +49,6 @@ class AlarmTest(BaseTest):
             }],
             "actions": [{
                 "type": "batch-start-alarm-rules"
-                }
             }]
         },
             session_factory=factory)
