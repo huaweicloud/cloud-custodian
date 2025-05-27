@@ -41,7 +41,7 @@ class DeleteCertificateAction(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-expired-certificates
-            resource: huaweicloud.scm
+            resource: huaweicloud.ccm-ssl-certificate
             filters:
               - type: value
                 key: status
