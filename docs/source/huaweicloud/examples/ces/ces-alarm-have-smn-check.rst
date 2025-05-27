@@ -15,7 +15,6 @@ CES - Update CES Alarm notification settings.
           - type: alarm-update-notification
             parameters:
               action_type: "notification"
-              notification_list:
-                - "urn:smn:cn-north-4:xxxxx:CES_notification_xxxxxxx"
+              notification_name: "Email_Notification_to_Owner"
 
 
