@@ -13,7 +13,7 @@ from huaweicloudsdkces.v2 import UpdateAlarmNotificationsRequest, Notification, 
     CreateAlarmRulesRequest, Policy, PostAlarmsReqV2, AlarmType
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody, \
-    ListTopicsRequest, ListTopicsResponse
+    ListTopicsRequest
 
 from c7n.actions import BaseAction
 from c7n.filters.missing import Missing
