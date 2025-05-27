@@ -651,7 +651,7 @@ class Session:
         elif service == 'kafka':
             request = ListInstancesRequest()
         elif service == "cdn":
-            request = ListDomainsRequest()
+            request = ListDomainsRequest(show_tags=True)
         elif service == 'reliability':
             request = RocketMQListInstancesRequest()
         elif service == 'apig-api':
