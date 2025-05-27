@@ -3,37 +3,20 @@ policies:
     resource: huaweicloud.cbr-protectable
     mode:
       type: cloudtrace
-      xrole: fgs
+      xrole: fgs_admin
       eg_agency: EG_TARGET_AGENCY
       enable_lts_log: true
       events:
         - source: "ECS.ecs"
           event: "createServer"
           ids: "resource_id"
-        - source: "ECS.ecs"
-          event: "deleteServer"
-          ids: "resource_id"
-        - source: "ECS.ecs"
-          event: "addOrDeleteServersTags"
-          ids: "resource_id"
-        - source: "CBR.vault"
-          event: "addResources"
-          ids: "resource_id"
-        - source: "CBR.vault"
-          event: "removeResources"
-          ids: "resource_id"
-        - source: "CBR.vault"
-          event: "addVault"
-          ids: "resource_id"
-        - source: "CBR.vault"
-          event: "deleteVault"
-          ids: "resource_id"
     filters:
       - and:
-        - type: value
-          op: contains
-          key: detail.tags
-          value: "backup_policy=45Dd"
+        - not:
+          - type: value
+            op: contains
+            key: detail.tags
+            value: "backup_policy=False"
         - type: value
           key: protectable.vault
           value: empty

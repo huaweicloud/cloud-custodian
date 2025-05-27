@@ -1,11 +1,13 @@
 import logging
+import string
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkcbr.v1 import (
     CreateVaultRequest, BillingCreate,
     VaultCreate, VaultCreateReq,
     ResourceCreate, ListVaultRequest,
-    AddVaultResourceRequest, VaultAddResourceReq
+    AddVaultResourceRequest, VaultAddResourceReq,
+    ListPoliciesRequest
 )
 
 from c7n.utils import type_schema
@@ -23,7 +25,7 @@ class CbrProtectable(QueryResourceManager):
         service = 'cbr-protectable'
         enum_spec = ('list_protectable', 'instances', 'offset')
         id = 'id'
-        tag_resource_type = 'ecs'
+        tag_resource_type = ''
 
 
 @CbrProtectable.action_registry.register('associate_server_with_vault')
@@ -64,7 +66,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 name: "new_vault"
 
     '''
-    max_count = 200  # the maximum count of instance of vault
+    max_count = 2  # the maximum count of instance of vault
 
     schema = type_schema('associate_server_with_vault',
                          backup_policy_id={'type': 'string'},
@@ -108,6 +110,19 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 f"Unable to list vaults. RequestId: {e.request_id}, Reason: {e.error_msg}"
             )
 
+        try:
+            request = ListPoliciesRequest()
+            request.operation_type = "backup"
+            if len(vaults) > 0:
+                request.vault_id = vaults[0]['id']
+            response = client.list_policies(request)
+            policy_id = response.to_dict()['policies'][0]['id']
+        except exceptions.ClientRequestException as e:
+            log.exception(
+                f"Unable to list policies. RequestId: {e.request_id}, Reason: {e.error_msg}"
+            )
+            raise
+
         vault_num = 0
         while resources and vault_num < len(vaults):
             try:
@@ -115,7 +130,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 request.vault_id = vaults[vault_num]['id']
                 num_resource = len(vaults[vault_num]['resources'])
                 space = self.max_count - num_resource
-                if space == 0:
+                if space <= 0:
                     log.info(
                         f"Unable to add resource to {vaults[vault_num]['id']}. "
                         f"Because the number of instances in the vault {vaults[vault_num]['id']}"
@@ -143,6 +158,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 )
             vault_num += 1
 
+        offset = 0
         while resources:
             log.info("All existing vaults are unable to be associated, "
                      "a new vault will be created.")
@@ -150,10 +166,12 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
             for _ in range(self.max_count):
                 if resources:
                     server_list.append(resources.pop())
-            response = self.create_new_vault(server_list)
+            valut_name = self.get_new_vault_name(vaults, offset)
+            offset += 1
+            response = self.create_new_vault(server_list, policy_id, valut_name)
         return response
 
-    def create_new_vault(self, resources):
+    def create_new_vault(self, resources, policy_id, value_name):
         client = self.manager.get_client()
         try:
             request = CreateVaultRequest()
@@ -176,10 +194,12 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 is_auto_renew=self.data.get('is_auto_renew'),
                 is_auto_pay=self.data.get('is_auto_pay'),
             )
+            if policy_id is None or policy_id == "":
+                raise Exception(f"no backup_policy_id specified.")
             vaultbody = VaultCreate(
-                backup_policy_id=self.data.get('backup_policy_id'),
+                backup_policy_id=self.data.get('backup_policy_id', policy_id),
                 billing=billingVault,
-                name=self.data.get('name'),
+                name=value_name,
                 resources=listResourcesVault
             )
             request.body = VaultCreateReq(
@@ -189,4 +209,23 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
+        except Exception as e:
+            log.error(f"{e}")
+            raise
         return response
+
+    def get_new_vault_name(self, vaults, offset):
+        """根据输入的前缀，生成下一个存储库的名称"""
+        valut_prefix = self.data.get('name')
+        new_index = 0
+        for vault in vaults:
+            if str(vault['name']).startswith(valut_prefix):
+                suffix = string[len(valut_prefix):]
+                if suffix.isdigit():
+                    index = int(suffix)
+                    if new_index < index:
+                        new_index = index + 1
+        new_index += offset
+        valut_name = f"{valut_prefix}{new_index:03d}"
+        log.info(f"create new vault name {valut_name}")
+        return valut_name

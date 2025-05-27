@@ -217,12 +217,13 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
         return response.to_dict()
 
 
-@CbrVault.filter_registry.register('unassociated_with_replication_policy')
+@CbrVault.filter_registry.register('unassociated_with_specific_replication_policy')
 class CbrVaultUnassociatedReplicationFilter(Filter):
     '''
         Filter the vault unassociated with backup policy.
     '''
-    schema = type_schema('unassociated_with_replication_policy')
+    schema = type_schema('unassociated_with_specific_replication_policy',
+                         replication_policy_id={'type': 'string'})
 
     def process(self, resources, event=None):
         results = []
@@ -233,9 +234,33 @@ class CbrVaultUnassociatedReplicationFilter(Filter):
                 request.operation_type = "replication"
                 request.vault_id = r['id']
                 response = client.list_policies(request).to_dict()['policies']
-                if not response:
+                if response[0]['id'] != self.data.get('replication_policy_id'):
                     results.append(r)
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
                 raise
+        return results
+
+
+@CbrVault.filter_registry.register('without_specific_tags')
+class CbrVaultWithoutSpecificTagsFilter(Filter):
+    '''
+        Filter the vault unassociated with backup policy.
+    '''
+    schema = type_schema('without_specific_tags',
+                         keys={'type': 'array',
+                               'items': {'type': 'string'}})
+
+    def process(self, resources, event=None):
+        results = []
+        keys = self.data.get('keys')
+        num_key = len(keys)
+
+        for r in resources:
+            count = 0
+            for tag in r['tags']:
+                if tag['key'] in keys:
+                    count += 1
+            if count != num_key:
+                results.append(r)
         return results
