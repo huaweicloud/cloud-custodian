@@ -202,11 +202,7 @@ class VolumeDelete(HuaweiCloudBaseAction):
         volume_id = resource["id"]
         log.info("delete Volume %s" % volume_id)
         request = DeleteVolumeRequest(volume_id=volume_id)
-
-        # request with retry
-        response = self._invoke_client_request(
-            client, "delete_volume_invoker", request
-        )
+        response = client.delete_volume(request)
         job_id = response.job_id
         log.info(f"Received Job ID:{job_id}")
         wait_job_end(client, job_id)
