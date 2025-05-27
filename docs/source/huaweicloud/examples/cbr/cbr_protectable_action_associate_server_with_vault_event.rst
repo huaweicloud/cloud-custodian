@@ -1,5 +1,5 @@
 policies:
-  - name: cbr_protectable_associate_server_with_vault_event
+  - name: cbr_protectable_server_with_vault_event
     resource: huaweicloud.cbr-protectable
     mode:
       type: cloudtrace

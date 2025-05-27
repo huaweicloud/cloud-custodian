@@ -1,5 +1,5 @@
 policies:
-  - name: cbr_protectable_associate_server_with_vault_schedule
+  - name: cbr_protectable_server_with_vault_schedule
     resource: huaweicloud.cbr-protectable
     mode:
       type: huaweicloud-periodic
