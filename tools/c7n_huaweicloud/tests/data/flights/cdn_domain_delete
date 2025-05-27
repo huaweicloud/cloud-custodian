@@ -161,7 +161,7 @@ interactions:
       X-Sdk-Date:
       - 20250429T073109Z
     method: GET
-    uri: https://cdn.myhuaweicloud.com/v1.0/cdn/domains?page_number=1
+    uri: https://cdn.myhuaweicloud.com/v1.0/cdn/domains?page_number=1&show_tags=true
   response:
     body:
       string: '{"total": 1, "domains": [{"id": "domain-id-123", "domain_name": "example.com",
@@ -221,7 +221,7 @@ interactions:
       X-Sdk-Date:
       - 20250429T083016Z
     method: GET
-    uri: https://cdn.myhuaweicloud.com/v1.0/cdn/domains?page_number=2
+    uri: https://cdn.myhuaweicloud.com/v1.0/cdn/domains?page_number=2&show_tags=true
   response:
     body:
       string: '{"total": 1, "domains": null}'
