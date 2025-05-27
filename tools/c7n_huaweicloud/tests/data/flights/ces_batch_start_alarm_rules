@@ -1,0 +1,98 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ces.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://ces.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/alarms?limit=100&offset=0
+  response:
+    body:
+      string: '{"alarms":[{"alarm_id":"al17427965140272BWJEvgrp","name":"alarm-tkzr","description":"","namespace":"SYS.VPC","policies":[{"metric_name":"modifyVpn","period":0,"filter":"average","comparison_operator":">=","value":1,"unit":"count","count":1,"level":2},{"metric_name":"modifyVpc","period":0,"filter":"average","comparison_operator":">=","value":1,"unit":"count","count":1,"level":2},{"metric_name":"deleteVpn","period":0,"filter":"average","comparison_operator":">=","value":1,"unit":"count","count":1,"level":2},{"metric_name":"deleteSubnet","period":0,"filter":"average","comparison_operator":">=","value":1,"unit":"count","count":1,"level":2},{"metric_name":"modifySubnet","period":0,"filter":"average","comparison_operator":">=","value":1,"unit":"count","count":1,"level":2},{"metric_name":"modifyBandwidth","period":0,"filter":"average","comparison_operator":">=","value":1,"unit":"count","count":1,"level":2},{"metric_name":"deleteVpc","period":0,"filter":"average","comparison_operator":">=","value":1,"unit":"count","count":1,"level":2}],"resources":[{"dimensions":[]}],"type":"EVENT.SYS","enabled":true,"notification_enabled":false,"alarm_notifications":[],"ok_notifications":[],"enterprise_project_id":"0"}],"count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+- request:
+    body: '{"alarm_action_enabled":true,"insufficientdata_actions":[{"type":"notification","notificationList":["urn:smn:ap-southeast-1:xxxxxxxxxxx:ces_notification_group_xxxxx"]}],"ok_actions":[{"type":"notification","notificationList":["urn:smn:ap-southeast-1:xxxxxxxxxxx:ces_notification_group_xxxxx"]}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - evs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: POST
+    uri: https://ces.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/alarms/action
+  response:
+    body:
+      string: '{"alarm_ids": ["al17427965140272BWJEvgrp"]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1
