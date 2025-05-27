@@ -49,7 +49,7 @@ class TagCountFilter(Filter):
 
     def get_tags_from_resource(self, resource):
         try:
-            tags = resource["tags"]
+            tags = resource.get('tags')
             if isinstance(tags, dict):
                 return tags
             elif isinstance(tags, list):
