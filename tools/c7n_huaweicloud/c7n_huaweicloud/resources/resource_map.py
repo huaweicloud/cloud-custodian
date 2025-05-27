@@ -50,7 +50,7 @@ ResourceMap = {
     "huaweicloud.apig-api-groups": "c7n_huaweicloud.resources.apig.ApiGroupResource",
     "huaweicloud.reliability": "c7n_huaweicloud.resources.rocketmq.RocketMQ",
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
-    "huaweicloud.scm": "c7n_huaweicloud.resources.scm.Scm",
+    "huaweicloud.ccm-ssl-certificate": "c7n_huaweicloud.resources.scm.Scm",
     "huaweicloud.swr": "c7n_huaweicloud.resources.swr.Swr",
     "huaweicloud.swr-image": "c7n_huaweicloud.resources.swr.SwrImage",
     "huaweicloud.eip": "c7n_huaweicloud.resources.eip.EIP",
@@ -59,5 +59,7 @@ ResourceMap = {
     "huaweicloud.rds": "c7n_huaweicloud.resources.rds.RDS",
     "huaweicloud.aom-alarm": "c7n_huaweicloud.resources.aom.AomAlarm",
     "huaweicloud.eg-subscription": "c7n_huaweicloud.resources.eg.Subscription",
-    "huaweicloud.workspace-desktop": "c7n_huaweicloud.resources.workspace.Workspace"
+    "huaweicloud.workspace-desktop": "c7n_huaweicloud.resources.workspace.Workspace",
+    "huaweicloud.ccm-private-ca": "c7n_huaweicloud.resources.ccm.CertificateAuthority",
+    "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate"
 }
