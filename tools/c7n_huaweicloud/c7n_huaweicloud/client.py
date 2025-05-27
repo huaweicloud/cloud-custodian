@@ -137,6 +137,8 @@ from huaweicloudsdkcdn.v2 import CdnClient, ListDomainsRequest
 from huaweicloudsdkcdn.v2.region.cdn_region import CdnRegion
 from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailRequest
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
+from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
+from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -480,7 +482,7 @@ class Session:
                 .with_region(SwrRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'scm':
+        elif service == 'ccm-ssl-certificate':
             client = (
                 ScmClient.new_builder()
                 .with_credentials(globalCredentials)
@@ -527,6 +529,13 @@ class Session:
                 AomClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(AomRegion.value_of(self.region))
+                .build()
+            )
+        elif service in ['ccm-private-ca', 'ccm-private-certificate']:
+            client = (
+                CcmClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(CcmRegion.value_of("ap-southeast-3"))
                 .build()
             )
         return client
@@ -657,7 +666,7 @@ class Session:
             request = ListReposDetailsRequest()
         elif service == 'swr-image':
             request = ListRepositoryTagsRequest()
-        elif service == 'scm':
+        elif service == 'ccm-ssl-certificate':
             request = ListCertificatesRequest()
             request.expired_days_since = 1095
         elif service == 'dc':
@@ -670,4 +679,8 @@ class Session:
             request = ListSubscriptionsRequest()
         elif service == 'aom':
             request = ListMetricOrEventAlarmRuleRequest(enterprise_project_id="all_granted_eps")
+        elif service == 'ccm-private-ca':
+            request = ListCertificateAuthorityRequest()
+        elif service == 'ccm-private-certificate':
+            request = ListCertificateRequest()
         return request

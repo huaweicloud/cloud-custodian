@@ -16,11 +16,11 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 log = logging.getLogger('custodian.huaweicloud.scm')
 
 
-@resources.register('scm')
+@resources.register('ccm-ssl-certificate')
 class Scm(QueryResourceManager):
 
     class resource_type(TypeInfo):
-        service = 'scm'
+        service = 'ccm-ssl-certificate'
         enum_spec = ('list_certificates', 'certificates', None)
         id = 'id'
         name = 'name'
@@ -41,7 +41,7 @@ class DeleteCertificateAction(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-expired-certificates
-            resource: huaweicloud.scm
+            resource: huaweicloud.ccm-ssl-certificate
             filters:
               - type: value
                 key: status

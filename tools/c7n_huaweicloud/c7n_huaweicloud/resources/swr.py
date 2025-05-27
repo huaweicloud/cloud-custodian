@@ -48,6 +48,17 @@ class Swr(QueryResourceManager):
         tag_resource_type = None
         date = 'created_at'  # Specify field name for resource creation time
 
+    def get_resources(self, resource_ids):
+        resources = (
+                self.augment(self.source.get_resources(self.get_resource_query())) or []
+        )
+        result = []
+        for resource in resources:
+            resource_id = resource["namespace"] + "/" + resource["id"]
+            if resource_id in resource_ids:
+                result.append(resource)
+        return result
+
 
 @Swr.filter_registry.register('lifecycle-rule')
 class LifecycleRule(Filter):
@@ -395,10 +406,13 @@ class SwrImage(QueryResourceManager):
 
         # First get all SWR repositories
         try:
-            # Use SWR resource manager to get all repositories with pagination handled
-            from c7n_huaweicloud.provider import resources as huaweicloud_resources
-            swr_manager = huaweicloud_resources.get('swr')(self.ctx, {})
-            repositories = swr_manager.resources()
+            if query and 'namespace' in query and 'name' in query:
+                repositories = [{"namespace": query['namespace'], "name": query['name']}]
+            else:
+                # Use SWR resource manager to get all repositories with pagination handled
+                from c7n_huaweicloud.provider import resources as huaweicloud_resources
+                swr_manager = huaweicloud_resources.get('swr')(self.ctx, {})
+                repositories = swr_manager.resources()
 
             client = self.get_client()
 
@@ -499,6 +513,18 @@ class SwrImage(QueryResourceManager):
                 f"Failed to get tags for repository {namespace}/{repository}: {e}")
 
         return tags
+
+    def get_resources(self, resource_ids):
+
+        resources = []
+        for resource_id in resource_ids:
+            namespace_repo = resource_id.split(':')[0]
+            namespace = namespace_repo.split('/')[0]
+            repository = "/".join(namespace_repo.split('/')[1:])
+            temp_resources = self._fetch_resources({"namespace": namespace, "name": repository})
+            resources.append(temp_resources)
+
+        return self.filter_resources(resources)
 
 
 @SwrImage.filter_registry.register('age')

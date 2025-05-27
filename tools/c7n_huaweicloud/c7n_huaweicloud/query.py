@@ -16,6 +16,7 @@ from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.utils.marker_pagination import MarkerPagination
 
 from huaweicloudsdkcore.exceptions import exceptions
+from huaweicloudsdkcore.retry.backoff_strategy import BackoffStrategies
 
 log = logging.getLogger("custodian.huaweicloud.query")
 
@@ -230,6 +231,9 @@ class ResourceQuery:
         if "id" not in resources[0]:
             for data in resources:
                 data["id"] = data[manager.id]
+        if "tag_resource_type" not in resources[0] and manager.service == 'ccm-ssl-certificate':
+            for data in resources:
+                data["tag_resource_type"] = manager.tag_resource_type
 
         self._get_obs_account_id(response, manager, resources)
 
@@ -279,7 +283,29 @@ class ResourceQuery:
         return resources
 
     def _invoke_client_enum(self, client, enum_op, request):
-        return getattr(client, enum_op)(request)
+        _invoker = getattr(client, enum_op)
+        if not enum_op.endswith("_invoker"):
+            return _invoker(request)
+
+        def should_retry(resp, exc):
+            # network connection exception
+            if isinstance(exc, exceptions.ConnectionException):
+                return True
+            # 429 too many requests
+            if isinstance(exc, exceptions.ClientRequestException) and exc.status_code == 429:
+                return True
+
+            return False
+
+        try:
+            return _invoker(request).with_retry(
+                retry_condition=should_retry,
+                max_retries=3,
+                backoff_strategy=BackoffStrategies.EQUAL_JITTER
+            ).invoke()
+        except Exception as e:
+            log.exception(f"Failed after max retries: {str(e)}")
+            raise
 
     def _pagination_ims(self, m, enum_op, path):
         session = local_session(self.session_factory)
