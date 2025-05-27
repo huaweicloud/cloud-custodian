@@ -16,11 +16,11 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 log = logging.getLogger('custodian.huaweicloud.scm')
 
 
-@resources.register('ccm-ssl-certificate')
+@resources.register('scm')
 class Scm(QueryResourceManager):
 
     class resource_type(TypeInfo):
-        service = 'ccm-ssl-certificate'
+        service = 'scm'
         enum_spec = ('list_certificates', 'certificates', None)
         id = 'id'
         name = 'name'

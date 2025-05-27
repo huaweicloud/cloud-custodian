@@ -39,16 +39,12 @@ policies:
   - name: enable_key_rotation
     resource: huaweicloud.kms
     filters:
-      - or:
         - type: value
           key: key_rotation_enabled
           value: "False"
         - type: value
-          key: key_spec
-          value: "AES_256"
-        - type: value
-          key: key_spec
-          value: "SM4"
+          key: domain_id
+          value: "aaaaaaa"
     actions:
       - enable_key_rotation
     """
@@ -56,6 +52,17 @@ policies:
     schema = type_schema("enable_key_rotation")
 
     def perform_action(self, resource):
+
+        notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
+                          "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
+        if resource["default_key_flag"] == "1":
+            return 0
+        if resource["key_spec"] in notSupportList:
+            return 0
+        if resource["keystore_id"] != 0:
+            return 0
+        if resource["key_state"] not in {"2", "3", "4"}:
+            return 0
         client = self.manager.get_client()
         request = EnableKeyRotationRequest()
 
@@ -80,19 +87,15 @@ class disableRotationKey(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
 policies:
-  - name: disable_key_rotation
+  - name: enable_key_rotation
     resource: huaweicloud.kms
     filters:
-      - or:
         - type: value
           key: key_rotation_enabled
-          value: "True"
+          value: "False"
         - type: value
-          key: key_spec
-          value: "AES_256"
-        - type: value
-          key: key_spec
-          value: "SM4"
+          key: domain_id
+          value: "aaaaaaa"
     actions:
       - disable_key_rotation
     """
@@ -100,6 +103,18 @@ policies:
     schema = type_schema("disable_key_rotation")
 
     def perform_action(self, resource):
+
+        notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256",
+                          "EC_P384", "SM2", "ML_DSA_44",
+                          "ML_DSA_65", "ML_DSA_87"}
+        if resource["default_key_flag"] == "1":
+            return 0
+        if resource["key_spec"] in notSupportList:
+            return 0
+        if resource["keystore_id"] != 0:
+            return 0
+        if resource["key_state"] not in {"2", "3", "4"}:
+            return 0
         client = self.manager.get_client()
         request = DisableKeyRotationRequest()
         request.body = OperateKeyRequestBody(

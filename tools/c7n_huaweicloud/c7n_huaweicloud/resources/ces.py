@@ -115,7 +115,7 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         return response
 
 
-@Alarm.action_registry.register("batch-start-stopped-alarm-rules")
+@Alarm.action_registry.register("batch-start-alarm-rules")
 class BatchStartStoppedAlarmRules(BaseAction):
     """Update CES Alarm all start.
 
@@ -132,7 +132,7 @@ class BatchStartStoppedAlarmRules(BaseAction):
             key: enabled
             value: false
         actions:
-          - type: batch-start-stopped-alarm-rules
+          - type: batch-start-alarm-rules
             parameters:
               subject: "CES alarm not activated Check email"
               message: "You have the following alarms that have not been started,
@@ -144,7 +144,7 @@ class BatchStartStoppedAlarmRules(BaseAction):
     """
 
     schema = type_schema(
-        "batch-start-stopped-alarm-rules",
+        "batch-start-alarm-rules",
         required=["parameters"],
         **{
             "parameters": {
