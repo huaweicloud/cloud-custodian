@@ -66,7 +66,8 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
                 publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
                 publish_message_response = smn_client.publish_message(publish_message_request)
                 self.log.info(
-                    f"Publish message success, request: {publish_message_request}, response: {publish_message_response}")
+                    f"Publish message success, request: {publish_message_request}, "
+                    f"response: {publish_message_response}")
         except exceptions.ClientRequestException as e:
             self.log.error(f"Publish message to SMN Topics failed, exceptions:{e}")
         return self.process_result(resources)
@@ -126,7 +127,8 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                 publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
                 publish_message_response = smn_client.publish_message(publish_message_request)
                 self.log.info(
-                    f"Publish message structure success, request: {publish_message_request}, response: {publish_message_response}")
+                    f"Publish message structure success, request: {publish_message_request}, "
+                    f"response: {publish_message_response}")
         except exceptions.ClientRequestException as e:
             self.log.error(f"Publish message structure to SMN Topics failed, exceptions:{e}")
         return self.process_result(resources)
@@ -192,7 +194,8 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                 publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
                 publish_message_response = smn_client.publish_message(publish_message_request)
                 self.log.info(
-                    f"Publish message template success, request: {publish_message_request}, response: {publish_message_response}")
+                    f"Publish message template success, request: {publish_message_request}, "
+                    f"response: {publish_message_response}")
         except exceptions.ClientRequestException as e:
             self.log.error(f"Publish message template to SMN Topics failed, exceptions:{e}")
         return self.process_result(resources)
