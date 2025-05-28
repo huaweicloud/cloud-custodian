@@ -6,15 +6,15 @@ policies:
       xrole: fgs_admin
       eg_agency: EG_TARGET_AGENCY
       enable_lts_log: true
-      schedule: "1h"
+      schedule: "1m"
       schedule_type: Rate
     filters:
       - type: without_specific_tags
-        keys: ['owner-team-email', 'tech-team-email']
+        keys: ['must-tag-key1', 'must-tag-key2']
     actions:
       - type: tag
-        key: "owner-team-email"
-        value: "12345_123_com"
+        key: "must-tag-key1"
+        value: "must-tag-value1"
       - type: tag
-        key: "tech-team-email"
-        value: "23456_123_com"
+        key: "must-tag-key2"
+        value: "must-tag-value2"
