@@ -517,7 +517,7 @@ class SecMasterPlaybook(QueryResourceManager):
 class EnablePlaybook(HuaweiCloudBaseAction):
     """Enable playbook action.
 
-    Used to enable SecMaster playbooks to ensure that high-risk operations can be reported.
+    Used to enable playbooks to ensure that high-risk operations can be reported.
 
     :example:
 
