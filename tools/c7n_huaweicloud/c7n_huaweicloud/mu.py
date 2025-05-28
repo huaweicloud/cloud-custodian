@@ -701,7 +701,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     @property
     def func_name(self):
-        prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
+        prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
         return "%s%s" % (prefix, self.policy.name)
 
     event_name = func_name
@@ -894,7 +894,7 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
             operations.append(operation)
         request_body.event_data = {
             "name": self.data.get('trigger_name',
-                                  'custodian_timer_' + datetime.now().strftime("%Y%m%d%H%M%S")),
+                                  'custodian_cts_' + datetime.now().strftime("%Y%m%d%H%M%S")),
             "operations": operations
         }
 
