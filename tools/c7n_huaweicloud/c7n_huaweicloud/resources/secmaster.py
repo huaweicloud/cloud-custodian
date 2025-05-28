@@ -21,38 +21,40 @@ from huaweicloudsdksecmaster.v2 import (
 log = logging.getLogger("custodian.huaweicloud.resources.secmaster")
 
 
-# 业务需求1：SecMaster实例资源
+# Business Requirement 1: SecMaster Instance Resources
 @resources.register("secmaster")
 class SecMaster(QueryResourceManager):
-    """华为云SecMaster安全云脑实例资源管理器。
+    """Huawei Cloud SecMaster Security Brain instance resource manager.
 
-    用于管理SecMaster专业版实例，确保安全运营账号覆盖所有业务账号。
+    Used to manage SecMaster to ensure that security operation accounts cover all business accounts.
     """
 
     class resource_type(TypeInfo):
         service = "secmaster"
-        # TODO: 查询SecMaster实例的API暂不满足，需要后续补充
+        # TODO: The API for querying SecMaster instances is not yet available
         enum_spec = ("list_instances", "instances", "offset")
         id = "id"
         name = "name"
         tag_resource_type = ""
 
-    # TODO: 实现获取SecMaster实例列表的逻辑
+    # TODO: Implement the logic to get the list of SecMaster instances
     def _fetch_resources(self, query):
-        """获取SecMaster实例资源列表。
+        """Get the list of SecMaster instance resources.
 
-        注意：由于查询安全账号是否购买专业版安全云脑实例的API暂不满足，
-        此处实现暂时列为TODO。
+        Note: Since the API for querying whether a security account has purchased,
+        the implementation here is temporarily marked as TODO.
         """
-        log.warning("SecMaster实例查询API暂不满足，返回空列表")
+        log.warning(
+            "The SecMaster instance query API is not yet available, returning an empty list"
+        )
         return []
 
 
 @SecMaster.action_registry.register("send-msg")
 class SecMasterSendMsg(HuaweiCloudBaseAction):
-    """SecMaster实例发送消息通知动作。
+    """SecMaster instance send message notification action.
 
-    用于在SecMaster覆盖检查中发送邮件通知。
+    Used to send email notifications during SecMaster coverage checks.
 
     :example:
 
@@ -63,8 +65,8 @@ class SecMasterSendMsg(HuaweiCloudBaseAction):
             resource: huaweicloud.secmaster
             actions:
               - type: send-msg
-                message: "SecMaster实例覆盖检查结果"
-                subject: "安全云脑覆盖检查"
+                message: "SecMaster instance coverage check result"
+                subject: "Security Brain coverage check"
     """
 
     schema = type_schema(
@@ -75,35 +77,40 @@ class SecMasterSendMsg(HuaweiCloudBaseAction):
     )
 
     def perform_action(self, resource):
-        """执行发送消息动作。
+        """Perform the send message action.
 
-        TODO: 邮件通知功能暂不满足，需要后续实现。
+        TODO: email notification function is not yet available and needs to be implemented later.
         """
-        message = self.data.get("message", "SecMaster通知")
-        subject = self.data.get("subject", "SecMaster通知")
+        message = self.data.get("message", "SecMaster notification")
+        subject = self.data.get("subject", "SecMaster notification")
 
-        log.info(f"TODO: 发送SecMaster通知 - 主题: {subject}, 消息: {message}")
-        log.info(f"资源ID: {resource.get('id', 'unknown')}")
+        log.info(
+            f"TODO: Send SecMaster notification - Subject: {subject}, Message: {message}"
+        )
+        log.info(f"Resource ID: {resource.get('id', 'unknown')}")
 
-        # TODO: 实现邮件通知逻辑
-        return {"status": "TODO", "message": "邮件通知功能待实现"}
+        # TODO: Implement the email notification logic
+        return {
+            "status": "TODO",
+            "message": "Email notification function to be implemented",
+        }
 
 
-# 业务需求2：工作空间资源（已存在，需要完善）
+# Business Requirement 2: Workspace Resources (Existing, need to be improved)
 @resources.register("secmaster-workspace")
 class SecMasterWorkspace(QueryResourceManager):
-    """华为云SecMaster工作空间资源管理器。
+    """Huawei Cloud SecMaster workspace resource manager.
 
-    用于管理SecMaster工作空间，确保启用基于安全基线的持续资源监控。
+    Used to  workspaces to ensure  resource monitoring  on security baselines is enabled.
 
-    重要提示：
-    工作空间查询结果中包含 `is_view` 字段，表示是否为工作空间视图。
-    通常情况下，建议过滤 `is_view` 为 `false` 的工作空间，
-    因为只有真正的工作空间（非视图）才能进行实际的安全操作。
+    Important Note:
+    The workspace results include an `is_view` field, indicating whether it is a workspace view.
+    Generally, it is recommended to filter workspaces where `is_view` is `false`,
+    because only real workspaces (not views) can perform actual security operations.
 
     :example:
 
-    过滤真正的工作空间（非视图）：
+    Filter real workspaces (not views):
 
     .. code-block:: yaml
 
@@ -116,8 +123,8 @@ class SecMasterWorkspace(QueryResourceManager):
                 value: false
             actions:
               - type: send-msg
-                message: "发现真正的工作空间"
-                subject: "SecMaster工作空间检查"
+                message: "Real workspace found"
+                subject: "SecMaster workspace check"
     """
 
     class resource_type(TypeInfo):
@@ -131,10 +138,10 @@ class SecMasterWorkspace(QueryResourceManager):
 
 @SecMasterWorkspace.action_registry.register("send-msg")
 class WorkspaceSendMsg(HuaweiCloudBaseAction):
-    """工作空间发送消息通知动作。
+    """Workspace send message notification action.
 
-    用于在工作空间检查中发送邮件通知。
-    支持在没有工作空间时也发送警告通知。
+    Used to send email notifications during workspace checks.
+    Also supports sending warning notifications when there are no workspaces.
 
     :example:
 
@@ -145,15 +152,15 @@ class WorkspaceSendMsg(HuaweiCloudBaseAction):
             resource: huaweicloud.secmaster-workspace
             actions:
               - type: send-msg
-                message: "工作空间状态检查结果"
-                subject: "SecMaster工作空间检查"
+                message: "Workspace status check result"
+                subject: "SecMaster workspace check"
 
           - name: secmaster-no-workspace-alert
             resource: huaweicloud.secmaster-workspace
             actions:
               - type: send-msg
-                message: "警告：未发现任何SecMaster工作空间"
-                subject: "SecMaster工作空间缺失警告"
+                message: "Warning: No SecMaster workspaces found"
+                subject: "SecMaster workspace missing warning"
                 send_when_empty: true
     """
 
@@ -166,57 +173,64 @@ class WorkspaceSendMsg(HuaweiCloudBaseAction):
     )
 
     def process(self, resources):
-        """处理资源列表，支持在没有资源时发送通知。
+        """Process the resource list, supporting sending notifications when no resources.
 
-        如果设置了 send_when_empty=true，则在没有工作空间时也会发送通知。
+        If send_when_empty=true is set, a notification will be sent even when no workspaces.
         """
-        # 检查是否需要在没有资源时发送通知
+        # Check if a notification needs to be sent when there are no resources
         send_when_empty = self.data.get("send_when_empty", False)
 
         if not resources and send_when_empty:
-            # 没有工作空间且需要发送空资源通知
-            log.info("未发现任何SecMaster工作空间，发送警告通知")
+            # No workspaces and need to send an empty resource notification
+            log.info("No SecMaster workspaces found, sending warning notification")
 
-            # 执行空资源通知逻辑
-            message = self.data.get("message", "工作空间通知")
-            subject = self.data.get("subject", "SecMaster工作空间通知")
+            # Perform the empty resource notification logic
+            message = self.data.get("message", "Workspace notification")
+            subject = self.data.get("subject", "SecMaster workspace notification")
 
-            log.info(f"TODO: 发送工作空间缺失警告 - 主题: {subject}, 消息: {message}")
-            log.info("当前账号未发现任何SecMaster工作空间")
+            log.info(
+                f"TODO: Send workspace missing warning - Subject: {subject}, Message: {message}"
+            )
+            log.info("No SecMaster workspaces found for the current account")
 
-            # TODO: 实现邮件通知逻辑
-            # 这里可以调用实际的邮件发送逻辑
+            # TODO: Implement the email notification logic
+            # Actual email sending logic can be called here
 
-            # 返回空列表，不创建虚拟资源
+            # Return an empty list, do not create virtual resources
             return []
         elif not resources:
-            # 没有工作空间且不需要发送通知
-            log.info("未发现任何SecMaster工作空间")
+            # No workspaces and no need to send a notification
+            log.info("No SecMaster workspaces found")
             return []
         else:
-            # 有工作空间，正常处理
+            # There are workspaces, process normally
             return super().process(resources)
 
     def perform_action(self, resource):
-        """执行发送消息动作。"""
-        message = self.data.get("message", "工作空间通知")
-        subject = self.data.get("subject", "SecMaster工作空间通知")
+        """Perform the send message action."""
+        message = self.data.get("message", "Workspace notification")
+        subject = self.data.get("subject", "SecMaster workspace notification")
 
-        log.info(f"TODO: 发送工作空间通知 - 主题: {subject}, 消息: {message}")
         log.info(
-            f"工作空间: {resource.get('name', 'unknown')} (ID: {resource.get('id', 'unknown')})"
+            f"TODO: Send workspace notification - Subject: {subject}, Message: {message}"
+        )
+        log.info(
+            f"Workspace: {resource.get('name', 'unknown')} (ID: {resource.get('id', 'unknown')})"
         )
 
-        # TODO: 实现邮件通知逻辑
-        return {"status": "TODO", "message": "邮件通知功能待实现"}
+        # TODO: Implement the email notification logic
+        return {
+            "status": "TODO",
+            "message": "Email notification function to be implemented",
+        }
 
 
-# 业务需求2：告警资源
+# Business Requirement 2: Alert Resources
 @resources.register("secmaster-alert")
 class SecMasterAlert(QueryResourceManager):
-    """华为云SecMaster告警资源管理器。
+    """Huawei Cloud SecMaster alert resource manager.
 
-    用于管理SecMaster告警，确保设置日志记录和警报。
+    Used to manage SecMaster alerts to ensure log recording and alerts are set.
     """
 
     class resource_type(TypeInfo):
@@ -228,14 +242,14 @@ class SecMasterAlert(QueryResourceManager):
         tag_resource_type = ""
 
     def _fetch_resources(self, query):
-        """获取告警资源列表。
+        """Get the list of alert resources.
 
-        需要指定workspace_id参数来查询特定工作空间的告警。
+        The workspace_id parameter needs to be specified to query alerts for a specific workspace.
         """
         client = self.get_client()
         resources = []
 
-        # 获取工作空间列表来查询每个工作空间的告警
+        # Get the list of workspaces to query alerts for each workspace
         workspace_manager = self.get_resource_manager("huaweicloud.secmaster-workspace")
         workspaces = workspace_manager.resources()
 
@@ -249,7 +263,7 @@ class SecMasterAlert(QueryResourceManager):
 
             while True:
                 try:
-                    # 创建搜索请求体
+                    # Create a search request body
                     search_body = DataobjectSearch(limit=limit, offset=offset)
 
                     request = ListAlertsRequest(
@@ -260,19 +274,19 @@ class SecMasterAlert(QueryResourceManager):
                     if not response.data:
                         break
 
-                    # 转换响应数据为字典格式
+                    # Convert the response data to dictionary format
                     for alert in response.data:
                         if hasattr(alert, "to_dict"):
                             alert_dict = alert.to_dict()
                         else:
                             alert_dict = alert
 
-                        # 保留原始的层级结构，不平铺data_object
-                        # 添加工作空间信息到顶层
+                        # Keep the original hierarchical structure, do not flatten data_object
+                        # Add workspace information to the top level
                         alert_dict["workspace_name"] = workspace.get("name")
                         resources.append(alert_dict)
 
-                    # 检查是否还有更多数据
+                    # Check if there is more data
                     if len(response.data) < limit:
                         break
 
@@ -280,40 +294,44 @@ class SecMasterAlert(QueryResourceManager):
 
                 except Exception as e:
                     error_msg = str(e).lower()
-                    # 区分不同类型的错误
+                    # Distinguish different types of errors
                     if any(
                         x in error_msg
                         for x in ["unauthorized", "401", "authentication", "credential"]
                     ):
                         log.error(
-                            f"SecMaster告警查询认证失败(工作空间: {workspace_id}): {e}"
+                            f"alert query authentication failed (Workspace: {workspace_id}): {e}"
                         )
-                        raise  # 重新抛出认证错误
+                        raise  # Re-throw authentication error
                     elif any(
                         x in error_msg
                         for x in ["not found", "404", "resource not exist"]
                     ):
-                        log.info(f"工作空间 {workspace_id} 无告警资源，跳过: {e}")
-                        break  # 无告警是正常情况
+                        log.info(
+                            f"Workspace {workspace_id} has no alert resources, skipping: {e}"
+                        )
+                        break  # No alerts is a normal situation
                     elif any(
                         x in error_msg for x in ["forbidden", "403", "permission"]
                     ):
                         log.error(
-                            f"SecMaster告警查询权限不足(工作空间: {workspace_id}): {e}"
+                            f"alert query permission insufficient (Workspace: {workspace_id}): {e}"
                         )
-                        raise  # 重新抛出权限错误
+                        raise  # Re-throw permission error
                     else:
-                        log.error(f"获取工作空间 {workspace_id} 的告警列表失败: {e}")
-                        raise  # 其他未知错误也重新抛出
+                        log.error(
+                            f"Failed to get the alert list for workspace {workspace_id}: {e}"
+                        )
+                        raise  # Re-throw other unknown errors
 
         return resources
 
 
 @SecMasterAlert.filter_registry.register("age")
 class AlertAgeFilter(AgeFilter):
-    """SecMaster告警年龄过滤器。
+    """SecMaster alert age filter.
 
-    根据告警创建时间筛选N天/时/分内的告警。
+    Filter alerts created within N days/hours/minutes based on the alert creation time.
 
     :example:
 
@@ -325,10 +343,10 @@ class AlertAgeFilter(AgeFilter):
             filters:
               - type: age
                 days: 7
-                op: lt  # 筛选7天内的告警
+                op: lt  # Filter alerts within 7 days
     """
 
-    date_attribute = "create_time"  # 告警创建时间在data_object中
+    date_attribute = "create_time"  # Alert creation time is in data_object
 
     schema = type_schema(
         "age",
@@ -341,9 +359,9 @@ class AlertAgeFilter(AgeFilter):
 
 @SecMasterAlert.action_registry.register("send-msg")
 class AlertSendMsg(HuaweiCloudBaseAction):
-    """告警发送消息通知动作。
+    """Alert send message notification action.
 
-    用于在告警检查中发送邮件通知，无论是否有告警都会发送。
+    Used to send email notifications during alert checks, regardless of whether there are alerts.
 
     :example:
 
@@ -358,8 +376,8 @@ class AlertSendMsg(HuaweiCloudBaseAction):
                 op: lt
             actions:
               - type: send-msg
-                message: "发现最近24小时的告警"
-                subject: "SecMaster告警通知"
+                message: "Recent 24-hour alerts found"
+                subject: "SecMaster alert notification"
     """
 
     schema = type_schema(
@@ -370,26 +388,31 @@ class AlertSendMsg(HuaweiCloudBaseAction):
     )
 
     def perform_action(self, resource):
-        """执行发送消息动作。"""
-        message = self.data.get("message", "告警通知")
-        subject = self.data.get("subject", "SecMaster告警通知")
+        """Perform the send message action."""
+        message = self.data.get("message", "Alert notification")
+        subject = self.data.get("subject", "SecMaster alert notification")
 
-        # 从嵌套结构中获取告警数据
+        # Get alert data from the nested structure
         # data_object = resource.get("data_object", {})
         resource.get("data_object", {})
-        log.info(f"TODO: 发送告警通知 - 主题: {subject}, 消息: {message}")
-        log.info(f"工作空间: {resource.get('workspace_name', 'unknown')}")
+        log.info(
+            f"TODO: Send alert notification - Subject: {subject}, Message: {message}"
+        )
+        log.info(f"Workspace: {resource.get('workspace_name', 'unknown')}")
 
-        # TODO: 实现邮件通知逻辑
-        return {"status": "TODO", "message": "邮件通知功能待实现"}
+        # TODO: Implement the email notification logic
+        return {
+            "status": "TODO",
+            "message": "Email notification function to be implemented",
+        }
 
 
-# 业务需求3：剧本资源
+# Business Requirement 3: Playbook Resources
 @resources.register("secmaster-playbook")
 class SecMasterPlaybook(QueryResourceManager):
-    """华为云SecMaster剧本资源管理器。
+    """Huawei Cloud SecMaster playbook resource manager.
 
-    用于管理SecMaster剧本，确保所有高危操作都能上报SecMaster。
+    Used to manage SecMaster playbooks to ensure  high-risk operations are reported to SecMaster.
     """
 
     class resource_type(TypeInfo):
@@ -410,14 +433,14 @@ class SecMasterPlaybook(QueryResourceManager):
         return result
 
     def _fetch_resources(self, query):
-        """获取剧本资源列表。
+        """Get the list of playbook resources.
 
-        需要指定workspace_id参数来查询特定工作空间的剧本。
+        The workspace_id parameter needs to be to query playbooks for a specific workspace.
         """
         client = self.get_client()
         resources = []
 
-        # 获取工作空间列表来查询每个工作空间的剧本
+        # Get the list of workspaces to query playbooks for each workspace
         workspace_manager = self.get_resource_manager("huaweicloud.secmaster-workspace")
         workspaces = workspace_manager.resources()
         for workspace in workspaces:
@@ -438,18 +461,18 @@ class SecMasterPlaybook(QueryResourceManager):
                     if not response.data:
                         break
 
-                    # 转换响应数据为字典格式
+                    # Convert the response data to dictionary format
                     for playbook in response.data:
                         if hasattr(playbook, "to_dict"):
                             playbook_dict = playbook.to_dict()
                         else:
                             playbook_dict = playbook
-                        # 添加工作空间信息
+                        # Add workspace information
                         playbook_dict["workspace_id"] = workspace_id
                         playbook_dict["workspace_name"] = workspace.get("name")
                         resources.append(playbook_dict)
 
-                    # 检查是否还有更多数据
+                    # Check if there is more data
                     if len(response.data) < limit:
                         break
 
@@ -457,40 +480,44 @@ class SecMasterPlaybook(QueryResourceManager):
 
                 except Exception as e:
                     error_msg = str(e).lower()
-                    # 区分不同类型的错误
+                    # Distinguish different types of errors
                     if any(
                         x in error_msg
                         for x in ["unauthorized", "401", "authentication", "credential"]
                     ):
                         log.error(
-                            f"SecMaster剧本查询认证失败(工作空间: {workspace_id}): {e}"
+                            f"playbook query authentication failed (Workspace: {workspace_id}): {e}"
                         )
-                        raise  # 重新抛出认证错误
+                        raise  # Re-throw authentication error
                     elif any(
                         x in error_msg
                         for x in ["not found", "404", "resource not exist"]
                     ):
-                        log.info(f"工作空间 {workspace_id} 无剧本资源，跳过: {e}")
-                        break  # 无剧本是正常情况
+                        log.info(
+                            f"Workspace {workspace_id} has no playbook resources, skipping: {e}"
+                        )
+                        break  # No playbooks is a normal situation
                     elif any(
                         x in error_msg for x in ["forbidden", "403", "permission"]
                     ):
                         log.error(
-                            f"SecMaster剧本查询权限不足(工作空间: {workspace_id}): {e}"
+                            f"playbook query permission (Workspace: {workspace_id}): {e}"
                         )
-                        raise  # 重新抛出权限错误
+                        raise  # Re-throw permission error
                     else:
-                        log.error(f"获取工作空间 {workspace_id} 的剧本列表失败: {e}")
-                        raise  # 其他未知错误也重新抛出
+                        log.error(
+                            f"Failed to get the playbook list for workspace {workspace_id}: {e}"
+                        )
+                        raise  # Re-throw other unknown errors
 
         return resources
 
 
 @SecMasterPlaybook.action_registry.register("enable-playbook")
 class EnablePlaybook(HuaweiCloudBaseAction):
-    """开启剧本动作。
+    """Enable playbook action.
 
-    用于开启指定的SecMaster剧本，确保高危操作能够上报。
+    Used to enable SecMaster playbooks to ensure that high-risk operations can be reported.
 
     :example:
 
@@ -502,7 +529,7 @@ class EnablePlaybook(HuaweiCloudBaseAction):
             filters:
               - type: value
                 key: name
-                value: "高危操作监控剧本"
+                value: "High-risk operation monitoring playbook"
               - type: value
                 key: enabled
                 value: false
@@ -513,7 +540,7 @@ class EnablePlaybook(HuaweiCloudBaseAction):
     schema = type_schema("enable-playbook")
 
     def perform_action(self, resource):
-        """执行开启剧本动作。"""
+        """Perform the enable playbook action."""
         client = self.manager.get_client()
         workspace_id = resource.get("workspace_id")
         playbook_id = resource.get("id")
@@ -521,13 +548,16 @@ class EnablePlaybook(HuaweiCloudBaseAction):
 
         if not workspace_id or not playbook_id:
             log.error(
-                f"工作空间ID或剧本ID缺失: workspace_id={workspace_id}, playbook_id={playbook_id}"
+                f"ID is missing: workspace_id={workspace_id}, playbook_id={playbook_id}"
             )
-            return {"status": "error", "message": "工作空间ID或剧本ID缺失"}
+            return {
+                "status": "error",
+                "message": "Workspace ID or playbook ID is missing",
+            }
 
         try:
-            # 首先查询剧本版本列表，找到最新版本
-            log.info(f"查询剧本 {playbook_name} 的版本列表...")
+            # First, query the playbook version list to find the latest version
+            log.info(f"Querying the version list of playbook {playbook_name}...")
 
             offset = 0
             limit = 500
@@ -547,7 +577,7 @@ class EnablePlaybook(HuaweiCloudBaseAction):
                 if not version_response.data:
                     break
 
-                # 遍历版本列表，找到 update_time 最新的版本
+                # Iterate through the version list to find the version with the latest update_time
                 for version in version_response.data:
                     if hasattr(version, "to_dict"):
                         version_dict = version.to_dict()
@@ -557,7 +587,7 @@ class EnablePlaybook(HuaweiCloudBaseAction):
                     update_time_str = version_dict.get("update_time")
                     if update_time_str:
                         try:
-                            # 解析时间字符串
+                            # Parse the time string
                             from dateutil.parser import parse
 
                             update_time = parse(update_time_str)
@@ -570,31 +600,32 @@ class EnablePlaybook(HuaweiCloudBaseAction):
                                 latest_version = version_dict
                         except Exception as e:
                             log.warning(
-                                f"解析版本更新时间失败: {update_time_str}, 错误: {e}"
+                                f"Failed to parse time: {update_time_str}, Error: {e}"
                             )
                             continue
 
-                # 检查是否还有更多数据
+                # Check if there is more data
                 if len(version_response.data) < limit:
                     break
 
                 offset += limit
 
             if not latest_version:
-                log.error(f"未找到剧本 {playbook_name} 的任何版本")
-                return {"status": "error", "message": "未找到剧本版本"}
+                log.error(f"No versions found for playbook {playbook_name}")
+                return {"status": "error", "message": "No playbook versions found"}
 
             active_version_id = latest_version.get("id")
             log.info(
-                f"找到最新版本: {latest_version.get('version')} (ID: {active_version_id})"
+                f"Latest version found: {latest_version.get('version')} (ID: {active_version_id})"
             )
 
-            # 构建修改剧本信息，开启剧本
+            # Build the modified playbook information to enable the playbook
             modify_info = ModifyPlaybookInfo(
-                name=playbook_name,  # 设置剧本名称
-                enabled=True,  # 开启剧本
-                active_version_id=active_version_id,  # 设置启用的版本ID
-                description=resource.get("description", "") + " [已通过策略自动开启]",
+                name=playbook_name,  # Set the playbook name
+                enabled=True,  # Enable the playbook
+                active_version_id=active_version_id,  # Set the enabled version ID
+                description=resource.get("description", "")
+                + " [Automatically enabled via policy]",
             )
 
             request = UpdatePlaybookRequest(
@@ -605,26 +636,26 @@ class EnablePlaybook(HuaweiCloudBaseAction):
             client.update_playbook(request)
 
             log.info(
-                f"成功开启剧本: {playbook_name}, 启用版本:{latest_version.get('version')}"
+                f"enabled playbook: {playbook_name},{latest_version.get('version')}"
             )
             return {
                 "status": "success",
-                "message": f"剧本 {playbook_name} 已开启，启用版本:{latest_version.get('version')}",
+                "message": f"{playbook_name} has been enabled,{latest_version.get('version')}",
                 "playbook_id": playbook_id,
                 "active_version_id": active_version_id,
                 "active_version": latest_version.get("version"),
             }
 
         except Exception as e:
-            log.error(f"开启剧本失败: {e}")
+            log.error(f"Failed to enable playbook: {e}")
             return {"status": "error", "message": str(e)}
 
 
 @SecMasterPlaybook.action_registry.register("send-msg")
 class PlaybookSendMsg(HuaweiCloudBaseAction):
-    """剧本发送消息通知动作。
+    """Playbook send message notification action.
 
-    用于在剧本状态变更时发送邮件通知。
+    Used to send email notifications when the playbook status changes.
 
     :example:
 
@@ -639,8 +670,8 @@ class PlaybookSendMsg(HuaweiCloudBaseAction):
                 value: true
             actions:
               - type: send-msg
-                message: "剧本已开启并生效"
-                subject: "SecMaster剧本状态通知"
+                message: "Playbook enabled and in effect"
+                subject: "SecMaster playbook status notification"
     """
 
     schema = type_schema(
@@ -651,16 +682,23 @@ class PlaybookSendMsg(HuaweiCloudBaseAction):
     )
 
     def perform_action(self, resource):
-        """执行发送消息动作。"""
-        message = self.data.get("message", "剧本通知")
-        subject = self.data.get("subject", "SecMaster剧本通知")
+        """Perform the send message action."""
+        message = self.data.get("message", "Playbook notification")
+        subject = self.data.get("subject", "SecMaster playbook notification")
 
-        log.info(f"TODO: 发送剧本通知 - 主题: {subject}, 消息: {message}")
         log.info(
-            f"剧本: {resource.get('name', 'unknown')} (ID: {resource.get('id', 'unknown')})"
+            f"TODO: Send playbook notification - Subject: {subject}, Message: {message}"
         )
-        log.info(f"工作空间: {resource.get('workspace_name', 'unknown')}")
-        log.info(f"剧本状态: {'已开启' if resource.get('enabled') else '未开启'}")
+        log.info(
+            f"Playbook: {resource.get('name', 'unknown')} (ID: {resource.get('id', 'unknown')})"
+        )
+        log.info(f"Workspace: {resource.get('workspace_name', 'unknown')}")
+        log.info(
+            f"Playbook status: {'Enabled' if resource.get('enabled') else 'Disabled'}"
+        )
 
-        # TODO: 实现邮件通知逻辑
-        return {"status": "TODO", "message": "邮件通知功能待实现"}
+        # TODO: Implement the email notification logic
+        return {
+            "status": "TODO",
+            "message": "Email notification function to be implemented",
+        }
