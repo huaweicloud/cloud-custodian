@@ -16,7 +16,7 @@ def register_smn_actions(actions):
 
 
 class NotifyMessageAction(HuaweiCloudBaseAction):
-    """Applies one or more tags to the specified resources.
+    """Notify message to the specified smn topic.
 
     :example:
 
@@ -77,7 +77,7 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
 
 
 class NotifyMessageStructureAction(HuaweiCloudBaseAction):
-    """Applies one or more tags to the specified resources.
+    """Notify message structure to the specified smn topic.
 
     :example:
 
@@ -138,7 +138,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
 
 
 class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
-    """Applies one or more tags to the specified resources.
+    """Notify message template to the specified smn topic.
 
     :example:
 
