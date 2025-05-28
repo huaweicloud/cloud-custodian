@@ -10,6 +10,7 @@ from c7n.filters import FilterRegistry
 from c7n.manager import ResourceManager
 from c7n.query import sources, MaxResourceLimit
 from c7n.utils import local_session
+from c7n_huaweicloud.actions.smn import register_smn_actions
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 
@@ -441,6 +442,8 @@ class QueryMeta(type):
         if getattr(m, "tag_resource_type", None):
             register_tms_actions(attrs["action_registry"])
             register_tms_filters(attrs["filter_registry"])
+
+        register_smn_actions(attrs["action_registry"])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
 
