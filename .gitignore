@@ -63,3 +63,4 @@ venv*/
 # files generated during "make data-update"
 iam_docs/
 huaweicloudsdkccm
+output

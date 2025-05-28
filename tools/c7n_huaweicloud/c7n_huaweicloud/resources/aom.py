@@ -58,6 +58,7 @@ class AomAlarm(QueryResourceManager):
                                         processed_tags[key] = value
 
             r_dict['tags'] = processed_tags
+            r_dict['id'] = str(r_dict['id'])
         return super(AomAlarm, self).augment(resources)
 
 
@@ -76,7 +77,7 @@ class AlarmRuleFilter(ValueFilter):
             resource: huaweicloud.aom-alarm
             filters:
               - type: alarm-rule
-                key: name
+                key: alarm_rule_name
                 op: eq
                 value: "test-alarm"
     """
@@ -100,7 +101,7 @@ class DeleteAlarmRule(HuaweiCloudBaseAction):
             resource: huaweicloud.aom-alarm
             filters:
               - type: alarm-rule
-                key: name
+                key: alarm_rule_name
                 value: "test-alarm"
             actions:
               - delete
@@ -152,7 +153,7 @@ class UpdateAlarmRule(HuaweiCloudBaseAction):
             resource: huaweicloud.aom-alarm
             filters:
               - type: alarm-rule
-                key: name
+                key: alarm_rule_name
                 value: "test-alarm"
             actions:
               - type: update
@@ -170,10 +171,16 @@ class UpdateAlarmRule(HuaweiCloudBaseAction):
                   notify_frequency: 0
                 alarm_rule_type: "event"
                 metric_alarm_spec:
+                  recovery_conditions:
+                    recovery_timeframe: 1
                   monitor_type: "all_metric"
                   alarm_tags:
-                    - key: "tag_key"
-                      value: "tag_value"
+                    - auto_tags: []
+                      custom_annotations:
+                        - custodian_anno=custodian_anno_value
+                      custom_tags:
+                        - key: custodian_tag
+                          value: custodian_tag_value
                   trigger_conditions:
                     - metric_name: "cpu_usage"
                       metric_namespace: "PAAS.CONTAINER"
@@ -483,10 +490,16 @@ class AddAlarmRule(HuaweiCloudBaseAction):
                   notify_triggered: true
                   notify_frequency: 0
                 metric_alarm_spec:
+                  recovery_conditions:
+                    recovery_timeframe: 1
                   monitor_type: "all_metric"
                   alarm_tags:
-                    - key: "tag_key"
-                      value: "tag_value"
+                    - auto_tags: []
+                      custom_annotations:
+                        - custodian_anno=custodian_anno_value
+                      custom_tags:
+                        - key: custodian_tag
+                          value: custodian_tag_value
                   trigger_conditions:
                     - metric_name: "cpu_usage"
                       metric_namespace: "PAAS.CONTAINER"

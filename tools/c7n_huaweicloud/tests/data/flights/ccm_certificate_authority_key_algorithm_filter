@@ -64,7 +64,7 @@ interactions:
       X-Domain-Id:
       - mock-domain-id
       X-Sdk-Date:
-      - 20250409T093110Z
+      - 20250523T080014Z
     method: GET
     uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
   response:
@@ -83,14 +83,27 @@ interactions:
     headers:
       Connection:
       - keep-alive
-      Content-Length:
-      - '373'
       Content-Type:
-      - application/json;charset=utf8
+      - application/json
       Date:
-      - Wed, 09 Apr 2025 09:31:10 GMT
+      - Fri, 23 May 2025 08:00:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=bc67273835f91aa425; path=/
+      - HWWAFSESTIME=1747987214303; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
       X-Request-Id:
-      - 5c5ebe6e9b3644710c7fd433a182d7d3
+      - da14c0cecefcbdb88dcd3477f79b00f2
+      X-XSS-Protection:
+      - 1; mode=block;
     status:
       code: 200
       message: OK
@@ -112,7 +125,7 @@ interactions:
       X-Domain-Id:
       - mock-domain-id
       X-Sdk-Date:
-      - 20250522T083139Z
+      - 20250523T080249Z
     method: GET
     uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
   response:
@@ -132,16 +145,14 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 May 2025 08:31:39 GMT
+      - Fri, 23 May 2025 08:02:49 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESTIME=1747902699872; path=/
-      - HWWAFSESID=3ad3a73fadfdf4d6fe; path=/
+      - HWWAFSESID=00bb67375188eb9899; path=/
+      - HWWAFSESTIME=1747987369820; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -149,7 +160,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 6b5a6889f3776efaad4e6ce608530251
+      - 0d92a3948c9a2c41ded352c18f73df7d
       X-XSS-Protection:
       - 1; mode=block;
     status:

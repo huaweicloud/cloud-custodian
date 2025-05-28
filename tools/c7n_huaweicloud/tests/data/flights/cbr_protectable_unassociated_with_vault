@@ -1,0 +1,1197 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T071711Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/protectables/server/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{
+                 "instances": [
+                  {
+                   "id": "b587dbc9-4937-4802-a025-b07dfe710716",
+                   "type": "OS::Nova::Server",
+                   "name": "ecs-untagged",
+                   "size": 40,
+                   "status": "ACTIVE",
+                   "protectable": {
+                    "result": true,
+                    "code": "",
+                    "reason": "",
+                    "vault": null
+                   },
+                   "detail": {
+                    "flavor": {
+                     "disk": "0",
+                     "vcpus": "1",
+                     "ram": "1024",
+                     "id": "t6.small.1",
+                     "name": "t6.small.1",
+                     "gpus": [],
+                     "asic_accelerators": []
+                    },
+                    "fault": null,
+                    "id": "b587dbc9-4937-4802-a025-b07dfe710716",
+                    "name": "ecs-untagged",
+                    "addresses": {
+                     "6ed5add8-7762-4dce-9a81-7e292eac884b": [
+                      {
+                       "version": "4",
+                       "addr": "192.168.0.131",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:ce",
+                       "OS-EXT-IPS:type": "fixed",
+                       "OS-EXT-IPS:port_id": "79788401-d88d-479b-a326-d1246d893b3c"
+                      },
+                      {
+                       "version": "4",
+                       "addr": "101.44.193.28",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:ce",
+                       "OS-EXT-IPS:type": "floating",
+                       "OS-EXT-IPS:port_id": "79788401-d88d-479b-a326-d1246d893b3c"
+                      }
+                     ]
+                    },
+                    "accessIPv4": "",
+                    "accessIPv6": "",
+                    "updated": "2025-05-24T07:56:29Z",
+                    "created": "2025-05-24T07:55:43Z",
+                    "metadata": {
+                     "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                     "metering.resourcespeccode": "t6.small.1.linux",
+                     "charging_mode": "0",
+                     "vpc_id": "6ed5add8-7762-4dce-9a81-7e292eac884b",
+                     "os_type": "Linux",
+                     "metering.resourcetype": "1",
+                     "metering.image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                     "os_bit": "64",
+                     "__support_agent_list": "hss,ces",
+                     "cascaded.instance_extrainfo": "virtio_bus_count:16,pcibridge:1",
+                     "metering.imagetype": "gold"
+                    },
+                    "progress": 0,
+                    "status": "ACTIVE",
+                    "hostId": "7287718db37647097331e78740d12c015e986cb659f0d61d01fa3ee0",
+                    "tags": [],
+                    "description": "",
+                    "locked": false,
+                    "tenant_id": "0d8df128318091f52ff1c0069c340775",
+                    "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                    "key_name": null,
+                    "os-extended-volumes:volumes_attached": [
+                     {
+                      "id": "63ec8731-df78-4cd9-806d-d19eaec3364b",
+                      "delete_on_termination": "true",
+                      "device": "/dev/vda",
+                      "bootIndex": "0"
+                     }
+                    ],
+                    "config_drive": "",
+                    "OS-EXT-STS:task_state": null,
+                    "OS-EXT-STS:power_state": 1,
+                    "OS-EXT-STS:vm_state": "active",
+                    "OS-EXT-SRV-ATTR:instance_name": "instance-007a1036",
+                    "OS-DCF:diskConfig": "MANUAL",
+                    "os:scheduler_hints": {},
+                    "OS-EXT-SRV-ATTR:host": "sa-brazil-1a-4.sa-brazil-1",
+                    "OS-EXT-SRV-ATTR:root_device_name": "/dev/vda",
+                    "OS-EXT-SRV-ATTR:hypervisor_hostname": "nova004@30",
+                    "OS-EXT-AZ:availability_zone": "sa-brazil-1a",
+                    "OS-EXT-SRV-ATTR:ramdisk_id": "",
+                    "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                    "OS-EXT-SRV-ATTR:user_data": null,
+                    "OS-SRV-USG:launched_at": "2025-05-24T07:55:59.000000",
+                    "OS-EXT-SRV-ATTR:kernel_id": "",
+                    "OS-EXT-SRV-ATTR:launch_index": 0,
+                    "host_status": "UP",
+                    "OS-EXT-SRV-ATTR:reservation_id": "r-1p0vr8gd",
+                    "OS-EXT-SRV-ATTR:hostname": "ecs-326d",
+                    "OS-SRV-USG:terminated_at": null,
+                    "sys_tags": [
+                     {
+                      "key": "_sys_enterprise_project_id",
+                      "value": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                     }
+                    ],
+                    "security_groups": [
+                     {
+                      "id": "b445f2bf-ff10-4a96-bcc0-314e00c5fe04",
+                      "name": "default"
+                     }
+                    ],
+                    "image": {
+                     "id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1"
+                    },
+                    "hypervisor": null,
+                    "auto_terminate_time": "",
+                    "cpu_options": {
+                     "hw:cpu_threads": null
+                    },
+                    "enclave_options": {
+                     "enabled": false
+                    },
+                    "capacity_reservation_id": null,
+                    "capacity_reservation_specification": {
+                     "id": null,
+                     "preference": null
+                    },
+                    "security_options": {
+                     "secure_boot_enabled": null,
+                     "tpm_enabled": null
+                    },
+                    "spod_id": null,
+                    "serial_console_options": null
+                   },
+                   "children": [
+                    {
+                     "id": "63ec8731-df78-4cd9-806d-d19eaec3364b",
+                     "name": "ecs-326d",
+                     "size": 40,
+                     "status": "in-use",
+                     "detail": {
+                      "id": "63ec8731-df78-4cd9-806d-d19eaec3364b",
+                      "links": [
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/v2/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/63ec8731-df78-4cd9-806d-d19eaec3364b",
+                        "rel": "self"
+                       },
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/63ec8731-df78-4cd9-806d-d19eaec3364b",
+                        "rel": "bookmark"
+                       }
+                      ],
+                      "name": "ecs-326d",
+                      "status": "in-use",
+                      "attachments": [
+                       {
+                        "attachment_id": "e9eec1dd-d424-4b3d-8263-7135179b359b",
+                        "volume_id": "63ec8731-df78-4cd9-806d-d19eaec3364b",
+                        "device": "/dev/vda",
+                        "server_id": "b587dbc9-4937-4802-a025-b07dfe710716",
+                        "host_name": null,
+                        "attached_at": "2025-05-24T07:55:55.561750",
+                        "id": "63ec8731-df78-4cd9-806d-d19eaec3364b"
+                       }
+                      ],
+                      "description": "",
+                      "size": 40,
+                      "metadata": {
+                       "StorageType": "FC_DSWARE",
+                       "volInfoUrl": "fusionstorage://10.55.129.43/6/63ec8731df784cd9806dd19eaec3364b",
+                       "__system__volume_name": "ecs-326d",
+                       "readonly": "False",
+                       "attached_mode": "rw"
+                      },
+                      "bootable": "true",
+                      "encrypted": false,
+                      "tags": {},
+                      "wwn": "6888603000001b11fa16742754692812",
+                      "lifecycle": 0,
+                      "availability_zone": "sa-brazil-1a",
+                      "os-vol-host-attr:host": "cinder-kvm001@GPSSD#6",
+                      "created_at": "2025-05-24T07:55:48.723088",
+                      "volume_type": "GPSSD",
+                      "shareable": "false",
+                      "multiattach": false,
+                      "os-vol-tenant-attr:tenant_id": "0d8df128318091f52ff1c0069c340775",
+                      "os-volume-replication:extended_status": null,
+                      "volume_image_metadata": {
+                       "__os_bit": "64",
+                       "__os_version": "Huawei Cloud EulerOS 2.0 64bit",
+                       "__isregistered": "true",
+                       "__platform": "Huawei Cloud EulerOS",
+                       "__os_type": "Linux",
+                       "virtual_env_type": "FusionCompute",
+                       "__image_source_type": "uds",
+                       "__imagetype": "gold",
+                       "__productcode": "",
+                       "__image_location": "obs.sa-brazil-1.myhuaweicloud.com:443:pcsims0dbcec77c2cb41bc8dbdc0fed84e00e0:a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1_20241217142950",
+                       "__image_size": "1180917760",
+                       "__account_code": "",
+                       "__lazyloading": "true",
+                       "__data_origin": "",
+                       "hw_vif_multiqueue_enabled": "true",
+                       "__support_kvm": "true",
+                       "__originalimagename": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "__support_agent_list": "hss,ces,appbooster:nginx&redis&mysql&memcached&postgresql",
+                       "__support_kvm_hi1822_hiovs": "true",
+                       "__backup_id": "",
+                       "__image_displayname": "{\"zh-cn\":\"Huawei Cloud EulerOS 2.0 标准版 64位\",\"en-us\":\"Huawei Cloud EulerOS 2.0 Standard 64 bit\"}",
+                       "__support_largememory": "true",
+                       "__os_feature_list": "{\"nic_hotplug\":\"true\", \"disk_hotplug\": \"true\", \"user_data\": \"true\", \"ssh_key\":\"true\", \"hostname_inject\": \"true\", \"onekey_resetpasswd\": \"true\"}",
+                       "active_at": "2022-07-22T06:28:32Z",
+                       "__description": "Register zvhd2 private image by OpsImageMgmt",
+                       "image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                       "checksum": "99914b932bd37a50b983c5e7c90ae93b",
+                       "container_format": "bare",
+                       "disk_format": "zvhd2",
+                       "min_disk": "10",
+                       "min_ram": "0",
+                       "size": "2"
+                      },
+                      "updated_at": "2025-05-24T07:56:07.419651",
+                      "replication_status": "disabled",
+                      "os-vol-mig-status-attr:name_id": null,
+                      "os-vol-mig-status-attr:migstat": null,
+                      "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                      "service_type": "EVS",
+                      "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                      "sys_tags": {
+                       "_sys_enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                      },
+                      "volume_qos_specs": "QoS_GPSSD"
+                     },
+                     "type": "OS::Cinder::Volume",
+                     "children": []
+                    }
+                   ]
+                  },
+                  {
+                   "id": "bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be",
+                   "type": "OS::Nova::Server",
+                   "name": "ecs-legally-tagged",
+                   "size": 40,
+                   "status": "ACTIVE",
+                   "protectable": {
+                    "result": true,
+                    "code": "",
+                    "reason": "",
+                    "vault": null
+                   },
+                   "detail": {
+                    "flavor": {
+                     "disk": "0",
+                     "vcpus": "1",
+                     "ram": "1024",
+                     "id": "t6.small.1",
+                     "name": "t6.small.1",
+                     "gpus": [],
+                     "asic_accelerators": []
+                    },
+                    "fault": null,
+                    "id": "bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be",
+                    "name": "ecs-legally-tagged",
+                    "addresses": {
+                     "6ed5add8-7762-4dce-9a81-7e292eac884b": [
+                      {
+                       "version": "4",
+                       "addr": "192.168.0.205",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:18",
+                       "OS-EXT-IPS:type": "fixed",
+                       "OS-EXT-IPS:port_id": "fba1bd17-bfeb-4375-8f84-67aadf70726a"
+                      },
+                      {
+                       "version": "4",
+                       "addr": "101.44.193.30",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:18",
+                       "OS-EXT-IPS:type": "floating",
+                       "OS-EXT-IPS:port_id": "fba1bd17-bfeb-4375-8f84-67aadf70726a"
+                      }
+                     ]
+                    },
+                    "accessIPv4": "",
+                    "accessIPv6": "",
+                    "updated": "2025-05-23T14:23:30Z",
+                    "created": "2025-05-23T09:29:39Z",
+                    "metadata": {
+                     "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                     "metering.resourcespeccode": "t6.small.1.linux",
+                     "charging_mode": "0",
+                     "vpc_id": "6ed5add8-7762-4dce-9a81-7e292eac884b",
+                     "os_type": "Linux",
+                     "metering.resourcetype": "1",
+                     "metering.image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                     "os_bit": "64",
+                     "__support_agent_list": "hss,ces",
+                     "cascaded.instance_extrainfo": "virtio_bus_count:16,pcibridge:1",
+                     "metering.imagetype": "gold"
+                    },
+                    "progress": 0,
+                    "status": "ACTIVE",
+                    "hostId": "a3b0453049bf4bb0fb3ed00c09acd5997cc73f1b7b4a5043ccfa9dfc",
+                    "tags": [
+                     "backup_policy=45Dd"
+                    ],
+                    "description": "",
+                    "locked": false,
+                    "tenant_id": "0d8df128318091f52ff1c0069c340775",
+                    "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                    "key_name": null,
+                    "os-extended-volumes:volumes_attached": [
+                     {
+                      "id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                      "delete_on_termination": "true",
+                      "device": "/dev/vda",
+                      "bootIndex": "0"
+                     }
+                    ],
+                    "config_drive": "",
+                    "OS-EXT-STS:task_state": null,
+                    "OS-EXT-STS:power_state": 1,
+                    "OS-EXT-STS:vm_state": "active",
+                    "OS-EXT-SRV-ATTR:instance_name": "instance-0079f8e2",
+                    "OS-DCF:diskConfig": "MANUAL",
+                    "os:scheduler_hints": {},
+                    "OS-EXT-SRV-ATTR:host": "sa-brazil-1a-4.sa-brazil-1",
+                    "OS-EXT-SRV-ATTR:root_device_name": "/dev/vda",
+                    "OS-EXT-SRV-ATTR:hypervisor_hostname": "nova004@30",
+                    "OS-EXT-AZ:availability_zone": "sa-brazil-1a",
+                    "OS-EXT-SRV-ATTR:ramdisk_id": "",
+                    "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                    "OS-EXT-SRV-ATTR:user_data": null,
+                    "OS-SRV-USG:launched_at": "2025-05-23T09:29:52.000000",
+                    "OS-EXT-SRV-ATTR:kernel_id": "",
+                    "OS-EXT-SRV-ATTR:launch_index": 0,
+                    "host_status": "UP",
+                    "OS-EXT-SRV-ATTR:reservation_id": "r-zizxiaqw",
+                    "OS-EXT-SRV-ATTR:hostname": "ecs-3b73-0002",
+                    "OS-SRV-USG:terminated_at": null,
+                    "sys_tags": [
+                     {
+                      "key": "_sys_enterprise_project_id",
+                      "value": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                     }
+                    ],
+                    "security_groups": [
+                     {
+                      "id": "b445f2bf-ff10-4a96-bcc0-314e00c5fe04",
+                      "name": "default"
+                     }
+                    ],
+                    "image": {
+                     "id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1"
+                    },
+                    "hypervisor": null,
+                    "auto_terminate_time": "",
+                    "cpu_options": {
+                     "hw:cpu_threads": null
+                    },
+                    "enclave_options": {
+                     "enabled": false
+                    },
+                    "capacity_reservation_id": null,
+                    "capacity_reservation_specification": {
+                     "id": null,
+                     "preference": null
+                    },
+                    "security_options": {
+                     "secure_boot_enabled": null,
+                     "tpm_enabled": null
+                    },
+                    "spod_id": null,
+                    "serial_console_options": null
+                   },
+                   "children": [
+                    {
+                     "id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                     "name": "ecs-3b73-0002",
+                     "size": 40,
+                     "status": "in-use",
+                     "detail": {
+                      "id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                      "links": [
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/v2/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                        "rel": "self"
+                       },
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                        "rel": "bookmark"
+                       }
+                      ],
+                      "name": "ecs-3b73-0002",
+                      "status": "in-use",
+                      "attachments": [
+                       {
+                        "attachment_id": "8ec38733-28a7-4cf6-b166-19958331a736",
+                        "volume_id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                        "device": "/dev/vda",
+                        "server_id": "bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be",
+                        "host_name": null,
+                        "attached_at": "2025-05-23T09:29:49.645052",
+                        "id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381"
+                       }
+                      ],
+                      "description": "",
+                      "size": 40,
+                      "metadata": {
+                       "__system__volume_name": "ecs-3b73-0002",
+                       "volInfoUrl": "fusionstorage://10.55.129.43/11/ad2d1d67f8ed42ecaa237d2adfba3381",
+                       "StorageType": "FC_DSWARE",
+                       "readonly": "False",
+                       "attached_mode": "rw"
+                      },
+                      "bootable": "true",
+                      "encrypted": false,
+                      "tags": {},
+                      "wwn": "6888603000004d37fa16742754692812",
+                      "lifecycle": 0,
+                      "availability_zone": "sa-brazil-1a",
+                      "os-vol-host-attr:host": "cinder-kvm001@GPSSD#11",
+                      "created_at": "2025-05-23T09:29:44.467184",
+                      "volume_type": "GPSSD",
+                      "shareable": "false",
+                      "multiattach": false,
+                      "os-vol-tenant-attr:tenant_id": "0d8df128318091f52ff1c0069c340775",
+                      "os-volume-replication:extended_status": null,
+                      "volume_image_metadata": {
+                       "__os_bit": "64",
+                       "__os_version": "Huawei Cloud EulerOS 2.0 64bit",
+                       "__isregistered": "true",
+                       "__platform": "Huawei Cloud EulerOS",
+                       "__os_type": "Linux",
+                       "virtual_env_type": "FusionCompute",
+                       "__image_source_type": "uds",
+                       "__imagetype": "gold",
+                       "__productcode": "",
+                       "__image_location": "obs.sa-brazil-1.myhuaweicloud.com:443:pcsims0dbcec77c2cb41bc8dbdc0fed84e00e0:a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1_20241217142950",
+                       "__image_size": "1180917760",
+                       "__account_code": "",
+                       "__lazyloading": "true",
+                       "__data_origin": "",
+                       "hw_vif_multiqueue_enabled": "true",
+                       "__support_kvm": "true",
+                       "__originalimagename": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "__support_agent_list": "hss,ces,appbooster:nginx&redis&mysql&memcached&postgresql",
+                       "__support_kvm_hi1822_hiovs": "true",
+                       "__backup_id": "",
+                       "__image_displayname": "{\"zh-cn\":\"Huawei Cloud EulerOS 2.0 标准版 64位\",\"en-us\":\"Huawei Cloud EulerOS 2.0 Standard 64 bit\"}",
+                       "__support_largememory": "true",
+                       "__os_feature_list": "{\"nic_hotplug\":\"true\", \"disk_hotplug\": \"true\", \"user_data\": \"true\", \"ssh_key\":\"true\", \"hostname_inject\": \"true\", \"onekey_resetpasswd\": \"true\"}",
+                       "active_at": "2022-07-22T06:28:32Z",
+                       "__description": "Register zvhd2 private image by OpsImageMgmt",
+                       "image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                       "checksum": "99914b932bd37a50b983c5e7c90ae93b",
+                       "container_format": "bare",
+                       "disk_format": "zvhd2",
+                       "min_disk": "10",
+                       "min_ram": "0",
+                       "size": "2"
+                      },
+                      "updated_at": "2025-05-23T09:29:58.359905",
+                      "replication_status": "disabled",
+                      "os-vol-mig-status-attr:name_id": null,
+                      "os-vol-mig-status-attr:migstat": null,
+                      "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                      "service_type": "EVS",
+                      "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                      "sys_tags": {
+                       "_sys_enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                      },
+                      "volume_qos_specs": "QoS_GPSSD"
+                     },
+                     "type": "OS::Cinder::Volume",
+                     "children": []
+                    }
+                   ]
+                  },
+                  {
+                   "id": "42dc19e5-11d5-4b87-8546-a5f843fb4e6a",
+                   "type": "OS::Nova::Server",
+                   "name": "ecs-illegally-tagged",
+                   "size": 40,
+                   "status": "ACTIVE",
+                   "protectable": {
+                    "result": true,
+                    "code": "",
+                    "reason": "",
+                    "vault": null
+                   },
+                   "detail": {
+                    "flavor": {
+                     "disk": "0",
+                     "vcpus": "1",
+                     "ram": "1024",
+                     "id": "t6.small.1",
+                     "name": "t6.small.1",
+                     "gpus": [],
+                     "asic_accelerators": []
+                    },
+                    "fault": null,
+                    "id": "42dc19e5-11d5-4b87-8546-a5f843fb4e6a",
+                    "name": "ecs-illegally-tagged",
+                    "addresses": {
+                     "6ed5add8-7762-4dce-9a81-7e292eac884b": [
+                      {
+                       "version": "4",
+                       "addr": "192.168.0.191",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:0a",
+                       "OS-EXT-IPS:type": "fixed",
+                       "OS-EXT-IPS:port_id": "3a170b3d-53b4-4dc3-9f36-04a9749c96cc"
+                      },
+                      {
+                       "version": "4",
+                       "addr": "124.81.6.145",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:0a",
+                       "OS-EXT-IPS:type": "floating",
+                       "OS-EXT-IPS:port_id": "3a170b3d-53b4-4dc3-9f36-04a9749c96cc"
+                      }
+                     ]
+                    },
+                    "accessIPv4": "",
+                    "accessIPv6": "",
+                    "updated": "2025-05-23T14:24:01Z",
+                    "created": "2025-05-23T09:29:39Z",
+                    "metadata": {
+                     "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                     "metering.resourcespeccode": "t6.small.1.linux",
+                     "charging_mode": "0",
+                     "vpc_id": "6ed5add8-7762-4dce-9a81-7e292eac884b",
+                     "os_type": "Linux",
+                     "metering.resourcetype": "1",
+                     "metering.image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                     "os_bit": "64",
+                     "__support_agent_list": "hss,ces",
+                     "cascaded.instance_extrainfo": "virtio_bus_count:16,pcibridge:1",
+                     "metering.imagetype": "gold"
+                    },
+                    "progress": 0,
+                    "status": "ACTIVE",
+                    "hostId": "e2e143f7740bb529602e1349c0ee198bba15846d7199dd6035ca0157",
+                    "tags": [
+                     "backup_policy=44Dd"
+                    ],
+                    "description": "",
+                    "locked": false,
+                    "tenant_id": "0d8df128318091f52ff1c0069c340775",
+                    "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                    "key_name": null,
+                    "os-extended-volumes:volumes_attached": [
+                     {
+                      "id": "27eef517-8ffa-4251-9149-9f8a393d4609",
+                      "delete_on_termination": "true",
+                      "device": "/dev/vda",
+                      "bootIndex": "0"
+                     }
+                    ],
+                    "config_drive": "",
+                    "OS-EXT-STS:task_state": null,
+                    "OS-EXT-STS:power_state": 1,
+                    "OS-EXT-STS:vm_state": "active",
+                    "OS-EXT-SRV-ATTR:instance_name": "instance-0079f8e1",
+                    "OS-DCF:diskConfig": "MANUAL",
+                    "os:scheduler_hints": {},
+                    "OS-EXT-SRV-ATTR:host": "sa-brazil-1a-4.sa-brazil-1",
+                    "OS-EXT-SRV-ATTR:root_device_name": "/dev/vda",
+                    "OS-EXT-SRV-ATTR:hypervisor_hostname": "nova004@30",
+                    "OS-EXT-AZ:availability_zone": "sa-brazil-1a",
+                    "OS-EXT-SRV-ATTR:ramdisk_id": "",
+                    "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                    "OS-EXT-SRV-ATTR:user_data": null,
+                    "OS-SRV-USG:launched_at": "2025-05-23T09:29:51.000000",
+                    "OS-EXT-SRV-ATTR:kernel_id": "",
+                    "OS-EXT-SRV-ATTR:launch_index": 0,
+                    "host_status": "UP",
+                    "OS-EXT-SRV-ATTR:reservation_id": "r-daonwpe0",
+                    "OS-EXT-SRV-ATTR:hostname": "ecs-3b73-0001",
+                    "OS-SRV-USG:terminated_at": null,
+                    "sys_tags": [
+                     {
+                      "key": "_sys_enterprise_project_id",
+                      "value": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                     }
+                    ],
+                    "security_groups": [
+                     {
+                      "id": "b445f2bf-ff10-4a96-bcc0-314e00c5fe04",
+                      "name": "default"
+                     }
+                    ],
+                    "image": {
+                     "id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1"
+                    },
+                    "hypervisor": null,
+                    "auto_terminate_time": "",
+                    "cpu_options": {
+                     "hw:cpu_threads": null
+                    },
+                    "enclave_options": {
+                     "enabled": false
+                    },
+                    "capacity_reservation_id": null,
+                    "capacity_reservation_specification": {
+                     "id": null,
+                     "preference": null
+                    },
+                    "security_options": {
+                     "secure_boot_enabled": null,
+                     "tpm_enabled": null
+                    },
+                    "spod_id": null,
+                    "serial_console_options": null
+                   },
+                   "children": [
+                    {
+                     "id": "27eef517-8ffa-4251-9149-9f8a393d4609",
+                     "name": "ecs-3b73-0001",
+                     "size": 40,
+                     "status": "in-use",
+                     "detail": {
+                      "id": "27eef517-8ffa-4251-9149-9f8a393d4609",
+                      "links": [
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/v2/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/27eef517-8ffa-4251-9149-9f8a393d4609",
+                        "rel": "self"
+                       },
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/27eef517-8ffa-4251-9149-9f8a393d4609",
+                        "rel": "bookmark"
+                       }
+                      ],
+                      "name": "ecs-3b73-0001",
+                      "status": "in-use",
+                      "attachments": [
+                       {
+                        "attachment_id": "68839e60-1724-4523-8b6e-fab412e86e66",
+                        "volume_id": "27eef517-8ffa-4251-9149-9f8a393d4609",
+                        "device": "/dev/vda",
+                        "server_id": "42dc19e5-11d5-4b87-8546-a5f843fb4e6a",
+                        "host_name": null,
+                        "attached_at": "2025-05-23T09:29:48.353778",
+                        "id": "27eef517-8ffa-4251-9149-9f8a393d4609"
+                       }
+                      ],
+                      "description": "",
+                      "size": 40,
+                      "metadata": {
+                       "volInfoUrl": "fusionstorage://10.55.129.43/9/27eef5178ffa425191499f8a393d4609",
+                       "__system__volume_name": "ecs-3b73-0001",
+                       "StorageType": "FC_DSWARE",
+                       "readonly": "False",
+                       "attached_mode": "rw"
+                      },
+                      "bootable": "true",
+                      "encrypted": false,
+                      "tags": {},
+                      "wwn": "6888603000004621fa16742754692812",
+                      "lifecycle": 0,
+                      "availability_zone": "sa-brazil-1a",
+                      "os-vol-host-attr:host": "cinder-kvm001@GPSSD#9",
+                      "created_at": "2025-05-23T09:29:43.556520",
+                      "volume_type": "GPSSD",
+                      "shareable": "false",
+                      "multiattach": false,
+                      "os-vol-tenant-attr:tenant_id": "0d8df128318091f52ff1c0069c340775",
+                      "os-volume-replication:extended_status": null,
+                      "volume_image_metadata": {
+                       "__os_bit": "64",
+                       "__os_version": "Huawei Cloud EulerOS 2.0 64bit",
+                       "__isregistered": "true",
+                       "__platform": "Huawei Cloud EulerOS",
+                       "__os_type": "Linux",
+                       "virtual_env_type": "FusionCompute",
+                       "__image_source_type": "uds",
+                       "__imagetype": "gold",
+                       "__productcode": "",
+                       "__image_location": "obs.sa-brazil-1.myhuaweicloud.com:443:pcsims0dbcec77c2cb41bc8dbdc0fed84e00e0:a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1_20241217142950",
+                       "__image_size": "1180917760",
+                       "__account_code": "",
+                       "__lazyloading": "true",
+                       "__data_origin": "",
+                       "hw_vif_multiqueue_enabled": "true",
+                       "__support_kvm": "true",
+                       "__originalimagename": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "__support_agent_list": "hss,ces,appbooster:nginx&redis&mysql&memcached&postgresql",
+                       "__support_kvm_hi1822_hiovs": "true",
+                       "__backup_id": "",
+                       "__image_displayname": "{\"zh-cn\":\"Huawei Cloud EulerOS 2.0 标准版 64位\",\"en-us\":\"Huawei Cloud EulerOS 2.0 Standard 64 bit\"}",
+                       "__support_largememory": "true",
+                       "__os_feature_list": "{\"nic_hotplug\":\"true\", \"disk_hotplug\": \"true\", \"user_data\": \"true\", \"ssh_key\":\"true\", \"hostname_inject\": \"true\", \"onekey_resetpasswd\": \"true\"}",
+                       "active_at": "2022-07-22T06:28:32Z",
+                       "__description": "Register zvhd2 private image by OpsImageMgmt",
+                       "image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                       "checksum": "99914b932bd37a50b983c5e7c90ae93b",
+                       "container_format": "bare",
+                       "disk_format": "zvhd2",
+                       "min_disk": "10",
+                       "min_ram": "0",
+                       "size": "2"
+                      },
+                      "updated_at": "2025-05-23T09:29:58.216816",
+                      "replication_status": "disabled",
+                      "os-vol-mig-status-attr:name_id": null,
+                      "os-vol-mig-status-attr:migstat": null,
+                      "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                      "service_type": "EVS",
+                      "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                      "sys_tags": {
+                       "_sys_enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                      },
+                      "volume_qos_specs": "QoS_GPSSD"
+                     },
+                     "type": "OS::Cinder::Volume",
+                     "children": []
+                    }
+                   ]
+                  },
+                  {
+                   "id": "fa0f0734-fd76-4a7d-b684-7f08baeadb4a",
+                   "type": "OS::Nova::Server",
+                   "name": "ecs-with-vault",
+                   "size": 40,
+                   "status": "ACTIVE",
+                   "protectable": {
+                    "result": true,
+                    "code": "",
+                    "reason": "",
+                    "vault": {
+                     "id": "f85e42a4-d23b-4af9-b361-e56758e6faa4",
+                     "name": "vault-preset",
+                     "description": null,
+                     "resources": [
+                      {
+                       "id": "fa0f0734-fd76-4a7d-b684-7f08baeadb4a",
+                       "type": "OS::Nova::Server",
+                       "name": "ecs-with-vault",
+                       "auto_protect": true,
+                       "size": 40,
+                       "backup_size": 3948,
+                       "backup_count": 3,
+                       "protect_status": "available",
+                       "extra_info": {}
+                      }
+                     ],
+                     "provider_id": "0daac4c5-6707-4851-97ba-169e36266b66",
+                     "created_at": "2025-05-23T08:26:02.652596",
+                     "project_id": "0d8df128318091f52ff1c0069c340775",
+                     "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                     "auto_bind": false,
+                     "bind_rules": {},
+                     "auto_expand": false,
+                     "smn_notify": true,
+                     "threshold": 80,
+                     "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                     "billing": {
+                      "allocated": 40,
+                      "cloud_type": "public",
+                      "consistent_level": "crash_consistent",
+                      "frozen_scene": null,
+                      "charging_mode": "post_paid",
+                      "order_id": null,
+                      "product_id": null,
+                      "protect_type": "backup",
+                      "object_type": "server",
+                      "spec_code": "vault.backup.server.normal",
+                      "is_multi_az": false,
+                      "is_double_az": false,
+                      "used": 3948,
+                      "storage_unit": null,
+                      "status": "available",
+                      "size": 100,
+                      "partner_bp_id": null
+                     },
+                     "tags": [],
+                     "backup_name_prefix": null,
+                     "demand_billing": false,
+                     "cbc_delete_count": 0,
+                     "frozen": false,
+                     "availability_zone": "",
+                     "sys_lock_source_service": "",
+                     "supplier": "",
+                     "locked": false,
+                     "cross_account": false,
+                     "cross_account_urn": ""
+                    }
+                   },
+                   "detail": {
+                    "flavor": {
+                     "disk": "0",
+                     "vcpus": "1",
+                     "ram": "1024",
+                     "id": "t6.small.1",
+                     "name": "t6.small.1",
+                     "gpus": [],
+                     "asic_accelerators": []
+                    },
+                    "fault": null,
+                    "id": "fa0f0734-fd76-4a7d-b684-7f08baeadb4a",
+                    "name": "ecs-with-vault",
+                    "addresses": {
+                     "6ed5add8-7762-4dce-9a81-7e292eac884b": [
+                      {
+                       "version": "4",
+                       "addr": "192.168.0.223",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:2a",
+                       "OS-EXT-IPS:type": "fixed",
+                       "OS-EXT-IPS:port_id": "1f56b01f-e60f-46d7-8ecc-1950aa50ce24"
+                      },
+                      {
+                       "version": "4",
+                       "addr": "101.44.195.139",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:2a",
+                       "OS-EXT-IPS:type": "floating",
+                       "OS-EXT-IPS:port_id": "1f56b01f-e60f-46d7-8ecc-1950aa50ce24"
+                      }
+                     ]
+                    },
+                    "accessIPv4": "",
+                    "accessIPv6": "",
+                    "updated": "2025-05-23T14:24:25Z",
+                    "created": "2025-05-23T09:29:39Z",
+                    "metadata": {
+                     "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                     "metering.resourcespeccode": "t6.small.1.linux",
+                     "charging_mode": "0",
+                     "vpc_id": "6ed5add8-7762-4dce-9a81-7e292eac884b",
+                     "os_type": "Linux",
+                     "metering.resourcetype": "1",
+                     "metering.image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                     "os_bit": "64",
+                     "__support_agent_list": "hss,ces",
+                     "cascaded.instance_extrainfo": "virtio_bus_count:16,pcibridge:1",
+                     "metering.imagetype": "gold"
+                    },
+                    "progress": 0,
+                    "status": "ACTIVE",
+                    "hostId": "76fd0d8ea4fcf82f47aac634f8ef3c6ab8b791051008beb750277e46",
+                    "tags": [
+                     "backup_policy=45Dd"
+                    ],
+                    "description": "",
+                    "locked": false,
+                    "tenant_id": "0d8df128318091f52ff1c0069c340775",
+                    "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                    "key_name": null,
+                    "os-extended-volumes:volumes_attached": [
+                     {
+                      "id": "8bdf48e5-4e1a-46b1-8b59-cdcc9ccb2a28",
+                      "delete_on_termination": "true",
+                      "device": "/dev/vda",
+                      "bootIndex": "0"
+                     }
+                    ],
+                    "config_drive": "",
+                    "OS-EXT-STS:task_state": null,
+                    "OS-EXT-STS:power_state": 1,
+                    "OS-EXT-STS:vm_state": "active",
+                    "OS-EXT-SRV-ATTR:instance_name": "instance-0079f8e0",
+                    "OS-DCF:diskConfig": "MANUAL",
+                    "os:scheduler_hints": {},
+                    "OS-EXT-SRV-ATTR:host": "sa-brazil-1a-3.sa-brazil-1",
+                    "OS-EXT-SRV-ATTR:root_device_name": "/dev/vda",
+                    "OS-EXT-SRV-ATTR:hypervisor_hostname": "nova003@19",
+                    "OS-EXT-AZ:availability_zone": "sa-brazil-1a",
+                    "OS-EXT-SRV-ATTR:ramdisk_id": "",
+                    "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                    "OS-EXT-SRV-ATTR:user_data": null,
+                    "OS-SRV-USG:launched_at": "2025-05-23T09:29:52.000000",
+                    "OS-EXT-SRV-ATTR:kernel_id": "",
+                    "OS-EXT-SRV-ATTR:launch_index": 0,
+                    "host_status": "UP",
+                    "OS-EXT-SRV-ATTR:reservation_id": "r-n0kxp4oh",
+                    "OS-EXT-SRV-ATTR:hostname": "ecs-3b73-0003",
+                    "OS-SRV-USG:terminated_at": null,
+                    "sys_tags": [
+                     {
+                      "key": "_sys_enterprise_project_id",
+                      "value": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                     }
+                    ],
+                    "security_groups": [
+                     {
+                      "id": "b445f2bf-ff10-4a96-bcc0-314e00c5fe04",
+                      "name": "default"
+                     }
+                    ],
+                    "image": {
+                     "id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1"
+                    },
+                    "hypervisor": null,
+                    "auto_terminate_time": "",
+                    "cpu_options": {
+                     "hw:cpu_threads": null
+                    },
+                    "enclave_options": {
+                     "enabled": false
+                    },
+                    "capacity_reservation_id": null,
+                    "capacity_reservation_specification": {
+                     "id": null,
+                     "preference": null
+                    },
+                    "security_options": {
+                     "secure_boot_enabled": null,
+                     "tpm_enabled": null
+                    },
+                    "spod_id": null,
+                    "serial_console_options": null
+                   },
+                   "children": [
+                    {
+                     "id": "8bdf48e5-4e1a-46b1-8b59-cdcc9ccb2a28",
+                     "name": "ecs-3b73-0003",
+                     "size": 40,
+                     "status": "in-use",
+                     "detail": {
+                      "id": "8bdf48e5-4e1a-46b1-8b59-cdcc9ccb2a28",
+                      "links": [
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/v2/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/8bdf48e5-4e1a-46b1-8b59-cdcc9ccb2a28",
+                        "rel": "self"
+                       },
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/8bdf48e5-4e1a-46b1-8b59-cdcc9ccb2a28",
+                        "rel": "bookmark"
+                       }
+                      ],
+                      "name": "ecs-3b73-0003",
+                      "status": "in-use",
+                      "attachments": [
+                       {
+                        "attachment_id": "e29e3764-752c-4cda-be0d-7bd9f6d8b756",
+                        "volume_id": "8bdf48e5-4e1a-46b1-8b59-cdcc9ccb2a28",
+                        "device": "/dev/vda",
+                        "server_id": "fa0f0734-fd76-4a7d-b684-7f08baeadb4a",
+                        "host_name": null,
+                        "attached_at": "2025-05-23T09:29:48.543055",
+                        "id": "8bdf48e5-4e1a-46b1-8b59-cdcc9ccb2a28"
+                       }
+                      ],
+                      "description": "",
+                      "size": 40,
+                      "metadata": {
+                       "volInfoUrl": "fusionstorage://10.55.129.43/12/8bdf48e54e1a46b18b59cdcc9ccb2a28",
+                       "__system__volume_name": "ecs-3b73-0003",
+                       "StorageType": "FC_DSWARE",
+                       "readonly": "False",
+                       "attached_mode": "rw"
+                      },
+                      "bootable": "true",
+                      "encrypted": false,
+                      "tags": {},
+                      "wwn": "68886030000043acfa16742754692812",
+                      "lifecycle": 0,
+                      "availability_zone": "sa-brazil-1a",
+                      "os-vol-host-attr:host": "cinder-kvm001@GPSSD#12",
+                      "created_at": "2025-05-23T09:29:42.737587",
+                      "volume_type": "GPSSD",
+                      "shareable": "false",
+                      "multiattach": false,
+                      "os-vol-tenant-attr:tenant_id": "0d8df128318091f52ff1c0069c340775",
+                      "os-volume-replication:extended_status": null,
+                      "volume_image_metadata": {
+                       "__os_bit": "64",
+                       "__os_version": "Huawei Cloud EulerOS 2.0 64bit",
+                       "__isregistered": "true",
+                       "__platform": "Huawei Cloud EulerOS",
+                       "__os_type": "Linux",
+                       "virtual_env_type": "FusionCompute",
+                       "__image_source_type": "uds",
+                       "__imagetype": "gold",
+                       "__productcode": "",
+                       "__image_location": "obs.sa-brazil-1.myhuaweicloud.com:443:pcsims0dbcec77c2cb41bc8dbdc0fed84e00e0:a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1_20241217142950",
+                       "__image_size": "1180917760",
+                       "__account_code": "",
+                       "__lazyloading": "true",
+                       "__data_origin": "",
+                       "hw_vif_multiqueue_enabled": "true",
+                       "__support_kvm": "true",
+                       "__originalimagename": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "__support_agent_list": "hss,ces,appbooster:nginx&redis&mysql&memcached&postgresql",
+                       "__support_kvm_hi1822_hiovs": "true",
+                       "__backup_id": "",
+                       "__image_displayname": "{\"zh-cn\":\"Huawei Cloud EulerOS 2.0 标准版 64位\",\"en-us\":\"Huawei Cloud EulerOS 2.0 Standard 64 bit\"}",
+                       "__support_largememory": "true",
+                       "__os_feature_list": "{\"nic_hotplug\":\"true\", \"disk_hotplug\": \"true\", \"user_data\": \"true\", \"ssh_key\":\"true\", \"hostname_inject\": \"true\", \"onekey_resetpasswd\": \"true\"}",
+                       "active_at": "2022-07-22T06:28:32Z",
+                       "__description": "Register zvhd2 private image by OpsImageMgmt",
+                       "image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                       "checksum": "99914b932bd37a50b983c5e7c90ae93b",
+                       "container_format": "bare",
+                       "disk_format": "zvhd2",
+                       "min_disk": "10",
+                       "min_ram": "0",
+                       "size": "2"
+                      },
+                      "updated_at": "2025-05-23T09:29:58.448809",
+                      "replication_status": "disabled",
+                      "os-vol-mig-status-attr:name_id": null,
+                      "os-vol-mig-status-attr:migstat": null,
+                      "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                      "service_type": "EVS",
+                      "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                      "sys_tags": {
+                       "_sys_enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                      },
+                      "volume_qos_specs": "QoS_GPSSD"
+                     },
+                     "type": "OS::Cinder::Volume",
+                     "children": [],
+                     "vault_id": "f85e42a4-d23b-4af9-b361-e56758e6faa4",
+                     "vault_name": "vault-preset"
+                    }
+                   ]
+                  }
+                 ],
+                 "count": 4
+                }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 07:17:12 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ba19b3c904245590387f313b49d63f42
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T071711Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults?limit=100&offset=0?object_type=server
+  response:
+    body:
+      string: '{
+                 "vaults": [
+                  {
+                   "id": "f85e42a4-d23b-4af9-b361-e56758e6faa4",
+                   "name": "vault-preset",
+                   "description": null,
+                   "resources": [
+                    {
+                     "id": "fa0f0734-fd76-4a7d-b684-7f08baeadb4a",
+                     "type": "OS::Nova::Server",
+                     "name": "ecs-with-vault",
+                     "auto_protect": true,
+                     "size": 40,
+                     "backup_size": 3948,
+                     "backup_count": 3,
+                     "protect_status": "available",
+                     "extra_info": {}
+                    }
+                   ],
+                   "provider_id": "0daac4c5-6707-4851-97ba-169e36266b66",
+                   "created_at": "2025-05-23T08:26:02.652596",
+                   "project_id": "0d8df128318091f52ff1c0069c340775",
+                   "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                   "auto_bind": false,
+                   "bind_rules": {},
+                   "auto_expand": false,
+                   "smn_notify": true,
+                   "threshold": 80,
+                   "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                   "billing": {
+                    "allocated": 40,
+                    "cloud_type": "public",
+                    "consistent_level": "crash_consistent",
+                    "frozen_scene": null,
+                    "charging_mode": "post_paid",
+                    "order_id": null,
+                    "product_id": null,
+                    "protect_type": "backup",
+                    "object_type": "server",
+                    "spec_code": "vault.backup.server.normal",
+                    "is_multi_az": false,
+                    "is_double_az": false,
+                    "used": 3948,
+                    "storage_unit": null,
+                    "status": "available",
+                    "size": 100,
+                    "partner_bp_id": null
+                   },
+                   "tags": [
+                    {
+                     "key": "user_name",
+                     "value": "custodian"
+                    }
+                   ],
+                   "backup_name_prefix": null,
+                   "demand_billing": false,
+                   "cbc_delete_count": 0,
+                   "frozen": false,
+                   "availability_zone": "",
+                   "sys_lock_source_service": "",
+                   "supplier": "",
+                   "locked": false,
+                   "cross_account": false,
+                   "cross_account_urn": ""
+                  }
+                 ],
+                 "count": 1,
+                 "offset": 0,
+                 "limit": 100
+                }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 07:17:12 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ba19b3c904245590387f313b49d63f42
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1

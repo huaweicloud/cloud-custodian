@@ -64,33 +64,153 @@ interactions:
       X-Domain-Id:
       - mock-domain-id
       X-Sdk-Date:
-      - 20250409T093110Z
+      - 20250523T080014Z
     method: GET
     uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
   response:
     body:
       string: '{ "total" : 1, "certificate_authorities" : [ { "signature_algorithm"
-        : "SHA384","issuer_id" : null, "issuer_name" : "ca-tagged.com",
-         "not_after" : 1678159435000,"not_before" : 1646623375000, "status" : "ACTIVED", "freeze_flag" : 0, "gen_mode"
-        : "GENERATE", "serial_number" : "202203070322544291829058", "distinguished_name"
-        : { "country" : "cn", "state" : "shanghai", "locality" : "shanghai", "organization"
-        : "shanghai", "organizational_unit" : "shanghai", "common_name" : "ca-tagged.com"
-        }, "key_algorithm" : "EC384", "create_time" : 1646623375000, "delete_time"
-        : null, "ca_id" : "ca-tagged-id", "type" : "ROOT",
-        "path_length" : 7, "crl_configuration" : { "enabled" : false, "obs_bucket_name"
-        : null, "valid_days" : null, "crl_name" : null, "crl_dis_point" : null }}]
-        }'
+        : "SHA384", "issuer_id" : null, "issuer_name" : "ca-tagged.com", "not_after"
+        : 1678159435000, "not_before" : 1646623375000, "status" : "ACTIVED", "freeze_flag"
+        : 0, "gen_mode" : "GENERATE", "serial_number" : "202203070322544291829058",
+        "distinguished_name" : { "country" : "cn", "state" : "shanghai", "locality"
+        : "shanghai", "organization" : "shanghai", "organizational_unit" : "shanghai",
+        "common_name" : "CSR_123" }, "key_algorithm" : "EC384", "create_time" : 1646623375000,
+        "delete_time" : null, "ca_id" : "ca-tagged-id", "type" : "ROOT", "path_length"
+        : 7, "crl_configuration" : { "enabled" : false, "obs_bucket_name" : null,
+        "valid_days" : null, "crl_name" : null, "crl_dis_point" : null } }] }'
     headers:
       Connection:
       - keep-alive
-      Content-Length:
-      - '373'
       Content-Type:
-      - application/json;charset=utf8
+      - application/json
       Date:
-      - Wed, 09 Apr 2025 09:31:10 GMT
+      - Fri, 23 May 2025 08:00:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=bc67273835f91aa425; path=/
+      - HWWAFSESTIME=1747987214303; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
       X-Request-Id:
-      - 5c5ebe6e9b3644710c7fd433a182d7d3
+      - da14c0cecefcbdb88dcd3477f79b00f2
+      X-XSS-Protection:
+      - 1; mode=block;
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ccm.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250523T080249Z
+    method: GET
+    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
+  response:
+    body:
+      string: '{ "tags" : [ { "key" : "key1", "value" : "value1" }, { "key" : "key2",
+        "value" : "value2" } ] }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 May 2025 08:02:49 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=00bb67375188eb9899; path=/
+      - HWWAFSESTIME=1747987369820; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 0d92a3948c9a2c41ded352c18f73df7d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ccm.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250527T023324Z
+    method: GET
+    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/ca-tagged-id/tags
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"a0cd333b546cb7b9f80c914a639f9960"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 27 May 2025 02:33:24 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=2592f73bf1485bd474; path=/
+      - HWWAFSESTIME=1748313204292; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a0cd333b546cb7b9f80c914a639f9960
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

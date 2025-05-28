@@ -96,3 +96,16 @@ class CbrVaultTest(BaseTest):
         self.assertEqual(resources[0]['id'], '06e844ba-d4bf-40be-b07f-c60d3c2ce679')
         self.assertEqual(resources[1]['id'], '42da2015-a512-481a-9c86-f02c08cffc10')
         self.assertEqual(resources[2]['id'], '78fe6b2b-15e1-4fce-9cd9-4cbb5021fe92')
+
+    def test_filter_without_specific_tags(self):
+        factory = self.replay_flight_data('cbr_vault_filter_without_specific_tags')
+        p = self.load_policy(
+            {
+                'name': 'cbr_vault_filter_without_specific_tags',
+                'resource': 'huaweicloud.cbr-vault',
+                'filters': [{'type': 'without_specific_tags',
+                             'keys': ['owner-team-email', 'tech-team-email']}],
+            },
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 2)

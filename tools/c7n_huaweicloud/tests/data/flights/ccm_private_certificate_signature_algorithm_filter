@@ -75,7 +75,7 @@ interactions:
         "freeze_flag" : 0, "gen_mode" : "GENERATE", "serial_number" : "202110151057541266081861",
         "distinguished_name" : { "country" : "cn", "state" : "guizhou", "locality"
         : "guiyang", "organization" : "TestA", "organizational_unit" : "IT", "common_name"
-        : "test.test.com" }, "key_algorithm" : "RSA2048", "create_time" : 1634295475000,
+        : "test.test.com" }, "key_algorithm" : "RSA2048", "create_time" :  1779096045000,
         "delete_time" : null, "certificate_id" : "6434f74f-2d13-4e6a-89eb-93ee313f1a43",
         "enc_cert_info" : { "enc_serial_number" : "2ad6c3e393a95bf13f95" } }] }'
     headers:
@@ -143,12 +143,12 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 May 2025 08:37:08 GMT
+      - Thu, 22 May 2025 08:37:07 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=90bb373e755c381584; path=/
-      - HWWAFSESTIME=1747903028204; path=/
+      - HWWAFSESTIME=1747903027231; path=/
+      - HWWAFSESID=a8be876f90f6f8bee3; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -160,7 +160,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 3916cfeff3bb5f6930203f65ebf87c0f
+      - 30e514ed6c9bb9642801050983ae43a4
       X-XSS-Protection:
       - 1; mode=block;
     status:

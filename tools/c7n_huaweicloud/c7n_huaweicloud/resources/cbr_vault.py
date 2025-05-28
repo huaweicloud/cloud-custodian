@@ -12,7 +12,7 @@ from huaweicloudsdkcbr.v1 import (
 )
 
 from c7n.filters import Filter
-from c7n.utils import type_schema, local_session
+from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -77,9 +77,10 @@ class CbrVaultAddTags(HuaweiCloudBaseAction):
 
 
 @CbrVault.filter_registry.register('unassociated')
-# class CbrVaultFilter(AssociatedVaultsFilter):
-#     schema = type_schema('associated_vaults', op={'enum': ['ni', 'in']})
-class CbrVaultFilter(Filter):
+class CbrVaultUnassociatedFilter(Filter):
+    '''
+        Filter the vault unassociated with backup policy.
+    '''
     schema = type_schema('unassociated')
 
     def process(self, resources, event=None):
@@ -128,8 +129,6 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
                   retention_duration_days: 30
                   full_backup_interval: -1
                   timezone: "UTC+08:00"
-
-
     '''
 
     schema = type_schema('associate_vault_policy',
@@ -149,7 +148,7 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             request = AssociateVaultPolicyRequest()
             request.vault_id = resource['id']
             request.body = VaultAssociate(
-                policy_id=self.create_policy(
+                policy_id=self.create_new_policy(
                     day_backups=self.data.get('day_backups'),
                     week_backups=self.data.get('week_backups'),
                     month_backups=self.data.get('month_backups'),
@@ -167,7 +166,7 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             raise
         return response
 
-    def create_policy(self,
+    def create_new_policy(self,
                       day_backups,
                       week_backups,
                       month_backups,
@@ -177,7 +176,7 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
                       full_backup_interval,
                       timezone,
                       operation_type):
-        client = local_session(self.manager.get_client()).client('cbr-policy')
+        client = self.manager.get_client()
 
         try:
             request = CreatePolicyRequest()
@@ -216,3 +215,52 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return response.to_dict()
+
+
+@CbrVault.filter_registry.register('unassociated_with_specific_replication_policy')
+class CbrVaultUnassociatedReplicationFilter(Filter):
+    '''
+        Filter the vault unassociated with backup policy.
+    '''
+    schema = type_schema('unassociated_with_specific_replication_policy',
+                         replication_policy_id={'type': 'string'})
+
+    def process(self, resources, event=None):
+        results = []
+        client = self.manager.get_client()
+        for r in resources:
+            try:
+                request = ListPoliciesRequest()
+                request.operation_type = "replication"
+                request.vault_id = r['id']
+                response = client.list_policies(request).to_dict()['policies']
+                if response[0]['id'] != self.data.get('replication_policy_id'):
+                    results.append(r)
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                raise
+        return results
+
+
+@CbrVault.filter_registry.register('without_specific_tags')
+class CbrVaultWithoutSpecificTagsFilter(Filter):
+    '''
+        Filter the vault unassociated with backup policy.
+    '''
+    schema = type_schema('without_specific_tags',
+                         keys={'type': 'array',
+                               'items': {'type': 'string'}})
+
+    def process(self, resources, event=None):
+        results = []
+        keys = self.data.get('keys')
+        num_key = len(keys)
+
+        for r in resources:
+            count = 0
+            for tag in r['tags']:
+                if tag['key'] in keys:
+                    count += 1
+            if count != num_key:
+                results.append(r)
+        return results

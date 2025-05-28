@@ -64,13 +64,13 @@ interactions:
       X-Domain-Id:
       - mock-domain-id
       X-Sdk-Date:
-      - 20250409T093110Z
+      - 20250523T080014Z
     method: GET
     uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
   response:
     body:
       string: '{ "total" : 1, "certificate_authorities" : [ { "signature_algorithm"
-        : "SHA256", "issuer_id" : null, "issuer_name" : null, "not_after" : 1678159435000,
+        : "SHA384", "issuer_id" : null, "issuer_name" : null, "not_after" : 1678159435000,
         "not_before" : 1646623375000, "status" : "ACTIVED", "freeze_flag" : 0, "gen_mode"
         : "GENERATE", "serial_number" : "202203070322544291829058", "distinguished_name"
         : { "country" : "cn", "state" : "shanghai", "locality" : "shanghai", "organization"
@@ -82,14 +82,79 @@ interactions:
     headers:
       Connection:
       - keep-alive
-      Content-Length:
-      - '373'
       Content-Type:
-      - application/json;charset=utf8
+      - application/json
       Date:
-      - Wed, 09 Apr 2025 09:31:10 GMT
+      - Fri, 23 May 2025 08:00:14 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=bc67273835f91aa425; path=/
+      - HWWAFSESTIME=1747987214303; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
       X-Request-Id:
-      - 5c5ebe6e9b3644710c7fd433a182d7d3
+      - da14c0cecefcbdb88dcd3477f79b00f2
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ccm.ap-southeast-3.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250523T080249Z
+    method: GET
+    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
+  response:
+    body:
+      string: '{ "tags" : [ { "key" : "key1", "value" : "value1" }, { "key" : "key2",
+        "value" : "value2" } ] }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 May 2025 08:02:49 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=00bb67375188eb9899; path=/
+      - HWWAFSESTIME=1747987369820; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 0d92a3948c9a2c41ded352c18f73df7d
+      X-XSS-Protection:
+      - 1; mode=block;
     status:
       code: 200
       message: OK
@@ -113,7 +178,7 @@ interactions:
       X-Domain-Id:
       - mock-domain-id
       X-Sdk-Date:
-      - 20250521T100256Z
+      - 20250527T022632Z
     method: POST
     uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/ca-test-id/disable
   response:
@@ -125,12 +190,12 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 21 May 2025 10:02:57 GMT
+      - Tue, 27 May 2025 02:26:33 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=cf53b73b88e6de4c9a; path=/
-      - HWWAFSESTIME=1747821777071; path=/
+      - HWWAFSESTIME=1748312791865; path=/
+      - HWWAFSESID=9096076d5c6010c7c7; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       X-Content-Type-Options:
@@ -140,7 +205,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - a5c3c87859d80c2c2e167827917b26a5
+      - f46ef2b42d424a1fe650d364d31757d4
       X-XSS-Protection:
       - 1; mode=block;
     status:
@@ -164,32 +229,26 @@ interactions:
       X-Domain-Id:
       - mock-domain-id
       X-Sdk-Date:
-      - 20250522T083139Z
+      - 20250527T022753Z
     method: GET
     uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/ca-test-id/tags
   response:
     body:
-      string: '{
-        "tags" : [ {
-          "key" : "key1",
-          "value" : "value1"
-        }, {
-          "key" : "key2",
-          "value" : "value2"
-        } ]
-      }'
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"e510704def98fcdd203bfeb56df1a79c"}
+
+        '
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 May 2025 08:31:39 GMT
+      - Tue, 27 May 2025 02:27:53 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=049097616cf6c166f5; path=/
-      - HWWAFSESTIME=1747902695391; path=/
+      - HWWAFSESTIME=1748312873924; path=/
+      - HWWAFSESID=9a94c73d8d7ea3b920; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -201,10 +260,10 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 0fa2050bba8f0fb8170b403198bd3b9f
+      - e510704def98fcdd203bfeb56df1a79c
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 200
-      message: OK
+      code: 401
+      message: Unauthorized
 version: 1
