@@ -68,7 +68,7 @@ def get_cbr_vault_of_volume(client, volume_id):
 class Volume(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'evs'
-        enum_spec = ("list_volumes_invoker", 'volumes', 'offset')
+        enum_spec = ("list_volumes", 'volumes', 'offset')
         id = 'id'
         tag_resource_type = 'disk'
 
