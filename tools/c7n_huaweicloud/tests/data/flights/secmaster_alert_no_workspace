@@ -1,5 +1,4 @@
 interactions:
-# 查询工作空间列表 - 返回空结果，没有工作空间时不会查询告警
 - request:
     body: null
     headers:

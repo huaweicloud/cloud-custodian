@@ -21,7 +21,6 @@ from huaweicloudsdksecmaster.v2 import (
 log = logging.getLogger("custodian.huaweicloud.resources.secmaster")
 
 
-# Business Requirement 1: SecMaster Instance Resources
 @resources.register("secmaster")
 class SecMaster(QueryResourceManager):
     """Huawei Cloud SecMaster Security Brain instance resource manager.
@@ -96,7 +95,6 @@ class SecMasterSendMsg(HuaweiCloudBaseAction):
         }
 
 
-# Business Requirement 2: Workspace Resources (Existing, need to be improved)
 @resources.register("secmaster-workspace")
 class SecMasterWorkspace(QueryResourceManager):
     """Huawei Cloud SecMaster workspace resource manager.
@@ -225,7 +223,6 @@ class WorkspaceSendMsg(HuaweiCloudBaseAction):
         }
 
 
-# Business Requirement 2: Alert Resources
 @resources.register("secmaster-alert")
 class SecMasterAlert(QueryResourceManager):
     """Huawei Cloud SecMaster alert resource manager.
@@ -407,7 +404,6 @@ class AlertSendMsg(HuaweiCloudBaseAction):
         }
 
 
-# Business Requirement 3: Playbook Resources
 @resources.register("secmaster-playbook")
 class SecMasterPlaybook(QueryResourceManager):
     """Huawei Cloud SecMaster playbook resource manager.

@@ -1,5 +1,4 @@
 interactions:
-# 首先查询工作空间列表
 - request:
     body: null
     headers:
