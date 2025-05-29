@@ -1,5 +1,4 @@
 import logging
-import string
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkcbr.v1 import (
