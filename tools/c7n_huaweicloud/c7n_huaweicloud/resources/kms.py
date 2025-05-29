@@ -54,37 +54,34 @@ policies:
     schema = type_schema("enable_key_rotation")
 
     def perform_action(self, resource):
-
-        notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
-                          "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
-        if resource["default_key_flag"] == "1":
-            return 0
-        if resource["key_spec"] in notSupportList:
-            return 0
-        if resource["keystore_id"] != 0:
-            return 0
-        if resource["key_state"] not in {"2", "3", "4"}:
-            return 0
-        client = self.manager.get_client()
-        request = EnableKeyRotationRequest()
-
+        session = local_session(self.manager.session_factory)
+        domain = session.domain_id
         notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
                           "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
         if (resource["default_key_flag"] == "0" and resource["key_spec"]
                 not in notSupportList and resource["keystore_id"] == "0"
                 and resource["key_state"] in {"2", "3", "4"}):
-
             client = self.manager.get_client()
             request = EnableKeyRotationRequest()
-
-            request.body = OperateKeyRequestBody(
-                key_id=resource["key_id"],
-                sequence=uuid.uuid4().hex
-            )
-            try:
-                client.enable_key_rotation(request)
-            except Exception as e:
-                raise e
+            if domain is None:
+                request.body = OperateKeyRequestBody(
+                    key_id=resource["key_id"],
+                    sequence=uuid.uuid4().hex
+                )
+                try:
+                    client.enable_key_rotation(request)
+                except Exception as e:
+                    raise e
+            else:
+                if domain == resource["domain_id"]:
+                    request.body = OperateKeyRequestBody(
+                        key_id=resource["key_id"],
+                        sequence=uuid.uuid4().hex
+                    )
+                    try:
+                        client.enable_key_rotation(request)
+                    except Exception as e:
+                        raise e
 
 
 @Kms.action_registry.register("disable_key_rotation")

@@ -4,24 +4,44 @@ import json
 import logging
 import jmespath
 import sys
+import http.client
+import socket
+from retrying import retry
 
 from c7n.actions import ActionRegistry
 from c7n.filters import FilterRegistry
 from c7n.manager import ResourceManager
 from c7n.query import sources, MaxResourceLimit
 from c7n.utils import local_session
+from c7n_huaweicloud.actions.smn import register_smn_actions
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 
 from c7n_huaweicloud.utils.marker_pagination import MarkerPagination
 
 from huaweicloudsdkcore.exceptions import exceptions
-from huaweicloudsdkcore.retry.backoff_strategy import BackoffStrategies
 
 log = logging.getLogger("custodian.huaweicloud.query")
 
 DEFAULT_LIMIT_SIZE = 100
 DEFAULT_MAXITEMS_SIZE = 400
+
+RETRYABLE_EXCEPTIONS = (
+    http.client.ResponseNotReady,
+    http.client.IncompleteRead,
+    socket.error,
+    exceptions.ConnectionException,
+)
+
+
+def is_retryable_exception(e):
+    if isinstance(e, RETRYABLE_EXCEPTIONS):
+        return True
+    # 429 too many requests
+    if isinstance(e, exceptions.ClientRequestException) and e.status_code == 429:
+        return True
+
+    return False
 
 
 def _dict_map(obj, params_map):
@@ -282,30 +302,13 @@ class ResourceQuery:
                 return resources
         return resources
 
+    @retry(retry_on_exception=is_retryable_exception,
+           wait_exponential_multiplier=1000,
+           wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def _invoke_client_enum(self, client, enum_op, request):
         _invoker = getattr(client, enum_op)
-        if not enum_op.endswith("_invoker"):
-            return _invoker(request)
-
-        def should_retry(resp, exc):
-            # network connection exception
-            if isinstance(exc, exceptions.ConnectionException):
-                return True
-            # 429 too many requests
-            if isinstance(exc, exceptions.ClientRequestException) and exc.status_code == 429:
-                return True
-
-            return False
-
-        try:
-            return _invoker(request).with_retry(
-                retry_condition=should_retry,
-                max_retries=3,
-                backoff_strategy=BackoffStrategies.EQUAL_JITTER
-            ).invoke()
-        except Exception as e:
-            log.exception(f"Failed after max retries: {str(e)}")
-            raise
+        return _invoker(request)
 
     def _pagination_ims(self, m, enum_op, path):
         session = local_session(self.session_factory)
@@ -441,6 +444,8 @@ class QueryMeta(type):
         if getattr(m, "tag_resource_type", None):
             register_tms_actions(attrs["action_registry"])
             register_tms_filters(attrs["filter_registry"])
+
+        register_smn_actions(attrs["action_registry"])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
 
