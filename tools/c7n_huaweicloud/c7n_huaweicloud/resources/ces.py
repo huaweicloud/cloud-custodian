@@ -10,7 +10,7 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkces.v2 import UpdateAlarmNotificationsRequest, Notification, \
     PutAlarmNotificationReq, BatchEnableAlarmRulesRequest, BatchEnableAlarmsRequestBody, \
-    CreateAlarmRulesRequest, Policy, PostAlarmsReqV2, AlarmType
+    CreateAlarmRulesRequest, Policy, PostAlarmsReqV2, AlarmType, ListAlarmRulesRequest
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody, \
     ListTopicsRequest
@@ -29,6 +29,41 @@ class Alarm(QueryResourceManager):
         enum_spec = ("list_alarm_rules", 'alarms', 'offset')
         id = 'alarm_id'
         tag_resource_type = None
+
+    def get_resources(self, query):
+        return self.get_api_resources(query)
+
+    def _fetch_resources(self, query):
+        return self.get_api_resources(query)
+
+    def get_api_resources(self, resource_ids):
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+        resources = []
+        offset, limit = 0, 100
+        while True:
+            request = ListAlarmRulesRequest()
+            request.offset = offset
+            request.limit = limit
+            try:
+                response = client.list_alarm_rules(request)
+                resource = eval(
+                    str(response.alarms)
+                        .replace("null", "None")
+                        .replace("false", "False")
+                        .replace("true", "True")
+                )
+                resources = resources + resource
+            except exceptions.ClientRequestException as e:
+                log.error(
+                    f"Failed to query API list: {str(e)}")
+                break
+
+            offset += limit
+            if not response.count or offset >= len(response.alarms):
+                break
+
+        return resources
 
 
 Alarm.filter_registry.register('missing', Missing)
@@ -92,7 +127,7 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         topic_urns = [topic.topic_urn for topic in response.topics]
 
         request = UpdateAlarmNotificationsRequest()
-        request.alarm_id = resource["id"]
+        request.alarm_id = resource["alarm_id"]
         list_ok_notifications_body = [
             Notification(
                 type=action_type,
@@ -151,7 +186,7 @@ class BatchStartStoppedAlarmRules(BaseAction):
             return
         response = None
         batch_enable_alarm_rule_request = BatchEnableAlarmRulesRequest()
-        list_alarm_ids = [str(item["id"]) for item in resources if "id" in item]
+        list_alarm_ids = [str(item["alarm_id"]) for item in resources if "alarm_id" in item]
         batch_enable_alarm_rule_request.body = BatchEnableAlarmsRequestBody(
             alarm_enabled=True,
             alarm_ids=list_alarm_ids
@@ -571,7 +606,7 @@ class NotifyBySMN(BaseAction):
         params = self.data.get('parameters', {})
         subject = params.get('subject', 'subject')
         message = params.get('message', 'message')
-        list_alarm_ids = [str(item["id"]) for item in resources if "id" in item]
+        list_alarm_ids = [str(item["alarm_id"]) for item in resources if "alarm_id" in item]
         id_list = '\n'.join([f"- {alarm_id}" for alarm_id in list_alarm_ids])
         if len(id_list) != 0:
             message += f"\nalarm list:\n{id_list}"
