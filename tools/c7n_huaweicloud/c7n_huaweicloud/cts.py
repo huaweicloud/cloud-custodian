@@ -1,6 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 from c7n.utils import jmespath_search, jmespath_compile
+import logging
+
+log = logging.getLogger('c7n_huaweicloud.policy')
 
 
 class CloudTraceServiceEvents:
@@ -48,6 +51,7 @@ class CloudTraceServiceEvents:
         resource_ids = ()
         event_name = event['cts']['trace_name']
         event_source = event['cts']['service_type'] + "." + event['cts']['resource_type']
+        event_code = int(event['cts'].get('code', "0"))
         for e in mode.get('events', []):
             if not isinstance(e, dict):
                 # Check if we have a short cut / alias
@@ -59,6 +63,14 @@ class CloudTraceServiceEvents:
                 continue
             if event_source != e.get('source'):
                 continue
+
+            mode_code = e.get('code')
+            if mode_code:
+                log.info(f'Expect code for event is {mode_code}')
+                if event_code != mode_code:
+                    log.warning(f'The code[{event_code}] in CTS event is not matched the'
+                                f' code[{mode_code}] in mode configuration')
+                    continue
 
             id_query = e.get('ids')
             if not id_query:
