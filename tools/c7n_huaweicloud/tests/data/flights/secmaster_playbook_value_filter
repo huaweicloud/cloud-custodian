@@ -1,0 +1,82 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces?limit=500&offset=0
+  response:
+    body:
+      string: '{"count":1,"workspaces":[{"create_time":"2024-07-02T09:25:17Z+0800","creator_id":"b4admin46a","creator_name":"admin","description":"生产环境工作空间","domain_id":"acdomain123bf4","domain_name":"scc09","enterprise_project_id":"","enterprise_project_name":"","id":"workspace001","is_view":false,"modifier_id":"","modifier_name":"","name":"production-workspace","project_id":"15projectda6","project_name":"cn-north-4","region_id":"cn-north-4","update_time":"2024-07-02T09:25:17Z+0800","view_bind_id":"","view_bind_name":"","workspace_agency_list":[]}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - fafbccedf4d9f64e03701cc558fc2596
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/playbooks?limit=500&offset=0
+  response:
+    body:
+      string: '{"code":"0","message":null,"total":5,"size":5,"page":1,"data":[{"id":"playbook-001","name":"高危操作监控剧本","description":"监控高危系统操作并自动响应","enabled":false,"create_time":"2024-07-02T10:00:00Z+0800","update_time":"2024-07-02T10:00:00Z+0800","project_id":"15projectda6","version_id":"version-001","workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v1.0","dataclass_name":"security","dataclass_id":"dataclass-security"},{"id":"playbook-002","name":"恶意流量监控剧本","description":"监控网络异常流量","enabled":true,"create_time":"2024-07-02T11:00:00Z+0800","update_time":"2024-07-02T11:00:00Z+0800","project_id":"15projectda6","version_id":"version-002","workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v1.1","dataclass_name":"network","dataclass_id":"dataclass-network"},{"id":"playbook-003","name":"日常监控剧本","description":"日常安全监控任务","enabled":true,"create_time":"2024-07-02T12:00:00Z+0800","update_time":"2024-07-02T12:00:00Z+0800","project_id":"15projectda6","version_id":"version-003","workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"security_admin","version":"v2.0","dataclass_name":"general","dataclass_id":"dataclass-general"},{"id":"playbook-004","name":"权限监控剧本","description":"监控权限变更操作","enabled":false,"create_time":"2024-07-02T13:00:00Z+0800","update_time":"2024-07-02T13:00:00Z+0800","project_id":"15projectda6","version_id":"version-004","workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v1.0","dataclass_name":"security","dataclass_id":"dataclass-security"},{"id":"playbook-005","name":"文件监控剧本","description":"监控敏感文件访问","enabled":true,"create_time":"2024-07-02T14:00:00Z+0800","update_time":"2024-07-02T14:00:00Z+0800","project_id":"15projectda6","version_id":"version-005","workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"security_admin","version":"v1.2","dataclass_name":"general","dataclass_id":"dataclass-general"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - eafbccedf4d9f64e03701cc558fc2598
+    status:
+      code: 200
+      message: ''
+version: 1

@@ -1,0 +1,563 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T071711Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/protectables/server/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{
+                 "instances": [
+                  {
+                   "id": "bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be",
+                   "type": "OS::Nova::Server",
+                   "name": "ecs-legally-tagged",
+                   "size": 40,
+                   "status": "ACTIVE",
+                   "protectable": {
+                    "result": true,
+                    "code": "",
+                    "reason": "",
+                    "vault": null
+                   },
+                   "detail": {
+                    "flavor": {
+                     "disk": "0",
+                     "vcpus": "1",
+                     "ram": "1024",
+                     "id": "t6.small.1",
+                     "name": "t6.small.1",
+                     "gpus": [],
+                     "asic_accelerators": []
+                    },
+                    "fault": null,
+                    "id": "bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be",
+                    "name": "ecs-legally-tagged",
+                    "addresses": {
+                     "6ed5add8-7762-4dce-9a81-7e292eac884b": [
+                      {
+                       "version": "4",
+                       "addr": "192.168.0.205",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:18",
+                       "OS-EXT-IPS:type": "fixed",
+                       "OS-EXT-IPS:port_id": "fba1bd17-bfeb-4375-8f84-67aadf70726a"
+                      },
+                      {
+                       "version": "4",
+                       "addr": "101.44.193.30",
+                       "primary": true,
+                       "OS-EXT-IPS-MAC:mac_addr": "fa:16:8e:f3:4b:18",
+                       "OS-EXT-IPS:type": "floating",
+                       "OS-EXT-IPS:port_id": "fba1bd17-bfeb-4375-8f84-67aadf70726a"
+                      }
+                     ]
+                    },
+                    "accessIPv4": "",
+                    "accessIPv6": "",
+                    "updated": "2025-05-23T14:23:30Z",
+                    "created": "2025-05-23T09:29:39Z",
+                    "metadata": {
+                     "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                     "metering.resourcespeccode": "t6.small.1.linux",
+                     "charging_mode": "0",
+                     "vpc_id": "6ed5add8-7762-4dce-9a81-7e292eac884b",
+                     "os_type": "Linux",
+                     "metering.resourcetype": "1",
+                     "metering.image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                     "os_bit": "64",
+                     "__support_agent_list": "hss,ces",
+                     "cascaded.instance_extrainfo": "virtio_bus_count:16,pcibridge:1",
+                     "metering.imagetype": "gold"
+                    },
+                    "progress": 0,
+                    "status": "ACTIVE",
+                    "hostId": "a3b0453049bf4bb0fb3ed00c09acd5997cc73f1b7b4a5043ccfa9dfc",
+                    "tags": [
+                     "backup_policy=45Dd"
+                    ],
+                    "description": "",
+                    "locked": false,
+                    "tenant_id": "0d8df128318091f52ff1c0069c340775",
+                    "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                    "key_name": null,
+                    "os-extended-volumes:volumes_attached": [
+                     {
+                      "id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                      "delete_on_termination": "true",
+                      "device": "/dev/vda",
+                      "bootIndex": "0"
+                     }
+                    ],
+                    "config_drive": "",
+                    "OS-EXT-STS:task_state": null,
+                    "OS-EXT-STS:power_state": 1,
+                    "OS-EXT-STS:vm_state": "active",
+                    "OS-EXT-SRV-ATTR:instance_name": "instance-0079f8e2",
+                    "OS-DCF:diskConfig": "MANUAL",
+                    "os:scheduler_hints": {},
+                    "OS-EXT-SRV-ATTR:host": "sa-brazil-1a-4.sa-brazil-1",
+                    "OS-EXT-SRV-ATTR:root_device_name": "/dev/vda",
+                    "OS-EXT-SRV-ATTR:hypervisor_hostname": "nova004@30",
+                    "OS-EXT-AZ:availability_zone": "sa-brazil-1a",
+                    "OS-EXT-SRV-ATTR:ramdisk_id": "",
+                    "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                    "OS-EXT-SRV-ATTR:user_data": null,
+                    "OS-SRV-USG:launched_at": "2025-05-23T09:29:52.000000",
+                    "OS-EXT-SRV-ATTR:kernel_id": "",
+                    "OS-EXT-SRV-ATTR:launch_index": 0,
+                    "host_status": "UP",
+                    "OS-EXT-SRV-ATTR:reservation_id": "r-zizxiaqw",
+                    "OS-EXT-SRV-ATTR:hostname": "ecs-3b73-0002",
+                    "OS-SRV-USG:terminated_at": null,
+                    "sys_tags": [
+                     {
+                      "key": "_sys_enterprise_project_id",
+                      "value": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                     }
+                    ],
+                    "security_groups": [
+                     {
+                      "id": "b445f2bf-ff10-4a96-bcc0-314e00c5fe04",
+                      "name": "default"
+                     }
+                    ],
+                    "image": {
+                     "id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1"
+                    },
+                    "hypervisor": null,
+                    "auto_terminate_time": "",
+                    "cpu_options": {
+                     "hw:cpu_threads": null
+                    },
+                    "enclave_options": {
+                     "enabled": false
+                    },
+                    "capacity_reservation_id": null,
+                    "capacity_reservation_specification": {
+                     "id": null,
+                     "preference": null
+                    },
+                    "security_options": {
+                     "secure_boot_enabled": null,
+                     "tpm_enabled": null
+                    },
+                    "spod_id": null,
+                    "serial_console_options": null
+                   },
+                   "children": [
+                    {
+                     "id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                     "name": "ecs-3b73-0002",
+                     "size": 40,
+                     "status": "in-use",
+                     "detail": {
+                      "id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                      "links": [
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/v2/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                        "rel": "self"
+                       },
+                       {
+                        "href": "https://evs-internal.sa-brazil-1.myhuaweicloud.com:443/0d8df128318091f52ff1c0069c340775/os-vendor-volumes/ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                        "rel": "bookmark"
+                       }
+                      ],
+                      "name": "ecs-3b73-0002",
+                      "status": "in-use",
+                      "attachments": [
+                       {
+                        "attachment_id": "8ec38733-28a7-4cf6-b166-19958331a736",
+                        "volume_id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381",
+                        "device": "/dev/vda",
+                        "server_id": "bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be",
+                        "host_name": null,
+                        "attached_at": "2025-05-23T09:29:49.645052",
+                        "id": "ad2d1d67-f8ed-42ec-aa23-7d2adfba3381"
+                       }
+                      ],
+                      "description": "",
+                      "size": 40,
+                      "metadata": {
+                       "__system__volume_name": "ecs-3b73-0002",
+                       "volInfoUrl": "fusionstorage://10.55.129.43/11/ad2d1d67f8ed42ecaa237d2adfba3381",
+                       "StorageType": "FC_DSWARE",
+                       "readonly": "False",
+                       "attached_mode": "rw"
+                      },
+                      "bootable": "true",
+                      "encrypted": false,
+                      "tags": {},
+                      "wwn": "6888603000004d37fa16742754692812",
+                      "lifecycle": 0,
+                      "availability_zone": "sa-brazil-1a",
+                      "os-vol-host-attr:host": "cinder-kvm001@GPSSD#11",
+                      "created_at": "2025-05-23T09:29:44.467184",
+                      "volume_type": "GPSSD",
+                      "shareable": "false",
+                      "multiattach": false,
+                      "os-vol-tenant-attr:tenant_id": "0d8df128318091f52ff1c0069c340775",
+                      "os-volume-replication:extended_status": null,
+                      "volume_image_metadata": {
+                       "__os_bit": "64",
+                       "__os_version": "Huawei Cloud EulerOS 2.0 64bit",
+                       "__isregistered": "true",
+                       "__platform": "Huawei Cloud EulerOS",
+                       "__os_type": "Linux",
+                       "virtual_env_type": "FusionCompute",
+                       "__image_source_type": "uds",
+                       "__imagetype": "gold",
+                       "__productcode": "",
+                       "__image_location": "obs.sa-brazil-1.myhuaweicloud.com:443:pcsims0dbcec77c2cb41bc8dbdc0fed84e00e0:a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1_20241217142950",
+                       "__image_size": "1180917760",
+                       "__account_code": "",
+                       "__lazyloading": "true",
+                       "__data_origin": "",
+                       "hw_vif_multiqueue_enabled": "true",
+                       "__support_kvm": "true",
+                       "__originalimagename": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "__support_agent_list": "hss,ces,appbooster:nginx&redis&mysql&memcached&postgresql",
+                       "__support_kvm_hi1822_hiovs": "true",
+                       "__backup_id": "",
+                       "__image_displayname": "{\"zh-cn\":\"Huawei Cloud EulerOS 2.0 标准版 64位\",\"en-us\":\"Huawei Cloud EulerOS 2.0 Standard 64 bit\"}",
+                       "__support_largememory": "true",
+                       "__os_feature_list": "{\"nic_hotplug\":\"true\", \"disk_hotplug\": \"true\", \"user_data\": \"true\", \"ssh_key\":\"true\", \"hostname_inject\": \"true\", \"onekey_resetpasswd\": \"true\"}",
+                       "active_at": "2022-07-22T06:28:32Z",
+                       "__description": "Register zvhd2 private image by OpsImageMgmt",
+                       "image_id": "a64fbc6f-c62f-4d0f-b2fc-ee9a41efb3f1",
+                       "image_name": "Huawei Cloud EulerOS 2.0 Standard 64 bit",
+                       "checksum": "99914b932bd37a50b983c5e7c90ae93b",
+                       "container_format": "bare",
+                       "disk_format": "zvhd2",
+                       "min_disk": "10",
+                       "min_ram": "0",
+                       "size": "2"
+                      },
+                      "updated_at": "2025-05-23T09:29:58.359905",
+                      "replication_status": "disabled",
+                      "os-vol-mig-status-attr:name_id": null,
+                      "os-vol-mig-status-attr:migstat": null,
+                      "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                      "service_type": "EVS",
+                      "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                      "sys_tags": {
+                       "_sys_enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd"
+                      },
+                      "volume_qos_specs": "QoS_GPSSD"
+                     },
+                     "type": "OS::Cinder::Volume",
+                     "children": []
+                    }
+                   ]
+                  }
+                 ],
+                 "count": 1
+                }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 07:17:12 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ba19b3c904245590387f313b49d63f42
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T071711Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults?object_type=server
+  response:
+    body:
+      string: '{
+                 "vaults": [
+                  {
+                   "id": "f85e42a4-d23b-4af9-b361-e56758e6faa4",
+                   "name": "vault-preset",
+                   "description": null,
+                   "resources": [
+                    {
+                     "id": "fa0f0734-fd76-4a7d-b684-7f08baeadb4a",
+                     "type": "OS::Nova::Server",
+                     "name": "ecs-with-vault",
+                     "auto_protect": true,
+                     "size": 40,
+                     "backup_size": 3948,
+                     "backup_count": 3,
+                     "protect_status": "available",
+                     "extra_info": {}
+                    }
+                   ],
+                   "provider_id": "0daac4c5-6707-4851-97ba-169e36266b66",
+                   "created_at": "2025-05-23T08:26:02.652596",
+                   "project_id": "0d8df128318091f52ff1c0069c340775",
+                   "enterprise_project_id": "d522b930-e31e-455f-b54e-f8ebdd7c94cd",
+                   "auto_bind": false,
+                   "bind_rules": {},
+                   "auto_expand": false,
+                   "smn_notify": true,
+                   "threshold": 80,
+                   "user_id": "658345a2dbeb46e69220a04a455a4fb1",
+                   "billing": {
+                    "allocated": 40,
+                    "cloud_type": "public",
+                    "consistent_level": "crash_consistent",
+                    "frozen_scene": null,
+                    "charging_mode": "post_paid",
+                    "order_id": null,
+                    "product_id": null,
+                    "protect_type": "backup",
+                    "object_type": "server",
+                    "spec_code": "vault.backup.server.normal",
+                    "is_multi_az": false,
+                    "is_double_az": false,
+                    "used": 3948,
+                    "storage_unit": null,
+                    "status": "available",
+                    "size": 100,
+                    "partner_bp_id": null
+                   },
+                   "tags": [
+                    {
+                     "key": "user_name",
+                     "value": "custodian"
+                    }
+                   ],
+                   "backup_name_prefix": null,
+                   "demand_billing": false,
+                   "cbc_delete_count": 0,
+                   "frozen": false,
+                   "availability_zone": "",
+                   "sys_lock_source_service": "",
+                   "supplier": "",
+                   "locked": false,
+                   "cross_account": false,
+                   "cross_account_urn": ""
+                  }
+                 ],
+                 "count": 1,
+                 "offset": 0,
+                 "limit": 100
+                }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 07:17:12 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ba19b3c904245590387f313b49d63f42
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T071711Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/policies?operation_type=backup&vault_id=f85e42a4-d23b-4af9-b361-e56758e6faa4
+  response:
+    body:
+      string: '{
+                 "policies": [
+                  {
+                   "id": "bc715c62-f4ed-4fc0-9e78-ce43b9409a39",
+                   "name": "policy_preset",
+                   "operation_type": "backup",
+                   "operation_definition": {
+                    "max_backups": -1,
+                    "retention_duration_days": 30,
+                    "day_backups": 0,
+                    "week_backups": 0,
+                    "month_backups": 0,
+                    "year_backups": 0,
+                    "timezone": "UTC+08:00",
+                    "full_backup_interval": 10,
+                    "created_by": "customer"
+                   },
+                   "enabled": true,
+                   "trigger": {
+                    "id": "cca211ea-6eb5-4668-b523-65dda7f0be8e",
+                    "name": "default",
+                    "type": "time",
+                    "properties": {
+                     "pattern": [
+                      "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"
+                     ],
+                     "start_time": "2025-05-24 09:41:28"
+                    }
+                   },
+                   "associated_vaults": [
+                    {
+                     "vault_id": "f85e42a4-d23b-4af9-b361-e56758e6faa4",
+                     "destination_vault_id": null
+                    }
+                   ]
+                  }
+                 ],
+                 "count": 1,
+                 "limit": 1000,
+                 "offset": 0
+                }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 07:17:12 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ba19b3c904245590387f313b49d63f42
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: '{
+             "resources": [
+              {
+               "id": "bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be",
+               "type": "OS::Nova::Server"
+              }
+             ]
+            }'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T071711Z
+    method: POST
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults/f85e42a4-d23b-4af9-b361-e56758e6faa4/addresources
+  response:
+    body:
+      string: '{
+                 "add_resource_ids": [
+                  "bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be"
+                 ]
+                }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 07:17:12 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ba19b3c904245590387f313b49d63f42
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1

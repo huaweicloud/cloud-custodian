@@ -1,0 +1,140 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T024914Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults?limit=100&offset=0
+  response:
+    body:
+      string: '{"vaults":[{"id":"d12188c6-3460-433d-9cad-63e79890b0a8","name":"vault_without_replication","description":null,"resources":[],"provider_id":"0daac4c5-6707-4851-97ba-169e36266b66","created_at":"2025-05-24T08:45:24.581455","project_id":"0d9da8861b80f5a32fb4c00645f2dbd7","enterprise_project_id":"d522b930-e31e-455f-b54e-f8ebdd7c94cd","auto_bind":false,"bind_rules":{},"auto_expand":false,"smn_notify":true,"threshold":80,"user_id":"658345a2dbeb46e69220a04a455a4fb1","billing":{"allocated":0,"cloud_type":"public","consistent_level":"crash_consistent","frozen_scene":null,"charging_mode":"post_paid","order_id":null,"product_id":null,"protect_type":"backup","object_type":"server","spec_code":"vault.backup.server.normal","is_multi_az":false,"is_double_az":false,"used":0,"storage_unit":null,"status":"available","size":100,"partner_bp_id":null},"tags":[],"backup_name_prefix":null,"demand_billing":false,"cbc_delete_count":0,"frozen":false,"availability_zone":"","sys_lock_source_service":"","supplier":"","locked":false,"cross_account":false,"cross_account_urn":""},{"id":"e16e4792-7d44-45e1-ad49-f4c17446e366","name":"vault-with-replication","description":null,"resources":[],"provider_id":"0daac4c5-6707-4851-97ba-169e36266b66","created_at":"2025-05-24T08:44:53.000701","project_id":"0d9da8861b80f5a32fb4c00645f2dbd7","enterprise_project_id":"d522b930-e31e-455f-b54e-f8ebdd7c94cd","auto_bind":false,"bind_rules":{},"auto_expand":false,"smn_notify":true,"threshold":80,"user_id":"658345a2dbeb46e69220a04a455a4fb1","billing":{"allocated":0,"cloud_type":"public","consistent_level":"crash_consistent","frozen_scene":null,"charging_mode":"post_paid","order_id":null,"product_id":null,"protect_type":"backup","object_type":"server","spec_code":"vault.backup.server.normal","is_multi_az":false,"is_double_az":false,"used":0,"storage_unit":null,"status":"available","size":100,"partner_bp_id":null},"tags":[],"backup_name_prefix":null,"demand_billing":false,"cbc_delete_count":0,"frozen":false,"availability_zone":"","sys_lock_source_service":"","supplier":"","locked":false,"cross_account":false,"cross_account_urn":""}],"count":2,"offset":0,"limit":100}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 02:49:15 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e4560ae95e4d718ab84a98eb90e6e325
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T024914Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/policies?operation_type=replication&vault_id=d12188c6-3460-433d-9cad-63e79890b0a8
+  response:
+    body:
+      string: '{"policies": [], "count": 0, "limit": 1000, "offset": 0}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 02:49:15 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e4560ae95e4d718ab84a98eb90e6e325
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T024914Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/policies?operation_type=replication&vault_id=e16e4792-7d44-45e1-ad49-f4c17446e366
+  response:
+    body:
+      string: '{"policies":[{"id":"d76ba9d3-8450-42d5-ad0d-1f556e4f8d39","name":"policy_164552","operation_type":"replication","operation_definition":{"max_backups":-1,"retention_duration_days":30,"destination_region":"ap-southeast-2","destination_project_id":"0ddb88767b80f4bc2feec006ca26e79d","day_backups":0,"week_backups":0,"month_backups":0,"year_backups":0,"timezone":"UTC+08:00","created_by":"customer"},"enabled":true,"trigger":{"id":"4bce7c8d-bd5f-4b27-8db3-0699c69feb31","name":"default","type":"time","properties":{"pattern":["FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"],"start_time":"2025-05-24 08:45:56"}},"associated_vaults":[{"vault_id":"e16e4792-7d44-45e1-ad49-f4c17446e366","destination_vault_id":"e4a00c14-27bd-40f1-8f07-d2bd1cc5d001"}],"policy_type":"custom_policy"}],"count":1,"limit":1000,"offset":0}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 02:49:15 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e4560ae95e4d718ab84a98eb90e6e325
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1

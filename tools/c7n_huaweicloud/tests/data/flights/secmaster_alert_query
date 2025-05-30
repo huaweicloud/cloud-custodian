@@ -1,0 +1,85 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces?limit=500&offset=0
+  response:
+    body:
+      string: '{"count":1,"workspaces":[{"create_time":"2024-07-02T09:25:17Z+0800","creator_id":"b4admin46a","creator_name":"admin","description":"生产环境工作空间","domain_id":"acdomain123bf4","domain_name":"scc09","enterprise_project_id":"","enterprise_project_name":"","id":"workspace001","is_view":false,"modifier_id":"","modifier_name":"","name":"production-workspace","project_id":"15projectda6","project_name":"cn-north-4","region_id":"cn-north-4","update_time":"2024-07-02T09:25:17Z+0800","view_bind_id":"","view_bind_name":"","workspace_agency_list":[]}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - fafbccedf4d9f64e03701cc558fc2596
+    status:
+      code: 200
+      message: ''
+# 然后搜索告警列表 - 使用正确的字段名
+- request:
+    body: '{"limit": 500, "offset": 0}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '27'
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: POST
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/alerts/search
+  response:
+    body:
+      string: '{"code":"200","message":"success","total":2,"limit":500,"offset":0,"success":true,"data":[{"create_time":"2024-07-02T15:30:25Z+0800","data_object":{"id":"alert-001","title":"高危端口扫描","severity":"High","handle_status":"Open","create_time":"2024-07-02T15:30:25Z+0800","update_time":"2024-07-02T15:30:25Z+0800","description":"检测到高危端口扫描行为","confidence":95,"criticality":80,"first_observed_time":"2024-07-02T15:30:25Z+0800","last_observed_time":"2024-07-02T15:30:25Z+0800","arrive_time":"2024-07-02T15:30:25Z+0800","count":1,"verification_state":"Unknown","sla":"2024-07-09T15:30:25Z+0800"},"dataclass_ref":{"id":"dataclass.alert","name":"告警数据类"},"format_version":1,"id":"alert-001","type":"alert","project_id":"15projectda6","update_time":"2024-07-02T15:30:25Z+0800","version":1,"workspace_id":"workspace001"},{"create_time":"2024-07-02T16:45:30Z+0800","data_object":{"id":"alert-002","title":"权限提升尝试","severity":"Medium","handle_status":"Block","create_time":"2024-07-02T16:45:30Z+0800","update_time":"2024-07-02T17:00:15Z+0800","description":"检测到异常权限提升尝试","confidence":85,"criticality":70,"first_observed_time":"2024-07-02T16:45:30Z+0800","last_observed_time":"2024-07-02T17:00:15Z+0800","arrive_time":"2024-07-02T16:45:30Z+0800","count":3,"verification_state":"True_Positive","sla":"2024-07-09T16:45:30Z+0800"},"dataclass_ref":{"id":"dataclass.alert","name":"告警数据类"},"format_version":1,"id":"alert-002","type":"alert","project_id":"15projectda6","update_time":"2024-07-02T17:00:15Z+0800","version":1,"workspace_id":"workspace001"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - eafbccedf4d9f64e03701cc558fc2597
+    status:
+      code: 200
+      message: ''
+version: 1

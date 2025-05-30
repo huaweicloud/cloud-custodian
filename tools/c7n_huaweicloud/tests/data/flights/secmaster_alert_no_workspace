@@ -1,0 +1,42 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces?limit=500&offset=0
+  response:
+    body:
+      string: '{"count":0,"workspaces":[]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - fafbccedf4d9f64e03701cc558fc2596
+    status:
+      code: 200
+      message: ''
+version: 1
