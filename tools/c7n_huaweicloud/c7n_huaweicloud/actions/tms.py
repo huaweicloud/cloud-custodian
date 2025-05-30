@@ -647,6 +647,11 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
         """validate"""
         if not self.data.get('space'):
             raise PolicyValidationError("Can not perform tag-trim without space")
+        if self.data.get('space') > MAX_TAGS_SIZE:
+            raise PolicyValidationError(
+                "Can not perform tag-trim when space more than %d" % MAX_TAGS_SIZE)
+        if self.data.get('space') < 0:
+            raise PolicyValidationError("Can not perform tag-trim when space less than zero")
         return self
 
     def process(self, resources):
@@ -698,6 +703,12 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
         pass
 
     def get_delete_keys(self, tags, space, preserve):
+        if len(tags) > MAX_TAGS_SIZE:
+            self.log.warn("Can not perform tag-trim when tags more than %d, please reduce to %d",
+                          MAX_TAGS_SIZE, MAX_TAGS_SIZE)
+            raise PolicyValidationError(
+                "Can not perform tag-trim when tags more than %d, please reduce to %d" %
+                                        (MAX_TAGS_SIZE, MAX_TAGS_SIZE))
         if MAX_TAGS_SIZE - len(tags) >= space:
             return []
         else:
