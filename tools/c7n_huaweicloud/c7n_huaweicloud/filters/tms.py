@@ -102,7 +102,7 @@ class TagActionFilter(Filter):
 
       policies:
         - name: marked-for-op-volume
-          resource: huaweicloud.volume
+          resource: huaweicloud.evs-volume
           filters:
             - type: marked-for-op
               # The default tag used is mark-for-op-custodian
