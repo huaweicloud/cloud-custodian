@@ -95,7 +95,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                   topic_urn_list:
                    - urn:smn:cn-north-4:xxxx:test
                   subject: 'test subject'
-                  message_structure: '{\"default\": \"test\"}'
+                  message_structure: '{\"default\": \"test\",\"sms\": \"test\",\"email\": \"test\"}'
     """
 
     log = logging.getLogger("custodian.huaweicloud.actions.smn.NotifyMessageStructureAction")
