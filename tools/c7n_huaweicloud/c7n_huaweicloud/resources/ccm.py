@@ -71,9 +71,8 @@ class CertificateAuthority(QueryResourceManager):
                         # Convert response tags to standard dict format
                         tags = []
                         for tag in response.tags:
-                            if hasattr(tag, 'key') and hasattr(tag, 'value'):
-                                tags.append(
-                                    {'key': tag.key, 'value': tag.value})
+                            tags.append(
+                                {'key': tag.key, 'value': tag.value})
                         resource['tags'] = tags
                     else:
                         resource['tags'] = []
@@ -484,9 +483,8 @@ class PrivateCertificate(QueryResourceManager):
                         # Convert response tags to standard dict format
                         tags = []
                         for tag in response.tags:
-                            if hasattr(tag, 'key') and hasattr(tag, 'value'):
-                                tags.append(
-                                    {'key': tag.key, 'value': tag.value})
+                            tags.append(
+                                {'key': tag.key, 'value': tag.value})
                         resource['tags'] = tags
                     else:
                         resource['tags'] = []
