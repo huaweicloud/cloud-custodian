@@ -3,12 +3,12 @@
 
 import logging
 
-from c7n.utils import type_schema
+from c7n.utils import local_session, type_schema
 from c7n.filters import AgeFilter
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-
+from c7n.filters.missing import Missing
 from huaweicloudsdksecmaster.v2 import (
     ListAlertsRequest,
     ListPlaybooksRequest,
@@ -16,6 +16,10 @@ from huaweicloudsdksecmaster.v2 import (
     UpdatePlaybookRequest,
     ModifyPlaybookInfo,
     DataobjectSearch,
+)
+from huaweicloudsdksmn.v2 import (
+    PublishMessageRequest,
+    PublishMessageRequestBody,
 )
 
 log = logging.getLogger("custodian.huaweicloud.resources.secmaster")
@@ -75,11 +79,12 @@ class SecMasterSendMsg(HuaweiCloudBaseAction):
         required=("message",),
     )
 
-    def perform_action(self, resource):
+    def process(self, resource):
         """Perform the send message action.
 
         TODO: email notification function is not yet available and needs to be implemented later.
         """
+
         message = self.data.get("message", "SecMaster notification")
         subject = self.data.get("subject", "SecMaster notification")
 
@@ -133,6 +138,15 @@ class SecMasterWorkspace(QueryResourceManager):
         date = "create_time"
         tag_resource_type = ""
 
+    def augment(self, resources):
+        if not resources:
+            # Return a fake resource
+            return [{"fake-resource": True}]
+        return resources
+
+
+SecMasterWorkspace.filter_registry.register("missing", Missing)
+
 
 @SecMasterWorkspace.action_registry.register("send-msg")
 class WorkspaceSendMsg(HuaweiCloudBaseAction):
@@ -164,63 +178,36 @@ class WorkspaceSendMsg(HuaweiCloudBaseAction):
 
     schema = type_schema(
         "send-msg",
-        message={"type": "string"},
-        subject={"type": "string"},
-        send_when_empty={"type": "boolean"},
-        required=("message",),
+        required=["topic_urn_list"],
+        topic_urn_list={"type": "array", "items": {"type": "string"}},
     )
 
     def process(self, resources):
-        """Process the resource list, supporting sending notifications when no resources.
 
-        If send_when_empty=true is set, a notification will be sent even when no workspaces.
-        """
-        # Check if a notification needs to be sent when there are no resources
-        send_when_empty = self.data.get("send_when_empty", False)
+        if resources and resources[0].get("fake-resource", False):
 
-        if not resources and send_when_empty:
-            # No workspaces and need to send an empty resource notification
-            log.info("No SecMaster workspaces found, sending warning notification")
+            topic_urn_list = self.data.get("topic_urn_list", [])
+            subject = "SecMaster Automatic notification"
+            message = "The workspace does not exist"
+            body = PublishMessageRequestBody(subject=subject, message=message)
+            for topic_urn in topic_urn_list:
+                publish_message_request = PublishMessageRequest(
+                    topic_urn=topic_urn, body=body
+                )
+                log.info(f"Message send, request: {publish_message_request}")
+                try:
+                    client = local_session(self.manager.session_factory).client("smn")
+                    publish_message_response = client.publish_message(
+                        publish_message_request
+                    )
+                    log.info(f"Message send, response: {publish_message_response}")
+                except Exception as e:
+                    log.error(f"Message send, failed: {e}")
 
-            # Perform the empty resource notification logic
-            message = self.data.get("message", "Workspace notification")
-            subject = self.data.get("subject", "SecMaster workspace notification")
-
-            log.info(
-                f"TODO: Send workspace missing warning - Subject: {subject}, Message: {message}"
-            )
-            log.info("No SecMaster workspaces found for the current account")
-
-            # TODO: Implement the email notification logic
-            # Actual email sending logic can be called here
-
-            # Return an empty list, do not create virtual resources
-            return []
-        elif not resources:
-            # No workspaces and no need to send a notification
-            log.info("No SecMaster workspaces found")
-            return []
-        else:
-            # There are workspaces, process normally
-            return super().process(resources)
+        return resources
 
     def perform_action(self, resource):
-        """Perform the send message action."""
-        message = self.data.get("message", "Workspace notification")
-        subject = self.data.get("subject", "SecMaster workspace notification")
-
-        log.info(
-            f"TODO: Send workspace notification - Subject: {subject}, Message: {message}"
-        )
-        log.info(
-            f"Workspace: {resource.get('name', 'unknown')} (ID: {resource.get('id', 'unknown')})"
-        )
-
-        # TODO: Implement the email notification logic
-        return {
-            "status": "TODO",
-            "message": "Email notification function to be implemented",
-        }
+        return resource
 
 
 @resources.register("secmaster-alert")
@@ -238,6 +225,12 @@ class SecMasterAlert(QueryResourceManager):
         date = "create_time"
         tag_resource_type = ""
 
+    def augment(self, resources):
+        if not resources:
+            # Return a fake resource
+            return [{"fake-resource": True}]
+        return resources
+
     def _fetch_resources(self, query):
         """Get the list of alert resources.
 
@@ -252,7 +245,8 @@ class SecMasterAlert(QueryResourceManager):
 
         for workspace in workspaces:
             workspace_id = workspace.get("id")
-            if not workspace_id:
+            is_view = workspace.get("is_view", False)
+            if not workspace_id or is_view:
                 continue
 
             offset = 0
@@ -281,6 +275,7 @@ class SecMasterAlert(QueryResourceManager):
                         # Keep the original hierarchical structure, do not flatten data_object
                         # Add workspace information to the top level
                         alert_dict["workspace_name"] = workspace.get("name")
+                        alert_dict["workspace_id"] = workspace.get("id")
                         resources.append(alert_dict)
 
                     # Check if there is more data
@@ -320,8 +315,11 @@ class SecMasterAlert(QueryResourceManager):
                             f"Failed to get the alert list for workspace {workspace_id}: {e}"
                         )
                         raise  # Re-throw other unknown errors
+        return self.augment(resources) or []
+        # return resources
 
-        return resources
+
+SecMasterAlert.filter_registry.register("missing", Missing)
 
 
 @SecMasterAlert.filter_registry.register("age")
@@ -379,29 +377,91 @@ class AlertSendMsg(HuaweiCloudBaseAction):
 
     schema = type_schema(
         "send-msg",
-        message={"type": "string"},
-        subject={"type": "string"},
-        required=("message",),
+        required=["topic_urn_list"],
+        topic_urn_list={"type": "array", "items": {"type": "string"}},
     )
 
+    def process(self, resources):
+
+        if resources and not resources[0].get("fake-resource", False):
+            topic_urn_list = self.data.get("topic_urn_list", [])
+            subject = "SecMaster Automatic notification"
+            message = "have alert was generated within one day"
+            body = PublishMessageRequestBody(subject=subject, message=message)
+            for topic_urn in topic_urn_list:
+                publish_message_request = PublishMessageRequest(
+                    topic_urn=topic_urn, body=body
+                )
+                log.info(f"Message send, request: {publish_message_request}")
+                try:
+                    client = local_session(self.manager.session_factory).client("smn")
+                    publish_message_response = client.publish_message(
+                        publish_message_request
+                    )
+                    log.info(f"Message send, response: {publish_message_response}")
+                except Exception as e:
+                    log.error(f"Message send, failed: {e}")
+
+        return resources
+
     def perform_action(self, resource):
-        """Perform the send message action."""
-        message = self.data.get("message", "Alert notification")
-        subject = self.data.get("subject", "SecMaster alert notification")
+        return resource
 
-        # Get alert data from the nested structure
-        # data_object = resource.get("data_object", {})
-        resource.get("data_object", {})
-        log.info(
-            f"TODO: Send alert notification - Subject: {subject}, Message: {message}"
-        )
-        log.info(f"Workspace: {resource.get('workspace_name', 'unknown')}")
 
-        # TODO: Implement the email notification logic
-        return {
-            "status": "TODO",
-            "message": "Email notification function to be implemented",
-        }
+@SecMasterAlert.action_registry.register("send-msg-when-resource-none")
+class AlertSendMsgWhenResourceNone(HuaweiCloudBaseAction):
+    """Alert send message notification action.
+
+    Used to send email notifications during alert checks, regardless of whether there are alerts.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: secmaster-alert-notification
+            resource: huaweicloud.secmaster-alert
+            filters:
+              - type: age
+                days: 1
+                op: lt
+            actions:
+              - type: send-msg
+                message: "Recent 24-hour alerts found"
+                subject: "SecMaster alert notification"
+    """
+
+    schema = type_schema(
+        "send-msg-when-resource-none",
+        required=["topic_urn_list"],
+        topic_urn_list={"type": "array", "items": {"type": "string"}},
+    )
+
+    def process(self, resources):
+
+        if resources and resources[0].get("fake-resource", False):
+            topic_urn_list = self.data.get("topic_urn_list", [])
+            subject = "SecMaster Automatic notification"
+            message = "No alert was generated within one day"
+            body = PublishMessageRequestBody(subject=subject, message=message)
+            for topic_urn in topic_urn_list:
+                publish_message_request = PublishMessageRequest(
+                    topic_urn=topic_urn, body=body
+                )
+                log.info(f"Message send, request: {publish_message_request}")
+                try:
+                    client = local_session(self.manager.session_factory).client("smn")
+                    publish_message_response = client.publish_message(
+                        publish_message_request
+                    )
+                    log.info(f"Message send, response: {publish_message_response}")
+                except Exception as e:
+                    log.error(f"Message send, failed: {e}")
+
+        return resources
+
+    def perform_action(self, resource):
+        return resource
 
 
 @resources.register("secmaster-playbook")
@@ -441,7 +501,8 @@ class SecMasterPlaybook(QueryResourceManager):
         workspaces = workspace_manager.resources()
         for workspace in workspaces:
             workspace_id = workspace.get("id")
-            if not workspace_id:
+            is_view = workspace.get("is_view", False)
+            if not workspace_id or is_view:
                 continue
 
             offset = 0
