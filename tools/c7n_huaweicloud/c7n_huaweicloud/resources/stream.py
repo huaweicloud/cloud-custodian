@@ -12,7 +12,6 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.filters.stream import LtsStreamStorageEnabledFilter
 
-
 log = logging.getLogger("custodian.huaweicloud.resources.lts-stream")
 
 
