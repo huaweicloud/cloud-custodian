@@ -398,6 +398,7 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                 request = DeleteLogtankRequest(topic_urn=resource["topic_urn"],
                                                logtank_id=logtanks.id)
                 response = client.delete_logtank(request)
+            resource["lts"] = None
         except exceptions.ClientRequestException as e:
             log.error(f"Delete LTS to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
@@ -455,6 +456,7 @@ class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
                                                   body=UpdateTopicAttributeRequestBody(
                                                       value=self.data.get('value')))
             response = client.update_topic_attribute(request)
+            resource['access_policy'] = self.data.get('value')
         except exceptions.ClientRequestException as e:
             log.error(
                 f"Update access policy to SMN Topics failed, resource:{resource}, exceptions:{e}")
@@ -516,6 +518,7 @@ class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
                                                   body=UpdateTopicAttributeRequestBody(
                                                       value=value))
             response = client.update_topic_attribute(request)
+            resource['access_policy'] = value
         except exceptions.ClientRequestException as e:
             log.error(
                 f"Update access policy to SMN Topics failed, resource:{resource}, exceptions:{e}")
@@ -549,6 +552,7 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
         try:
             request = DeleteTopicAttributesRequest(topic_urn=resource["topic_urn"])
             response = client.delete_topic_attributes(request)
+            resource['access_policy'] = None
         except exceptions.ClientRequestException as e:
             log.error(
                 f"Delete access policy to SMN Topics failed, resource:{resource}, exceptions:{e}")
