@@ -19,7 +19,7 @@ interactions:
       X-Sdk-Date:
       - 20250320T063810Z
     method: GET
-    uri: https://lts.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/transfers?limit=100&offset=0
+    uri: https://lts.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/transfers
   response:
     body:
         string: '{"log_transfers":[{"log_group_id":"123","log_group_name":"lts-group-kafka","log_streams":[{"log_stream_id":"321","log_stream_name":"lts-topic-kafka"}],"log_transfer_id":"xxxxxxxxx4181-a5fc-7b458c819afc","log_transfer_info":{"log_create_time":1634802241847,"log_storage_format":"JSON","log_agency_transfer":{"agency_domain_id":"1d26cc8c86a840e28a4f8d0d078xxxxx","agency_domain_name":"paas_apm_z004xxxxx_xx","agency_name":"test20210325","agency_project_id":"2a473356cca5487f8373be891bfxxxxx","be_agency_domain_id":"1d26cc8c86a840e28a4f8d0d078xxxxx","be_agency_project_id":"2a473356cca5487f8373be891bfxxxxx"},"log_transfer_detail":{"obs_period":2,"obs_prefix_name":"","obs_period_unit":"min","obs_transfer_path":"/0002","obs_encrypted_enable":false,"obs_dir_pre_fix_name":"","obs_time_zone":"UTC+01:00","obs_time_zone_id":"Africa/Lagos"},"log_transfer_mode":"cycle","log_transfer_status":"ENABLE","log_transfer_type":"OBS"}}]}'
