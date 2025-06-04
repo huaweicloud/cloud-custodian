@@ -22,7 +22,7 @@ class Scm(QueryResourceManager):
 
     class resource_type(TypeInfo):
         service = 'ccm-ssl-certificate'
-        enum_spec = ('list_certificates', 'certificates', None)
+        enum_spec = ('list_certificates', 'certificates', 'offset')
         id = 'id'
         name = 'name'
         filter_name = 'name'
