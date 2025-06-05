@@ -140,3 +140,20 @@ class SmnTest(BaseTest):
         self.assertEqual(resources[0]['name'], "tt")
         self.assertEqual(resources[0]['topic_id'], "d745b6a999a049c09446fea0ecac8f53")
         self.assertEqual(len(resources[0]['tags']), 2)
+
+    def test_topic_actions_delete_allow_all_user_access(self):
+        factory = self.replay_flight_data('smn_topic_access_query')
+        p = self.load_policy({
+            "name": "test_topic_filter_tag",
+            "resource": "huaweicloud.smn-topic",
+            "actions": [
+                {
+                    "type": "delete-allow-all-user-access"
+                }
+            ]
+        }, session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 3)
+        self.assertFalse(resources[0]['access_policy'].__contains__("*"))
+        self.assertFalse(resources[1]['access_policy'].__contains__("*"))
+        self.assertTrue(resources[2]['access_policy'] is None)
