@@ -35,7 +35,7 @@ class Stream(QueryResourceManager):
         response = client.list_log_groups(request)
         should_break = False
         for group in response.log_groups:
-            time.sleep(0.3)
+            time.sleep(0.22)
             stream_request.log_group_id = group.log_group_id
             stream_response = client.list_log_stream(stream_request)
             for stream in stream_response.log_streams:
@@ -63,7 +63,7 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
     schema = type_schema("disable-stream-storage")
 
     def perform_action(self, resource):
-        time.sleep(0.3)
+        time.sleep(0.22)
         client = self.manager.get_client()
         request = UpdateLogStreamRequest()
         request.log_group_id = resource["log_group_id"]

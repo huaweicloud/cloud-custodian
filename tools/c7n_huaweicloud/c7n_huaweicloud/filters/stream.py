@@ -34,7 +34,7 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
         for group in resources:
             request.log_group_id = group["log_group_id"]
             try:
-                time.sleep(0.3)
+                time.sleep(0.22)
                 response = client.list_log_stream(request)
                 for stream in response.log_streams:
                     if stream.whether_log_storage:
