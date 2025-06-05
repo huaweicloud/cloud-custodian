@@ -288,12 +288,16 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
 
                     if should_include:
                         results.append(resource)
+                elif resp.status >= 300:
+                    raise exceptions.ClientRequestException(
+                        error_code=str(resp.status),
+                        error_msg=f"Request failed, status code: {resp.status}")
 
             except exceptions.ClientRequestException as e:
                 # Log the error but don't include the resource in results
                 log.error(
                     f"Failed to get bucket PublicAccessBlock for {obs_bucket_name}: {e.error_msg}")
-                continue
+                break
 
         return results
 
