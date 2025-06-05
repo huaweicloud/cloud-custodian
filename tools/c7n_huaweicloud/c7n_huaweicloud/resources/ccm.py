@@ -17,6 +17,14 @@ from huaweicloudsdkccm.v1.model import (
 log = logging.getLogger('custodian.huaweicloud.resources.ccm')
 
 
+class ObsSdkError():
+    def __init__(self, code, message, request_id):
+        self.error_code = code
+        self.error_msg = message
+        self.request_id = request_id
+        self.encoded_auth_msg = ""
+
+
 @resources.register('ccm-private-ca')
 class CertificateAuthority(QueryResourceManager):
     """Huawei Cloud Certificate Authority Resource Manager
@@ -288,17 +296,30 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
 
                     if should_include:
                         results.append(resource)
+                elif resp.status == 403:
+                    error_obj = ObsSdkError(
+                        "PermissionDenied",
+                        "Please confirm that you have 'obs:bucket:GetBucketPublicAccessBlock' permission",
+                        ""
+                    )
+                    raise exceptions.ClientRequestException(resp.status, error_obj)
+                    
                 elif resp.status >= 300:
-                    raise exceptions.ClientRequestException(
-                        error_code=str(resp.status),
-                        error_msg=f"Request failed, status code: {resp.status}")
+                    error_obj = ObsSdkError(
+                        "RequestFailed",
+                        f"Request failed, status code: {resp.status}",
+                        ""
+                    )
+                    raise exceptions.ClientRequestException(resp.status, error_obj)
 
             except exceptions.ClientRequestException as e:
                 # Log the error but don't include the resource in results
                 log.error(
                     f"Failed to get bucket PublicAccessBlock for {obs_bucket_name}: {e.error_msg}")
-                break
-
+                if e.status_code == 403:
+                    break
+                else:
+                    continue
         return results
 
 
