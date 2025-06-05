@@ -33,17 +33,22 @@ class Stream(QueryResourceManager):
         request = ListLogGroupsRequest()
         stream_request = ListLogStreamRequest()
         response = client.list_log_groups(request)
+        should_break = False
         for group in response.log_groups:
             time.sleep(0.3)
             stream_request.log_group_id = group.log_group_id
             stream_response = client.list_log_stream(stream_request)
             for stream in stream_response.log_streams:
-                if stream.log_stream_id == resource_ids and stream.whether_log_storage:
+                if stream.log_stream_id == resource_ids[0] and stream.whether_log_storage:
                     streamDict = {}
                     streamDict["log_group_id"] = group.log_group_id
                     streamDict["log_stream_id"] = stream.log_stream_id
                     streamDict["log_stream_name"] = stream.log_stream_name
                     streams.append(streamDict)
+                    should_break = True
+                    break
+            if should_break:
+                break
         log.info("The number of streams to disable storage is " + str(len(streams)))
         return streams
 
