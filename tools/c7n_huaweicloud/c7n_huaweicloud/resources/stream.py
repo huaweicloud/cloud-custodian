@@ -4,7 +4,8 @@
 import logging
 import time
 
-from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, ListLogGroupsRequest
+from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, ListLogGroupsRequest,
+    ListLogStreamRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
