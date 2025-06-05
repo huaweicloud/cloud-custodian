@@ -4,8 +4,8 @@
 import logging
 import time
 
-from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, ListLogGroupsRequest,
-    ListLogStreamRequest
+from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, \
+    ListLogGroupsRequest, ListLogStreamRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -31,12 +31,12 @@ class Stream(QueryResourceManager):
         client = self.get_client()
         streams = []
         request = ListLogGroupsRequest()
-        stream-request = ListLogStreamRequest()
+        stream_request = ListLogStreamRequest()
         response = client.list_log_groups(request)
         for group in response.log_groups:
             time.sleep(0.3)
-            stream-request.log_group_id = group.log_group_id
-            stream-response = client.list_log_stream(stream-request)
+            stream_request.log_group_id = group.log_group_id
+            stream_response = client.list_log_stream(stream_request)
                 for stream in stream-response.log_streams:
                     if stream.log_stream_id == resource_ids and stream.whether_log_storage:
                         streamDict = {}
