@@ -37,7 +37,7 @@ class Stream(QueryResourceManager):
             time.sleep(0.3)
             stream_request.log_group_id = group.log_group_id
             stream_response = client.list_log_stream(stream_request)
-                for stream in stream-response.log_streams:
+                for stream in stream_response.log_streams:
                     if stream.log_stream_id == resource_ids and stream.whether_log_storage:
                         streamDict = {}
                         streamDict["log_group_id"] = group.log_group_id
