@@ -316,7 +316,7 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
                 log.error(
                     f"Failed to get bucket PublicAccessBlock for {obs_bucket_name}: {e.error_msg}")
                 if e.status_code == 403:
-                    break
+                    raise e
                 else:
                     continue
         return results
