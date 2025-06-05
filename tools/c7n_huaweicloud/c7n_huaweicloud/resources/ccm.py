@@ -302,14 +302,16 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
                         "you have 'obs:bucket:GetBucketPublicAccessBlock' permission",
                         ""
                     )
-                    raise exceptions.ClientRequestException(resp.status, error_obj)
+                    raise exceptions.ClientRequestException(
+                        resp.status, error_obj)
                 elif resp.status >= 300:
                     error_obj = ObsSdkError(
                         "RequestFailed",
                         f"Request failed, status code: {resp.status}",
                         ""
                     )
-                    raise exceptions.ClientRequestException(resp.status, error_obj)
+                    raise exceptions.ClientRequestException(
+                        resp.status, error_obj)
 
             except exceptions.ClientRequestException as e:
                 # Log the error but don't include the resource in results
@@ -398,6 +400,172 @@ class CertificateAuthoritySignatureAlgorithmFilter(Filter):
                 results.append(resource)
 
         return results
+
+
+@CertificateAuthority.filter_registry.register('obs-bucket-policy')
+class CertificateAuthorityObsBucketPolicyFilter(Filter):
+    """Filter certificate authorities by their OBS bucket policy configuration
+
+    This filter checks if the OBS bucket associated with a CA has proper policy
+    configuration for secure access. It filters out CAs whose OBS bucket policy
+    doesn't meet both of the following criteria:
+
+    1. Has a statement with sid='deny_except_agency' and effect='Deny', and NotPrincipal 
+       contains at least one ID where the part after the last '/' equals 'PCAAccessPrivateOBS',
+       and Action equals 'PutObject'
+    2. Has a statement with sid='allow_agency' and effect='Allow', and Principal 
+       contains at least one ID where the part after the last '/' equals 'PCAAccessPrivateOBS',
+       and Action equals 'PutObject'
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: find-cas-with-improper-obs-bucket-policy
+            resource: huaweicloud.ccm-private-ca
+            filters:
+              - type: obs-bucket-policy
+    """
+    schema = type_schema('obs-bucket-policy')
+
+    def process(self, resources, event=None):
+        session = local_session(self.manager.session_factory)
+        obs_client = session.client('obs')
+
+        results = []
+
+        for resource in resources:
+            # Check if CRL configuration exists and has OBS bucket name
+            crl_config = resource.get('crl_configuration', {})
+            if not crl_config:
+                self.log.debug(
+                    f"CA {resource.get('name')} has no CRL configuration")
+                results.append(resource)
+                continue
+
+            # Get OBS bucket name
+            obs_bucket_name = crl_config.get('obs_bucket_name')
+            if not obs_bucket_name:
+                self.log.debug(
+                    f"CA {resource.get('name')} has no OBS bucket specified")
+                results.append(resource)
+                continue
+
+            try:
+                # Call getBucketPolicy
+                response = obs_client.getBucketPolicy(obs_bucket_name)
+
+                # Check if bucket policy exists
+                if response.status < 300 and hasattr(response, 'body'):
+                    policy_json = response.body.policyJSON
+                    if not policy_json:
+                        self.log.debug(
+                            f"OBS bucket {obs_bucket_name} has no policy")
+                        resource['obs_bucket_policy_check'] = "No policy found"
+                        results.append(resource)
+                        continue
+
+                    # Parse policy JSON
+                    import json
+                    try:
+                        policy = json.loads(policy_json)
+                        resource['obs_bucket_policy'] = policy
+
+                        # Validate policy statements
+                        if not self.validate_policy_statements(policy, resource):
+                            results.append(resource)
+                    except json.JSONDecodeError:
+                        self.log.error(
+                            f"Failed to parse policy JSON for bucket {obs_bucket_name}")
+                        resource['obs_bucket_policy_check'] = "Invalid policy JSON format"
+                        results.append(resource)
+                elif response.status == 403:
+                    error_obj = ObsSdkError(
+                        "PermissionDenied,Please confirm that",
+                        "you have 'obs:bucket:GetBucketPolicy' permission",
+                        ""
+                    )
+                    raise exceptions.ClientRequestException(
+                        response.status, error_obj)
+                else:
+                    error_obj = ObsSdkError(
+                        "RequestFailed",
+                        f"Request failed, status code: {response.status}",
+                        ""
+                    )
+                    resource['obs_bucket_policy_check'] = (
+                        f"Failed to get policy: Status {response.status}")
+                    raise exceptions.ClientRequestException(
+                        response.status, error_obj)
+            except exceptions.ClientRequestException as e:
+                self.log.error(
+                    f"Failed to get bucket policy for {obs_bucket_name}: {e.error_msg}")
+                resource['obs_bucket_policy_check'] = f"Error: {e.error_msg}"
+                results.append(resource)
+                if e.status_code == 403:
+                    raise e
+                else:
+                    continue
+
+        return results
+
+    def validate_policy_statements(self, policy, resource):
+        """Validate if policy statements meet required criteria"""
+        statements = policy.get('Statement', [])
+
+        # Initialize flags for conditions
+        has_deny_except_agency = False
+        has_allow_agency = False
+
+        for statement in statements:
+            sid = statement.get('Sid', '')
+            effect = statement.get('Effect', '')
+            action = statement.get('Action', '')
+
+            # Convert action to list if it's a string
+            if isinstance(action, str):
+                action = [action]
+
+            # Check for deny_except_agency condition
+            if sid == 'deny_except_agency' and effect == 'Deny' and 'PutObject' in action:
+                not_principal = statement.get('NotPrincipal', {})
+                not_principal_ids = not_principal.get('ID', [])
+
+                # Convert to list if it's a string
+                if isinstance(not_principal_ids, str):
+                    not_principal_ids = [not_principal_ids]
+
+                # Check if any ID ends with PCAAccessPrivateOBS
+                for principal_id in not_principal_ids:
+                    if principal_id.split('/')[-1] == 'PCAAccessPrivateOBS':
+                        has_deny_except_agency = True
+                        break
+
+            # Check for allow_agency condition
+            if sid == 'allow_agency' and effect == 'Allow' and 'PutObject' in action:
+                principal = statement.get('Principal', {})
+                principal_ids = principal.get('ID', [])
+
+                # Convert to list if it's a string
+                if isinstance(principal_ids, str):
+                    principal_ids = [principal_ids]
+
+                # Check if any ID ends with PCAAccessPrivateOBS
+                for principal_id in principal_ids:
+                    if principal_id.split('/')[-1] == 'PCAAccessPrivateOBS':
+                        has_allow_agency = True
+                        break
+
+        # Record the check results in the resource
+        resource['obs_bucket_policy_check'] = {
+            'has_deny_except_agency': has_deny_except_agency,
+            'has_allow_agency': has_allow_agency,
+            'is_valid': has_deny_except_agency and has_allow_agency
+        }
+
+        # Return True if both conditions are met, False otherwise
+        return has_deny_except_agency and has_allow_agency
 
 
 @CertificateAuthority.action_registry.register('disable')
