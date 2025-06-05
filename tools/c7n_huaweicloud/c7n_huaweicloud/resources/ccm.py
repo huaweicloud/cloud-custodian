@@ -298,12 +298,11 @@ class CertificateAuthorityCrlObsBucketFilter(Filter):
                         results.append(resource)
                 elif resp.status == 403:
                     error_obj = ObsSdkError(
-                        "PermissionDenied",
-                        "Please confirm that you have 'obs:bucket:GetBucketPublicAccessBlock' permission",
+                        "PermissionDenied,Please confirm that",
+                        "you have 'obs:bucket:GetBucketPublicAccessBlock' permission",
                         ""
                     )
                     raise exceptions.ClientRequestException(resp.status, error_obj)
-                    
                 elif resp.status >= 300:
                     error_obj = ObsSdkError(
                         "RequestFailed",
