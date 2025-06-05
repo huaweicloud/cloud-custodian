@@ -21,7 +21,7 @@ class StreamTest(BaseTest):
             'name': 'streams-with-storage-enabled',
             'resource': 'huaweicloud.lts-stream',
             'filters': [{
-                'type': 'streams-storage-enabled'
+                'type': 'streams-storage-enabled-for-schedule'
             }]},
             session_factory=factory)
         resources = p.run()
@@ -34,7 +34,7 @@ class StreamTest(BaseTest):
             'name': 'disable-stream-storage',
             'resource': 'huaweicloud.lts-stream',
             'filters': [{
-                'type': 'streams-storage-enabled'
+                'type': 'streams-storage-enabled-for-schedule'
             }],
             'actions': [{
                 'type': 'disable-stream-storage'

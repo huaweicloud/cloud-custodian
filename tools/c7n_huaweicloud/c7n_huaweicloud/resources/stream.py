@@ -10,7 +10,8 @@ from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from c7n_huaweicloud.filters.stream import LtsStreamStorageEnabledFilter, LtsStreamStorageEnabledFilterForSchedule
+from c7n_huaweicloud.filters.stream import LtsStreamStorageEnabledFilter, \
+    LtsStreamStorageEnabledFilterForSchedule
 
 log = logging.getLogger("custodian.huaweicloud.resources.lts-stream")
 
@@ -34,7 +35,9 @@ class Stream(QueryResourceManager):
 
 
 Stream.filter_registry.register('streams-storage-enabled', LtsStreamStorageEnabledFilter)
-Stream.filter_registry.register('streams-storage-enabled-for-schedule', LtsStreamStorageEnabledFilterForSchedule)
+Stream.filter_registry.register('streams-storage-enabled-for-schedule',
+                                LtsStreamStorageEnabledFilterForSchedule)
+
 
 @Stream.action_registry.register("disable-stream-storage")
 class LtsDisableStreamStorage(HuaweiCloudBaseAction):
