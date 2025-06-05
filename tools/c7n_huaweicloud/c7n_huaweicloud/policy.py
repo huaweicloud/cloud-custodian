@@ -206,7 +206,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
 
     def validate(self):
         super(FunctionGraphMode, self).validate()
-        prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
+        prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
         MAX_FUNCTIONGRAPH_NAME_LENGTH = 64
         if len(prefix + self.policy.name) > MAX_FUNCTIONGRAPH_NAME_LENGTH:
             raise PolicyValidationError(
@@ -223,7 +223,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         resource_ids = CloudTraceServiceEvents.get_ids(event, mode)
         if resource_ids is None:
             raise ValueError("Unknown push event mode %s", self.data)
-        log.info(f'Found resource ids:[{resource_ids}]')
+        log.info(f'Found resource ids:{resource_ids}')
         if not resource_ids:
             log.warning("Could not find resource ids")
             return []
@@ -294,7 +294,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         # auto tag with schedule name and group to link function to
         # EventBridge schedule when using schedule mode
         if self.policy.data['mode']['type'] == 'schedule':
-            prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
+            prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
             name = self.policy.data['name']
             group = self.policy.data['mode'].get('group-name', 'default')
             tags['custodian-schedule'] = f'name={prefix + name}:group={group}'
@@ -327,7 +327,8 @@ class CloudTraceMode(FunctionGraphMode):
                  'properties': {
                      'source': {'type': 'string'},
                      'event': {'type': 'string'},
-                     'ids': {'type': 'string'}
+                     'ids': {'type': 'string'},
+                     'code': {'type': 'integer'},
                  }}]
         }},
         rinherit=FunctionGraphMode.schema)

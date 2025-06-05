@@ -38,7 +38,8 @@ class Topic(QueryResourceManager):
 
 @Topic.filter_registry.register('topic-tag')
 class TopicTagFilter(Filter):
-    """Filters SMN Topics. Enable to query tag
+    """Filters SMN topic for query tags. Use this filter to query the tags of resources and
+    add them to the tags field of the resource.
 
     :Example:
 
@@ -81,7 +82,7 @@ class TopicTagFilter(Filter):
 
 @Topic.filter_registry.register('topic-lts')
 class TopicLtsFilter(Filter):
-    """Filters SMN Topics by whether to bind topic to LTS.
+    """Filters whether the SMN topic is bound to LTS.
 
     :Example:
 
@@ -142,7 +143,7 @@ class TopicLtsFilter(Filter):
 
 @Topic.filter_registry.register('topic-access')
 class TopicAccessFilter(Filter):
-    """Filters SMN Topics by access.
+    """Filters for SMN topic access policy. The relationship between the filter fields is and.
 
     :Example:
 
@@ -322,7 +323,7 @@ class TopicDelete(HuaweiCloudBaseAction):
 
 @Topic.action_registry.register("create-lts")
 class TopicCreateLts(HuaweiCloudBaseAction):
-    """Create LTS to SMN Topics.
+    """Create LTS for SMN Topics.
 
     :Example:
 
@@ -367,7 +368,7 @@ class TopicCreateLts(HuaweiCloudBaseAction):
 
 @Topic.action_registry.register("delete-lts")
 class TopicDeleteLts(HuaweiCloudBaseAction):
-    """Delete LTS to SMN Topics.
+    """Delete LTS from SMN Topics.
 
     :Example:
 
@@ -397,6 +398,7 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                 request = DeleteLogtankRequest(topic_urn=resource["topic_urn"],
                                                logtank_id=logtanks.id)
                 response = client.delete_logtank(request)
+            resource["lts"] = None
         except exceptions.ClientRequestException as e:
             log.error(f"Delete LTS to SMN Topics failed, resource :{resource}, exceptions:{e}")
         return response
@@ -404,7 +406,7 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
 
 @Topic.action_registry.register("update-access")
 class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
-    """Update access to SMN Topics.
+    """Update access for SMN Topics.
 
     :Example:
 
@@ -454,15 +456,78 @@ class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
                                                   body=UpdateTopicAttributeRequestBody(
                                                       value=self.data.get('value')))
             response = client.update_topic_attribute(request)
+            resource['access_policy'] = self.data.get('value')
         except exceptions.ClientRequestException as e:
             log.error(
-                f"Update access policy to SMN Topics failed, resource :{resource}, exceptions:{e}")
+                f"Update access policy to SMN Topics failed, resource:{resource}, exceptions:{e}")
+        return response
+
+
+@Topic.action_registry.register("delete-allow-all-user-access")
+class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
+    """Delete all user access form SMN Topics.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-allow-all-user-access-to-smn-topic
+            resource: huaweicloud.smn-topic
+            filters:
+              - type: value
+                key: name
+                value: "111"
+            actions:
+              - delete-allow-all-user-access
+    """
+
+    schema = type_schema("delete-allow-all-user-access")
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        response = None
+        try:
+            access_policy = resource.get('access_policy')
+            if access_policy is None:
+                request = ListTopicAttributesRequest(topic_urn=resource["topic_urn"],
+                                                     name='access_policy')
+                response = client.list_topic_attributes(request)
+                access_policy = response.attributes.access_policy
+                resource['access_policy'] = access_policy
+            if access_policy is None or len(access_policy) == 0:
+                return response
+
+            access_policy_dict = json.loads(access_policy)
+            statements = access_policy_dict.get('Statement')
+            for statement in statements:
+                if statement.get('Effect') != "Allow":
+                    continue
+                csp = statement.get('Principal').get('CSP')
+                if csp is None or len(csp) == 0:
+                    continue
+                csp.remove("*")
+                if len(csp) == 0:
+                    statements.remove(statement)
+            value = None
+            if len(statements) > 0:
+                value = json.dumps(access_policy_dict)
+
+            request = UpdateTopicAttributeRequest(topic_urn=resource["topic_urn"],
+                                                  name='access_policy',
+                                                  body=UpdateTopicAttributeRequestBody(
+                                                      value=value))
+            response = client.update_topic_attribute(request)
+            resource['access_policy'] = value
+        except exceptions.ClientRequestException as e:
+            log.error(
+                f"Update access policy to SMN Topics failed, resource:{resource}, exceptions:{e}")
         return response
 
 
 @Topic.action_registry.register("delete-access")
 class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
-    """Delete access to SMN Topics.
+    """Delete access form SMN Topics.
 
     :Example:
 
@@ -487,7 +552,8 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
         try:
             request = DeleteTopicAttributesRequest(topic_urn=resource["topic_urn"])
             response = client.delete_topic_attributes(request)
+            resource['access_policy'] = None
         except exceptions.ClientRequestException as e:
             log.error(
-                f"Delete access policy to SMN Topics failed, resource :{resource}, exceptions:{e}")
+                f"Delete access policy to SMN Topics failed, resource:{resource}, exceptions:{e}")
         return response

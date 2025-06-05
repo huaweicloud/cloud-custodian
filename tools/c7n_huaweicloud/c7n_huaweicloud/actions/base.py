@@ -4,6 +4,7 @@
 import abc
 import http.client
 import logging
+import requests
 import socket
 from abc import ABC
 from retrying import retry
@@ -21,6 +22,7 @@ RETRYABLE_EXCEPTIONS = (
     http.client.IncompleteRead,
     socket.error,
     exceptions.ConnectionException,
+    requests.exceptions.RetryError,
 )
 
 
