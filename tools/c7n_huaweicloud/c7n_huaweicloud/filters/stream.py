@@ -20,7 +20,7 @@ class LtsStreamStorageEnabledFilter(Filter):
     def process(self, resources, event=None):
         client = self.manager.get_client()
         request = ListLogStreamRequest()
-        log.error("enter lts filter")
+        log.info("enter lts filter")
         streams = []
         for group in resources:
             request.log_group_id = group.log_group_id
@@ -37,7 +37,7 @@ class LtsStreamStorageEnabledFilter(Filter):
             except Exception as e:
                 log.error(e)
                 continue
-        log.error("The number of streams to disable storage is " + str(len(streams)))
+        log.info("The number of streams to disable storage is " + str(len(streams)))
         return streams
 
 
@@ -49,7 +49,7 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
     def process(self, resources, event=None):
         client = self.manager.get_client()
         request = ListLogStreamRequest()
-        log.error("enter lts filter for schedule")
+        log.info("enter lts filter for schedule")
         streams = []
         for group in resources:
             request.log_group_id = group["log_group_id"]
@@ -66,5 +66,5 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
             except Exception as e:
                 log.error(e)
                 continue
-        log.error("The number of streams to disable storage is" + str(len(streams)))
+        log.info("The number of streams to disable storage is " + str(len(streams)))
         return streams
