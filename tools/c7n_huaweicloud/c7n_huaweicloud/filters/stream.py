@@ -30,7 +30,6 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
         client = self.manager.get_client()
         request = ListLogStreamRequest()
         log.info("enter lts filter for schedule")
-        log.error("enter lts filter for schedule")
         streams = []
         for group in resources:
             request.log_group_id = group["log_group_id"]
