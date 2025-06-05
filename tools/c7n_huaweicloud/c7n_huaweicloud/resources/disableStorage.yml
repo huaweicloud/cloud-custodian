@@ -1,7 +1,0 @@
-policies:
-  - name: DisableLogStorage
-    resource: huaweicloud.lts-stream
-    filters:
-      - type: streams-storage-enabled
-    actions:
-      - type: disable-stream-storage
