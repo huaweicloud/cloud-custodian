@@ -1,0 +1,42 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces?limit=500&offset=0
+  response:
+    body:
+      string: '{"count":2,"workspaces":[{"create_time":"2024-07-02T09:25:17Z+0800","creator_id":"b4admin46a","creator_name":"admin","description":"生产环境工作空间","domain_id":"acdomain123bf4","domain_name":"scc09","enterprise_project_id":"","enterprise_project_name":"","id":"workspace001","is_view":false,"modifier_id":"","modifier_name":"","name":"production-workspace","project_id":"15projectda6","project_name":"cn-north-4","region_id":"cn-north-4","update_time":"2024-07-02T09:25:17Z+0800","view_bind_id":"","view_bind_name":"","workspace_agency_list":[]},{"create_time":"2024-06-15T10:30:45Z+0800","creator_id":"c5admin57b","creator_name":"security_admin","description":"测试环境工作空间","domain_id":"acdomain123bf4","domain_name":"scc09","enterprise_project_id":"","enterprise_project_name":"","id":"workspace002","is_view":false,"modifier_id":"","modifier_name":"","name":"test-workspace","project_id":"15projectda6","project_name":"cn-north-4","region_id":"cn-north-4","update_time":"2024-06-15T10:30:45Z+0800","view_bind_id":"","view_bind_name":"","workspace_agency_list":[]}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - fafbccedf4d9f64e03701cc558fc2596
+    status:
+      code: 200
+      message: ''
+version: 1

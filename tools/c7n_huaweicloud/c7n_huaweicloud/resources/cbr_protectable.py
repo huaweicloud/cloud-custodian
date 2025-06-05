@@ -1,5 +1,4 @@
 import logging
-import string
 
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkcbr.v1 import (
@@ -158,7 +157,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 )
             vault_num += 1
 
-        offset = 0
+        offset = 1
         while resources:
             log.info("All existing vaults are unable to be associated, "
                      "a new vault will be created.")
@@ -220,12 +219,12 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         new_index = 0
         for vault in vaults:
             if str(vault['name']).startswith(valut_prefix):
-                suffix = string[len(valut_prefix):]
+                suffix = str(vault['name'])[len(valut_prefix):]
                 if suffix.isdigit():
                     index = int(suffix)
-                    if new_index < index:
-                        new_index = index + 1
+                    if new_index <= index:
+                        new_index = index
         new_index += offset
-        valut_name = f"{valut_prefix}{new_index:03d}"
+        valut_name = f"{valut_prefix}{new_index:04d}"
         log.info(f"create new vault name {valut_name}")
         return valut_name

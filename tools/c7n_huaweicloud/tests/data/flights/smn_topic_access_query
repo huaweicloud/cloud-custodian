@@ -1,0 +1,379 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T034240Z
+    method: GET
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics?limit=100&offset=0
+  response:
+    body:
+      string: '{"request_id": "faccae76902d4c3193c4e84fcac05797","topic_count": 55,"topics":
+        [{"topic_id": "d745b6a999a049c09446fea0ecac8f52", "topic_urn": "urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:t","display_name":
+        "","name": "t","push_policy": 0,"enterprise_project_id": "0","create_time":
+        "2025-03-25T00:31:02Z","update_time": "2025-03-25T00:31:02Z"}, {"topic_id":
+        "d745b6a999a049c09446fea0ecac8f53", "topic_urn": "urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt","display_name":
+        "","name": "tt","push_policy": 0,"enterprise_project_id": "0","create_time":
+        "2025-03-25T00:31:02Z","update_time": "2025-03-25T00:31:02Z"}, {"topic_id":
+        "d745b6a999a049c09446fea0ecac8f54", "topic_urn": "urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:ttt","display_name":
+        "","name": "ttt","push_policy": 0,"enterprise_project_id": "0","create_time":
+        "2025-03-25T00:31:02Z","update_time": "2025-03-25T00:31:02Z"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 03:42:40 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a0df24df3de6492b89b5ad45b286d5da
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T034625Z
+    method: GET
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-south-1%3A2284f67d00db4d5896511837ef2f7366%3At/attributes?name=access_policy
+  response:
+    body:
+      string: '{ "attributes": { "access_policy": "{\"Version\":\"2016-09-07\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__user_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"CSP\":[\"*\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:t\"},{\"Sid\":\"__org_path_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"OrgPath\":[\"o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:t\"},{\"Sid\":\"__service_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"obs\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:t\"}]}"
+        }, "request_id": "dc69a1d299824f728f50c4e0967babaf" }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 03:46:25 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 9943d0f22851541a9bb8fec7bf2ea579
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"value": "{\"Version\": \"2016-09-07\", \"Id\": \"__default_policy_ID\",
+      \"Statement\": [{\"Sid\": \"__org_path_pub_0\", \"Effect\": \"Allow\", \"Principal\":
+      {\"OrgPath\": [\"o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c\"]},
+      \"Action\": [\"SMN:Publish\", \"SMN:QueryTopicDetail\"], \"Resource\": \"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},
+      {\"Sid\": \"__service_pub_0\", \"Effect\": \"Allow\", \"Principal\": {\"Service\":
+      [\"obs\"]}, \"Action\": [\"SMN:Publish\", \"SMN:QueryTopicDetail\"], \"Resource\":
+      \"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"}]}"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '649'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T034818Z
+    method: PUT
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-south-1%3A2284f67d00db4d5896511837ef2f7366%3At/attributes/access_policy
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 03:48:18 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - dffa22f515715f6a30454884f424383b
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T035250Z
+    method: GET
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-south-1%3A2284f67d00db4d5896511837ef2f7366%3Att/attributes?name=access_policy
+  response:
+    body:
+      string: '{ "attributes": { "access_policy": "{\"Version\":\"2016-09-07\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__user_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"CSP\":[\"*\",\"urn:csp:iam::2284f67d00db4d5896511837ef2f7366:root\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},{\"Sid\":\"__org_path_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"OrgPath\":[\"o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},{\"Sid\":\"__service_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"obs\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"}]}"
+        }, "request_id": "dc69a1d299824f728f50c4e0967babaf" }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 03:52:51 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 07c110669de034d11e74543e3ca7d90e
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T035251Z
+    method: GET
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-south-1%3A2284f67d00db4d5896511837ef2f7366%3Attt/attributes?name=access_policy
+  response:
+    body:
+      string: '{ "attributes": { "access_policy": "{\"Version\":\"2016-09-07\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__user_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"CSP\":[\"*\"]},\"Action\":[\"SMN:Publish\",\"SMN:QueryTopicDetail\"],\"Resource\":\"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:ttt\"}]}"
+        }, "request_id": "dc69a1d299824f728f50c4e0967babaf" }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 03:52:51 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 3b95384fc0ca8d19031055941c8608f0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"value": "{\"Version\": \"2016-09-07\", \"Id\": \"__default_policy_ID\",
+      \"Statement\": [{\"Sid\": \"__user_pub_0\", \"Effect\": \"Allow\", \"Principal\":
+      {\"CSP\": [\"urn:csp:iam::2284f67d00db4d5896511837ef2f7366:root\"]}, \"Action\":
+      [\"SMN:Publish\", \"SMN:QueryTopicDetail\"], \"Resource\": \"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},
+      {\"Sid\": \"__org_path_pub_0\", \"Effect\": \"Allow\", \"Principal\": {\"OrgPath\":
+      [\"o-bf966fe82ebb4d35d68b791729228788/r-001ebf32880a13eabfc8e1c37eee3ae9/ou-0dbfffe92fd92ddb35feff9b4079459c\"]},
+      \"Action\": [\"SMN:Publish\", \"SMN:QueryTopicDetail\"], \"Resource\": \"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"},
+      {\"Sid\": \"__service_pub_0\", \"Effect\": \"Allow\", \"Principal\": {\"Service\":
+      [\"obs\"]}, \"Action\": [\"SMN:Publish\", \"SMN:QueryTopicDetail\"], \"Resource\":
+      \"urn:smn:cn-south-1:2284f67d00db4d5896511837ef2f7366:tt\"}]}"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '916'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T041010Z
+    method: PUT
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-south-1%3A2284f67d00db4d5896511837ef2f7366%3Att/attributes/access_policy
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"7ab599e334d320b3d61955938848b3d4"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 04:10:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7ab599e334d320b3d61955938848b3d4
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T041010Z
+    method: PUT
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-south-1%3A2284f67d00db4d5896511837ef2f7366%3Attt/attributes/access_policy
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"b9c8b84902cb40b77c321017c63536e0"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 04:10:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - b9c8b84902cb40b77c321017c63536e0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

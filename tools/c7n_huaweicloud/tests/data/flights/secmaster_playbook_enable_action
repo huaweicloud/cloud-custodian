@@ -1,0 +1,240 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces?limit=500&offset=0
+  response:
+    body:
+      string: '{"count":1,"workspaces":[{"create_time":"2024-07-02T09:25:17Z+0800","creator_id":"b4admin46a","creator_name":"admin","description":"生产环境工作空间","domain_id":"acdomain123bf4","domain_name":"scc09","enterprise_project_id":"","enterprise_project_name":"","id":"workspace001","is_view":false,"modifier_id":"","modifier_name":"","name":"production-workspace","project_id":"15projectda6","project_name":"cn-north-4","region_id":"cn-north-4","update_time":"2024-07-02T09:25:17Z+0800","view_bind_id":"","view_bind_name":"","workspace_agency_list":[]}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      X-Request-Id:
+      - fafbccedf4d9f64e03701cc558fc2596
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/playbooks?limit=500&offset=0
+  response:
+    body:
+      string: '{"code":"0","message":null,"total":2,"size":2,"page":1,"data":[{"id":"playbook-001","name":"高危操作监控剧本","description":"监控高危系统操作并自动响应","enabled":false,"create_time":"2024-07-02T10:00:00Z+0800","update_time":"2024-07-02T10:00:00Z+0800","project_id":"15projectda6","version_id":"version-001","workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v1.0","dataclass_name":"security","dataclass_id":"dataclass-security"},{"id":"playbook-004","name":"权限监控剧本","description":"监控权限变更操作","enabled":false,"create_time":"2024-07-02T13:00:00Z+0800","update_time":"2024-07-02T13:00:00Z+0800","project_id":"15projectda6","version_id":"version-004","workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v1.0","dataclass_name":"security","dataclass_id":"dataclass-security"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - eafbccedf4d9f64e03701cc558fc2598
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/playbooks/playbook-001/versions?limit=500&offset=0
+  response:
+    body:
+      string: '{"code":"0","message":null,"total":3,"size":3,"page":1,"data":[{"id":"version-001-v1","description":"初始版本","create_time":"2024-07-02T10:00:00Z+0800","update_time":"2024-07-02T10:00:00Z+0800","project_id":"15projectda6","creator_id":"b4admin46a","modifier_id":"b4admin46a","playbook_id":"playbook-001","version":"v1.0","enabled":true,"status":"PUBLISHED","action_strategy":"ASYNC","rule_enable":false,"dataclass_id":"dataclass-security","trigger_type":"EVENT","dataobject_create":true,"dataobject_update":false,"dataobject_delete":false,"version_type":1,"rule_id":"","dataclass_name":"security","approve_name":"admin"},{"id":"version-001-v2","description":"优化版本","create_time":"2024-07-02T11:00:00Z+0800","update_time":"2024-07-02T14:30:00Z+0800","project_id":"15projectda6","creator_id":"b4admin46a","modifier_id":"b4admin46a","playbook_id":"playbook-001","version":"v2.0","enabled":true,"status":"PUBLISHED","action_strategy":"ASYNC","rule_enable":false,"dataclass_id":"dataclass-security","trigger_type":"EVENT","dataobject_create":true,"dataobject_update":false,"dataobject_delete":false,"version_type":1,"rule_id":"","dataclass_name":"security","approve_name":"admin"},{"id":"version-001-v3","description":"最新版本","create_time":"2024-07-02T12:00:00Z+0800","update_time":"2024-07-02T15:45:00Z+0800","project_id":"15projectda6","creator_id":"b4admin46a","modifier_id":"b4admin46a","playbook_id":"playbook-001","version":"v3.0","enabled":true,"status":"PUBLISHED","action_strategy":"ASYNC","rule_enable":false,"dataclass_id":"dataclass-security","trigger_type":"EVENT","dataobject_create":true,"dataobject_update":false,"dataobject_delete":false,"version_type":1,"rule_id":"","dataclass_name":"security","approve_name":"admin"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - eafbccedf4d9f64e03701cc558fc2599
+    status:
+      code: 200
+      message: ''
+- request:
+    body: '{"name": "高危操作监控剧本", "enabled": true, "active_version_id": "version-001-v3", "description": "监控高危系统操作并自动响应 [已通过策略自动开启]"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: PUT
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/playbooks/playbook-001
+  response:
+    body:
+      string: '{"code":"0","message":null,"data":{"id":"playbook-001","name":"高危操作监控剧本","description":"监控高危系统操作并自动响应 [已通过策略自动开启]","create_time":"2024-07-02T10:00:00Z+0800","update_time":"2024-07-02T15:30:25Z+0800","project_id":"15projectda6","version_id":"version-001-v3","enabled":true,"workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v3.0","dataclass_name":"security","dataclass_id":"dataclass-security","unaudited_version_id":"","reject_version_id":"","active_version_id":"version-001-v3"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - eafbccedf4d9f64e03701cc558fc2600
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: GET
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/playbooks/playbook-004/versions?limit=500&offset=0
+  response:
+    body:
+      string: '{"code":"0","message":null,"total":2,"size":2,"page":1,"data":[{"id":"version-004-v1","description":"初始版本","create_time":"2024-07-02T13:00:00Z+0800","update_time":"2024-07-02T13:00:00Z+0800","project_id":"15projectda6","creator_id":"b4admin46a","modifier_id":"b4admin46a","playbook_id":"playbook-004","version":"v1.0","enabled":true,"status":"PUBLISHED","action_strategy":"ASYNC","rule_enable":false,"dataclass_id":"dataclass-security","trigger_type":"EVENT","dataobject_create":true,"dataobject_update":false,"dataobject_delete":false,"version_type":1,"rule_id":"","dataclass_name":"security","approve_name":"admin"},{"id":"version-004-v2","description":"改进版本","create_time":"2024-07-02T14:00:00Z+0800","update_time":"2024-07-02T16:20:00Z+0800","project_id":"15projectda6","creator_id":"b4admin46a","modifier_id":"b4admin46a","playbook_id":"playbook-004","version":"v2.0","enabled":true,"status":"PUBLISHED","action_strategy":"ASYNC","rule_enable":false,"dataclass_id":"dataclass-security","trigger_type":"EVENT","dataobject_create":true,"dataobject_update":false,"dataobject_delete":false,"version_type":1,"rule_id":"","dataclass_name":"security","approve_name":"admin"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - eafbccedf4d9f64e03701cc558fc2601
+    status:
+      code: 200
+      message: ''
+- request:
+    body: '{"name": "权限监控剧本", "enabled": true, "active_version_id": "version-004-v2", "description": "监控权限变更操作 [已通过策略自动开启]"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - secmaster.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250327T013347Z
+    method: PUT
+    uri: https://secmaster.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/workspaces/workspace001/soc/playbooks/playbook-004
+  response:
+    body:
+      string: '{"code":"0","message":null,"data":{"id":"playbook-004","name":"权限监控剧本","description":"监控权限变更操作 [已通过策略自动开启]","create_time":"2024-07-02T13:00:00Z+0800","update_time":"2024-07-02T15:30:30Z+0800","project_id":"15projectda6","version_id":"version-004-v2","enabled":true,"workspace_id":"workspace001","approve_role":"approve","user_role":"user","edit_role":"editor","owner_id":"b4admin46a","version":"v2.0","dataclass_name":"security","dataclass_id":"dataclass-security","unaudited_version_id":"","reject_version_id":"","active_version_id":"version-004-v2"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 27 Mar 2025 01:33:47 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - eafbccedf4d9f64e03701cc558fc2602
+    status:
+      code: 200
+      message: ''
+version: 1

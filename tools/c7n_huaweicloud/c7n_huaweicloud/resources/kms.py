@@ -3,11 +3,13 @@
 import json
 import logging
 import uuid
+import time
 
 from huaweicloudsdkkms.v2 import (EnableKeyRotationRequest, OperateKeyRequestBody,
                                   DisableKeyRotationRequest, EnableKeyRequest,
                                   DisableKeyRequest, CreateKeyRequest, CreateKeyRequestBody,
-                                  ListKeysRequest, ListKeysRequestBody)
+                                  ListAliasesRequest, CreateAliasRequest,
+                                  CreateAliasRequestBody)
 
 from c7n import exceptions
 from c7n.filters import ValueFilter
@@ -54,37 +56,34 @@ policies:
     schema = type_schema("enable_key_rotation")
 
     def perform_action(self, resource):
-
-        notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
-                          "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
-        if resource["default_key_flag"] == "1":
-            return 0
-        if resource["key_spec"] in notSupportList:
-            return 0
-        if resource["keystore_id"] != 0:
-            return 0
-        if resource["key_state"] not in {"2", "3", "4"}:
-            return 0
-        client = self.manager.get_client()
-        request = EnableKeyRotationRequest()
-
+        session = local_session(self.manager.session_factory)
+        domain = session.domain_id
         notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
                           "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
         if (resource["default_key_flag"] == "0" and resource["key_spec"]
                 not in notSupportList and resource["keystore_id"] == "0"
-                and resource["key_state"] in {"2", "3", "4"}):
-
+                and resource["key_state"] in {"2"}):
             client = self.manager.get_client()
             request = EnableKeyRotationRequest()
-
-            request.body = OperateKeyRequestBody(
-                key_id=resource["key_id"],
-                sequence=uuid.uuid4().hex
-            )
-            try:
-                client.enable_key_rotation(request)
-            except Exception as e:
-                raise e
+            if domain is None:
+                request.body = OperateKeyRequestBody(
+                    key_id=resource["key_id"],
+                    sequence=uuid.uuid4().hex
+                )
+                try:
+                    client.enable_key_rotation(request)
+                except Exception as e:
+                    raise e
+            else:
+                if domain == resource["domain_id"]:
+                    request.body = OperateKeyRequestBody(
+                        key_id=resource["key_id"],
+                        sequence=uuid.uuid4().hex
+                    )
+                    try:
+                        client.enable_key_rotation(request)
+                    except Exception as e:
+                        raise e
 
 
 @Kms.action_registry.register("disable_key_rotation")
@@ -202,7 +201,7 @@ class disableKey(HuaweiCloudBaseAction):
         return response
 
 
-@Kms.action_registry.register("create-key")
+@Kms.action_registry.register("create-key-with-alias")
 class createKey(HuaweiCloudBaseAction):
     """rotation kms key.
 
@@ -220,7 +219,7 @@ policies:
 
     """
 
-    schema = type_schema("create-key",
+    schema = type_schema("create-key-with-alias",
                          key_aliases={"type": "array"},
                          obs_url={"type": "string"})
 
@@ -232,11 +231,10 @@ policies:
         all_key_aliases.update(key_aliases)
         obs_url = self.data.get("obs_url", None)
         obs_client = local_session(self.manager.session_factory).client("obs")
-
         if not key_aliases and obs_url is None:
             log.error("key_aliases or obs_url is required")
             return []
-        if obs_url is not None:
+        if obs_url is not None and obs_url != '':
             # 1. 提取第一个变量：从 "https://" 到最后一个 "obs" 的部分
             protocol_end = len("https://")
             # 去除协议头后的完整路径
@@ -250,7 +248,7 @@ policies:
                                             objectKey=obs_file,
                                             loadStreamInMemory=True)
                 if resp.status < 300:
-                    all_key_aliases.update(json.loads(resp.body.buffer)['alias'])
+                    all_key_aliases.update(json.loads(resp.body.buffer)['obs_key_aliases'])
                 else:
                     log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
                     return []
@@ -258,24 +256,31 @@ policies:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
                 raise
 
-        request = ListKeysRequest()
-        request.body = ListKeysRequestBody(
-            key_spec="ALL",
-            limit="1000")
-        listKeyResponse = client.list_keys(request)
-
+        listAliasesRequest = ListAliasesRequest()
+        listAliasResponse = client.list_aliases(listAliasesRequest)
         arr = set()
-        for data in listKeyResponse.key_details:
-            arr.add(data.key_alias)
+        for realAlias in listAliasResponse.body[0].aliases:
+            arr.add(realAlias.alias.replace('alias/', ''))
+
         if len(all_key_aliases) != 0:
             for alias in all_key_aliases:
                 if alias not in arr:
-                    request = CreateKeyRequest()
-                    request.body = CreateKeyRequestBody(
-                        key_alias=alias
+                    timestamp = int(time.time())
+                    keyName = str(timestamp)
+                    createKeyRequest = CreateKeyRequest()
+                    createKeyRequest.body = CreateKeyRequestBody(
+                        key_alias=keyName
                     )
                     try:
-                        client.create_key(request)
+                        createKeyResponse = client.create_key(createKeyRequest)
+                        createKeyId = createKeyResponse.key_info.key_id
+                        createAliasRequest = CreateAliasRequest()
+                        createAliasRequest.body = CreateAliasRequestBody(
+                            key_id=createKeyId,
+                            alias="alias/" + alias
+                        )
+                        client.create_alias(createAliasRequest)
+                        time.sleep(1)
                     except Exception as e:
                         raise e
 
