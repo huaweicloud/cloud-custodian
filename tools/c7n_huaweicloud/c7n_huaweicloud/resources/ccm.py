@@ -410,10 +410,10 @@ class CertificateAuthorityObsBucketPolicyFilter(Filter):
     configuration for secure access. It filters out CAs whose OBS bucket policy
     doesn't meet both of the following criteria:
 
-    1. Has a statement with sid='deny_except_agency' and effect='Deny', and NotPrincipal 
+    1. Has a statement with sid='deny_except_agency' and effect='Deny', and NotPrincipal
        contains at least one ID where the part after the last '/' equals 'PCAAccessPrivateOBS',
        and Action equals 'PutObject'
-    2. Has a statement with sid='allow_agency' and effect='Allow', and Principal 
+    2. Has a statement with sid='allow_agency' and effect='Allow', and Principal
        contains at least one ID where the part after the last '/' equals 'PCAAccessPrivateOBS',
        and Action equals 'PutObject'
 
@@ -483,7 +483,8 @@ class CertificateAuthorityObsBucketPolicyFilter(Filter):
                         resource['obs_bucket_policy'] = policy
 
                         # Validate policy statements
-                        if not self.validate_policy_statements(policy, resource, obs_bucket_name, domain_id):
+                        if not self.validate_policy_statements(
+                                policy, resource, obs_bucket_name, domain_id):
                             results.append(resource)
                     except json.JSONDecodeError:
                         self.log.error(
