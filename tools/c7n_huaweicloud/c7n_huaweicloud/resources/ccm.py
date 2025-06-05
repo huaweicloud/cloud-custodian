@@ -410,12 +410,15 @@ class CertificateAuthorityObsBucketPolicyFilter(Filter):
     configuration for secure access. It filters out CAs whose OBS bucket policy
     doesn't meet both of the following criteria:
 
-    1. Has a statement with sid='deny_except_agency' and effect='Deny', and NotPrincipal
+    1. Has a statement with sid='deny_except_agency' and effect='Deny', and NotPrincipal 
        contains at least one ID where the part after the last '/' equals 'PCAAccessPrivateOBS',
        and Action equals 'PutObject'
-    2. Has a statement with sid='allow_agency' and effect='Allow', and Principal
+    2. Has a statement with sid='allow_agency' and effect='Allow', and Principal 
        contains at least one ID where the part after the last '/' equals 'PCAAccessPrivateOBS',
        and Action equals 'PutObject'
+
+    You can also specify a domain_id to check if the Principal and NotPrincipal IDs
+    contain this domain_id.
 
     :example:
 
@@ -426,12 +429,19 @@ class CertificateAuthorityObsBucketPolicyFilter(Filter):
             resource: huaweicloud.ccm-private-ca
             filters:
               - type: obs-bucket-policy
+                domain_id: xxxxxx
     """
-    schema = type_schema('obs-bucket-policy')
+    schema = type_schema(
+        'obs-bucket-policy',
+        domain_id={'type': 'string'}
+    )
 
     def process(self, resources, event=None):
         session = local_session(self.manager.session_factory)
         obs_client = session.client('obs')
+
+        # Get domain_id from filter parameters
+        domain_id = self.data.get('domain_id')
 
         results = []
 
@@ -473,7 +483,7 @@ class CertificateAuthorityObsBucketPolicyFilter(Filter):
                         resource['obs_bucket_policy'] = policy
 
                         # Validate policy statements
-                        if not self.validate_policy_statements(policy, resource):
+                        if not self.validate_policy_statements(policy, resource, obs_bucket_name, domain_id):
                             results.append(resource)
                     except json.JSONDecodeError:
                         self.log.error(
@@ -510,7 +520,7 @@ class CertificateAuthorityObsBucketPolicyFilter(Filter):
 
         return results
 
-    def validate_policy_statements(self, policy, resource):
+    def validate_policy_statements(self, policy, resource, obs_bucket_name, domain_id=None):
         """Validate if policy statements meet required criteria"""
         statements = policy.get('Statement', [])
 
@@ -529,39 +539,53 @@ class CertificateAuthorityObsBucketPolicyFilter(Filter):
 
             # Check for deny_except_agency condition
             if sid == 'deny_except_agency' and effect == 'Deny' and 'PutObject' in action:
-                not_principal = statement.get('NotPrincipal', {})
-                not_principal_ids = not_principal.get('ID', [])
-
-                # Convert to list if it's a string
-                if isinstance(not_principal_ids, str):
-                    not_principal_ids = [not_principal_ids]
-
-                # Check if any ID ends with PCAAccessPrivateOBS
-                for principal_id in not_principal_ids:
-                    if principal_id.split('/')[-1] == 'PCAAccessPrivateOBS':
-                        has_deny_except_agency = True
+                obs_resources = statement.get('Resource', [])
+                obs_resources_valid = False
+                for obs_resource in obs_resources:
+                    if obs_bucket_name in obs_resource:
+                        obs_resources_valid = True
                         break
+                if obs_resources_valid:
+                    not_principal = statement.get('NotPrincipal', {})
+                    not_principal_ids = not_principal.get('ID', [])
+
+                    # Convert to list if it's a string
+                    if isinstance(not_principal_ids, str):
+                        not_principal_ids = [not_principal_ids]
+                    domain_id_match_str = 'domain/' + domain_id + ':agency/PCAAccessPrivateOBS'
+
+                    for principal_id in not_principal_ids:
+                        if domain_id_match_str == principal_id:
+                            has_deny_except_agency = True
+                            break
 
             # Check for allow_agency condition
             if sid == 'allow_agency' and effect == 'Allow' and 'PutObject' in action:
-                principal = statement.get('Principal', {})
-                principal_ids = principal.get('ID', [])
-
-                # Convert to list if it's a string
-                if isinstance(principal_ids, str):
-                    principal_ids = [principal_ids]
-
-                # Check if any ID ends with PCAAccessPrivateOBS
-                for principal_id in principal_ids:
-                    if principal_id.split('/')[-1] == 'PCAAccessPrivateOBS':
-                        has_allow_agency = True
+                obs_resources = statement.get('Resource', [])
+                obs_resources_valid = False
+                for obs_resource in obs_resources:
+                    if obs_bucket_name in obs_resource:
+                        obs_resources_valid = True
                         break
+                if obs_resources_valid:
+                    principal = statement.get('Principal', {})
+                    principal_ids = principal.get('ID', [])
+
+                    # Convert to list if it's a string
+                    if isinstance(principal_ids, str):
+                        principal_ids = [principal_ids]
+                    domain_id_match_str = 'domain/' + domain_id + ':agency/PCAAccessPrivateOBS'
+                    for principal_id in principal_ids:
+                        if domain_id_match_str == principal_id:
+                            has_allow_agency = True
+                            break
 
         # Record the check results in the resource
         resource['obs_bucket_policy_check'] = {
             'has_deny_except_agency': has_deny_except_agency,
             'has_allow_agency': has_allow_agency,
-            'is_valid': has_deny_except_agency and has_allow_agency
+            'is_valid': has_deny_except_agency and has_allow_agency,
+            'domain_id_checked': domain_id is not None
         }
 
         # Return True if both conditions are met, False otherwise
