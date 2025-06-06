@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import json
 import traceback
 import time
+import jmespath
 
 import glob, re
 from idlelib.rpc import response_queue
+from urllib.parse import quote_plus
 
 from c7n.filters import Filter
 from c7n.filters.core import ValueFilter, AgeFilter
@@ -21,11 +22,12 @@ from c7n_huaweicloud.query import TypeInfo
 
 # Centralized imports for HuaweiCloud SDK modules
 from huaweicloudsdkswr.v2.model.list_instance_request import ListInstanceRequest
-from huaweicloudsdkswr.v2.model.list_repository_tags_request import ListRepositoryTagsRequest
+from huaweicloudsdkswr.v2.model.list_instance_repositories_request import \
+    ListInstanceRepositoriesRequest
 from huaweicloudsdkswr.v2.model.create_retention_policy_req import CreateRetentionPolicyReq
 from huaweicloudsdkswr.v2.model.create_instance_retention_policy_request import \
     CreateInstanceRetentionPolicyRequest
-from huaweicloudsdkswr.v2.model.retention_rule import RetentionSelector
+from huaweicloudsdkswr.v2.model.retention_rule import RetentionRule
 from huaweicloudsdkswr.v2.model.retention_selector import RetentionSelector
 from huaweicloudsdkswr.v2.model.trigger_setting import TriggerSetting
 from huaweicloudsdkswr.v2.model.trigger_config import TriggerConfig
@@ -33,13 +35,14 @@ from huaweicloudsdkswr.v2.model.list_instance_artifacts_request import ListInsta
 from huaweicloudsdkswr.v2.model.list_instance_all_artifacts_request import \
     ListInstanceAllArtifactsRequest
 from huaweicloudsdkswr.v2.model.list_immutable_rules_request import ListImmutableRulesRequest
-from huaweicloudsdkswr.v2.model.immutable_selector import ImutableSelector
+from huaweicloudsdkswr.v2.model.rule_selector import RuleSelector
 from huaweicloudsdkswr.v2.model.create_immutable_rule_request import CreateImmutableRuleRequest
 from huaweicloudsdkswr.v2.model.update_immutable_rule_request import UpdateImmutableRuleRequest
 from huaweicloudsdkswr.v2.model.create_immutable_rule_body import CreateImmutableRuleBody
 from huaweicloudsdkswr.v2.model.update_immutable_rule_body import UpdateImmutableRuleBody
 
 log = logging.getLogger('custodian.huaweicloud.swr-ee')
+log.setLevel(logging.DEBUG)
 
 
 @resources.register('swr-ee')
@@ -56,7 +59,7 @@ class SwrEe(QueryResourceManager):
         # 'body' is the field name in the response containing the instance list
         # 'offset' is the parameter name for pagination
         enum_spec = ('list_instance_repositories', 'body', 'offset')
-        id = 'name'  # Specify resource unique identifier field name
+        id = 'uid'  # Specify resource unique identifier field name
         name = 'name'  # Specify resource name field name
         filter_name = 'name'  # Field name for filtering by name
         filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
@@ -100,7 +103,9 @@ class SwrEe(QueryResourceManager):
                                                             limit=limit))
 
                 for repository in repositories:
-                    repository["instance_id"] = instance['id']
+                    repository['instance_id'] = instance['id']
+                    repository['instance_name'] = instance['name']
+                    repository['uid'] = f"{instance['id']}/{repository['name']}"
                     all_repositories.append(repository)
 
                 self.log.debug(
@@ -702,7 +707,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                                                       namespace_id=namespace_id,
                                                       limit=100))
         tag_selectors = []
-        tag_selectors.append(ImutableSelector(
+        tag_selectors.append(RuleSelector(
             kind="doublestar",
             decoration="matches",
             pattern="**"
@@ -715,7 +720,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
                 repo_pattern = self.bulid_pattern(repos)
 
-                repository_rule = ImutableSelector(
+                repository_rule = RuleSelector(
                     kind="doublestar",
                     decoration="repoMatches",
                     pattern=repo_pattern,
@@ -752,7 +757,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
             repo_pattern = self.bulid_pattern(fin_repos)
 
-        repository_rule = ImutableSelector(
+        repository_rule = RuleSelector(
             kind="doublestar",
             decoration="repoMatches",
             pattern=repo_pattern,
@@ -787,7 +792,7 @@ class SwrEeImage(QueryResourceManager):
         # 'body' is the field name in the response containing the tag list
         # 'offset' is the parameter name for pagination
         enum_spec = ('list_instance_all_artifacts', 'body', 'offset')
-        id = 'id'  # Specify resource unique identifier field name
+        id = 'uid'  # Specify resource unique identifier field name
         name = 'tag'  # Tag field corresponds to image version name
         filter_name = 'tag'  # Field name for filtering by tag
         filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
@@ -820,6 +825,8 @@ class SwrEeImage(QueryResourceManager):
 
     def _get_artifacts(self):
         limit = 100
+        client = self.get_client()
+
         instances = _pagination_limit_offset(client, "list_instance",
                                              "instances",
                                              ListInstanceRequest(
@@ -834,6 +841,10 @@ class SwrEeImage(QueryResourceManager):
                                                      instance_id=instance['id'],
                                                      limit=limit
                                                  ))
+            for artifact in artifacts:
+                artifact['instance_id'] = instance['id']
+                artifact['instance_name'] = instance['name']
+                artifact['uid'] = f"{instance['id']}/{artifact['id']}"
             all_artifacts.extend(artifacts)
 
         return all_artifacts
@@ -845,6 +856,7 @@ class SwrEeImage(QueryResourceManager):
         swr_manager = huaweicloud_resources.get('swr-ee')(self.ctx, {})
         repositories = swr_manager.resources()
 
+        limit = 100
         client = self.get_client()
 
         all_artifacts = []
@@ -852,14 +864,19 @@ class SwrEeImage(QueryResourceManager):
         for repo_index, repo in enumerate(repositories):
 
             # Get all images for this repository
-            artifacts = self._pagination_limit_offset(client, "list_instance_artifacts",
-                                                      "artifacts",
-                                                      ListInstanceArtifactsRequest(
-                                                          instance_id=repo['instance_id'],
-                                                          namespace_name=repo['namespace_name'],
-                                                          repository_name=repo['name'],
-                                                          limit=limit
-                                                      ))
+            artifacts = _pagination_limit_offset(client, "list_instance_artifacts",
+                                                 "artifacts",
+                                                 ListInstanceArtifactsRequest(
+                                                     instance_id=repo['instance_id'],
+                                                     namespace_name=repo['namespace_name'],
+                                                     repository_name=quote_plus(repo['name']),
+                                                     limit=limit
+                                                 ))
+            for artifact in artifacts:
+                artifact['instance_id'] = repo['instance_id']
+                artifact['instance_name'] = repo['instance_name']
+                artifact['uid'] = f"{repo['instance_id']}/{artifact['id']}"
+
             all_artifacts.extend(artifacts)
             self.log.debug(
                 f"Retrieved {len(artifacts)} images for repository {repo['instance_id']}/{repo['namespace_name']}/{repo['name']} "
@@ -869,7 +886,7 @@ class SwrEeImage(QueryResourceManager):
             if repo_index < len(repositories) - 1:
                 time.sleep(self.api_request_delay)
 
-            return all_artifacts
+        return all_artifacts
 
     def get_resources(self, resource_ids):
 
@@ -917,7 +934,6 @@ def _pagination_limit_offset(client, enum_op, path, request):
     limit = 100
     resources = []
     while 1:
-        request = session.request(m.service)
         request.limit = request.limit or limit
         request.offset = offset
         response = getattr(client, enum_op)(request)
