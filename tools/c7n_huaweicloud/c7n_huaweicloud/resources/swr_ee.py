@@ -700,7 +700,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                 request = UpdateInstanceRetentionPolicyRequest(instance_id=instance_id,
                                                                namespace_name=namespace_name,
-                                                               policy_id=retentions[0].id,
+                                                               policy_id=retentions[0]['id'],
                                                                body=body)
 
                 # Output complete request content for debugging
@@ -716,7 +716,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                 log.info(
                     f"Successfully updated lifecycle rule: "
-                    f"{instance_id}/{namespace_name}, ID: {retentions[0].id}"
+                    f"{instance_id}/{namespace_name}, ID: {retentions[0]['id']}"
                 )
 
         except Exception as e:
