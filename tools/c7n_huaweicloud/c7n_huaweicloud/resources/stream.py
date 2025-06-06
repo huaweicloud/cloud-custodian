@@ -35,6 +35,8 @@ class Stream(QueryResourceManager):
         response = client.list_log_groups(request)
         should_break = False
         for group in response.log_groups:
+            if group.log_group_name.startswith("functiongraph.log.group"):
+                continue
             time.sleep(0.22)
             stream_request.log_group_id = group.log_group_id
             try:

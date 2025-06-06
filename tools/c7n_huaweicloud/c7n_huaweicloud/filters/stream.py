@@ -32,6 +32,8 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
         log.info("enter lts filter for schedule")
         streams = []
         for group in resources:
+            if group["log_group_name"].startswith("functiongraph.log.group"):
+                continue
             request.log_group_id = group["log_group_id"]
             try:
                 time.sleep(0.22)
