@@ -52,7 +52,7 @@ class Stream(QueryResourceManager):
                         break
             except Exception as e:
                 log.error(e)
-                continue
+                raise
             if should_break:
                 break
         log.info("The number of streams to disable storage is " + str(len(streams)))

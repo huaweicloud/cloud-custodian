@@ -43,10 +43,10 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                         streamDict = {}
                         streamDict["log_group_id"] = group["log_group_id"]
                         streamDict["log_stream_id"] = stream.log_stream_id
-                        streamDict["log_group_name"] = stream.log_stream_name
+                        streamDict["log_stream_name"] = stream.log_stream_name
                         streams.append(streamDict)
             except Exception as e:
                 log.error(e)
-                continue
+                raise
         log.info("The number of streams to disable storage is " + str(len(streams)))
         return streams
