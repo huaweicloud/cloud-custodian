@@ -6,7 +6,6 @@ import traceback
 import time
 import jmespath
 
-import glob, re
 from idlelib.rpc import response_queue
 from urllib.parse import quote_plus
 
@@ -972,10 +971,14 @@ def _pagination_limit_offset(client, enum_op, path, request):
 
 
 def match_pattern(pattern, input_str):
+    # ** 匹配全部
+    if pattern == "**":
+        return True
+
     options = pattern.strip("{}").split(",")
 
     for option in options:
-        if fnmatch.fnmatch(option, pattern):
+        if fnmatch.fnmatch(option, input_str):
             return True
 
     return False
