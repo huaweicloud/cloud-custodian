@@ -583,7 +583,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
             repo_pattern = build_pattern(repos)
             if len(retentions) > 0:
-                rule_dict = retentions[0]['rules'][0].to_dict()
+                rule_dict = retentions[0]['rules'][0]
                 if len(rule_dict['scope_selectors']['repository']) > 0:
                     old_repo_pattern = rule_dict['scope_selectors']['repository'][0]['pattern']
                     old_repos = parse_pattern(old_repo_pattern)
