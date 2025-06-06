@@ -513,8 +513,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
         namespace_repos = {}
         # 根据instance, namespace进行分类
         for resource in resources:
-            key = resource["instance_id"] + "|" + resource["namespace_name"] + "|" + resource[
-                "namespace_id"]
+            key = f"{resource['nstance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
             namespace_repo = []
             if key in namespace_repos:
                 namespace_repo = namespace_repos[key]
@@ -549,8 +548,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
                                                   "list_instance_retention_policies",
                                                   "retentions",
                                                   ListInstanceRetentionPoliciesRequest(
-                                                      instance_id=resource["instance_id"],
-                                                      namespace_id=namespace_id,
+                                                      instance_id=instance_id,
+                                                      namespace_id=int(namespace_id),
                                                       limit=100))
 
             # 如果策略不存在，又是取消老化策略，则直接返回
@@ -558,14 +557,14 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 return
 
             # 如果namespace已经手动配置过策略，则跳过，不创建老化策略
-            if len(retentions) >= 0 and retentions[0].name != policy_name:
+            if len(retentions) >= 0 and retentions[0]['name'] != policy_name:
                 log.warning(
                     f"instance: {instance_id}, namespace: {namespace_name}, policy has been manually created")
                 return
 
             repo_pattern = build_pattern(repos)
             if len(retentions) >= 0:
-                rule_dict = retentions[0].rules[0].to_dict()
+                rule_dict = retentions[0]['rules'][0].to_dict()
                 if len(rule_dict['scope_selectors']['repository']) > 0:
                     old_repo_pattern = rule_dict['scope_selectors']['repository'][0]['pattern']
                     old_repos = parse_pattern(old_repo_pattern)
@@ -728,8 +727,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         namespace_repos = {}
         # 根据instance, namespace进行分类
         for resource in resources:
-            key = resource["instance_id"] + "|" + resource["namespace_name"] + "|" + resource[
-                "namespace_id"]
+            key = f"{resource['nstance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
             namespace_repo = []
             if key in namespace_repos:
                 namespace_repo = namespace_repos[key]
@@ -743,6 +741,9 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
             self._create_or_update_immutablerule_policy(key_list[0], key_list[1], key_list[2],
                                                         value, s)
+
+    def perform_action(self, resource):
+        pass
 
     def _create_or_update_immutablerule_policy(self, instance_id, namespace_name, namespace_id,
                                                repos, enable_immutability):
@@ -759,7 +760,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         imutable_rules = _pagination_limit_offset(client, 'list_imutable_rules', 'imutable_rule',
                                                   ListImmutableRulesRequest(
                                                       instance_id=instance_id,
-                                                      namespace_id=namespace_id,
+                                                      namespace_id=int(namespace_id),
                                                       limit=100))
         tag_selectors = []
         tag_selectors.append(RuleSelector(
