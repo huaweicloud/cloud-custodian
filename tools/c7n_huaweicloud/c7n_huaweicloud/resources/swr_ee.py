@@ -770,11 +770,10 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         :return: Updated resource with action results
         """
         client = self.manager.get_client()
-
-        extra = f"custodian-immutability-{namespace_name}"
+        priority = 101
 
         # 根据namespace查询immutablerule policy
-        imutable_rules = _pagination_limit_offset(client, 'list_imutable_rules', 'imutable_rule',
+        imutable_rules = _pagination_limit_offset(client, 'list_immutable_rules', 'immutbale_rule',
                                                   ListImmutableRulesRequest(
                                                       instance_id=instance_id,
                                                       namespace_id=int(namespace_id),
@@ -791,29 +790,33 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             if enable_immutability:
                 # 创建immutablerule policy
 
-                repo_pattern = self.bulid_pattern(repos)
+                repo_pattern = build_pattern(repos)
 
                 repository_rule = RuleSelector(
                     kind="doublestar",
                     decoration="repoMatches",
                     pattern=repo_pattern,
-                    extra=extra
+                    extras=extra
                 )
                 scope_selectors = {"repository": [repository_rule]}
 
-                rule = CreateImmutableRuleBody(namespace_id=namespace_id,
+                rule = CreateImmutableRuleBody(namespace_id=int(namespace_id),
                                                namespace_name=namespace_name,
                                                disabled=False, action='immutable',
                                                template='immutable_template',
                                                tag_selectors=tag_selectors,
-                                               scope_selectors=scope_selectors)
-                response = client.create_immutable_rule(CreateImmutableRuleRequest(body=rule))
+                                               scope_selectors=scope_selectors,
+                                               priority=priority)
+                response = client.create_immutable_rule(CreateImmutableRuleRequest(
+                    instance_id=instance_id,
+                    namespace_name=namespace_name,
+                    body=rule))
 
             return
 
-        imutableDict = imutable_rules[0].to_dict()
-        if len(imutableDict['scope_selectors']['repository']) > 0 and \
-                imutableDict['scope_selectors']['repository'][0]['extra'] != extra:
+        imutableDict = imutable_rules[0]
+        # 101是custodian独有配置的优先级
+        if imutableDict['priority'] != priority:
             log.warning(
                 f"instance_id: {instance_id}, namespace_name: {namespace_name}, has been manually set")
             return
@@ -834,17 +837,21 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             kind="doublestar",
             decoration="repoMatches",
             pattern=repo_pattern,
-            extra=extra
+            extras=extra
         )
         scope_selectors = {"repository": [repository_rule]}
 
-        rule = UpdateImmutableRuleBody(namespace_id=namespace_id,
+        rule = UpdateImmutableRuleBody(namespace_id=int(namespace_id),
                                        namespace_name=namespace_name,
                                        disabled=False, action='immutable',
                                        template='immutable_template',
                                        tag_selectors=tag_selectors,
-                                       scope_selectors=scope_selectors)
-        response = client.update_immutable_rule(CreateImmutableRuleRequest(body=rule))
+                                       scope_selectors=scope_selectors,
+                                       priority=priority)
+        response = client.update_immutable_rule(CreateImmutableRuleRequest(
+            instance_id=instance_id,
+            namespace_name=namespace_name,
+            body=rule))
 
 
 @resources.register('swr-ee-image')
