@@ -1,6 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-
+import fnmatch
 import logging
 import traceback
 import time
@@ -27,6 +27,8 @@ from huaweicloudsdkswr.v2.model.list_instance_repositories_request import \
 from huaweicloudsdkswr.v2.model.create_retention_policy_req import CreateRetentionPolicyReq
 from huaweicloudsdkswr.v2.model.create_instance_retention_policy_request import \
     CreateInstanceRetentionPolicyRequest
+from huaweicloudsdkswr.v2.model.list_instance_retention_policies_request import \
+    ListInstanceRetentionPoliciesRequest
 from huaweicloudsdkswr.v2.model.retention_rule import RetentionRule
 from huaweicloudsdkswr.v2.model.retention_selector import RetentionSelector
 from huaweicloudsdkswr.v2.model.trigger_setting import TriggerSetting
@@ -115,7 +117,8 @@ class SwrEe(QueryResourceManager):
 
                 namespaces_public_mapping = {}
                 for namespace in namespaces:
-                    if namespace["metadata"]["public"] == "true":
+                    if namespace["metadata"]["public"] == "true" or namespace["metadata"][
+                        "public"] == "True":
                         namespaces_public_mapping[namespace["namespace_id"]] = True
                     else:
                         namespaces_public_mapping[namespace["namespace_id"]] = False
@@ -290,14 +293,7 @@ class LifecycleRule(Filter):
         :return: Filtered resource list
         """
         client = local_session(self.manager.session_factory).client('swr')
-
-        # list retention
-        retentions = _pagination_limit_offset(client,
-                                              "list_instance_retention_policies",
-                                              "retentions",
-                                              ListInstanceRetentionPoliciesRequest(
-                                                  instance_id=instance["id"],
-                                                  limit=limit))
+        limit = 100
 
         # Lazily load lifecycle policies only when needed
         for resource in resources:
@@ -305,18 +301,23 @@ class LifecycleRule(Filter):
             if self.policy_annotation in resource:
                 continue
 
+            # list retention
+            retentions = _pagination_limit_offset(client,
+                                                  "list_instance_retention_policies",
+                                                  "retentions",
+                                                  ListInstanceRetentionPoliciesRequest(
+                                                      instance_id=resource["instance_id"],
+                                                      limit=limit))
+
             retention_list = []
             for retention in retentions:
-                if repository["namespace_name"] != retention["namespace_name"]:
+                if resource["namespace_id"] != retention["namespace_id"]:
                     continue
 
-                for rule in policy.get('rules', []):
+                for rule in retention.get('rules', []):
                     repository_selectors = rule.get('scope_selectors', {}).get('repository', [])
                     for repository_selector in repository_selectors:
-                        regex = re.compile(
-                            glob.translate(repository_selector['pattern'], recursive=True,
-                                           include_hidden=True))
-                        if regex.match(resource['name']):
+                        if match_pattern(repository_selector['pattern'], resource['name']):
                             retention_list.append(retention)
                             break
             resource[self.policy_annotation] = retention_list
@@ -665,33 +666,25 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
     def process(self, resources):
         client = local_session(self.manager.session_factory).client('ecr')
         s = 'IMMUTABLE' if self.data.get('state', True) else 'MUTABLE'
-        for r in resources:
-            try:
-                client.put_image_tag_mutability(
-                    registryId=r['registryId'],
-                    repositoryName=r['repositoryName'],
-                    imageTagMutability=s)
-            except client.exceptions.RepositoryNotFoundException:
-                continue
 
-            namespace_repos = {}
-            # 根据instance, namespace进行分类
-            for resource in resources:
-                key = resource["instance_id"] + "-" + resource["namespace_name"] + "-" + resource[
-                    "namespace_id"]
-                namespace_repo = []
-                if key in namespace_repos:
-                    namespace_repo = namespace_repos[key]
+        namespace_repos = {}
+        # 根据instance, namespace进行分类
+        for resource in resources:
+            key = resource["instance_id"] + "-" + resource["namespace_name"] + "-" + resource[
+                "namespace_id"]
+            namespace_repo = []
+            if key in namespace_repos:
+                namespace_repo = namespace_repos[key]
 
-                namespace_repo.append(resource["name"])
-                namespace_repos[key] = namespace_repo
+            namespace_repo.append(resource["name"])
+            namespace_repos[key] = namespace_repo
 
-            repo_names = []
-            for key, value in namespace_repos.items():
-                key_list = key.split("-")
+        repo_names = []
+        for key, value in namespace_repos.items():
+            key_list = key.split("-")
 
-                self._create_or_update_immutablerule_policy(key_list[0], key_list[1], key_list[2],
-                                                            value)
+            self._create_or_update_immutablerule_policy(key_list[0], key_list[1], key_list[2],
+                                                        value)
 
     def parse_pattern(self, input_str):
         # 去除首尾空格和花括号
@@ -976,3 +969,13 @@ def _pagination_limit_offset(client, enum_op, path, request):
         else:
             return resources
     return resources
+
+
+def match_pattern(pattern, input_str):
+    options = pattern.strip("{}").split(",")
+
+    for option in options:
+        if fnmatch.fnmatch(option, pattern):
+            return True
+
+    return False
