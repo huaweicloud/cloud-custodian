@@ -795,8 +795,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                 repository_rule = RuleSelector(
                     kind="doublestar",
                     decoration="repoMatches",
-                    pattern=repo_pattern,
-                    extras=extra
+                    pattern=repo_pattern
                 )
                 scope_selectors = {"repository": [repository_rule]}
 
@@ -811,6 +810,11 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                     instance_id=instance_id,
                     namespace_name=namespace_name,
                     body=rule))
+
+                log.info(
+                    f"Successfully created immutable rule: "
+                    f"{instance_id}/{namespace_name}, ID: {response.id}"
+                )
 
             return
 
@@ -827,17 +831,16 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             old_repos = parse_pattern(old_repo_pattern)
             fin_repos = []
             if enable_immutability:
-                fin_repos = merge_repos(old_repos, new_repos)
+                fin_repos = merge_repos(old_repos, repos)
             else:
-                fin_repos = sub_repos(old_repos, new_repos)
+                fin_repos = sub_repos(old_repos, repos)
 
             repo_pattern = build_pattern(fin_repos)
 
         repository_rule = RuleSelector(
             kind="doublestar",
             decoration="repoMatches",
-            pattern=repo_pattern,
-            extras=extra
+            pattern=repo_pattern
         )
         scope_selectors = {"repository": [repository_rule]}
 
@@ -848,10 +851,15 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                                        tag_selectors=tag_selectors,
                                        scope_selectors=scope_selectors,
                                        priority=priority)
-        response = client.update_immutable_rule(CreateImmutableRuleRequest(
+        response = client.update_immutable_rule(UpdateImmutableRuleRequest(
             instance_id=instance_id,
             namespace_name=namespace_name,
+            immutable_rule_id=imutableDict['id'],
             body=rule))
+        log.info(
+            f"Successfully updated immutable rule: "
+            f"{instance_id}/{namespace_name}, ID: {imutableDict['id']}"
+        )
 
 
 @resources.register('swr-ee-image')
