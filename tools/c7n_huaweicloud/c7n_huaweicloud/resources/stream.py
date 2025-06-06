@@ -77,7 +77,6 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
         request.body = UpdateLogStreamParams(
             whether_log_storage=False
         )
-        log.info("disable storage: " + resource["log_stream_id"] + " "
-                 + resource["log_stream_name"])
+        log.info("disable storage: " + resource["log_stream_id"])
         response = client.update_log_stream(request)
         return response
