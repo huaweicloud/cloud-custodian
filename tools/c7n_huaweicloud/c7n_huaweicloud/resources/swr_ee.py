@@ -445,11 +445,12 @@ class SetLifecycle(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
+        # 配置老化规则
           - name: swr-set-lifecycle
             resource: huaweicloud.swr
             filters:
               - type: get-lifecycle
-                state: false
+                state: False
             actions:
               - type: set-lifecycle
                 rules:
@@ -459,10 +460,24 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     tag_selectors:
                       - kind: doublestar
                         pattern: ^release-.*$
+
+    .. code-block:: yaml
+
+        policies:
+        # 取消老化规则
+          - name: swr-set-lifecycle
+            resource: huaweicloud.swr
+            filters:
+              - type: get-lifecycle
+                state: True
+            actions:
+              - type: set-lifecycle
+                state: False
     """
 
     schema = type_schema(
         'set-lifecycle',
+        state={'type': 'boolean', 'default': True},
         algorithm={'type': 'string', 'enum': ['or'], 'default': 'or'},
         rules={
             'type': 'array',
@@ -561,13 +576,13 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 return
 
             # 如果namespace已经手动配置过策略，则跳过，不创建老化策略
-            if len(retentions) >= 0 and retentions[0]['name'] != policy_name:
+            if len(retentions) > 0 and retentions[0]['name'] != policy_name:
                 log.warning(
                     f"instance: {instance_id}, namespace: {namespace_name}, policy has been manually created")
                 return
 
             repo_pattern = build_pattern(repos)
-            if len(retentions) >= 0:
+            if len(retentions) > 0:
                 rule_dict = retentions[0]['rules'][0].to_dict()
                 if len(rule_dict['scope_selectors']['repository']) > 0:
                     old_repo_pattern = rule_dict['scope_selectors']['repository'][0]['pattern']
@@ -583,7 +598,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
             # Create rule objects
             rules = []
-            for rule_data in self.data.get('rules', []):
+            config_rules = self.data.get('rules', [])
+            if not is_set:
+                config_rules = retentions[0]['rules']
+
+            for rule_data in config_rules:
 
                 # Create tag selectors
                 tag_selectors = []
@@ -630,13 +649,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
                                      scope_selectors=scope_selectors,
                                      repo_scope_mode='regular')
                 rules.append(rule)
-
-            # Ensure there is at least one rule
-            if not rules:
-                log.error("No valid rule configuration")
-                resource['status'] = 'error'
-                resource['error'] = 'No valid rules configured'
-                return resource
 
             # Log final generated rules
             log.debug(f"Final generated rules: {rules}")
@@ -1033,6 +1045,8 @@ def match_pattern(pattern, input_str):
 def parse_pattern(input_str):
     # 去除首尾空格和花括号
     content = input_str.strip().strip('{}')
+    if content == '':
+        return []
     # 分割并清理每个元素
     items = [item.strip() for item in content.split(',')]
     return items
@@ -1047,8 +1061,10 @@ def build_pattern(repos):
 
 
 def merge_repos(old_repos, new_repos):
-    merged_set = set(array1) | set(array2)
+    merged_set = set(old_repos) | set(new_repos)
     result = list(merged_set)
+
+    return result
 
 
 def sub_repos(old_repos, new_repos):
