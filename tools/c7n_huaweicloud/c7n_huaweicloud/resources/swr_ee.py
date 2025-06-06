@@ -513,7 +513,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
         namespace_repos = {}
         # 根据instance, namespace进行分类
         for resource in resources:
-            key = f"{resource['nstance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
+            key = f"{resource['instance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
             namespace_repo = []
             if key in namespace_repos:
                 namespace_repo = namespace_repos[key]
@@ -538,6 +538,10 @@ class SetLifecycle(HuaweiCloudBaseAction):
         :param resource: Single resource to process
         :return: Updated resource with action results
         """
+
+        if len(repos) == 0:
+            return
+
         client = self.manager.get_client()
         policy_name = f"custodian-retention-{namespace_name}"
 
@@ -574,6 +578,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                         fin_repos = merge_repos(old_repos, repos)
                     else:
                         fin_repos = sub_repos(old_repos, repos)
+
                     repo_pattern = build_pattern(fin_repos)
 
             # Create rule objects
@@ -727,7 +732,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         namespace_repos = {}
         # 根据instance, namespace进行分类
         for resource in resources:
-            key = f"{resource['nstance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
+            key = f"{resource['instance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
             namespace_repo = []
             if key in namespace_repos:
                 namespace_repo = namespace_repos[key]
@@ -1034,6 +1039,8 @@ def parse_pattern(input_str):
 
 
 def build_pattern(repos):
+    # if len(repos) == 0:
+    #     return ""
     repo_pattern = ",".join(repos)
     repo_pattern = "{" + repo_pattern + "}"
     return repo_pattern
