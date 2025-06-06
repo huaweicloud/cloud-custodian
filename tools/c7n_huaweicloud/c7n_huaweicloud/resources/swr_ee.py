@@ -26,6 +26,9 @@ from huaweicloudsdkswr.v2.model.list_instance_repositories_request import \
 from huaweicloudsdkswr.v2.model.create_retention_policy_req import CreateRetentionPolicyReq
 from huaweicloudsdkswr.v2.model.create_instance_retention_policy_request import \
     CreateInstanceRetentionPolicyRequest
+from huaweicloudsdkswr.v2.model.update_retention_policy_req import UpdateRetentionPolicyReq
+from huaweicloudsdkswr.v2.model.update_instance_retention_policy_request import \
+    UpdateInstanceRetentionPolicyRequest
 from huaweicloudsdkswr.v2.model.list_instance_retention_policies_request import \
     ListInstanceRetentionPoliciesRequest
 from huaweicloudsdkswr.v2.model.retention_rule import RetentionRule
@@ -200,7 +203,7 @@ class LifecycleRule(Filter):
        policies:
         # Filter repositories without lifecycle rules
         - name: swr-no-lifecycle-rules
-          resource: huaweicloud.swr
+          resource: huaweicloud.swr-ee
           filters:
             - type: lifecycle-rule
               state: False  # Repositories without lifecycle rules
@@ -210,26 +213,27 @@ class LifecycleRule(Filter):
        policies:
         # Filter repositories with specific lifecycle rules (path matching specific properties)
         - name: swr-with-specific-rule
-          resource: huaweicloud.swr
+          resource: huaweicloud.swr-ee
           filters:
             - type: lifecycle-rule
               state: True  # Repositories with lifecycle rules
               match:
                 - type: value
                   key: rules[0].template
-                  value: date_rule
+                  value: latestPushedK   # latestPushedK, latestPulledN, nDaysSinceLastPush, nDaysSinceLastPull
 
     .. code-block:: yaml
 
        policies:
         # Filter repositories with retention period greater than 30 days
         - name: swr-with-long-retention
-          resource: huaweicloud.swr
+          resource: huaweicloud.swr-ee
           filters:
             - type: lifecycle-rule
-              params:
-                days:
-                  type: value
+              state: True  # Repositories with lifecycle rules
+              match:
+                - type: value
+                  key: rules[0].params.nDaysSinceLastPull
                   value_type: integer
                   op: gte
                   value: 30
@@ -243,7 +247,7 @@ class LifecycleRule(Filter):
           filters:
             - type: lifecycle-rule
               tag_selector:
-                kind: label
+                kind: doublestar
                 pattern: v5
 
     .. code-block:: yaml
@@ -253,15 +257,8 @@ class LifecycleRule(Filter):
         - name: swr-with-combined-filters
           resource: huaweicloud.swr
           filters:
-            - type: lifecycle-rule
-              params:
-                days:
-                  type: value
-                  value_type: integer
-                  op: gte
-                  value: 30
               tag_selector:
-                kind: label
+                kind: doublestar
                 pattern: v5
               match:
                 - type: value
@@ -451,14 +448,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
           - name: swr-set-lifecycle
             resource: huaweicloud.swr
             filters:
-              - type: value
-                key: name
-                value: test-repo
+              - type: get-lifecycle
+                state: false
             actions:
               - type: set-lifecycle
-                algorithm: or
                 rules:
-                  # Date Rule
                   - template: nDaysSinceLastPush
                     params:
                       nDaysSinceLastPush: 30
@@ -514,10 +508,13 @@ class SetLifecycle(HuaweiCloudBaseAction):
         :return: Processed resources
         """
 
+        is_set = True if self.data.get('state', True) else False
+
         namespace_repos = {}
         # 根据instance, namespace进行分类
         for resource in resources:
-            key = resource["instance_id"] + "-" + resource["namespace_name"]
+            key = resource["instance_id"] + "|" + resource["namespace_name"] + "|" + resource[
+                "namespace_id"]
             namespace_repo = []
             if key in namespace_repos:
                 namespace_repo = namespace_repos[key]
@@ -527,24 +524,58 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
         repo_names = []
         for key, value in namespace_repos.items():
-            key_list = key.split("-")
-            repo_pattern = ",".join(value)
-            repo_pattern = "{" + repo_pattern + "}"
+            key_list = key.split("|")
 
-            self._create_or_update_retention_policy(key_list[0], key_list[1], repo_pattern)
+            self._create_or_update_retention_policy(key_list[0], key_list[1], key_list[2], value,
+                                                    is_set)
 
-    def _create_or_update_retention_policy(self, instance_id, namespace_name, repo_pattern):
+    def perform_action(self, resource):
+        pass
+
+    def _create_or_update_retention_policy(self, instance_id, namespace_name, namespace_id, repos,
+                                           is_set):
         """Implement abstract method, perform action for a single resource.
 
         :param resource: Single resource to process
         :return: Updated resource with action results
         """
         client = self.manager.get_client()
+        policy_name = f"custodian-retention-{namespace_name}"
 
         try:
-            # Log original configuration for debugging
-            log.debug(
-                f"Original rule configuration: {self.data.get('rules')}")
+
+            # 查询是否已经存在老化策略
+            retentions = _pagination_limit_offset(client,
+                                                  "list_instance_retention_policies",
+                                                  "retentions",
+                                                  ListInstanceRetentionPoliciesRequest(
+                                                      instance_id=resource["instance_id"],
+                                                      namespace_id=namespace_id,
+                                                      limit=100))
+
+            # 如果策略不存在，又是取消老化策略，则直接返回
+            if len(retentions) <= 0 and is_set is False:
+                return
+
+            # 如果namespace已经手动配置过策略，则跳过，不创建老化策略
+            if len(retentions) >= 0 and retentions[0].name != policy_name:
+                log.warning(
+                    f"instance: {instance_id}, namespace: {namespace_name}, policy has been manually created")
+                return
+
+            repo_pattern = build_pattern(repos)
+            if len(retentions) >= 0:
+                rule_dict = retentions[0].rules[0].to_dict()
+                if len(rule_dict['scope_selectors']['repository']) > 0:
+                    old_repo_pattern = rule_dict['scope_selectors']['repository'][0]['pattern']
+                    old_repos = parse_pattern(old_repo_pattern)
+                    fin_repos = []
+
+                    if is_set:
+                        fin_repos = merge_repos(old_repos, repos)
+                    else:
+                        fin_repos = sub_repos(old_repos, repos)
+                    repo_pattern = build_pattern(fin_repos)
 
             # Create rule objects
             rules = []
@@ -592,7 +623,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
                                      template=rule_data.get('template'),
                                      params=rule_data.get('params', {}),
                                      tag_selectors=tag_selectors,
-                                     scope_selectors=scope_selectors)
+                                     scope_selectors=scope_selectors,
+                                     repo_scope_mode='regular')
                 rules.append(rule)
 
             # Ensure there is at least one rule
@@ -605,41 +637,72 @@ class SetLifecycle(HuaweiCloudBaseAction):
             # Log final generated rules
             log.debug(f"Final generated rules: {rules}")
 
-            trigger_setting = TriggerSetting(cron="* * * * * ?")
-            trigger_config = TriggerConfig(type="scheduled", trigger_setting=trigger_setting)
-            # Create request body
-            body = CreateRetentionPolicyReq(
-                algorithm=self.data.get('algorithm', 'or'),
-                rules=rules,
-                trigger=trigger_config,
-                enabled=True,
-                name="cloud-custodian-" + namespace_name
-            )
+            trigger_setting = TriggerSetting(cron="0 59 23 * * ?")
+            trigger_config = TriggerConfig(type="scheduled", trigger_settings=trigger_setting)
 
-            request = CreateInstanceRetentionPolicyRequest(instance_id=instance_id,
-                                                           namespace_name=namespace_name,
-                                                           body=body)
+            if len(retentions) <= 0:
+                # Create request body
+                body = CreateRetentionPolicyReq(
+                    algorithm=self.data.get('algorithm', 'or'),
+                    rules=rules,
+                    trigger=trigger_config,
+                    enabled=True,
+                    name=policy_name
+                )
 
-            # Output complete request content for debugging
-            if hasattr(request, 'to_dict'):
-                log.debug(f"Complete request: {request.to_dict()}")
+                request = CreateInstanceRetentionPolicyRequest(instance_id=instance_id,
+                                                               namespace_name=namespace_name,
+                                                               body=body)
 
-            # Send request
-            log.info(
-                f"Sending create lifecycle rule request: "
-                f"instance_id={instance_id}, namespace_name={namespace_name}"
-            )
-            response = client.create_instance_retention_policy(request)
+                # Output complete request content for debugging
+                if hasattr(request, 'to_dict'):
+                    log.debug(f"Complete request: {request.to_dict()}")
 
-            # Process response
-            retention_id = response.id
+                # Send request
+                log.info(
+                    f"Sending create lifecycle rule request: "
+                    f"instance_id={instance_id}, namespace_name={namespace_name}"
+                )
+                response = client.create_instance_retention_policy(request)
 
-            log.info(
-                f"Successfully created lifecycle rule: "
-                f"{instance_id}/{namespace_name}, ID: {retention_id}"
-            )
+                # Process response
+                retention_id = response.id
 
-            return resource
+                log.info(
+                    f"Successfully created lifecycle rule: "
+                    f"{instance_id}/{namespace_name}, ID: {retention_id}"
+                )
+            else:
+                # Create request body
+                body = UpdateRetentionPolicyReq(
+                    algorithm=self.data.get('algorithm', 'or'),
+                    rules=rules,
+                    trigger=trigger_config,
+                    enabled=True,
+                    name=policy_name
+                )
+
+                request = UpdateInstanceRetentionPolicyRequest(instance_id=instance_id,
+                                                               namespace_name=namespace_name,
+                                                               policy_id=retentions[0].id,
+                                                               body=body)
+
+                # Output complete request content for debugging
+                if hasattr(request, 'to_dict'):
+                    log.debug(f"Complete request: {request.to_dict()}")
+
+                # Send request
+                log.info(
+                    f"Sending update lifecycle rule request: "
+                    f"instance_id={instance_id}, namespace_name={namespace_name}"
+                )
+                response = client.update_instance_retention_policy(request)
+
+                log.info(
+                    f"Successfully updated lifecycle rule: "
+                    f"{instance_id}/{namespace_name}, ID: {retentions[0].id}"
+                )
+
         except Exception as e:
             # Record detailed exception information
             error_msg = str(e)
@@ -649,10 +712,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 f"{instance_id}/{namespace_name}: {error_msg}"
             )
             log.debug(f"Exception details: {error_detail}")
-
-            resource['status'] = 'error'
-            resource['error'] = error_msg
-            return resource
 
 
 @SwrEe.action_registry.register('set-immutability')
@@ -664,12 +723,12 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
     def process(self, resources):
         client = local_session(self.manager.session_factory).client('ecr')
-        s = 'IMMUTABLE' if self.data.get('state', True) else 'MUTABLE'
+        s = True if self.data.get('state', True) else False
 
         namespace_repos = {}
         # 根据instance, namespace进行分类
         for resource in resources:
-            key = resource["instance_id"] + "-" + resource["namespace_name"] + "-" + resource[
+            key = resource["instance_id"] + "|" + resource["namespace_name"] + "|" + resource[
                 "namespace_id"]
             namespace_repo = []
             if key in namespace_repos:
@@ -680,29 +739,10 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
         repo_names = []
         for key, value in namespace_repos.items():
-            key_list = key.split("-")
+            key_list = key.split("|")
 
             self._create_or_update_immutablerule_policy(key_list[0], key_list[1], key_list[2],
-                                                        value)
-
-    def parse_pattern(self, input_str):
-        # 去除首尾空格和花括号
-        content = input_str.strip().strip('{}')
-        # 分割并清理每个元素
-        items = [item.strip() for item in content.split(',')]
-        return items
-
-    def bulid_pattern(self, repos):
-        repo_pattern = ",".join(repos)
-        repo_pattern = "{" + repo_pattern + "}"
-        return repo_pattern
-
-    def merge_repos(self, old_repos, new_repos):
-        merged_set = set(array1) | set(array2)
-        result = list(merged_set)
-
-    def sub_repos(self, old_repos, new_repos):
-        return list(set(old_repos) - set(new_repos))
+                                                        value, s)
 
     def _create_or_update_immutablerule_policy(self, instance_id, namespace_name, namespace_id,
                                                repos, enable_immutability):
@@ -760,17 +800,17 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                 f"instance_id: {instance_id}, namespace_name: {namespace_name}, has been manually set")
             return
 
-        repo_pattern = self.bulid_pattern(repos)
+        repo_pattern = build_pattern(repos)
         if len(imutableDict['scope_selectors']['repository']) > 0:
             old_repo_pattern = imutableDict['scope_selectors']['repository'][0]['pattern']
-            old_repos = self.parse_pattern(old_repo_pattern)
+            old_repos = parse_pattern(old_repo_pattern)
             fin_repos = []
             if enable_immutability:
-                fin_repos = self.merge_repos(old_repos, new_repos)
+                fin_repos = merge_repos(old_repos, new_repos)
             else:
-                fin_repos = self.sub_repos(old_repos, new_repos)
+                fin_repos = sub_repos(old_repos, new_repos)
 
-            repo_pattern = self.bulid_pattern(fin_repos)
+            repo_pattern = build_pattern(fin_repos)
 
         repository_rule = RuleSelector(
             kind="doublestar",
@@ -982,3 +1022,26 @@ def match_pattern(pattern, input_str):
             return True
 
     return False
+
+
+def parse_pattern(input_str):
+    # 去除首尾空格和花括号
+    content = input_str.strip().strip('{}')
+    # 分割并清理每个元素
+    items = [item.strip() for item in content.split(',')]
+    return items
+
+
+def build_pattern(repos):
+    repo_pattern = ",".join(repos)
+    repo_pattern = "{" + repo_pattern + "}"
+    return repo_pattern
+
+
+def merge_repos(old_repos, new_repos):
+    merged_set = set(array1) | set(array2)
+    result = list(merged_set)
+
+
+def sub_repos(old_repos, new_repos):
+    return list(set(old_repos) - set(new_repos))
