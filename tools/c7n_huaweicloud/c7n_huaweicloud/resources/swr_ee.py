@@ -40,6 +40,8 @@ from huaweicloudsdkswr.v2.model.create_immutable_rule_request import CreateImmut
 from huaweicloudsdkswr.v2.model.update_immutable_rule_request import UpdateImmutableRuleRequest
 from huaweicloudsdkswr.v2.model.create_immutable_rule_body import CreateImmutableRuleBody
 from huaweicloudsdkswr.v2.model.update_immutable_rule_body import UpdateImmutableRuleBody
+from huaweicloudsdkswr.v2.model.list_instance_namespaces_request import \
+    ListInstanceNamespacesRequest
 
 log = logging.getLogger('custodian.huaweicloud.swr-ee')
 log.setLevel(logging.DEBUG)
@@ -94,6 +96,7 @@ class SwrEe(QueryResourceManager):
 
             # For each instances, get its repositories
             for instance_index, instance in enumerate(instances):
+
                 # Get all repositories for this instance
                 repositories = _pagination_limit_offset(client,
                                                         "list_instance_repositories",
@@ -102,20 +105,40 @@ class SwrEe(QueryResourceManager):
                                                             instance_id=instance["id"],
                                                             limit=limit))
 
+                # 获取所有的namespace
+                namespaces = _pagination_limit_offset(client, "list_instance_namespaces",
+                                                      "namespaces",
+                                                      ListInstanceNamespacesRequest(
+                                                          instance_id=instance["id"],
+                                                          limit=limit
+                                                      ))
+
+                namespaces_public_mapping = {}
+                for namespace in namespaces:
+                    if namespace["metadata"]["public"] == "true":
+                        namespaces_public_mapping[namespace["namespace_id"]] = True
+                    else:
+                        namespaces_public_mapping[namespace["namespace_id"]] = False
+
                 for repository in repositories:
                     repository['instance_id'] = instance['id']
                     repository['instance_name'] = instance['name']
                     repository['uid'] = f"{instance['id']}/{repository['name']}"
+                    repository['is_public'] = False
+                    if repository['namespace_id'] in namespaces_public_mapping:
+                        repository['is_public'] = namespaces_public_mapping[
+                            repository['namespace_id']]
+
                     all_repositories.append(repository)
 
-                self.log.debug(
+                log.debug(
                     f"Retrieved {len(repositories)} repositories for instance: {instance['id']} "
                     f"({instance_index + 1}/{len(instances)})")
 
         except Exception as e:
-            self.log.error(f"Failed to fetch SWR repositories: {e}")
+            log.error(f"Failed to fetch SWR repositories: {e}")
 
-        self.log.info(f"Retrieved a total of {len(all_repositories)} SWR repositories")
+        log.info(f"Retrieved a total of {len(all_repositories)} SWR repositories")
         return all_repositories
 
     def get_resources(self, resource_ids):
@@ -520,7 +543,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
         try:
             # Log original configuration for debugging
-            self.log.debug(
+            log.debug(
                 f"Original rule configuration: {self.data.get('rules')}")
 
             # Create rule objects
@@ -535,7 +558,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     pattern = selector_data.get('pattern')
 
                     if not kind or not pattern:
-                        self.log.warning(
+                        log.warning(
                             f"Skipping invalid tag_selector: {selector_data}"
                         )
                         continue
@@ -549,7 +572,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                 # Ensure there are tag selectors
                 if not tag_selectors:
-                    self.log.warning(
+                    log.warning(
                         "No valid tag_selectors, will use default empty tag selector")
                     # Add a default tag selector to avoid API error
                     tag_selectors.append(RetentionSelector(
@@ -574,13 +597,13 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
             # Ensure there is at least one rule
             if not rules:
-                self.log.error("No valid rule configuration")
+                log.error("No valid rule configuration")
                 resource['status'] = 'error'
                 resource['error'] = 'No valid rules configured'
                 return resource
 
             # Log final generated rules
-            self.log.debug(f"Final generated rules: {rules}")
+            log.debug(f"Final generated rules: {rules}")
 
             trigger_setting = TriggerSetting(cron="* * * * * ?")
             trigger_config = TriggerConfig(type="scheduled", trigger_setting=trigger_setting)
@@ -599,10 +622,10 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
             # Output complete request content for debugging
             if hasattr(request, 'to_dict'):
-                self.log.debug(f"Complete request: {request.to_dict()}")
+                log.debug(f"Complete request: {request.to_dict()}")
 
             # Send request
-            self.log.info(
+            log.info(
                 f"Sending create lifecycle rule request: "
                 f"instance_id={instance_id}, namespace_name={namespace_name}"
             )
@@ -611,7 +634,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
             # Process response
             retention_id = response.id
 
-            self.log.info(
+            log.info(
                 f"Successfully created lifecycle rule: "
                 f"{instance_id}/{namespace_name}, ID: {retention_id}"
             )
@@ -621,11 +644,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
             # Record detailed exception information
             error_msg = str(e)
             error_detail = traceback.format_exc()
-            self.log.error(
+            log.error(
                 f"Failed to create lifecycle rule: "
                 f"{instance_id}/{namespace_name}: {error_msg}"
             )
-            self.log.debug(f"Exception details: {error_detail}")
+            log.debug(f"Exception details: {error_detail}")
 
             resource['status'] = 'error'
             resource['error'] = error_msg
@@ -741,7 +764,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         imutableDict = imutable_rules[0].to_dict()
         if len(imutableDict['scope_selectors']['repository']) > 0 and \
                 imutableDict['scope_selectors']['repository'][0]['extra'] != extra:
-            self.log.warning(
+            log.warning(
                 f"instance_id: {instance_id}, namespace_name: {namespace_name}, has been manually set")
             return
 
@@ -817,10 +840,10 @@ class SwrEeImage(QueryResourceManager):
         try:
             all_images = self._get_artifacts()
         except Exception as artifact_err:
-            self.log.error(f"Failed to get artifacts: {artifact_err}")
+            log.error(f"Failed to get artifacts: {artifact_err}")
             all_images = self._get_artifacts_by_traverse_repos()
 
-        self.log.info(f"Retrieved a total of {len(all_images)} SWR images")
+        log.info(f"Retrieved a total of {len(all_images)} SWR images")
         return all_images
 
     def _get_artifacts(self):
@@ -878,13 +901,13 @@ class SwrEeImage(QueryResourceManager):
                 artifact['uid'] = f"{repo['instance_id']}/{artifact['id']}"
 
             all_artifacts.extend(artifacts)
-            self.log.debug(
+            log.debug(
                 f"Retrieved {len(artifacts)} images for repository {repo['instance_id']}/{repo['namespace_name']}/{repo['name']} "
                 f"({repo_index + 1}/{len(repositories)})")
 
             # Add delay between repository queries to avoid API rate limiting
-            if repo_index < len(repositories) - 1:
-                time.sleep(self.api_request_delay)
+            # if repo_index < len(repositories) - 1:
+            #     time.sleep(self.api_request_delay)
 
         return all_artifacts
 
