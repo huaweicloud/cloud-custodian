@@ -305,19 +305,26 @@ class LifecycleRule(Filter):
         client = local_session(self.manager.session_factory).client('swr')
         limit = 100
 
+        instance_retentions = {}
+
         for resource in resources:
             if self.policy_annotation in resource:
                 continue
 
-            retentions = _pagination_limit_offset(
-                client,
-                "list_instance_retention_policies",
-                "retentions",
-                ListInstanceRetentionPoliciesRequest(
-                    instance_id=resource["instance_id"],
-                    limit=limit
+            retentions = []
+            if resource["instance_id"] in instance_retentions:
+                retentions = instance_retentions[resource["instance_id"]]
+            else:
+                retentions = _pagination_limit_offset(
+                    client,
+                    "list_instance_retention_policies",
+                    "retentions",
+                    ListInstanceRetentionPoliciesRequest(
+                        instance_id=resource["instance_id"],
+                        limit=limit
+                    )
                 )
-            )
+                instance_retentions[resource["instance_id"]] = retentions
 
             retention_list = []
             for retention in retentions:
@@ -587,13 +594,16 @@ class SetLifecycle(HuaweiCloudBaseAction):
         try:
 
             # Query if the retention policy already exists
-            retentions = _pagination_limit_offset(client,
-                                                  "list_instance_retention_policies",
-                                                  "retentions",
-                                                  ListInstanceRetentionPoliciesRequest(
-                                                      instance_id=instance_id,
-                                                      namespace_id=int(namespace_id),
-                                                      limit=100))
+            retentions = _pagination_limit_offset(
+                client,
+                "list_instance_retention_policies",
+                "retentions",
+                ListInstanceRetentionPoliciesRequest(
+                    instance_id=instance_id,
+                    namespace_id=int(namespace_id),
+                    limit=100
+                )
+            )
 
             # If the policy does not exist and is_set is False (cancel), return directly
             if len(retentions) <= 0 and is_set is False:
@@ -602,7 +612,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
             # If the namespace has already been manually configured with a policy, skip and do not create a new one
             if len(retentions) > 0 and retentions[0]['name'] != policy_name:
                 log.warning(
-                    f"instance: {instance_id}, namespace: {namespace_name}, policy has been manually created")
+                    f"instance: {instance_id}, namespace: {namespace_name}, "
+                    f"policy has been manually created")
                 return
 
             repo_pattern = build_pattern(repos)
@@ -813,7 +824,6 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         if len(imutable_rules) <= 0:
             if enable_immutability:
                 # Create immutablerule policy
-
                 repo_pattern = build_pattern(repos)
 
                 repository_rule = RuleSelector(
@@ -846,7 +856,8 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         # 101 is the unique priority configured by custodian
         if imutableDict['priority'] != priority:
             log.warning(
-                f"instance_id: {instance_id}, namespace_name: {namespace_name}, has been manually set")
+                f"instance_id: {instance_id}, namespace_name: {namespace_name}, "
+                f"has been manually set")
             return
 
         repo_pattern = build_pattern(repos)
@@ -1012,7 +1023,8 @@ class SwrEeImage(QueryResourceManager):
 
             all_artifacts.extend(artifacts)
             log.debug(
-                f"Retrieved {len(artifacts)} images for repository {repo['instance_id']}/{repo['namespace_name']}/{repo['name']} "
+                f"Retrieved {len(artifacts)} images for repository "
+                f"{repo['instance_id']}/{repo['namespace_name']}/{repo['name']} "
                 f"({repo_index + 1}/{len(repositories)})")
 
             # Add delay between repository queries to avoid API rate limiting
