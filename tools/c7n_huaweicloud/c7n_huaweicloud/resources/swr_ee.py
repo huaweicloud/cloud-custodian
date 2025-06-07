@@ -951,7 +951,7 @@ class SwrEeImage(QueryResourceManager):
         try:
             all_images = self._get_artifacts()
         except Exception as artifact_err:
-            log.error("Failed to get artifacts: %s", artifact_err)
+            log.debug("Failed to get artifacts: %s", artifact_err)
             all_images = self._get_artifacts_by_traverse_repos()
 
         log.info("Retrieved a total of %d SWR images", len(all_images))
