@@ -3,7 +3,6 @@
 import fnmatch
 import logging
 import traceback
-import time
 import jmespath
 
 from urllib.parse import quote_plus
@@ -51,14 +50,14 @@ log = logging.getLogger('custodian.huaweicloud.swr-ee')
 @resources.register('swr-ee')
 class SwrEe(QueryResourceManager):
     """Huawei Cloud SWR Enterprise Edition Resource Manager.
-    
+
     This class manages SWR Enterprise Edition repositories on HuaweiCloud.
     It provides functionality for discovering, filtering, and managing SWR repositories.
     """
 
     class resource_type(TypeInfo):
         """Define SWR resource metadata and type information.
-        
+
         Attributes:
             service (str): Service name for SWR
             enum_spec (tuple): API operation, result list key, and pagination info
@@ -86,7 +85,7 @@ class SwrEe(QueryResourceManager):
 
     def _fetch_resources(self, query):
         """Fetch all SWR Enterprise Edition repositories.
-        
+
         This method implements a two-level query:
         1. Query all SWR EE instances
         2. For each instance, query its repositories
@@ -156,7 +155,7 @@ class SwrEe(QueryResourceManager):
 
     def get_resources(self, resource_ids):
         resources = (
-            self.augment(self.source.get_resources(self.get_resource_query())) or []
+                self.augment(self.source.get_resources(self.get_resource_query())) or []
         )
         result = []
         for resource in resources:
@@ -197,14 +196,14 @@ class SwrEeAgeFilter(AgeFilter):
 @SwrEe.filter_registry.register('lifecycle-rule')
 class LifecycleRule(Filter):
     """SWR repository lifecycle rule filter.
-    
+
     This filter allows filtering repositories based on their lifecycle rules.
     It supports filtering by:
     - Presence/absence of lifecycle rules
     - Specific rule properties
     - Tag selectors
     - Retention periods
-    
+
     The filter lazily loads lifecycle policies only for repositories that need to be
     processed, improving efficiency when dealing with many repositories.
 
@@ -292,7 +291,7 @@ class LifecycleRule(Filter):
 
     def process(self, resources, event=None):
         """Process resources based on lifecycle rule criteria.
-        
+
         This method lazily loads lifecycle policies for each repository
         only when needed, improving efficiency.
 
@@ -367,7 +366,7 @@ class LifecycleRule(Filter):
 
     def build_params_filters(self):
         """Build parameter filters.
-        
+
         Returns:
             dict: Dictionary of parameter filters
         """
@@ -392,7 +391,7 @@ class LifecycleRule(Filter):
 
     def build_matchers(self):
         """Build generic matchers.
-        
+
         Returns:
             list: List of value filter matchers
         """
@@ -405,11 +404,11 @@ class LifecycleRule(Filter):
 
     def match_policy_with_matchers(self, policy, matchers):
         """Check if policy matches using generic matchers.
-        
+
         Args:
             policy (dict): Lifecycle policy to check
             matchers (list): List of matchers to apply
-            
+
         Returns:
             bool: True if policy matches all matchers, False otherwise
         """
@@ -423,11 +422,11 @@ class LifecycleRule(Filter):
 
     def match_tag_selector(self, policy, tag_selector):
         """Check if policy tag selector matches the filter.
-        
+
         Args:
             policy (dict): Lifecycle policy to check
             tag_selector (dict): Tag selector criteria
-            
+
         Returns:
             bool: True if policy matches tag selector, False otherwise
         """
@@ -526,10 +525,10 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
     def validate(self):
         """Validate action configuration.
-        
+
         Returns:
             self: The action instance
-            
+
         Raises:
             PolicyValidationError: If configuration is invalid
         """
@@ -551,7 +550,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
         is_set = True if self.data.get('state', True) else False
 
         namespace_repos = {}
-        # 根据instance, namespace进行分类
+        # Group by instance and namespace
         for resource in resources:
             key = f"{resource['instance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
             namespace_repo = []
@@ -587,7 +586,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
         try:
 
-            # 查询是否已经存在老化策略
+            # Query if the retention policy already exists
             retentions = _pagination_limit_offset(client,
                                                   "list_instance_retention_policies",
                                                   "retentions",
@@ -596,11 +595,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
                                                       namespace_id=int(namespace_id),
                                                       limit=100))
 
-            # 如果策略不存在，又是取消老化策略，则直接返回
+            # If the policy does not exist and is_set is False (cancel), return directly
             if len(retentions) <= 0 and is_set is False:
                 return
 
-            # 如果namespace已经手动配置过策略，则跳过，不创建老化策略
+            # If the namespace has already been manually configured with a policy, skip and do not create a new one
             if len(retentions) > 0 and retentions[0]['name'] != policy_name:
                 log.warning(
                     f"instance: {instance_id}, namespace: {namespace_name}, policy has been manually created")
@@ -767,7 +766,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         s = True if self.data.get('state', True) else False
 
         namespace_repos = {}
-        # 根据instance, namespace进行分类
+        # Group by instance and namespace
         for resource in resources:
             key = f"{resource['instance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
             namespace_repo = []
@@ -797,7 +796,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         priority = 101
 
-        # 根据namespace查询immutablerule policy
+        # Query immutablerule policy by namespace
         imutable_rules = _pagination_limit_offset(client, 'list_immutable_rules', 'immutable_rules',
                                                   ListImmutableRulesRequest(
                                                       instance_id=instance_id,
@@ -810,10 +809,10 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             pattern="**"
         ))
 
-        # 不可变规则不存在，以及去掉不可变策略,则直接返回
+        # If the immutability rule does not exist and you want to remove the immutability policy, return directly
         if len(imutable_rules) <= 0:
             if enable_immutability:
-                # 创建immutablerule policy
+                # Create immutablerule policy
 
                 repo_pattern = build_pattern(repos)
 
@@ -844,7 +843,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             return
 
         imutableDict = imutable_rules[0]
-        # 101是custodian独有配置的优先级
+        # 101 is the unique priority configured by custodian
         if imutableDict['priority'] != priority:
             log.warning(
                 f"instance_id: {instance_id}, namespace_name: {namespace_name}, has been manually set")
@@ -890,7 +889,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 @resources.register('swr-ee-image')
 class SwrEeImage(QueryResourceManager):
     """Huawei Cloud SWR Image Resource Manager.
-    
+
     This class manages SWR image resources on HuaweiCloud. It implements a two-level query approach:
     1. First retrieving all SWR repositories
     2. Then querying images for each repository.
@@ -898,7 +897,7 @@ class SwrEeImage(QueryResourceManager):
 
     class resource_type(TypeInfo):
         """Define SWR Image resource metadata and type information.
-        
+
         Attributes:
             service (str): Service name for SWR
             enum_spec (tuple): API operation, result list key, and pagination info
@@ -923,7 +922,7 @@ class SwrEeImage(QueryResourceManager):
 
     def _fetch_resources(self, query):
         """Fetch all SWR images.
-        
+
         This method implements a two-level query:
         1. Query all SWR repositories
         2. For each repository, query its images
@@ -947,7 +946,7 @@ class SwrEeImage(QueryResourceManager):
 
     def _get_artifacts(self):
         """Get artifacts using list_instance_all_artifacts API.
-        
+
         Returns:
             list: List of artifacts
         """
@@ -982,7 +981,7 @@ class SwrEeImage(QueryResourceManager):
 
     def _get_artifacts_by_traverse_repos(self):
         """Get artifacts by traversing repositories.
-        
+
         Returns:
             list: List of artifacts
         """
@@ -1024,10 +1023,10 @@ class SwrEeImage(QueryResourceManager):
 
     def get_resources(self, resource_ids):
         """Get resources by their IDs.
-        
+
         Args:
             resource_ids (list): List of resource IDs to fetch
-            
+
         Returns:
             list: List of matching resources
         """
@@ -1048,12 +1047,12 @@ class SwrEeImage(QueryResourceManager):
 @SwrEeImage.filter_registry.register('age')
 class SwrEeImageAgeFilter(AgeFilter):
     """SWR Image creation time filter.
-    
+
     This filter allows filtering images based on their creation time.
-    
+
     Example:
         .. code-block:: yaml
-        
+
             policies:
               - name: swr-image-old
                 resource: huaweicloud.swr-image
@@ -1076,13 +1075,13 @@ class SwrEeImageAgeFilter(AgeFilter):
 
 def _pagination_limit_offset(client, enum_op, path, request):
     """Handle pagination for API requests with limit and offset.
-    
+
     Args:
         client: API client instance
         enum_op: API operation name
         path: JMESPath expression to extract data
         request: Request object with limit parameter
-        
+
     Returns:
         List of resources from all pages
     """
@@ -1113,11 +1112,11 @@ def _pagination_limit_offset(client, enum_op, path, request):
 
 def match_pattern(pattern, input_str):
     """Match input string against pattern.
-    
+
     Args:
         pattern: Pattern to match against
         input_str: String to match
-        
+
     Returns:
         bool: True if pattern matches input string
     """
@@ -1125,18 +1124,18 @@ def match_pattern(pattern, input_str):
         return True
 
     options = pattern.strip("{}").split(",")
-    return any(fnmatch.fnmatch(option, input_str) for option in options)
 
     for option in options:
         if fnmatch.fnmatch(option, input_str):
             return True
 
+
 def parse_pattern(input_str):
     """Parse pattern string into list of items.
-    
+
     Args:
         input_str: Pattern string to parse
-        
+
     Returns:
         list: List of parsed items
     """
@@ -1148,10 +1147,10 @@ def parse_pattern(input_str):
 
 def build_pattern(repos):
     """Build pattern string from list of repositories.
-    
+
     Args:
         repos: List of repository names
-        
+
     Returns:
         str: Pattern string
     """
@@ -1161,11 +1160,11 @@ def build_pattern(repos):
 
 def merge_repos(old_repos, new_repos):
     """Merge two lists of repositories.
-    
+
     Args:
         old_repos: List of existing repositories
         new_repos: List of new repositories
-        
+
     Returns:
         list: Merged list of repositories
     """
@@ -1174,11 +1173,11 @@ def merge_repos(old_repos, new_repos):
 
 def sub_repos(old_repos, new_repos):
     """Subtract new repositories from old repositories.
-    
+
     Args:
         old_repos: List of existing repositories
         new_repos: List of repositories to remove
-        
+
     Returns:
         list: List of remaining repositories
     """
