@@ -231,7 +231,8 @@ class LifecycleRule(Filter):
               match:
                 - type: value
                   key: rules[0].template
-                  value: latestPushedK   # latestPushedK, latestPulledN, nDaysSinceLastPush, nDaysSinceLastPull
+                  value: latestPushedK   # latestPushedK, latestPulledN,
+                                        # nDaysSinceLastPush, nDaysSinceLastPull
 
     .. code-block:: yaml
 
@@ -559,7 +560,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
         namespace_repos = {}
         # Group by instance and namespace
         for resource in resources:
-            key = f"{resource['instance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
+            key = "{}|{}|{}".format(resource['instance_id'], resource['namespace_name'],
+                                    resource['namespace_id'])
             namespace_repo = []
             if key in namespace_repos:
                 namespace_repo = namespace_repos[key]
@@ -567,7 +569,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
             namespace_repo.append(resource["name"])
             namespace_repos[key] = namespace_repo
 
-        repo_names = []
         for key, value in namespace_repos.items():
             key_list = key.split("|")
 
@@ -609,7 +610,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
             if len(retentions) <= 0 and is_set is False:
                 return
 
-            # If the namespace has already been manually configured with a policy, skip and do not create a new one
+            # If the namespace has already been manually configured with a policy,
+            # skip and do not create a new one
             if len(retentions) > 0 and retentions[0]['name'] != policy_name:
                 log.warning(
                     f"instance: {instance_id}, namespace: {namespace_name}, "
@@ -773,13 +775,13 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         state={'type': 'boolean', 'default': True})
 
     def process(self, resources):
-        client = local_session(self.manager.session_factory).client('ecr')
         s = True if self.data.get('state', True) else False
 
         namespace_repos = {}
         # Group by instance and namespace
         for resource in resources:
-            key = f"{resource['instance_id']}|{resource['namespace_name']}|{resource['namespace_id']}"
+            key = "{}|{}|{}".format(resource['instance_id'], resource['namespace_name'],
+                                    resource['namespace_id'])
             namespace_repo = []
             if key in namespace_repos:
                 namespace_repo = namespace_repos[key]
@@ -787,7 +789,6 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             namespace_repo.append(resource["name"])
             namespace_repos[key] = namespace_repo
 
-        repo_names = []
         for key, value in namespace_repos.items():
             key_list = key.split("|")
 
@@ -820,7 +821,8 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             pattern="**"
         ))
 
-        # If the immutability rule does not exist and you want to remove the immutability policy, return directly
+        # If the immutability rule does not exist and you want to remove the immutability policy,
+        # return directly
         if len(imutable_rules) <= 0:
             if enable_immutability:
                 # Create immutablerule policy
