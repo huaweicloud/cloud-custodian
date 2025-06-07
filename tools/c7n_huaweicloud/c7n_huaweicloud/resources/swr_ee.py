@@ -6,7 +6,6 @@ import traceback
 import time
 import jmespath
 
-from idlelib.rpc import response_queue
 from urllib.parse import quote_plus
 
 from c7n.filters import Filter
@@ -16,8 +15,7 @@ from c7n.exceptions import PolicyValidationError
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
-from c7n_huaweicloud.query import QueryResourceManager, DescribeSource
-from c7n_huaweicloud.query import TypeInfo
+from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 # Centralized imports for HuaweiCloud SDK modules
 from huaweicloudsdkswr.v2.model.list_instance_request import ListInstanceRequest
@@ -54,11 +52,25 @@ log.setLevel(logging.DEBUG)
 @resources.register('swr-ee')
 class SwrEe(QueryResourceManager):
     """Huawei Cloud SWR Enterprise Edition Resource Manager.
-
+    
+    This class manages SWR Enterprise Edition repositories on HuaweiCloud.
+    It provides functionality for discovering, filtering, and managing SWR repositories.
     """
 
     class resource_type(TypeInfo):
-        """Define SWR resource metadata and type information"""
+        """Define SWR resource metadata and type information.
+        
+        Attributes:
+            service (str): Service name for SWR
+            enum_spec (tuple): API operation, result list key, and pagination info
+            id (str): Resource unique identifier field name
+            name (str): Resource name field name
+            filter_name (str): Field name for filtering by name
+            filter_type (str): Filter type for simple value comparison
+            taggable (bool): Whether resource supports tagging
+            tag_resource_type (None): Tag resource type
+            date (str): Field name for resource creation time
+        """
         service = 'swr'
         # Specify API operation, result list key, and pagination for enumerating resources
         # 'list_instance_repositories' is the API method name
@@ -74,9 +86,9 @@ class SwrEe(QueryResourceManager):
         date = 'created_at'  # Specify field name for resource creation time
 
     def _fetch_resources(self, query):
-        """Fetch all SWR Enterprise Edition repositories by first getting instances then repositories.
-
-        This method overrides parent's _fetch_resources to implement the two-level query:
+        """Fetch all SWR Enterprise Edition repositories.
+        
+        This method implements a two-level query:
         1. Query all SWR EE instances
         2. For each instance, query its repositories
 
@@ -86,57 +98,54 @@ class SwrEe(QueryResourceManager):
         all_repositories = []
         limit = 100
 
-        # First get all SWR repositories
         try:
             client = self.get_client()
             if query and 'instance_id' in query:
                 instances = [{"id": query['instance_id']}]
             else:
-                instances = _pagination_limit_offset(client, "list_instance",
-                                                     "instances",
-                                                     ListInstanceRequest(
-                                                         limit=limit
-                                                     ))
+                instances = _pagination_limit_offset(
+                    client,
+                    "list_instance",
+                    "instances",
+                    ListInstanceRequest(limit=limit)
+                )
 
-            # For each instances, get its repositories
             for instance_index, instance in enumerate(instances):
+                repositories = _pagination_limit_offset(
+                    client,
+                    "list_instance_repositories",
+                    "repositories",
+                    ListInstanceRepositoriesRequest(
+                        instance_id=instance["id"],
+                        limit=limit
+                    )
+                )
 
-                # Get all repositories for this instance
-                repositories = _pagination_limit_offset(client,
-                                                        "list_instance_repositories",
-                                                        "repositories",
-                                                        ListInstanceRepositoriesRequest(
-                                                            instance_id=instance["id"],
-                                                            limit=limit))
-
-                # 获取所有的namespace
-                namespaces = _pagination_limit_offset(client, "list_instance_namespaces",
-                                                      "namespaces",
-                                                      ListInstanceNamespacesRequest(
-                                                          instance_id=instance["id"],
-                                                          limit=limit
-                                                      ))
+                namespaces = _pagination_limit_offset(
+                    client,
+                    "list_instance_namespaces",
+                    "namespaces",
+                    ListInstanceNamespacesRequest(
+                        instance_id=instance["id"],
+                        limit=limit
+                    )
+                )
 
                 namespaces_public_mapping = {}
                 for namespace in namespaces:
-                    if namespace["metadata"]["public"] == "true" or namespace["metadata"][
-                        "public"] == "True":
-                        namespaces_public_mapping[namespace["namespace_id"]] = True
-                    else:
-                        namespaces_public_mapping[namespace["namespace_id"]] = False
+                    is_public = namespace["metadata"]["public"].lower() == "true"
+                    namespaces_public_mapping[namespace["namespace_id"]] = is_public
 
                 for repository in repositories:
                     repository['instance_id'] = instance['id']
                     repository['instance_name'] = instance['name']
                     repository['uid'] = f"{instance['id']}/{repository['name']}"
-                    repository['is_public'] = False
-                    if repository['namespace_id'] in namespaces_public_mapping:
-                        repository['is_public'] = namespaces_public_mapping[
-                            repository['namespace_id']]
-
+                    repository['is_public'] = namespaces_public_mapping.get(
+                        repository['namespace_id'], False
+                    )
                     all_repositories.append(repository)
 
-                log.debug(
+                log.info(
                     f"Retrieved {len(repositories)} repositories for instance: {instance['id']} "
                     f"({instance_index + 1}/{len(instances)})")
 
@@ -148,11 +157,11 @@ class SwrEe(QueryResourceManager):
 
     def get_resources(self, resource_ids):
         resources = (
-                self.augment(self.source.get_resources(self.get_resource_query())) or []
+            self.augment(self.source.get_resources(self.get_resource_query())) or []
         )
         result = []
         for resource in resources:
-            resource_id = resource["namespace"] + "/" + resource["id"]
+            resource_id = f"{resource['namespace']}/{resource['id']}"
             if resource_id in resource_ids:
                 result.append(resource)
         return result
@@ -189,11 +198,15 @@ class SwrEeAgeFilter(AgeFilter):
 @SwrEe.filter_registry.register('lifecycle-rule')
 class LifecycleRule(Filter):
     """SWR repository lifecycle rule filter.
-
-    Filter repositories with or without specific lifecycle rules based on parameters
-    such as days, tag selectors (kind, pattern), etc.
-
-    This filter lazily loads lifecycle policies only for repositories that need to be
+    
+    This filter allows filtering repositories based on their lifecycle rules.
+    It supports filtering by:
+    - Presence/absence of lifecycle rules
+    - Specific rule properties
+    - Tag selectors
+    - Retention periods
+    
+    The filter lazily loads lifecycle policies only for repositories that need to be
     processed, improving efficiency when dealing with many repositories.
 
     :example:
@@ -280,30 +293,33 @@ class LifecycleRule(Filter):
 
     def process(self, resources, event=None):
         """Process resources based on lifecycle rule criteria.
-
-        This method now lazily loads lifecycle policies for each repository
+        
+        This method lazily loads lifecycle policies for each repository
         only when needed, improving efficiency.
 
-        :param resources: List of resources to filter
-        :param event: Optional event context
-        :return: Filtered resource list
+        Args:
+            resources (list): List of resources to filter
+            event (dict, optional): Event context
+
+        Returns:
+            list: Filtered resource list
         """
         client = local_session(self.manager.session_factory).client('swr')
         limit = 100
 
-        # Lazily load lifecycle policies only when needed
         for resource in resources:
-            # Skip if we've already loaded the lifecycle policy for this resource
             if self.policy_annotation in resource:
                 continue
 
-            # list retention
-            retentions = _pagination_limit_offset(client,
-                                                  "list_instance_retention_policies",
-                                                  "retentions",
-                                                  ListInstanceRetentionPoliciesRequest(
-                                                      instance_id=resource["instance_id"],
-                                                      limit=limit))
+            retentions = _pagination_limit_offset(
+                client,
+                "list_instance_retention_policies",
+                "retentions",
+                ListInstanceRetentionPoliciesRequest(
+                    instance_id=resource["instance_id"],
+                    limit=limit
+                )
+            )
 
             retention_list = []
             for retention in retentions:
@@ -321,38 +337,30 @@ class LifecycleRule(Filter):
         state = self.data.get('state', True)
         results = []
 
-        # Extract filter conditions
         tag_selector = self.data.get('tag_selector')
         matchers = self.build_matchers()
 
         for resource in resources:
             policies = resource.get(self.policy_annotation, [])
 
-            # If there are no lifecycle rules but state is False, add the resource
             if not policies and not state:
                 results.append(resource)
                 continue
 
-            # If there are no lifecycle rules but state is True, skip the resource
             if not policies and state:
                 continue
 
-            # Check if each lifecycle rule matches all conditions
             rule_matches = False
             for policy in policies:
-                # Check with generic matchers
                 if not self.match_policy_with_matchers(policy, matchers):
                     continue
 
-                # Check tag selector
                 if tag_selector and not self.match_tag_selector(policy, tag_selector):
                     continue
 
-                # If passed all filters, mark as a match
                 rule_matches = True
                 break
 
-            # If the rule match status matches the required state, add the resource
             if rule_matches == state:
                 results.append(resource)
 
@@ -360,24 +368,21 @@ class LifecycleRule(Filter):
 
     def build_params_filters(self):
         """Build parameter filters.
-
-        :return: Dictionary of parameter filters
+        
+        Returns:
+            dict: Dictionary of parameter filters
         """
         params_filters = {}
         if 'params' in self.data:
             for param_key, param_config in self.data.get('params', {}).items():
                 if isinstance(param_config, dict):
-                    # Copy configuration to avoid modifying original data
                     filter_data = param_config.copy()
-                    # Ensure filter has a key parameter
                     if 'key' not in filter_data:
                         filter_data['key'] = param_key
-                    # Set value type, default to integer
                     if 'value_type' not in filter_data:
                         filter_data['value_type'] = 'integer'
                     params_filters[param_key] = ValueFilter(filter_data)
                 else:
-                    # Simple value matching
                     params_filters[param_key] = ValueFilter({
                         'type': 'value',
                         'key': param_key,
@@ -388,8 +393,9 @@ class LifecycleRule(Filter):
 
     def build_matchers(self):
         """Build generic matchers.
-
-        :return: List of value filter matchers
+        
+        Returns:
+            list: List of value filter matchers
         """
         matchers = []
         for matcher in self.data.get('match', []):
@@ -400,10 +406,13 @@ class LifecycleRule(Filter):
 
     def match_policy_with_matchers(self, policy, matchers):
         """Check if policy matches using generic matchers.
-
-        :param policy: Lifecycle policy to check
-        :param matchers: List of matchers to apply
-        :return: True if policy matches all matchers, False otherwise
+        
+        Args:
+            policy (dict): Lifecycle policy to check
+            matchers (list): List of matchers to apply
+            
+        Returns:
+            bool: True if policy matches all matchers, False otherwise
         """
         if not matchers:
             return True
@@ -415,10 +424,13 @@ class LifecycleRule(Filter):
 
     def match_tag_selector(self, policy, tag_selector):
         """Check if policy tag selector matches the filter.
-
-        :param policy: Lifecycle policy to check
-        :param tag_selector: Tag selector criteria
-        :return: True if policy matches tag selector, False otherwise
+        
+        Args:
+            policy (dict): Lifecycle policy to check
+            tag_selector (dict): Tag selector criteria
+            
+        Returns:
+            bool: True if policy matches tag selector, False otherwise
         """
         for rule in policy.get('rules', []):
             for selector in rule.get('tag_selectors', []):
@@ -485,9 +497,15 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 'type': 'object',
                 'required': ['template', 'params', 'tag_selectors'],
                 'properties': {
-                    'template': {'type': 'string',
-                                 'enum': ['latestPushedK', 'latestPulledN', 'nDaysSinceLastPush',
-                                          'nDaysSinceLastPull']},
+                    'template': {
+                        'type': 'string',
+                        'enum': [
+                            'latestPushedK',
+                            'latestPulledN',
+                            'nDaysSinceLastPush',
+                            'nDaysSinceLastPull'
+                        ]
+                    },
                     'params': {'type': 'object'},
                     'tag_selectors': {
                         'type': 'array',
@@ -505,9 +523,17 @@ class SetLifecycle(HuaweiCloudBaseAction):
         }
     )
 
-    permissions = ('swr:*:*:*',)  # SWR related permissions
+    permissions = ('swr:*:*:*',)
 
     def validate(self):
+        """Validate action configuration.
+        
+        Returns:
+            self: The action instance
+            
+        Raises:
+            PolicyValidationError: If configuration is invalid
+        """
         if self.data.get('state') is False and 'rules' in self.data:
             raise PolicyValidationError(
                 "set-lifecycle can't use statements and state: false")
@@ -865,70 +891,88 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 @resources.register('swr-ee-image')
 class SwrEeImage(QueryResourceManager):
     """Huawei Cloud SWR Image Resource Manager.
-
-    This class is responsible for discovering, filtering, and managing SWR image resources
-    on HuaweiCloud. It implements a two-level query approach, first retrieving all SWR repositories,
-    then querying images for each repository.
-
+    
+    This class manages SWR image resources on HuaweiCloud. It implements a two-level query approach:
+    1. First retrieving all SWR repositories
+    2. Then querying images for each repository.
     """
 
     class resource_type(TypeInfo):
-        """Define SWR Image resource metadata and type information"""
-        service = 'swr'  # Specify corresponding HuaweiCloud service name
-        # Specify API operation, result list key, and pagination for enumerating resources
-        # 'list_repository_tags' is the API method name
-        # 'body' is the field name in the response containing the tag list
-        # 'offset' is the parameter name for pagination
+        """Define SWR Image resource metadata and type information.
+        
+        Attributes:
+            service (str): Service name for SWR
+            enum_spec (tuple): API operation, result list key, and pagination info
+            id (str): Resource unique identifier field name
+            name (str): Tag field corresponds to image version name
+            filter_name (str): Field name for filtering by tag
+            filter_type (str): Filter type for simple value comparison
+            taggable (bool): Whether resource supports tagging
+            date (str): Field name for resource creation time
+        """
+        service = 'swr'
         enum_spec = ('list_instance_all_artifacts', 'body', 'offset')
-        id = 'uid'  # Specify resource unique identifier field name
-        name = 'tag'  # Tag field corresponds to image version name
-        filter_name = 'tag'  # Field name for filtering by tag
-        filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
-        taggable = False  # SWR images don't support tagging
-        date = 'push_time'  # Creation time field
+        id = 'uid'
+        name = 'tag'
+        filter_name = 'tag'
+        filter_type = 'scalar'
+        taggable = False
+        date = 'push_time'
 
     # Delay time between API requests (seconds)
     api_request_delay = 0.5
 
     def _fetch_resources(self, query):
-        """Fetch all SWR images by first getting repositories then images.
-
-        This method overrides parent's _fetch_resources to implement the two-level query:
+        """Fetch all SWR images.
+        
+        This method implements a two-level query:
         1. Query all SWR repositories
         2. For each repository, query its images
 
-        :param query: Query parameters (not used in this implementation)
-        :return: List of all SWR images
+        Args:
+            query (dict): Query parameters (not used in this implementation)
+
+        Returns:
+            list: List of all SWR images
         """
         all_images = []
 
         try:
             all_images = self._get_artifacts()
         except Exception as artifact_err:
-            log.error(f"Failed to get artifacts: {artifact_err}")
+            log.error("Failed to get artifacts: %s", artifact_err)
             all_images = self._get_artifacts_by_traverse_repos()
 
-        log.info(f"Retrieved a total of {len(all_images)} SWR images")
+        log.info("Retrieved a total of %d SWR images", len(all_images))
         return all_images
 
     def _get_artifacts(self):
+        """Get artifacts using list_instance_all_artifacts API.
+        
+        Returns:
+            list: List of artifacts
+        """
         limit = 100
         client = self.get_client()
 
-        instances = _pagination_limit_offset(client, "list_instance",
-                                             "instances",
-                                             ListInstanceRequest(
-                                                 limit=limit
-                                             ))
+        instances = _pagination_limit_offset(
+            client,
+            "list_instance",
+            "instances",
+            ListInstanceRequest(limit=limit)
+        )
 
         all_artifacts = []
         for instance in instances:
-            artifacts = _pagination_limit_offset(client, "list_instance_all_artifacts",
-                                                 "artifacts",
-                                                 ListInstanceAllArtifactsRequest(
-                                                     instance_id=instance['id'],
-                                                     limit=limit
-                                                 ))
+            artifacts = _pagination_limit_offset(
+                client,
+                "list_instance_all_artifacts",
+                "artifacts",
+                ListInstanceAllArtifactsRequest(
+                    instance_id=instance['id'],
+                    limit=limit
+                )
+            )
             for artifact in artifacts:
                 artifact['instance_id'] = instance['id']
                 artifact['instance_name'] = instance['name']
@@ -938,8 +982,11 @@ class SwrEeImage(QueryResourceManager):
         return all_artifacts
 
     def _get_artifacts_by_traverse_repos(self):
-
-        # Use SWR resource manager to get all repositories with pagination handled
+        """Get artifacts by traversing repositories.
+        
+        Returns:
+            list: List of artifacts
+        """
         from c7n_huaweicloud.provider import resources as huaweicloud_resources
         swr_manager = huaweicloud_resources.get('swr-ee')(self.ctx, {})
         repositories = swr_manager.resources()
@@ -948,18 +995,18 @@ class SwrEeImage(QueryResourceManager):
         client = self.get_client()
 
         all_artifacts = []
-        # For each repository, get its images
         for repo_index, repo in enumerate(repositories):
-
-            # Get all images for this repository
-            artifacts = _pagination_limit_offset(client, "list_instance_artifacts",
-                                                 "artifacts",
-                                                 ListInstanceArtifactsRequest(
-                                                     instance_id=repo['instance_id'],
-                                                     namespace_name=repo['namespace_name'],
-                                                     repository_name=quote_plus(repo['name']),
-                                                     limit=limit
-                                                 ))
+            artifacts = _pagination_limit_offset(
+                client,
+                "list_instance_artifacts",
+                "artifacts",
+                ListInstanceArtifactsRequest(
+                    instance_id=repo['instance_id'],
+                    namespace_name=repo['namespace_name'],
+                    repository_name=quote_plus(repo['name']),
+                    limit=limit
+                )
+            )
             for artifact in artifacts:
                 artifact['instance_id'] = repo['instance_id']
                 artifact['instance_name'] = repo['instance_name']
@@ -977,13 +1024,23 @@ class SwrEeImage(QueryResourceManager):
         return all_artifacts
 
     def get_resources(self, resource_ids):
-
+        """Get resources by their IDs.
+        
+        Args:
+            resource_ids (list): List of resource IDs to fetch
+            
+        Returns:
+            list: List of matching resources
+        """
         resources = []
         for resource_id in resource_ids:
             namespace_repo = resource_id.split(':')[0]
             namespace = namespace_repo.split('/')[0]
             repository = "/".join(namespace_repo.split('/')[1:])
-            temp_resources = self._fetch_resources({"namespace": namespace, "name": repository})
+            temp_resources = self._fetch_resources({
+                "namespace": namespace,
+                "name": repository
+            })
             resources.append(temp_resources)
 
         return self.filter_resources(resources)
@@ -992,18 +1049,19 @@ class SwrEeImage(QueryResourceManager):
 @SwrEeImage.filter_registry.register('age')
 class SwrEeImageAgeFilter(AgeFilter):
     """SWR Image creation time filter.
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: swr-image-old
-            resource: huaweicloud.swr-image
-            filters:
-              - type: age
-                days: 90
-                op: gt  # Creation time greater than 90 days
+    
+    This filter allows filtering images based on their creation time.
+    
+    Example:
+        .. code-block:: yaml
+        
+            policies:
+              - name: swr-image-old
+                resource: huaweicloud.swr-image
+                filters:
+                  - type: age
+                    days: 90
+                    op: gt  # Creation time greater than 90 days
     """
 
     schema = type_schema(
@@ -1018,10 +1076,21 @@ class SwrEeImageAgeFilter(AgeFilter):
 
 
 def _pagination_limit_offset(client, enum_op, path, request):
+    """Handle pagination for API requests with limit and offset.
+    
+    Args:
+        client: API client instance
+        enum_op: API operation name
+        path: JMESPath expression to extract data
+        request: Request object with limit parameter
+        
+    Returns:
+        List of resources from all pages
+    """
     offset = 0
     limit = 100
     resources = []
-    while 1:
+    while True:
         request.limit = request.limit or limit
         request.offset = offset
         response = getattr(client, enum_op)(request)
@@ -1035,7 +1104,7 @@ def _pagination_limit_offset(client, enum_op, path, request):
             ),
         )
 
-        resources = resources + res
+        resources.extend(res)
         if len(res) == limit:
             offset += limit
         else:
@@ -1044,43 +1113,74 @@ def _pagination_limit_offset(client, enum_op, path, request):
 
 
 def match_pattern(pattern, input_str):
-    # ** 匹配全部
+    """Match input string against pattern.
+    
+    Args:
+        pattern: Pattern to match against
+        input_str: String to match
+        
+    Returns:
+        bool: True if pattern matches input string
+    """
     if pattern == "**":
         return True
 
     options = pattern.strip("{}").split(",")
+    return any(fnmatch.fnmatch(option, input_str) for option in options)
 
     for option in options:
         if fnmatch.fnmatch(option, input_str):
             return True
 
-    return False
-
-
 def parse_pattern(input_str):
-    # 去除首尾空格和花括号
+    """Parse pattern string into list of items.
+    
+    Args:
+        input_str: Pattern string to parse
+        
+    Returns:
+        list: List of parsed items
+    """
     content = input_str.strip().strip('{}')
-    if content == '':
+    if not content:
         return []
-    # 分割并清理每个元素
-    items = [item.strip() for item in content.split(',')]
-    return items
+    return [item.strip() for item in content.split(',')]
 
 
 def build_pattern(repos):
-    # if len(repos) == 0:
-    #     return ""
+    """Build pattern string from list of repositories.
+    
+    Args:
+        repos: List of repository names
+        
+    Returns:
+        str: Pattern string
+    """
     repo_pattern = ",".join(repos)
-    repo_pattern = "{" + repo_pattern + "}"
-    return repo_pattern
+    return "{" + repo_pattern + "}"
 
 
 def merge_repos(old_repos, new_repos):
-    merged_set = set(old_repos) | set(new_repos)
-    result = list(merged_set)
-
-    return result
+    """Merge two lists of repositories.
+    
+    Args:
+        old_repos: List of existing repositories
+        new_repos: List of new repositories
+        
+    Returns:
+        list: Merged list of repositories
+    """
+    return list(set(old_repos) | set(new_repos))
 
 
 def sub_repos(old_repos, new_repos):
+    """Subtract new repositories from old repositories.
+    
+    Args:
+        old_repos: List of existing repositories
+        new_repos: List of repositories to remove
+        
+    Returns:
+        list: List of remaining repositories
+    """
     return list(set(old_repos) - set(new_repos))
