@@ -700,7 +700,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     log.debug(f"Complete request: {request.to_dict()}")
 
                 # Send request
-                log.info(
+                log.debug(
                     f"Sending create lifecycle rule request: "
                     f"instance_id={instance_id}, namespace_name={namespace_name}"
                 )
@@ -798,7 +798,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         priority = 101
 
         # 根据namespace查询immutablerule policy
-        imutable_rules = _pagination_limit_offset(client, 'list_immutable_rules', 'immutbale_rule',
+        imutable_rules = _pagination_limit_offset(client, 'list_immutable_rules', 'immutable_rules',
                                                   ListImmutableRulesRequest(
                                                       instance_id=instance_id,
                                                       namespace_id=int(namespace_id),
