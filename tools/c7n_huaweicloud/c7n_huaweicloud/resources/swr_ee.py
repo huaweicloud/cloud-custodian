@@ -46,7 +46,6 @@ from huaweicloudsdkswr.v2.model.list_instance_namespaces_request import \
     ListInstanceNamespacesRequest
 
 log = logging.getLogger('custodian.huaweicloud.swr-ee')
-log.setLevel(logging.DEBUG)
 
 
 @resources.register('swr-ee')
