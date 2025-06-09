@@ -20,10 +20,12 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkswr.v2.model.list_instance_request import ListInstanceRequest
 from huaweicloudsdkswr.v2.model.list_instance_repositories_request import \
     ListInstanceRepositoriesRequest
-from huaweicloudsdkswr.v2.model.create_retention_policy_req import CreateRetentionPolicyReq
+from huaweicloudsdkswr.v2.model.create_retention_policy_request_body import \
+    CreateRetentionPolicyRequestBody
 from huaweicloudsdkswr.v2.model.create_instance_retention_policy_request import \
     CreateInstanceRetentionPolicyRequest
-from huaweicloudsdkswr.v2.model.update_retention_policy_req import UpdateRetentionPolicyReq
+from huaweicloudsdkswr.v2.model.update_retention_policy_request_body import \
+    UpdateRetentionPolicyRequestBody
 from huaweicloudsdkswr.v2.model.update_instance_retention_policy_request import \
     UpdateInstanceRetentionPolicyRequest
 from huaweicloudsdkswr.v2.model.list_instance_retention_policies_request import \
@@ -695,7 +697,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
             if len(retentions) <= 0:
                 # Create request body
-                body = CreateRetentionPolicyReq(
+                body = CreateRetentionPolicyRequestBody(
                     algorithm=self.data.get('algorithm', 'or'),
                     rules=rules,
                     trigger=trigger_config,
@@ -727,7 +729,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 )
             else:
                 # Create request body
-                body = UpdateRetentionPolicyReq(
+                body = UpdateRetentionPolicyRequestBody(
                     algorithm=self.data.get('algorithm', 'or'),
                     rules=rules,
                     trigger=trigger_config,
