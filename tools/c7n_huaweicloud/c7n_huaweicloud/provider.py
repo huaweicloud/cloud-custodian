@@ -3,16 +3,19 @@
 import json
 import logging
 import os
+import operator
+import copy
 import requests
-from huaweicloudsdkcore.auth.credentials import Credentials
-from huaweicloudsdkcore.utils import time_utils
+from urllib import parse as urlparse
 
 from c7n.registry import PluginRegistry
 from c7n.provider import Provider, clouds
-from c7n_huaweicloud.client import Session
 
+from c7n_huaweicloud.client import Session
 from c7n_huaweicloud.resources.resource_map import ResourceMap
 from c7n_huaweicloud.utils.signer import Signer, HttpRequest
+from huaweicloudsdkcore.auth.credentials import Credentials
+from huaweicloudsdkcore.utils import time_utils
 
 log = logging.getLogger("custodian.huaweicloud.provider")
 
@@ -29,6 +32,8 @@ def get_credentials():
 class HuaweiSessionFactory:
 
     def __init__(self, options):
+        if not isinstance(options, dict):
+            options = vars(options)
         self.options = options
         self._validate_credentials_config()
 
@@ -97,10 +102,43 @@ class HuaweiCloud(Provider):
         return options
 
     def initialize_policies(self, policy_collection, options):
-        return policy_collection
+        from c7n.policy import Policy, PolicyCollection
+        policies = []
+        regions = options.regions if len(options.regions) > 0 \
+            else [os.environ.get("HUAWEI_DEFAULT_REGION", "sa-brazil-1")]
+        for p in policy_collection:
+            for region in regions:
+                options_copy = copy.copy(options)
+                options_copy.region = str(region)
+
+                if len(options.regions) > 1 or 'all' in options.regions and getattr(
+                        options, 'output_dir', None):
+                    options_copy.output_dir = join_output(options.output_dir, region)
+                policies.append(
+                    Policy(p.data, options_copy,
+                           session_factory=policy_collection.session_factory()))
+
+        return PolicyCollection(
+            sorted(policies, key=operator.attrgetter('options.region')),
+            options)
 
     def get_session_factory(self, options):
         return HuaweiSessionFactory(options)
+
+
+def join_output(output_dir, suffix):
+    if '{region}' in output_dir:
+        return output_dir.rstrip('/')
+    if output_dir.endswith('://'):
+        return output_dir + suffix
+    output_url_parts = urlparse.urlparse(output_dir)
+    # for output urls, the end of the url may be a
+    # query string. make sure we add a suffix to
+    # the path component.
+    output_url_parts = output_url_parts._replace(
+        path=output_url_parts.path.rstrip('/') + '/%s' % suffix
+    )
+    return urlparse.urlunparse(output_url_parts)
 
 
 resources = HuaweiCloud.resources
