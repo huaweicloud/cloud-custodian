@@ -66,5 +66,7 @@ ResourceMap = {
     "huaweicloud.eg-subscription": "c7n_huaweicloud.resources.eg.Subscription",
     "huaweicloud.workspace-desktop": "c7n_huaweicloud.resources.workspace.Workspace",
     "huaweicloud.ccm-private-ca": "c7n_huaweicloud.resources.ccm.CertificateAuthority",
-    "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate"
+    "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate",
+    "huaweicloud.as-group": "c7n_huaweicloud.resources.as.AsGroup",
+    "huaweicloud.as-config": "c7n_huaweicloud.resources.as.AsConfig"
 }

@@ -139,6 +139,10 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
+from huaweicloudsdkas.v1 import AsClient, ListScalingGroupsRequest, ListScalingConfigsRequest
+from huaweicloudsdkas.v1.region.as_region import AsRegion
+from huaweicloudsdkelb.v2 import ElbClient as ElbClientV2
+from huaweicloudsdkelb.v2.region.elb_region import ElbRegion as ElbRegionV2
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -316,6 +320,13 @@ class Session:
                 ElbClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(ElbRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "elb_v2":
+            client = (
+                ElbClientV2.new_builder()
+                .with_credentials(credentials)
+                .with_region(ElbRegionV2.value_of(self.region))
                 .build()
             )
         elif service == "eip":
@@ -538,6 +549,13 @@ class Session:
                 .with_region(CcmRegion.value_of("ap-southeast-3"))
                 .build()
             )
+        elif service in ['as-group', 'as-config']:
+            client = (
+                AsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AsRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -688,4 +706,8 @@ class Session:
             request = ListCertificateAuthorityRequest()
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
+        elif service == 'as-group':
+            request = ListScalingGroupsRequest()
+        elif service == 'as-config':
+            request = ListScalingConfigsRequest()
         return request
