@@ -59,6 +59,7 @@ ResourceMap = {
     "huaweicloud.swr-image": "c7n_huaweicloud.resources.swr.SwrImage",
     "huaweicloud.swr-ee": "c7n_huaweicloud.resources.swr_ee.SwrEe",
     "huaweicloud.swr-ee-image": "c7n_huaweicloud.resources.swr_ee.SwrEeImage",
+    "huaweicloud.swr-ee-namespace": "c7n_huaweicloud.resources.swr_ee.SwrEeNamespace",
     "huaweicloud.eip": "c7n_huaweicloud.resources.eip.EIP",
     "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
     "huaweicloud.cdn-domain": "c7n_huaweicloud.resources.cdn.CdnDomain",
