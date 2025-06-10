@@ -158,7 +158,6 @@ except ImportError:
 import requests
 import json
 from datetime import datetime
-from urllib.parse import urlencode
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -547,7 +546,8 @@ class CCIClient:
     def list_namespaced_pods(self, namespace="default", request=None):
         """List Pods in all namespaces
         Args:
-            namespace: Namespace name (this parameter will be ignored, gets pods from all namespaces)
+            namespace: Namespace name (this parameter will
+            be ignored, gets pods from all namespaces)
             request: Request parameters (optional, for compatibility)
         Returns:
             dict: Response data containing Pod list from all namespaces
@@ -584,11 +584,11 @@ class CCIClient:
         # Process final merged response
         self._process_response_data(combined_response)
         return combined_response
-    
     def list_namespaced_configmaps(self, namespace="default", request=None):
         """List ConfigMaps in all namespaces
         Args:
-            namespace: Namespace name (this parameter will be ignored, gets configmaps from all namespaces)
+            namespace: Namespace name (this parameter will
+            be ignored, gets configmaps from all namespaces)
             request: Request parameters (optional, for compatibility)
         Returns:
             dict: Response data containing ConfigMap list from all namespaces
@@ -629,9 +629,9 @@ class CCIClient:
 
     def list_namespaced_secrets(self, namespace="default", request=None):
         """List Secrets in all namespaces
-        
         Args:
-            namespace: Namespace name (this parameter will be ignored, gets secrets from all namespaces)
+            namespace: Namespace name (this parameter will be ignored,
+            gets secrets from all namespaces)
             request: Request parameters (optional, for compatibility)
         Returns:
             dict: Response data containing Secret list from all namespaces
@@ -1300,6 +1300,7 @@ class Session:
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
         elif service == "cci":
-            # CCI service uses special processing, returns True indicating no need to preconstruct request object
+            # CCI service uses special processing,
+            # returns True indicating no need to preconstruct request object
             request = True
         return request

@@ -2,15 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 
-from c7n.filters import Filter, ValueFilter, AgeFilter
+from c7n.filters import ValueFilter, AgeFilter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
-from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger("custodian.huaweicloud.resources.cci")
 
@@ -20,14 +19,14 @@ log = logging.getLogger("custodian.huaweicloud.resources.cci")
 # ===============================
 class CCIQueryResourceManager(QueryResourceManager):
     """CCI Resource Query Manager Base Class
-    
+
     Provides special query logic for CCI resources, including namespace handling.
     Inherits from standard QueryResourceManager but optimized for CCI service.
     """
 
     def _normalize_resource(self, resource):
         """Normalize resource data structure
-        
+
         For CCI resources (Kubernetes style), maintain their original structure.
         Ensure resources have basic metadata structure and add creationTimestamp at same level.
         """
@@ -431,15 +430,15 @@ class CCICreationAgeFilter(AgeFilter):
 
     def get_resource_date(self, resource):
         """Get resource creation time
-        
+
         Support multiple formats of date attribute access:
         1. First try to access top-level creationTimestamp (already promoted by client)
         2. Then try to access metadata.creationTimestamp (original Kubernetes format)
         3. Finally try to get creationTimestamp from metadata
-        
+
         Args:
             resource: Resource dictionary
-            
+
         Returns:
             datetime: Parsed datetime object, returns None if unable to get
         """
@@ -483,13 +482,13 @@ class CCICreationAgeFilter(AgeFilter):
 
 class CCIUidFilter(ValueFilter):
     """CCI Resource UID Filter
-    
+
     Filter by Kubernetes resource UID.
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: cci-resource-by-uid
             resource: huaweicloud.cci_pod
@@ -531,13 +530,13 @@ class PodUidFilter(CCIUidFilter):
 @CCIPod.filter_registry.register("image-name")
 class PodImageNameFilter(ValueFilter):
     """Pod Image Name Filter
-    
+
     Filter by image names used by containers in Pod.
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: pods-with-nginx
             resource: huaweicloud.cci_pod
@@ -659,13 +658,13 @@ class NamespaceUidFilter(CCIUidFilter):
 
 class CCIBaseAction(HuaweiCloudBaseAction):
     """CCI Service Base Action Class
-    
+
     Provides common operation methods and error handling for CCI service.
     """
 
     def get_cci_client(self):
         """Get CCI client
-        
+
         Returns:
             CCI client instance
         """
@@ -674,7 +673,7 @@ class CCIBaseAction(HuaweiCloudBaseAction):
 
     def get_namespaces(self):
         """Get all available namespaces
-        
+
         Returns:
             list: List of namespaces
         """
@@ -696,14 +695,14 @@ class CCIBaseAction(HuaweiCloudBaseAction):
 @CCIPod.action_registry.register("modify")
 class ModifyPod(CCIBaseAction):
     """Modify Pod Operation
-    
+
     Modify CCI Pod operation, supports updating Pod labels, annotations and other
     mutable fields.
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: modify-pod-labels
             resource: huaweicloud.cci_pod
@@ -725,10 +724,10 @@ class ModifyPod(CCIBaseAction):
 
     def perform_action(self, resource):
         """Execute Pod modify operation
-        
+
         Args:
             resource: Pod resource to modify
-            
+
         Returns:
             Response result of modify operation
         """
@@ -763,13 +762,13 @@ class ModifyPod(CCIBaseAction):
 @CCIPod.action_registry.register("delete")
 class DeletePod(CCIBaseAction):
     """Delete Pod Operation
-    
+
     Delete specified CCI Pod instance.
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: delete-old-pods
             resource: huaweicloud.cci_pod
@@ -785,10 +784,10 @@ class DeletePod(CCIBaseAction):
 
     def perform_action(self, resource):
         """Execute Pod delete operation
-        
+
         Args:
             resource: Pod resource to delete
-            
+
         Returns:
             Response result of delete operation
         """
@@ -822,13 +821,13 @@ class DeletePod(CCIBaseAction):
 @CCIConfigMap.action_registry.register("modify")
 class ModifyConfigMap(CCIBaseAction):
     """Modify ConfigMap Operation
-    
+
     Modify CCI ConfigMap operation.
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: modify-configmap
             resource: huaweicloud.cci_configmap
@@ -871,7 +870,8 @@ class ModifyConfigMap(CCIBaseAction):
 
         except Exception as e:
             log.error(
-                f"Failed to modify ConfigMap {resource.get('metadata', {}).get('name', 'unknown')}: {e}")
+                f"Failed to modify ConfigMap "
+                f"{resource.get('metadata', {}).get('name', 'unknown')}: {e}")
             if response is not None:
                 log.debug(f"Response was: {response}")
             return None
@@ -902,7 +902,8 @@ class DeleteConfigMap(CCIBaseAction):
 
         except Exception as e:
             log.error(
-                f"Failed to delete ConfigMap {resource.get('metadata', {}).get('name', 'unknown')}: {e}")
+                f"Failed to delete ConfigMap "
+                f"{resource.get('metadata', {}).get('name', 'unknown')}: {e}")
             if response is not None:
                 log.debug(f"Response was: {response}")
             return None
@@ -945,7 +946,8 @@ class ModifySecret(CCIBaseAction):
 
         except Exception as e:
             log.error(
-                f"Failed to modify Secret {resource.get('metadata', {}).get('name', 'unknown')}: {e}")
+                f"Failed to modify Secret "
+                f"{resource.get('metadata', {}).get('name', 'unknown')}: {e}")
             if response is not None:
                 log.debug(f"Response was: {response}")
             return None
@@ -976,7 +978,8 @@ class DeleteSecret(CCIBaseAction):
 
         except Exception as e:
             log.error(
-                f"Failed to delete Secret {resource.get('metadata', {}).get('name', 'unknown')}: {e}")
+                f"Failed to delete Secret "
+                f"{resource.get('metadata', {}).get('name', 'unknown')}: {e}")
             if response is not None:
                 log.debug(f"Response was: {response}")
             return None
@@ -989,14 +992,14 @@ class DeleteSecret(CCIBaseAction):
 @CCINamespace.action_registry.register("delete")
 class DeleteNamespace(CCIBaseAction):
     """Delete Namespace Operation
-    
+
     Delete specified CCI namespace.
     Note: Deleting namespace will cascade delete all resources within it.
-    
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: delete-empty-namespaces
             resource: huaweicloud.cci_namespace
@@ -1011,10 +1014,10 @@ class DeleteNamespace(CCIBaseAction):
 
     def perform_action(self, resource):
         """Execute Namespace delete operation
-        
+
         Args:
             resource: Namespace resource to delete
-            
+
         Returns:
             Response result of delete operation
         """
@@ -1034,7 +1037,8 @@ class DeleteNamespace(CCIBaseAction):
 
         except Exception as e:
             log.error(
-                f"Failed to delete Namespace {resource.get('metadata', {}).get('name', 'unknown')}: {e}")
+                f"Failed to delete Namespace "
+                f"{resource.get('metadata', {}).get('name', 'unknown')}: {e}")
             if response is not None:
                 log.debug(f"Response was: {response}")
             return None
