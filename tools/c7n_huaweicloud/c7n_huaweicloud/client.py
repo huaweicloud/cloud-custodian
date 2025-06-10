@@ -579,7 +579,9 @@ class CCIClient:
         # Process final merged response
         self._process_response_data(combined_response)
         return combined_response
+
     def list_namespaced_configmaps(self, namespace="default", request=None):
+
         """List ConfigMaps in all namespaces
         Args:
             namespace: Namespace name (this parameter will

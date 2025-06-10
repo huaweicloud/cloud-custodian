@@ -6,7 +6,6 @@ from huaweicloud_common import BaseTest
 
 class CCITest(BaseTest):
     """Huawei Cloud CCI (Container Instance) Service Test Class
-    
     Test various resource types of CCI service: Namespace, Pod, ConfigMap, Secret
     and related filter and action functionalities
     """

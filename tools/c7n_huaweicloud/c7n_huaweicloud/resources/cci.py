@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from datetime import datetime
-
 from c7n.filters import ValueFilter, AgeFilter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -651,7 +649,6 @@ class NamespaceUidFilter(CCIUidFilter):
     """Namespace UID Filter"""
     pass
 
-
 # ===============================
 # CCI Base Action Class  
 # ===============================
@@ -812,7 +809,6 @@ class DeletePod(CCIBaseAction):
             if response is not None:
                 log.debug(f"Response was: {response}")
             return None
-
 
 # ===============================
 # ConfigMap Actions  
