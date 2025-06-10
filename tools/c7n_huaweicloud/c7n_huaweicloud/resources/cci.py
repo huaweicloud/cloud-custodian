@@ -8,7 +8,6 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
-
 log = logging.getLogger("custodian.huaweicloud.resources.cci")
 
 
@@ -503,6 +502,32 @@ class CCIUidFilter(ValueFilter):
         self.data['key'] = 'metadata.uid'
 
 
+class CCINamespaceFilter(ValueFilter):
+    """CCI Resource Namespace Filter
+
+    Filter by resource namespace, supports exact match, regex match and other operators.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: cci-pods-by-namespace
+            resource: huaweicloud.cci_pod
+            filters:
+              - type: namespace
+                value: "default"
+                op: eq
+    """
+
+    schema = type_schema("namespace", rinherit=ValueFilter.schema)
+    schema_alias = False
+
+    def __init__(self, data, manager=None):
+        super(CCINamespaceFilter, self).__init__(data, manager)
+        self.data['key'] = 'metadata.namespace'
+
+
 # ===============================
 # Pod Specific Filters
 # ===============================
@@ -522,6 +547,12 @@ class PodCreationAgeFilter(CCICreationAgeFilter):
 @CCIPod.filter_registry.register("uid")
 class PodUidFilter(CCIUidFilter):
     """Pod UID Filter"""
+    pass
+
+
+@CCIPod.filter_registry.register("namespace")
+class PodNamespaceFilter(CCINamespaceFilter):
+    """Pod Namespace Filter"""
     pass
 
 
@@ -606,6 +637,12 @@ class ConfigMapUidFilter(CCIUidFilter):
     pass
 
 
+@CCIConfigMap.filter_registry.register("namespace")
+class ConfigMapNamespaceFilter(CCINamespaceFilter):
+    """ConfigMap Namespace Filter"""
+    pass
+
+
 # ===============================
 # Secret Specific Filters
 # ===============================
@@ -625,6 +662,12 @@ class SecretCreationAgeFilter(CCICreationAgeFilter):
 @CCISecret.filter_registry.register("uid")
 class SecretUidFilter(CCIUidFilter):
     """Secret UID Filter"""
+    pass
+
+
+@CCISecret.filter_registry.register("namespace")
+class SecretNamespaceFilter(CCINamespaceFilter):
+    """Secret Namespace Filter"""
     pass
 
 
