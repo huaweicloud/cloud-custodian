@@ -14,19 +14,19 @@ log = logging.getLogger("custodian.huaweicloud.utils.cci_client")
 
 
 def hmacsha256(key, msg):
-    """HMAC-SHA256 计算"""
+    """HMAC-SHA256 calculation"""
     return hmac.new(key.encode('utf-8'),
                     msg.encode('utf-8'),
                     digestmod=hashlib.sha256).digest()
 
 
 def urlencode_path(path):
-    """URL编码路径"""
+    """URL encode path"""
     return quote(path, safe='~')
 
 
 def hex_encode_sha256_hash(data):
-    """SHA256哈希并转换为十六进制"""
+    """SHA256 hash and convert to hexadecimal"""
     if isinstance(data, str):
         data = data.encode('utf-8')
     sha = hashlib.sha256()
@@ -35,7 +35,7 @@ def hex_encode_sha256_hash(data):
 
 
 def find_header(headers, header_name):
-    """查找请求头"""
+    """Find request header"""
     for key, value in headers.items():
         if key.lower() == header_name.lower():
             return value
@@ -43,19 +43,19 @@ def find_header(headers, header_name):
 
 
 class HttpRequest:
-    """HTTP请求包装类"""
+    """HTTP request wrapper class"""
 
     def __init__(self, method="", url="", headers=None, body=""):
         self.method = method
 
-        # 解析URL
+        # Parse URL
         sp = url.split("://", 1)
         self.scheme = 'https'
         if len(sp) > 1:
             self.scheme = sp[0]
             url = sp[1]
 
-        # 解析查询参数
+        # Parse query parameters
         self.query = {}
         sp = url.split('?', 1)
         url = sp[0]
@@ -74,7 +74,7 @@ class HttpRequest:
                     else:
                         self.query[k] = [v]
 
-        # 解析主机和路径
+        # Parse host and path
         sp = url.split('/', 1)
         self.host = sp[0]
         if len(sp) > 1:
@@ -87,7 +87,7 @@ class HttpRequest:
 
 
 class HuaweiCloudSigner:
-    """华为云V4签名器"""
+    """Huawei Cloud V4 signer"""
 
     DateFormat = "%Y%m%dT%H%M%SZ"
     Algorithm = "SDK-HMAC-SHA256"
@@ -101,11 +101,11 @@ class HuaweiCloudSigner:
         self.secret_key = secret_key
 
     def sign(self, request):
-        """签名请求"""
+        """Sign request"""
         if isinstance(request.body, str):
             request.body = request.body.encode('utf-8')
 
-        # 添加时间戳头
+        # Add timestamp header
         header_time = find_header(request.headers, self.HeaderXDate)
         if header_time is None:
             time = datetime.utcnow()
@@ -113,7 +113,7 @@ class HuaweiCloudSigner:
         else:
             time = datetime.strptime(header_time, self.DateFormat)
 
-        # 添加Host头
+        # Add Host header
         have_host = False
         for key in request.headers:
             if key.lower() == 'host':
@@ -122,32 +122,32 @@ class HuaweiCloudSigner:
         if not have_host:
             request.headers["host"] = request.host
 
-        # 添加Content-Length头
+        # Add Content-Length header
         request.headers["content-length"] = str(len(request.body))
 
-        # 构造查询字符串
+        # Build query string
         query_string = self._canonical_query_string(request)
         if query_string != "":
             request.uri = request.uri + "?" + query_string
 
-        # 获取签名头列表
+        # Get signed headers list
         signed_headers = self._signed_headers(request)
 
-        # 构造规范请求
+        # Build canonical request
         canonical_request = self._canonical_request(request, signed_headers)
 
-        # 构造待签名字符串
+        # Build string to sign
         string_to_sign = self._string_to_sign(canonical_request, time)
 
-        # 计算签名
+        # Calculate signature
         signature = self._sign_string_to_sign(string_to_sign, self.secret_key)
 
-        # 构造授权头
+        # Build authorization header
         auth_value = self._auth_header_value(signature, self.access_key, signed_headers)
         request.headers[self.HeaderAuthorization] = auth_value
 
     def _canonical_request(self, request, signed_headers):
-        """构造规范请求"""
+        """Build canonical request"""
         canonical_headers = self._canonical_headers(request, signed_headers)
         content_hash = find_header(request.headers, self.HeaderContentSHA256)
         if content_hash is None:
@@ -163,7 +163,7 @@ class HuaweiCloudSigner:
         )
 
     def _canonical_uri(self, request):
-        """构造规范URI"""
+        """Build canonical URI"""
         patterns = unquote(request.uri).split('/')
         uri = []
         for value in patterns:
@@ -174,7 +174,7 @@ class HuaweiCloudSigner:
         return url_path
 
     def _canonical_query_string(self, request):
-        """构造规范查询字符串"""
+        """Build canonical query string"""
         keys = []
         for key in request.query:
             keys.append(key)
@@ -195,7 +195,7 @@ class HuaweiCloudSigner:
         return '&'.join(arr)
 
     def _canonical_headers(self, request, signed_headers):
-        """构造规范头"""
+        """Build canonical headers"""
         arr = []
         _headers = {}
         for k in request.headers:
@@ -210,7 +210,7 @@ class HuaweiCloudSigner:
         return '\n'.join(arr) + "\n"
 
     def _signed_headers(self, request):
-        """获取签名头列表"""
+        """Get signed headers list"""
         arr = []
         for k in request.headers:
             arr.append(k.lower())
@@ -218,7 +218,7 @@ class HuaweiCloudSigner:
         return arr
 
     def _string_to_sign(self, canonical_request, time):
-        """构造待签名字符串"""
+        """Build string to sign"""
         hashed_canonical_request = hex_encode_sha256_hash(canonical_request.encode('utf-8'))
         return "%s\n%s\n%s" % (
             self.Algorithm,
@@ -227,12 +227,12 @@ class HuaweiCloudSigner:
         )
 
     def _sign_string_to_sign(self, string_to_sign, secret_key):
-        """签名待签名字符串"""
+        """Sign string to sign"""
         hmac_digest = hmacsha256(secret_key, string_to_sign)
         return binascii.hexlify(hmac_digest).decode()
 
     def _auth_header_value(self, signature, access_key, signed_headers):
-        """构造授权头值"""
+        """Build authorization header value"""
         return "%s Access=%s, SignedHeaders=%s, Signature=%s" % (
             self.Algorithm,
             access_key,
@@ -242,39 +242,39 @@ class HuaweiCloudSigner:
 
 
 class CCIClient:
-    """华为云CCI（容器实例）服务客户端
-    CCI服务使用Kubernetes API格式但需要华为云认证。
-    此客户端封装对CCI服务的API调用。
+    """Huawei Cloud CCI (Container Instance) service client
+    CCI service uses Kubernetes API format but requires Huawei Cloud authentication.
+    This client encapsulates API calls to CCI service.
     """
 
     def __init__(self, region, credentials):
-        """初始化CCI客户端
+        """Initialize CCI client
         Args:
-            region: 华为云区域
-            credentials: 华为云认证凭据
+            region: Huawei Cloud region
+            credentials: Huawei Cloud authentication credentials
         """
         self.region = region
         self.credentials = credentials
         self.base_url = f"https://cci.{region}.myhuaweicloud.com"
         self.api_version = "v1"
 
-        # 初始化签名器
+        # Initialize signer
         if hasattr(credentials, 'ak') and hasattr(credentials, 'sk'):
             self.signer = HuaweiCloudSigner(credentials.ak, credentials.sk)
         else:
             self.signer = None
-            log.warning("CCI客户端初始化时没有有效凭据")
+            log.warning("CCI client initialized without valid credentials")
 
     def _make_request(self, method, endpoint, **kwargs):
-        """发起API请求
+        """Make API request
         Args:
-            method: HTTP方法
-            endpoint: API端点
-            **kwargs: 其他请求参数
+            method: HTTP method
+            endpoint: API endpoint
+            **kwargs: Other request parameters
         Returns:
-            响应数据
+            Response data
         """
-        response = None  # 初始化响应变量
+        response = None  # Initialize response variable
         try:
             url = f"{self.base_url}/{endpoint}"
             headers = {
@@ -282,11 +282,11 @@ class CCIClient:
                 'User-Agent': 'cloud-custodian-huaweicloud/1.0'
             }
 
-            # 合并用户提供的头
+            # Merge user provided headers
             if 'headers' in kwargs:
                 headers.update(kwargs.pop('headers'))
 
-            # 获取请求体
+            # Get request body
             body = ""
             if 'json' in kwargs:
                 body = json.dumps(kwargs.pop('json'))
@@ -297,301 +297,300 @@ class CCIClient:
                     body = json.dumps(body)
                     headers['Content-Type'] = 'application/merge-patch+json'
 
-            # 添加华为云认证头
+            # Add Huawei Cloud authentication headers
             if self.signer:
-                # 创建HTTP请求对象
+                # Create HTTP request object
                 request = HttpRequest(method, url, headers, body)
 
-                # 签名请求
+                # Sign request
                 self.signer.sign(request)
 
-                # 更新头
+                # Update headers
                 headers = request.headers
 
-                log.debug(f"CCI API请求签名成功 {method} {url}")
+                log.debug(f"CCI API request signed successfully {method} {url}")
             else:
-                log.warning(f"向{method} {url}发起未签名请求")
+                log.warning(f"Making unsigned request to {method} {url}")
 
-            # 发送请求
+            # Send request
             response = requests.request(method, url, headers=headers, data=body, **kwargs)
             response.raise_for_status()
 
-            # 解析响应
+            # Parse response
             if response.content:
                 try:
                     response_data = response.json()
-                    # 处理响应数据，为每个资源的metadata添加id属性
+                    # Process response data, add id attribute to metadata of each resource
                     self._process_response_data(response_data)
                     return response_data
                 except json.JSONDecodeError:
-                    log.warning(f"CCI API返回非JSON响应：{response.text}")
+                    log.warning(f"CCI API returned non-JSON response: {response.text}")
                     return response.text
             return None
 
         except requests.exceptions.RequestException as e:
-            log.error(f"CCI API请求失败：{e}")
+            log.error(f"CCI API request failed: {e}")
             if hasattr(e, 'response') and e.response is not None:
-                log.error(f"响应状态：{e.response.status_code}")
-                log.error(f"响应内容：{e.response.text}")
+                log.error(f"Response status: {e.response.status_code}")
+                log.error(f"Response content: {e.response.text}")
             elif response is not None:
-                log.debug(f"本地响应为：{response}")
+                log.debug(f"Local response was: {response}")
             raise
 
     def _process_response_data(self, data):
-        """处理响应数据，为metadata添加id属性
+        """Process response data, add id attribute to metadata
         Args:
-            data: 响应数据
+            data: Response data
         """
         if isinstance(data, dict):
-            # 处理单个资源
+            # Process single resource
             if 'metadata' in data:
                 self._add_id_to_metadata(data['metadata'])
-                # 将metadata.creationTimestamp提升到与metadata同级
+                # Promote metadata.creationTimestamp to same level as metadata
                 self._add_creation_timestamp(data)
 
-            # 处理资源列表（items字段）
+            # Process resource list (items field)
             if 'items' in data and isinstance(data['items'], list):
                 for item in data['items']:
                     if isinstance(item, dict) and 'metadata' in item:
                         item["id"] = item["metadata"]["uid"]
-                        # 将metadata.creationTimestamp提升到与metadata同级
+                        # Promote metadata.creationTimestamp to same level as metadata
                         self._add_creation_timestamp(item)
         elif isinstance(data, list):
-            # 处理资源列表
+            # Process resource list
             for item in data:
                 if isinstance(item, dict) and 'metadata' in item:
                     item["id"] = item["metadata"]["uid"]
-                    # 将metadata.creationTimestamp提升到与metadata同级
+                    # Promote metadata.creationTimestamp to same level as metadata
                     self._add_creation_timestamp(item)
 
     def _add_id_to_metadata(self, metadata):
-        """为metadata添加id属性
+        """Add id attribute to metadata
         Args:
-            metadata: 资源metadata字典
+            metadata: Resource metadata dictionary
         """
         if isinstance(metadata, dict) and 'uid' in metadata:
             metadata['id'] = metadata['uid']
 
     def _add_creation_timestamp(self, resource):
-        """将metadata.creationTimestamp提升到与metadata同级
+        """Promote metadata.creationTimestamp to same level as metadata
         Args:
-            resource: 资源字典
+            resource: Resource dictionary
         """
         if isinstance(resource, dict) and 'metadata' in resource:
             metadata = resource['metadata']
             if isinstance(metadata, dict) and 'creationTimestamp' in metadata:
-                # 将metadata.creationTimestamp的值赋给同级的creationTimestamp
+                # Assign metadata.creationTimestamp value to creationTimestamp at same level
                 resource['creationTimestamp'] = metadata['creationTimestamp']
 
     def list_namespaces(self, request=None):
-        """列出所有命名空间
+        """List all namespaces
         Args:
-            request: 请求参数（可选，用于兼容性）
+            request: Request parameters (optional, for compatibility)
         Returns:
-            dict: 包含命名空间列表的响应数据
+            dict: Response data containing namespace list
         """
         endpoint = f"api/{self.api_version}/namespaces"
         return self._make_request("GET", endpoint)
 
     def list_namespaced_pods(self, request=None):
-        """列出所有命名空间中的Pod
+        """List pods in all namespaces
         Args:
-            namespace: 命名空间名称（此参数将被忽略，获取所有命名空间的pod）
-            request: 请求参数（可选，用于兼容性）
+            namespace: Namespace name (this parameter will be ignored, get pods from all namespaces)
+            request: Request parameters (optional, for compatibility)
         Returns:
-            dict: 包含所有命名空间Pod列表的响应数据
+            dict: Response data containing pod list from all namespaces
         """
-        # 首先获取所有命名空间
+        # First get all namespaces
         namespaces_response = self.list_namespaces()
 
-        # 初始化合并响应结构
+        # Initialize merged response structure
         combined_response = {
             "apiVersion": "v1",
             "kind": "PodList",
             "items": []
         }
 
-        # 从命名空间响应中提取命名空间名称
+        # Extract namespace names from namespace response
         if namespaces_response and "items" in namespaces_response:
             for namespace_item in namespaces_response["items"]:
                 if "metadata" in namespace_item and "name" in namespace_item["metadata"]:
                     namespace_name = namespace_item["metadata"]["name"]
 
                     try:
-                        # 获取该命名空间中的所有pod
+                        # Get all pods in this namespace
                         endpoint = f"api/{self.api_version}/namespaces/{namespace_name}/pods"
                         pods_response = self._make_request("GET", endpoint)
 
-                        # 将该命名空间的pod添加到合并响应中
+                        # Add pods from this namespace to merged response
                         if pods_response and "items" in pods_response:
                             combined_response["items"].extend(pods_response["items"])
 
                     except Exception as e:
-                        log.warning(f"无法从命名空间{namespace_name}获取pod：{e}")
+                        log.warning(f"Failed to get pods from namespace {namespace_name}: {e}")
                         continue
 
-        # 处理最终合并的响应
+        # Process final merged response
         self._process_response_data(combined_response)
         return combined_response
 
     def list_namespaced_configmaps(self, request=None):
-        """列出所有命名空间中的ConfigMap
+        """List configmaps in all namespaces
         Args:
-            namespace: 命名空间名称（此参数将被忽略，获取所有命名空间的configmap）
-            request: 请求参数（可选，用于兼容性）
+            namespace: Namespace name (this parameter will be ignored, get configmaps from all namespaces)
+            request: Request parameters (optional, for compatibility)
         Returns:
-            dict: 包含所有命名空间ConfigMap列表的响应数据
+            dict: Response data containing configmap list from all namespaces
         """
-        # 首先获取所有命名空间
+        # First get all namespaces
         namespaces_response = self.list_namespaces()
 
-        # 初始化合并响应结构
+        # Initialize merged response structure
         combined_response = {
             "apiVersion": "v1",
             "kind": "ConfigMapList",
             "items": []
         }
 
-        # 从命名空间响应中提取命名空间名称
+        # Extract namespace names from namespace response
         if namespaces_response and "items" in namespaces_response:
             for namespace_item in namespaces_response["items"]:
                 if "metadata" in namespace_item and "name" in namespace_item["metadata"]:
                     namespace_name = namespace_item["metadata"]["name"]
 
                     try:
-                        # 获取该命名空间中的所有configmap
+                        # Get all configmaps in this namespace
                         endpoint = f"api/{self.api_version}/namespaces/{namespace_name}/configmaps"
                         configmaps_response = self._make_request("GET", endpoint)
 
-                        # 将该命名空间的configmap添加到合并响应中
+                        # Add configmaps from this namespace to merged response
                         if configmaps_response and "items" in configmaps_response:
                             combined_response["items"].extend(configmaps_response["items"])
 
                     except Exception as e:
-                        log.warning(
-                            f"无法从命名空间{namespace_name}获取configmap：{e}")
+                        log.warning(f"Failed to get configmaps from namespace {namespace_name}: {e}")
                         continue
 
-        # 处理最终合并的响应
+        # Process final merged response
         self._process_response_data(combined_response)
         return combined_response
 
     def list_namespaced_secrets(self, request=None):
-        """列出所有命名空间中的Secret
+        """List secrets in all namespaces
         Args:
-            namespace: 命名空间名称（此参数将被忽略，获取所有命名空间的secret）
-            request: 请求参数（可选，用于兼容性）
+            namespace: Namespace name (this parameter will be ignored, get secrets from all namespaces)
+            request: Request parameters (optional, for compatibility)
         Returns:
-            dict: 包含所有命名空间Secret列表的响应数据
+            dict: Response data containing secret list from all namespaces
         """
-        # 首先获取所有命名空间
+        # First get all namespaces
         namespaces_response = self.list_namespaces()
 
-        # 初始化合并响应结构
+        # Initialize merged response structure
         combined_response = {
             "apiVersion": "v1",
             "kind": "SecretList",
             "items": []
         }
 
-        # 从命名空间响应中提取命名空间名称
+        # Extract namespace names from namespace response
         if namespaces_response and "items" in namespaces_response:
             for namespace_item in namespaces_response["items"]:
                 if "metadata" in namespace_item and "name" in namespace_item["metadata"]:
                     namespace_name = namespace_item["metadata"]["name"]
 
                     try:
-                        # 获取该命名空间中的所有secret
+                        # Get all secrets in this namespace
                         endpoint = f"api/{self.api_version}/namespaces/{namespace_name}/secrets"
                         secrets_response = self._make_request("GET", endpoint)
 
-                        # 将该命名空间的secret添加到合并响应中
+                        # Add secrets from this namespace to merged response
                         if secrets_response and "items" in secrets_response:
                             combined_response["items"].extend(secrets_response["items"])
 
                     except Exception as e:
-                        log.warning(f"无法从命名空间{namespace_name}获取secret：{e}")
+                        log.warning(f"Failed to get secrets from namespace {namespace_name}: {e}")
                         continue
 
-        # 处理最终合并的响应
+        # Process final merged response
         self._process_response_data(combined_response)
         return combined_response
 
     def patch_namespaced_pod(self, name, namespace, body):
-        """修改Pod
+        """Modify pod
         Args:
-            name: Pod名称
-            namespace: 命名空间名称
-            body: 修改数据体
+            name: Pod name
+            namespace: Namespace name
+            body: Modification data body
         Returns:
-            dict: 修改操作的响应结果
+            dict: Response result of modification operation
         """
         endpoint = f"api/{self.api_version}/namespaces/{namespace}/pods/{name}"
         return self._make_request("PATCH", endpoint, json=body)
 
     def delete_namespaced_pod(self, name, namespace):
-        """删除Pod
+        """Delete pod
         Args:
-            name: Pod名称
-            namespace: 命名空间名称
+            name: Pod name
+            namespace: Namespace name
         Returns:
-            dict: 删除操作的响应结果
+            dict: Response result of deletion operation
         """
         endpoint = f"api/{self.api_version}/namespaces/{namespace}/pods/{name}"
         return self._make_request("DELETE", endpoint)
 
     def patch_namespaced_configmap(self, name, namespace, body):
-        """修改ConfigMap
+        """Modify configmap
         Args:
-            name: ConfigMap名称
-            namespace: 命名空间名称
-            body: 修改数据体
+            name: ConfigMap name
+            namespace: Namespace name
+            body: Modification data body
         Returns:
-            dict: 修改操作的响应结果
+            dict: Response result of modification operation
         """
         endpoint = f"api/{self.api_version}/namespaces/{namespace}/configmaps/{name}"
         return self._make_request("PATCH", endpoint, json=body)
 
     def delete_namespaced_configmap(self, name, namespace):
-        """删除ConfigMap
+        """Delete configmap
         Args:
-            name: ConfigMap名称
-            namespace: 命名空间名称
+            name: ConfigMap name
+            namespace: Namespace name
         Returns:
-            dict: 删除操作的响应结果
+            dict: Response result of deletion operation
         """
         endpoint = f"api/{self.api_version}/namespaces/{namespace}/configmaps/{name}"
         return self._make_request("DELETE", endpoint)
 
     def patch_namespaced_secret(self, name, namespace, body):
-        """修改Secret
+        """Modify secret
         Args:
-            name: Secret名称
-            namespace: 命名空间名称
-            body: 修改数据体
+            name: Secret name
+            namespace: Namespace name
+            body: Modification data body
         Returns:
-            dict: 修改操作的响应结果
+            dict: Response result of modification operation
         """
         endpoint = f"api/{self.api_version}/namespaces/{namespace}/secrets/{name}"
         return self._make_request("PATCH", endpoint, json=body)
 
     def delete_namespaced_secret(self, name, namespace):
-        """删除Secret
+        """Delete secret
         Args:
-            name: Secret名称
-            namespace: 命名空间名称
+            name: Secret name
+            namespace: Namespace name
         Returns:
-            dict: 删除操作的响应结果
+            dict: Response result of deletion operation
         """
         endpoint = f"api/{self.api_version}/namespaces/{namespace}/secrets/{name}"
         return self._make_request("DELETE", endpoint)
 
     def delete_namespace(self, name):
-        """删除命名空间
+        """Delete namespace
         Args:
-            name: 命名空间名称
+            name: Namespace name
         Returns:
-            dict: 删除操作的响应结果
+            dict: Response result of deletion operation
         """
         endpoint = f"api/{self.api_version}/namespaces/{name}"
         return self._make_request("DELETE", endpoint) 

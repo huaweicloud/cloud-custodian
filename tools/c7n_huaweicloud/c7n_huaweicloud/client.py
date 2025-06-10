@@ -143,7 +143,7 @@ from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
 # CCI related imports - for Huawei Cloud Container Instance Service
 try:
     K8S_AVAILABLE = True
-    # 从utils模块导入CCIClient
+    # Import CCIClient from utils module
     from c7n_huaweicloud.utils.cci_client import CCIClient
 except ImportError:
     K8S_AVAILABLE = False
