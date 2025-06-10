@@ -139,15 +139,7 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
-
-# CCI related imports - for Huawei Cloud Container Instance Service
-try:
-    K8S_AVAILABLE = True
-    # Import CCIClient from utils module
-    from c7n_huaweicloud.utils.cci_client import CCIClient
-except ImportError:
-    K8S_AVAILABLE = False
-    CCIClient = None
+from c7n_huaweicloud.utils.cci_client import CCIClient
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -548,10 +540,6 @@ class Session:
                 .build()
             )
         elif service == "cci":
-            # CCI service uses special client
-            if not K8S_AVAILABLE or CCIClient is None:
-                log.warning("Kubernetes client not available, CCI functionality may be limited")
-                return None
             client = CCIClient(self.region, credentials)
         return client
 
