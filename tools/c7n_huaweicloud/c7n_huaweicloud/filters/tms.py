@@ -22,7 +22,7 @@ class TagCountFilter(Filter):
 
     ie. these two blocks are equivalent
 
-    .. code-block :: yaml
+    . code-block :: yaml
 
        - filters:
            - type: value
@@ -98,7 +98,7 @@ class TagActionFilter(Filter):
     Optionally, the 'tz' parameter can get used to specify the timezone
     in which to interpret the clock (default value is 'utc')
 
-    .. code-block :: yaml
+    . code-block :: yaml
 
       policies:
         - name: marked-for-op-volume
