@@ -437,7 +437,8 @@ class CCIClient:
     def list_namespaced_configmaps(self, request=None):
         """List configmaps in all namespaces
         Args:
-            namespace: Namespace name (this parameter will be ignored, get configmaps from all namespaces)
+            namespace: Namespace name (this parameter
+             will be ignored, get configmaps from all namespaces)
             request: Request parameters (optional, for compatibility)
         Returns:
             dict: Response data containing configmap list from all namespaces
@@ -468,7 +469,8 @@ class CCIClient:
                             combined_response["items"].extend(configmaps_response["items"])
 
                     except Exception as e:
-                        log.warning(f"Failed to get configmaps from namespace {namespace_name}: {e}")
+                        log.warning(f"Failed to get configmaps from namespace"
+                                    f" {namespace_name}: {e}")
                         continue
 
         # Process final merged response
@@ -478,7 +480,8 @@ class CCIClient:
     def list_namespaced_secrets(self, request=None):
         """List secrets in all namespaces
         Args:
-            namespace: Namespace name (this parameter will be ignored, get secrets from all namespaces)
+            namespace: Namespace name (this parameter
+             will be ignored, get secrets from all namespaces)
             request: Request parameters (optional, for compatibility)
         Returns:
             dict: Response data containing secret list from all namespaces
@@ -593,4 +596,4 @@ class CCIClient:
             dict: Response result of deletion operation
         """
         endpoint = f"api/{self.api_version}/namespaces/{name}"
-        return self._make_request("DELETE", endpoint) 
+        return self._make_request("DELETE", endpoint)
