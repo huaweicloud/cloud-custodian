@@ -855,14 +855,18 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     },
                     'params': {'type': 'object'},
                     'scope_selectors': {
-                        'repository': {
-                            'type': 'array',
-                            'items': {
-                                'type': 'object',
-                                'required': ['kind', 'pattern'],
-                                'properties': {
-                                    'kind': {'type': 'string', 'enum': ['doublestar']},
-                                    'pattern': {'type': 'string'},
+                        'type': 'object',
+                        'required': ['repository'],
+                        'properties': {
+                            'repository': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'required': ['kind', 'pattern'],
+                                    'properties': {
+                                        'kind': {'type': 'string', 'enum': ['doublestar']},
+                                        'pattern': {'type': 'string'},
+                                    }
                                 }
                             }
                         }
@@ -1057,7 +1061,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     algorithm=self.data.get('algorithm', 'or'),
                     rules=rules,
                     trigger=trigger_config,
-                    enabled=True,
                     name=policy_name
                 )
 
@@ -1089,7 +1092,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     algorithm=self.data.get('algorithm', 'or'),
                     rules=rules,
                     trigger=trigger_config,
-                    enabled=True,
                     name=policy_name
                 )
 
@@ -1130,7 +1132,36 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
     permissions = ('swr:PutImageTagMutability',)
     schema = type_schema(
         'set-immutability',
-        state={'type': 'boolean', 'default': True})
+        state={'type': 'boolean', 'default': True},
+        scope_selectors={
+            'type': 'object',
+            'required': ['repository'],
+            'properties': {
+                'repository': {
+                    'type': 'array',
+                    'items': {
+                        'type': 'object',
+                        'required': ['kind', 'pattern'],
+                        'properties': {
+                            'kind': {'type': 'string', 'enum': ['doublestar']},
+                            'pattern': {'type': 'string'},
+                        }
+                    }
+                }
+            }
+        },
+        tag_selectors={
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'required': ['kind', 'pattern'],
+                'properties': {
+                    'kind': {'type': 'string', 'enum': ['doublestar']},
+                    'pattern': {'type': 'string'}
+                }
+            }
+        }
+    )
 
     def process(self, resources):
         s = True if self.data.get('state', True) else False
@@ -1139,14 +1170,14 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         # Group by instance and namespace
         for resource in resources:
             self._create_or_update_immutablerule_policy(resource['instance_id'],
-                                                        resource['namespace'],
+                                                        resource['name'],
                                                         resource['namespace_id'], s)
 
     def perform_action(self, resource):
         pass
 
     def _create_or_update_immutablerule_policy(self, instance_id, namespace_name, namespace_id,
-                                               repos, enable_immutability):
+                                               enable_immutability):
         """Implement abstract method, perform action for a single resource.
 
         :param resource: Single resource to process
@@ -1163,23 +1194,74 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                                                       namespace_id=int(namespace_id),
                                                       limit=100))
         tag_selectors = []
-        tag_selectors.append(RuleSelector(
-            kind="doublestar",
-            decoration="matches",
-            pattern="**"
-        ))
+
+        for tag_selectors in self.data.get('tag_selectors', []):
+            kind = selector_data.get('kind')
+            pattern = selector_data.get('pattern')
+
+            if not kind or not pattern:
+                log.warning(
+                    f"Skipping invalid tag_selector: {selector_data}"
+                )
+                continue
+
+            selector = RetentionSelector(
+                kind=kind,
+                decoration="matches",
+                pattern=pattern
+            )
+            tag_selectors.append(selector)
+
+        if len(tag_selectors) <= 0:
+            tag_selectors.append(RuleSelector(
+                kind="doublestar",
+                decoration="matches",
+                pattern="**"
+            ))
+
+            # Create scope selectors
+        repository_selectors = []
+        for scope_data in self.data.get('scope_selectors', {}).get('repository', []):
+            # Ensure kind and pattern are string type
+            kind = scope_data.get('kind')
+            pattern = scope_data.get('pattern')
+
+            if not kind or not pattern:
+                log.warning(
+                    f"Skipping invalid scope_selectors: {scope_data}"
+                )
+                continue
+
+            fin_pattern = pattern
+
+            # 如果取消不可变策略，则repo pattern清空
+            if not enable_immutability:
+                fin_pattern = '{}'
+
+            selector = RetentionSelector(
+                kind=kind,
+                decoration="repoMatches",
+                pattern=fin_pattern
+            )
+            repository_selectors.append(selector)
+
+        # Ensure there are scope selectors
+        if not repository_selectors:
+            log.warning(
+                "No valid repository_selectors, will use default empty repository selector")
+            # Add a default scope selector to avoid API error
+            repository_selectors.append(RetentionSelector(
+                kind="doublestar",
+                decoration="repoMatches",
+                pattern="{}"
+            ))
+
+        scope_selectors = {"repository": repository_selectors}
 
         # If the immutability rule does not exist and you want to remove the immutability policy,
         # return directly
         if len(imutable_rules) <= 0:
             if enable_immutability:
-                repository_rule = RuleSelector(
-                    kind="doublestar",
-                    decoration="repoMatches",
-                    pattern="**"
-                )
-                scope_selectors = {"repository": [repository_rule]}
-
                 rule = CreateImmutableRuleBody(namespace_id=int(namespace_id),
                                                namespace_name=namespace_name,
                                                disabled=False, action='immutable',
@@ -1207,20 +1289,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                 f"has been manually set")
             return
 
-        repo_pattern = "**"
-        if not enable_immutability:
-            repo_pattern = "{}"
-
-        repository_rule = RuleSelector(
-            kind="doublestar",
-            decoration="repoMatches",
-            pattern=repo_pattern
-        )
-        scope_selectors = {"repository": [repository_rule]}
-
-        rule = UpdateImmutableRuleBody(namespace_id=int(namespace_id),
-                                       namespace_name=namespace_name,
-                                       disabled=False, action='immutable',
+        rule = UpdateImmutableRuleBody(disabled=False, action='immutable',
                                        template='immutable_template',
                                        tag_selectors=tag_selectors,
                                        scope_selectors=scope_selectors,
