@@ -195,712 +195,6 @@ class SwrEeAgeFilter(AgeFilter):
     date_attribute = "created_at"
 
 
-@SwrEe.filter_registry.register('lifecycle-rule')
-class LifecycleRule(Filter):
-    """SWR repository lifecycle rule filter.
-
-    This filter allows filtering repositories based on their lifecycle rules.
-    It supports filtering by:
-    - Presence/absence of lifecycle rules
-    - Specific rule properties
-    - Tag selectors
-    - Retention periods
-
-    The filter lazily loads lifecycle policies only for repositories that need to be
-    processed, improving efficiency when dealing with many repositories.
-
-    :example:
-
-    .. code-block:: yaml
-
-       policies:
-        # Filter repositories without lifecycle rules
-        - name: swr-no-lifecycle-rules
-          resource: huaweicloud.swr-ee
-          filters:
-            - type: lifecycle-rule
-              state: False  # Repositories without lifecycle rules
-
-    .. code-block:: yaml
-
-       policies:
-        # Filter repositories with specific lifecycle rules (path matching specific properties)
-        - name: swr-with-specific-rule
-          resource: huaweicloud.swr-ee
-          filters:
-            - type: lifecycle-rule
-              state: True  # Repositories with lifecycle rules
-              match:
-                - type: value
-                  key: rules[0].template
-                  value: latestPushedK   # latestPushedK, latestPulledN,
-                                        # nDaysSinceLastPush, nDaysSinceLastPull
-
-    .. code-block:: yaml
-
-       policies:
-        # Filter repositories with retention period greater than 30 days
-        - name: swr-with-long-retention
-          resource: huaweicloud.swr-ee
-          filters:
-            - type: lifecycle-rule
-              state: True  # Repositories with lifecycle rules
-              match:
-                - type: value
-                  key: rules[0].params.nDaysSinceLastPull
-                  value_type: integer
-                  op: gte
-                  value: 30
-
-    .. code-block:: yaml
-
-       policies:
-        # Filter repositories using specific tag selector
-        - name: swr-with-specific-tag-selector
-          resource: huaweicloud.swr
-          filters:
-            - type: lifecycle-rule
-              tag_selector:
-                kind: doublestar
-                pattern: v5
-
-    .. code-block:: yaml
-
-       policies:
-        # Combined filter conditions: match both parameters and tag selector
-        - name: swr-with-combined-filters
-          resource: huaweicloud.swr
-          filters:
-              tag_selector:
-                kind: doublestar
-                pattern: v5
-              match:
-                - type: value
-                  key: algorithm
-                  value: or
-    """
-
-    schema = type_schema(
-        'lifecycle-rule',
-        state={'type': 'boolean'},
-        match={'type': 'array', 'items': {
-            'oneOf': [
-                {'$ref': '#/definitions/filters/value'},
-                {'type': 'object', 'minProperties': 1, 'maxProperties': 1},
-            ]}},
-        tag_selector={'type': 'object'}
-    )
-    policy_annotation = 'c7n:lifecycle-policy'
-
-    def process(self, resources, event=None):
-        """Process resources based on lifecycle rule criteria.
-
-        This method lazily loads lifecycle policies for each repository
-        only when needed, improving efficiency.
-
-        Args:
-            resources (list): List of resources to filter
-            event (dict, optional): Event context
-
-        Returns:
-            list: Filtered resource list
-        """
-        client = local_session(self.manager.session_factory).client('swr')
-        limit = 100
-
-        instance_retentions = {}
-
-        for resource in resources:
-            if self.policy_annotation in resource:
-                continue
-
-            retentions = []
-            if resource["instance_id"] in instance_retentions:
-                retentions = instance_retentions[resource["instance_id"]]
-            else:
-                retentions = _pagination_limit_offset(
-                    client,
-                    "list_instance_retention_policies",
-                    "retentions",
-                    ListInstanceRetentionPoliciesRequest(
-                        instance_id=resource["instance_id"],
-                        limit=limit
-                    )
-                )
-                instance_retentions[resource["instance_id"]] = retentions
-
-            retention_list = []
-            for retention in retentions:
-                if resource["namespace_id"] != retention["namespace_id"]:
-                    continue
-
-                for rule in retention.get('rules', []):
-                    repository_selectors = rule.get('scope_selectors', {}).get('repository', [])
-                    for repository_selector in repository_selectors:
-                        if match_pattern(repository_selector['pattern'], resource['name']):
-                            retention_list.append(retention)
-                            break
-            resource[self.policy_annotation] = retention_list
-
-        state = self.data.get('state', True)
-        results = []
-
-        tag_selector = self.data.get('tag_selector')
-        matchers = self.build_matchers()
-
-        for resource in resources:
-            policies = resource.get(self.policy_annotation, [])
-
-            if not policies and not state:
-                results.append(resource)
-                continue
-
-            if not policies and state:
-                continue
-
-            rule_matches = False
-            for policy in policies:
-                if not self.match_policy_with_matchers(policy, matchers):
-                    continue
-
-                if tag_selector and not self.match_tag_selector(policy, tag_selector):
-                    continue
-
-                rule_matches = True
-                break
-
-            if rule_matches == state:
-                results.append(resource)
-
-        return results
-
-    def build_params_filters(self):
-        """Build parameter filters.
-
-        Returns:
-            dict: Dictionary of parameter filters
-        """
-        params_filters = {}
-        if 'params' in self.data:
-            for param_key, param_config in self.data.get('params', {}).items():
-                if isinstance(param_config, dict):
-                    filter_data = param_config.copy()
-                    if 'key' not in filter_data:
-                        filter_data['key'] = param_key
-                    if 'value_type' not in filter_data:
-                        filter_data['value_type'] = 'integer'
-                    params_filters[param_key] = ValueFilter(filter_data)
-                else:
-                    params_filters[param_key] = ValueFilter({
-                        'type': 'value',
-                        'key': param_key,
-                        'value': param_config,
-                        'value_type': 'integer'
-                    })
-        return params_filters
-
-    def build_matchers(self):
-        """Build generic matchers.
-
-        Returns:
-            list: List of value filter matchers
-        """
-        matchers = []
-        for matcher in self.data.get('match', []):
-            vf = ValueFilter(matcher)
-            vf.annotate = False
-            matchers.append(vf)
-        return matchers
-
-    def match_policy_with_matchers(self, policy, matchers):
-        """Check if policy matches using generic matchers.
-
-        Args:
-            policy (dict): Lifecycle policy to check
-            matchers (list): List of matchers to apply
-
-        Returns:
-            bool: True if policy matches all matchers, False otherwise
-        """
-        if not matchers:
-            return True
-
-        for matcher in matchers:
-            if not matcher(policy):
-                return False
-        return True
-
-    def match_tag_selector(self, policy, tag_selector):
-        """Check if policy tag selector matches the filter.
-
-        Args:
-            policy (dict): Lifecycle policy to check
-            tag_selector (dict): Tag selector criteria
-
-        Returns:
-            bool: True if policy matches tag selector, False otherwise
-        """
-        for rule in policy.get('rules', []):
-            for selector in rule.get('tag_selectors', []):
-                match = True
-                # Check if all specified selector fields match
-                for key, expected_value in tag_selector.items():
-                    if key not in selector:
-                        match = False
-                        break
-                    if expected_value is not None and selector[key] != expected_value:
-                        match = False
-                        break
-                if match:
-                    return True
-        return False
-
-
-@SwrEe.action_registry.register('set-lifecycle')
-class SetLifecycle(HuaweiCloudBaseAction):
-    """Set lifecycle rules for SWR repositories.
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-        # 配置老化规则
-          - name: swr-set-lifecycle
-            resource: huaweicloud.swr
-            filters:
-              - type: get-lifecycle
-                state: False
-            actions:
-              - type: set-lifecycle
-                rules:
-                  - template: nDaysSinceLastPush
-                    params:
-                      nDaysSinceLastPush: 30
-                    tag_selectors:
-                      - kind: doublestar
-                        pattern: ^release-.*$
-
-    .. code-block:: yaml
-
-        policies:
-        # 取消老化规则
-          - name: swr-set-lifecycle
-            resource: huaweicloud.swr
-            filters:
-              - type: get-lifecycle
-                state: True
-            actions:
-              - type: set-lifecycle
-                state: False
-    """
-
-    schema = type_schema(
-        'set-lifecycle',
-        state={'type': 'boolean', 'default': True},
-        algorithm={'type': 'string', 'enum': ['or'], 'default': 'or'},
-        rules={
-            'type': 'array',
-            'items': {
-                'type': 'object',
-                'required': ['template', 'params', 'tag_selectors'],
-                'properties': {
-                    'template': {
-                        'type': 'string',
-                        'enum': [
-                            'latestPushedK',
-                            'latestPulledN',
-                            'nDaysSinceLastPush',
-                            'nDaysSinceLastPull'
-                        ]
-                    },
-                    'params': {'type': 'object'},
-                    'tag_selectors': {
-                        'type': 'array',
-                        'items': {
-                            'type': 'object',
-                            'required': ['kind', 'pattern'],
-                            'properties': {
-                                'kind': {'type': 'string', 'enum': ['doublestar']},
-                                'pattern': {'type': 'string'}
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    )
-
-    permissions = ('swr:*:*:*',)
-
-    def validate(self):
-        """Validate action configuration.
-
-        Returns:
-            self: The action instance
-
-        Raises:
-            PolicyValidationError: If configuration is invalid
-        """
-        if self.data.get('state') is False and 'rules' in self.data:
-            raise PolicyValidationError(
-                "set-lifecycle can't use statements and state: false")
-        elif self.data.get('state', True) and not self.data.get('rules'):
-            raise PolicyValidationError(
-                "set-lifecycle requires rules with state: true")
-        return self
-
-    def process(self, resources):
-        """Process resources list, create lifecycle rules for each repository.
-
-        :param resources: List of resources to process
-        :return: Processed resources
-        """
-
-        is_set = True if self.data.get('state', True) else False
-
-        namespace_repos = {}
-        # Group by instance and namespace
-        for resource in resources:
-            key = "{}|{}|{}".format(resource['instance_id'], resource['namespace_name'],
-                                    resource['namespace_id'])
-            namespace_repo = []
-            if key in namespace_repos:
-                namespace_repo = namespace_repos[key]
-
-            namespace_repo.append(resource["name"])
-            namespace_repos[key] = namespace_repo
-
-        for key, value in namespace_repos.items():
-            key_list = key.split("|")
-
-            self._create_or_update_retention_policy(key_list[0], key_list[1], key_list[2], value,
-                                                    is_set)
-
-    def perform_action(self, resource):
-        pass
-
-    def _create_or_update_retention_policy(self, instance_id, namespace_name, namespace_id, repos,
-                                           is_set):
-        """Implement abstract method, perform action for a single resource.
-
-        :param resource: Single resource to process
-        :return: Updated resource with action results
-        """
-
-        if len(repos) == 0:
-            return
-
-        client = self.manager.get_client()
-        policy_name = f"custodian-retention-{namespace_name}"
-
-        try:
-
-            # Query if the retention policy already exists
-            retentions = _pagination_limit_offset(
-                client,
-                "list_instance_retention_policies",
-                "retentions",
-                ListInstanceRetentionPoliciesRequest(
-                    instance_id=instance_id,
-                    namespace_id=int(namespace_id),
-                    limit=100
-                )
-            )
-
-            # If the policy does not exist and is_set is False (cancel), return directly
-            if len(retentions) <= 0 and is_set is False:
-                return
-
-            # If the namespace has already been manually configured with a policy,
-            # skip and do not create a new one
-            if len(retentions) > 0 and retentions[0]['name'] != policy_name:
-                log.warning(
-                    f"instance: {instance_id}, namespace: {namespace_name}, "
-                    f"policy has been manually created")
-                return
-
-            repo_pattern = build_pattern(repos)
-            if len(retentions) > 0:
-                rule_dict = retentions[0]['rules'][0]
-                if len(rule_dict['scope_selectors']['repository']) > 0:
-                    old_repo_pattern = rule_dict['scope_selectors']['repository'][0]['pattern']
-                    old_repos = parse_pattern(old_repo_pattern)
-                    fin_repos = []
-
-                    if is_set:
-                        fin_repos = merge_repos(old_repos, repos)
-                    else:
-                        fin_repos = sub_repos(old_repos, repos)
-
-                    repo_pattern = build_pattern(fin_repos)
-
-            # Create rule objects
-            rules = []
-            config_rules = self.data.get('rules', [])
-            if not is_set:
-                config_rules = retentions[0]['rules']
-
-            for rule_data in config_rules:
-
-                # Create tag selectors
-                tag_selectors = []
-                for selector_data in rule_data.get('tag_selectors', []):
-                    # Ensure kind and pattern are string type
-                    kind = selector_data.get('kind')
-                    pattern = selector_data.get('pattern')
-
-                    if not kind or not pattern:
-                        log.warning(
-                            f"Skipping invalid tag_selector: {selector_data}"
-                        )
-                        continue
-
-                    selector = RetentionSelector(
-                        kind=kind,
-                        decoration="matches",
-                        pattern=pattern
-                    )
-                    tag_selectors.append(selector)
-
-                # Ensure there are tag selectors
-                if not tag_selectors:
-                    log.warning(
-                        "No valid tag_selectors, will use default empty tag selector")
-                    # Add a default tag selector to avoid API error
-                    tag_selectors.append(RetentionSelector(
-                        kind="doublestar",
-                        decoration="matches",
-                        pattern="**"
-                    ))
-
-                repository_rule = RetentionSelector(
-                    kind="doublestar",
-                    decoration="repoMatches",
-                    pattern=repo_pattern
-                )
-                scope_selectors = {"repository": [repository_rule]}
-
-                rule = RetentionRule(priority=0, disabled=False, action='retain',
-                                     template=rule_data.get('template'),
-                                     params=rule_data.get('params', {}),
-                                     tag_selectors=tag_selectors,
-                                     scope_selectors=scope_selectors,
-                                     repo_scope_mode='regular')
-                rules.append(rule)
-
-            # Log final generated rules
-            log.debug(f"Final generated rules: {rules}")
-
-            trigger_setting = TriggerSetting(cron="0 59 23 * * ?")
-            trigger_config = TriggerConfig(type="scheduled", trigger_settings=trigger_setting)
-
-            if len(retentions) <= 0:
-                # Create request body
-                body = CreateRetentionPolicyRequestBody(
-                    algorithm=self.data.get('algorithm', 'or'),
-                    rules=rules,
-                    trigger=trigger_config,
-                    enabled=True,
-                    name=policy_name
-                )
-
-                request = CreateInstanceRetentionPolicyRequest(instance_id=instance_id,
-                                                               namespace_name=namespace_name,
-                                                               body=body)
-
-                # Output complete request content for debugging
-                if hasattr(request, 'to_dict'):
-                    log.debug(f"Complete request: {request.to_dict()}")
-
-                # Send request
-                log.debug(
-                    f"Sending create lifecycle rule request: "
-                    f"instance_id={instance_id}, namespace_name={namespace_name}"
-                )
-                response = client.create_instance_retention_policy(request)
-
-                # Process response
-                retention_id = response.id
-
-                log.info(
-                    f"Successfully created lifecycle rule: "
-                    f"{instance_id}/{namespace_name}, ID: {retention_id}"
-                )
-            else:
-                # Create request body
-                body = UpdateRetentionPolicyRequestBody(
-                    algorithm=self.data.get('algorithm', 'or'),
-                    rules=rules,
-                    trigger=trigger_config,
-                    enabled=True,
-                    name=policy_name
-                )
-
-                request = UpdateInstanceRetentionPolicyRequest(instance_id=instance_id,
-                                                               namespace_name=namespace_name,
-                                                               policy_id=retentions[0]['id'],
-                                                               body=body)
-
-                # Output complete request content for debugging
-                if hasattr(request, 'to_dict'):
-                    log.debug(f"Complete request: {request.to_dict()}")
-
-                # Send request
-                log.info(
-                    f"Sending update lifecycle rule request: "
-                    f"instance_id={instance_id}, namespace_name={namespace_name}"
-                )
-                response = client.update_instance_retention_policy(request)
-
-                log.info(
-                    f"Successfully updated lifecycle rule: "
-                    f"{instance_id}/{namespace_name}, ID: {retentions[0]['id']}"
-                )
-
-        except Exception as e:
-            # Record detailed exception information
-            error_msg = str(e)
-            error_detail = traceback.format_exc()
-            log.error(
-                f"Failed to create lifecycle rule: "
-                f"{instance_id}/{namespace_name}: {error_msg}"
-            )
-            log.debug(f"Exception details: {error_detail}")
-
-
-@SwrEe.action_registry.register('set-immutability')
-class SwrEeSetImmutability(HuaweiCloudBaseAction):
-    permissions = ('swr:PutImageTagMutability',)
-    schema = type_schema(
-        'set-immutability',
-        state={'type': 'boolean', 'default': True})
-
-    def process(self, resources):
-        s = True if self.data.get('state', True) else False
-
-        namespace_repos = {}
-        # Group by instance and namespace
-        for resource in resources:
-            key = "{}|{}|{}".format(resource['instance_id'], resource['namespace_name'],
-                                    resource['namespace_id'])
-            namespace_repo = []
-            if key in namespace_repos:
-                namespace_repo = namespace_repos[key]
-
-            namespace_repo.append(resource["name"])
-            namespace_repos[key] = namespace_repo
-
-        for key, value in namespace_repos.items():
-            key_list = key.split("|")
-
-            self._create_or_update_immutablerule_policy(key_list[0], key_list[1], key_list[2],
-                                                        value, s)
-
-    def perform_action(self, resource):
-        pass
-
-    def _create_or_update_immutablerule_policy(self, instance_id, namespace_name, namespace_id,
-                                               repos, enable_immutability):
-        """Implement abstract method, perform action for a single resource.
-
-        :param resource: Single resource to process
-        :return: Updated resource with action results
-        """
-        client = self.manager.get_client()
-        priority = 101
-
-        # Query immutablerule policy by namespace
-        imutable_rules = _pagination_limit_offset(client, 'list_immutable_rules', 'immutable_rules',
-                                                  ListImmutableRulesRequest(
-                                                      instance_id=instance_id,
-                                                      namespace_id=int(namespace_id),
-                                                      limit=100))
-        tag_selectors = []
-        tag_selectors.append(RuleSelector(
-            kind="doublestar",
-            decoration="matches",
-            pattern="**"
-        ))
-
-        # If the immutability rule does not exist and you want to remove the immutability policy,
-        # return directly
-        if len(imutable_rules) <= 0:
-            if enable_immutability:
-                # Create immutablerule policy
-                repo_pattern = build_pattern(repos)
-
-                repository_rule = RuleSelector(
-                    kind="doublestar",
-                    decoration="repoMatches",
-                    pattern=repo_pattern
-                )
-                scope_selectors = {"repository": [repository_rule]}
-
-                rule = CreateImmutableRuleBody(namespace_id=int(namespace_id),
-                                               namespace_name=namespace_name,
-                                               disabled=False, action='immutable',
-                                               template='immutable_template',
-                                               tag_selectors=tag_selectors,
-                                               scope_selectors=scope_selectors,
-                                               priority=priority)
-                response = client.create_immutable_rule(CreateImmutableRuleRequest(
-                    instance_id=instance_id,
-                    namespace_name=namespace_name,
-                    body=rule))
-
-                log.info(
-                    f"Successfully created immutable rule: "
-                    f"{instance_id}/{namespace_name}, ID: {response.id}"
-                )
-
-            return
-
-        imutableDict = imutable_rules[0]
-        # 101 is the unique priority configured by custodian
-        if imutableDict['priority'] != priority:
-            log.warning(
-                f"instance_id: {instance_id}, namespace_name: {namespace_name}, "
-                f"has been manually set")
-            return
-
-        repo_pattern = build_pattern(repos)
-        if len(imutableDict['scope_selectors']['repository']) > 0:
-            old_repo_pattern = imutableDict['scope_selectors']['repository'][0]['pattern']
-            old_repos = parse_pattern(old_repo_pattern)
-            fin_repos = []
-            if enable_immutability:
-                fin_repos = merge_repos(old_repos, repos)
-            else:
-                fin_repos = sub_repos(old_repos, repos)
-
-            repo_pattern = build_pattern(fin_repos)
-
-        repository_rule = RuleSelector(
-            kind="doublestar",
-            decoration="repoMatches",
-            pattern=repo_pattern
-        )
-        scope_selectors = {"repository": [repository_rule]}
-
-        rule = UpdateImmutableRuleBody(namespace_id=int(namespace_id),
-                                       namespace_name=namespace_name,
-                                       disabled=False, action='immutable',
-                                       template='immutable_template',
-                                       tag_selectors=tag_selectors,
-                                       scope_selectors=scope_selectors,
-                                       priority=priority)
-        response = client.update_immutable_rule(UpdateImmutableRuleRequest(
-            instance_id=instance_id,
-            namespace_name=namespace_name,
-            immutable_rule_id=imutableDict['id'],
-            body=rule))
-        log.info(
-            f"Successfully updated immutable rule: "
-            f"{instance_id}/{namespace_name}, ID: {imutableDict['id']}"
-        )
-
-
 @resources.register('swr-ee-image')
 class SwrEeImage(QueryResourceManager):
     """Huawei Cloud SWR Image Resource Manager.
@@ -1087,6 +381,891 @@ class SwrEeImageAgeFilter(AgeFilter):
     )
 
     date_attribute = "push_time"
+
+
+@resources.register('swr-ee-namespace')
+class SwrEeNamespace(QueryResourceManager):
+    """Huawei Cloud SWR Enterprise Edition Resource Manager.
+
+    This class manages SWR Enterprise Edition repositories on HuaweiCloud.
+    It provides functionality for discovering, filtering, and managing SWR namespaces.
+    """
+
+    class resource_type(TypeInfo):
+        """Define SWR resource metadata and type information.
+
+        Attributes:
+            service (str): Service name for SWR
+            enum_spec (tuple): API operation, result list key, and pagination info
+            id (str): Resource unique identifier field name
+            name (str): Resource name field name
+            filter_name (str): Field name for filtering by name
+            filter_type (str): Filter type for simple value comparison
+            taggable (bool): Whether resource supports tagging
+            tag_resource_type (None): Tag resource type
+            date (str): Field name for resource creation time
+        """
+        service = 'swr'
+        # Specify API operation, result list key, and pagination for enumerating resources
+        # 'list_instance_repositories' is the API method name
+        # 'body' is the field name in the response containing the instance list
+        # 'offset' is the parameter name for pagination
+        enum_spec = ('list_instance_namespaces', 'namespaces', 'offset')
+        id = 'uid'  # Specify resource unique identifier field name
+        name = 'name'  # Specify resource name field name
+        filter_name = 'name'  # Field name for filtering by name
+        filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
+        taggable = False  # Indicate that this resource doesn't support tagging directly
+        tag_resource_type = None
+        date = 'created_at'  # Specify field name for resource creation time
+
+    def _fetch_resources(self, query):
+        """Fetch all SWR Enterprise Edition repositories.
+
+        This method implements a two-level query:
+        1. Query all SWR EE instances
+        2. For each instance, query its repositories
+
+        :param query: Query parameters
+        :return: List of all SWR EE repositories
+        """
+        all_namespaces = []
+        limit = 100
+
+        try:
+            client = self.get_client()
+            if query and 'instance_id' in query:
+                instances = [{"id": query['instance_id']}]
+            else:
+                instances = _pagination_limit_offset(
+                    client,
+                    "list_instance",
+                    "instances",
+                    ListInstanceRequest(limit=limit)
+                )
+
+            for instance_index, instance in enumerate(instances):
+                namespaces = _pagination_limit_offset(
+                    client,
+                    "list_instance_namespaces",
+                    "namespaces",
+                    ListInstanceNamespacesRequest(
+                        instance_id=instance["id"],
+                        limit=limit
+                    )
+                )
+
+                for namespace in namespaces:
+                    namespace['instance_id'] = instance['id']
+                    namespace['instance_name'] = instance['name']
+                    namespace['uid'] = f"{instance['id']}/{namespace['name']}"
+                    namespace['is_public'] = namespace["metadata"]["public"].lower() == "true"
+                    all_namespaces.append(namespace)
+
+                log.info(
+                    f"Retrieved {len(namespaces)} namespaces for instance: {instance['id']} "
+                    f"({instance_index + 1}/{len(instances)})")
+
+        except Exception as e:
+            log.error(f"Failed to fetch SWR namespaces: {e}")
+
+        log.info(f"Retrieved a total of {len(all_namespaces)} SWR namespaces")
+        return all_namespaces
+
+    def get_resources(self, resource_ids):
+        resources = (
+                self.augment(self.source.get_resources(self.get_resource_query())) or []
+        )
+        result = []
+        for resource in resources:
+            resource_id = f"{resource['namespace']}/{resource['id']}"
+            if resource_id in resource_ids:
+                result.append(resource)
+        return result
+
+
+@SwrEeNamespace.filter_registry.register('age')
+class SwrEeAgeFilter(AgeFilter):
+    """SWR Namespace creation time filter.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: swr-old-namespaces
+            resource: huaweicloud.swr-ee-namespace
+            filters:
+              - type: age
+                days: 90
+                op: gt  # Creation time greater than 90 days
+    """
+
+    schema = type_schema(
+        'age',
+        op={'$ref': '#/definitions/filters_common/comparison_operators'},
+        days={'type': 'number'},
+        hours={'type': 'number'},
+        minutes={'type': 'number'}
+    )
+
+    date_attribute = "created_at"
+
+
+@SwrEeNamespace.filter_registry.register('lifecycle-rule')
+class LifecycleRule(Filter):
+    """SWR repository lifecycle rule filter.
+
+    This filter allows filtering repositories based on their lifecycle rules.
+    It supports filtering by:
+    - Presence/absence of lifecycle rules
+    - Specific rule properties
+    - Tag selectors
+    - Retention periods
+
+    The filter lazily loads lifecycle policies only for repositories that need to be
+    processed, improving efficiency when dealing with many repositories.
+
+    :example:
+
+    .. code-block:: yaml
+
+       policies:
+        # Filter repositories without lifecycle rules
+        - name: swr-no-lifecycle-rules
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+            - type: lifecycle-rule
+              state: False  # Repositories without lifecycle rules
+
+    .. code-block:: yaml
+
+       policies:
+        # Filter repositories with specific lifecycle rules (path matching specific properties)
+        - name: swr-with-specific-rule
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+            - type: lifecycle-rule
+              state: True  # Repositories with lifecycle rules
+              match:
+                - type: value
+                  key: rules[0].template
+                  value: latestPushedK   # latestPushedK, latestPulledN,
+                                        # nDaysSinceLastPush, nDaysSinceLastPull
+
+    .. code-block:: yaml
+
+       policies:
+        # Filter repositories with retention period greater than 30 days
+        - name: swr-with-long-retention
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+            - type: lifecycle-rule
+              state: True  # Repositories with lifecycle rules
+              match:
+                - type: value
+                  key: rules[0].params.nDaysSinceLastPull
+                  value_type: integer
+                  op: gte
+                  value: 30
+
+    .. code-block:: yaml
+
+       policies:
+        # Filter repositories using specific tag selector
+        - name: swr-with-specific-tag-selector
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+            - type: lifecycle-rule
+              tag_selector:
+                kind: doublestar
+                pattern: v5
+
+    .. code-block:: yaml
+
+       policies:
+        # Combined filter conditions: match both parameters and tag selector
+        - name: swr-with-combined-filters
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+              tag_selector:
+                kind: doublestar
+                pattern: v5
+              match:
+                - type: value
+                  key: algorithm
+                  value: or
+    """
+
+    schema = type_schema(
+        'lifecycle-rule',
+        state={'type': 'boolean'},
+        match={'type': 'array', 'items': {
+            'oneOf': [
+                {'$ref': '#/definitions/filters/value'},
+                {'type': 'object', 'minProperties': 1, 'maxProperties': 1},
+            ]}},
+        tag_selector={'type': 'object'}
+    )
+    policy_annotation = 'c7n:lifecycle-policy'
+
+    def process(self, resources, event=None):
+        """Process resources based on lifecycle rule criteria.
+
+        This method lazily loads lifecycle policies for each namespace
+        only when needed, improving efficiency.
+
+        Args:
+            resources (list): List of resources to filter
+            event (dict, optional): Event context
+
+        Returns:
+            list: Filtered resource list
+        """
+        client = local_session(self.manager.session_factory).client('swr')
+        limit = 100
+
+        instance_retentions = {}
+
+        for resource in resources:
+            if self.policy_annotation in resource:
+                continue
+
+            retentions = []
+            if resource["instance_id"] in instance_retentions:
+                retentions = instance_retentions[resource["instance_id"]]
+            else:
+                retentions = _pagination_limit_offset(
+                    client,
+                    "list_instance_retention_policies",
+                    "retentions",
+                    ListInstanceRetentionPoliciesRequest(
+                        instance_id=resource["instance_id"],
+                        limit=limit
+                    )
+                )
+                instance_retentions[resource["instance_id"]] = retentions
+
+            retention_list = []
+            for retention in retentions:
+                if resource["namespace_id"] != retention["namespace_id"]:
+                    continue
+
+                for rule in retention.get('rules', []):
+                    repository_selectors = rule.get('scope_selectors', {}).get('repository', [])
+                    for repository_selector in repository_selectors:
+                        if match_pattern(repository_selector['pattern'], resource['name']):
+                            retention_list.append(retention)
+                            break
+            resource[self.policy_annotation] = retention_list
+
+        state = self.data.get('state', True)
+        results = []
+
+        tag_selector = self.data.get('tag_selector')
+        matchers = self.build_matchers()
+
+        for resource in resources:
+            policies = resource.get(self.policy_annotation, [])
+
+            if not policies and not state:
+                results.append(resource)
+                continue
+
+            if not policies and state:
+                continue
+
+            rule_matches = False
+            for policy in policies:
+                if not self.match_policy_with_matchers(policy, matchers):
+                    continue
+
+                if tag_selector and not self.match_tag_selector(policy, tag_selector):
+                    continue
+
+                rule_matches = True
+                break
+
+            if rule_matches == state:
+                results.append(resource)
+
+        return results
+
+    def build_params_filters(self):
+        """Build parameter filters.
+
+        Returns:
+            dict: Dictionary of parameter filters
+        """
+        params_filters = {}
+        if 'params' in self.data:
+            for param_key, param_config in self.data.get('params', {}).items():
+                if isinstance(param_config, dict):
+                    filter_data = param_config.copy()
+                    if 'key' not in filter_data:
+                        filter_data['key'] = param_key
+                    if 'value_type' not in filter_data:
+                        filter_data['value_type'] = 'integer'
+                    params_filters[param_key] = ValueFilter(filter_data)
+                else:
+                    params_filters[param_key] = ValueFilter({
+                        'type': 'value',
+                        'key': param_key,
+                        'value': param_config,
+                        'value_type': 'integer'
+                    })
+        return params_filters
+
+    def build_matchers(self):
+        """Build generic matchers.
+
+        Returns:
+            list: List of value filter matchers
+        """
+        matchers = []
+        for matcher in self.data.get('match', []):
+            vf = ValueFilter(matcher)
+            vf.annotate = False
+            matchers.append(vf)
+        return matchers
+
+    def match_policy_with_matchers(self, policy, matchers):
+        """Check if policy matches using generic matchers.
+
+        Args:
+            policy (dict): Lifecycle policy to check
+            matchers (list): List of matchers to apply
+
+        Returns:
+            bool: True if policy matches all matchers, False otherwise
+        """
+        if not matchers:
+            return True
+
+        for matcher in matchers:
+            if not matcher(policy):
+                return False
+        return True
+
+    def match_tag_selector(self, policy, tag_selector):
+        """Check if policy tag selector matches the filter.
+
+        Args:
+            policy (dict): Lifecycle policy to check
+            tag_selector (dict): Tag selector criteria
+
+        Returns:
+            bool: True if policy matches tag selector, False otherwise
+        """
+        for rule in policy.get('rules', []):
+            for selector in rule.get('tag_selectors', []):
+                match = True
+                # Check if all specified selector fields match
+                for key, expected_value in tag_selector.items():
+                    if key not in selector:
+                        match = False
+                        break
+                    if expected_value is not None and selector[key] != expected_value:
+                        match = False
+                        break
+                if match:
+                    return True
+        return False
+
+
+@SwrEeNamespace.action_registry.register('set-lifecycle')
+class SetLifecycle(HuaweiCloudBaseAction):
+    """Set lifecycle rules for SWR repositories.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+        # 配置老化规则
+          - name: swr-set-lifecycle
+            resource: huaweicloud.swr-ee-namespace
+            filters:
+              - type: get-lifecycle
+                state: False
+            actions:
+              - type: set-lifecycle
+                rules:
+                  - template: nDaysSinceLastPush
+                    params:
+                      nDaysSinceLastPush: 30
+                    scope_selectors:
+                      repository:
+                        - kind: doublestar
+                          pattern: '{repo1, repo2}'
+                    tag_selectors:
+                      - kind: doublestar
+                        pattern: ^release-.*$
+
+    .. code-block:: yaml
+
+        policies:
+        # 配置老化规则
+          - name: swr-set-lifecycle
+            resource: huaweicloud.swr-ee-namespace
+            filters:
+              - type: get-lifecycle
+                state: False
+            actions:
+              - type: set-lifecycle
+                rules:
+                  - template: nDaysSinceLastPush
+                    params:
+                      nDaysSinceLastPush: 30
+                    scope_selectors:
+                      repository:
+                        - kind: doublestar
+                          pattern: '**'
+                    tag_selectors:
+                      - kind: doublestar
+                        pattern: '**'
+
+    .. code-block:: yaml
+
+        policies:
+        # 取消老化规则
+          - name: swr-set-lifecycle
+            resource: huaweicloud.swr-ee-namespace
+            filters:
+              - type: get-lifecycle
+                state: True
+            actions:
+              - type: set-lifecycle
+                state: False
+    """
+
+    schema = type_schema(
+        'set-lifecycle',
+        state={'type': 'boolean', 'default': True},
+        algorithm={'type': 'string', 'enum': ['or'], 'default': 'or'},
+        rules={
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'required': ['template', 'params', 'tag_selectors'],
+                'properties': {
+                    'template': {
+                        'type': 'string',
+                        'enum': [
+                            'latestPushedK',
+                            'latestPulledN',
+                            'nDaysSinceLastPush',
+                            'nDaysSinceLastPull'
+                        ]
+                    },
+                    'params': {'type': 'object'},
+                    'scope_selectors': {
+                        'repository': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'required': ['kind', 'pattern'],
+                                'properties': {
+                                    'kind': {'type': 'string', 'enum': ['doublestar']},
+                                    'pattern': {'type': 'string'},
+                                }
+                            }
+                        }
+                    },
+                    'tag_selectors': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'required': ['kind', 'pattern'],
+                            'properties': {
+                                'kind': {'type': 'string', 'enum': ['doublestar']},
+                                'pattern': {'type': 'string'}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    permissions = ('swr:*:*:*',)
+
+    def validate(self):
+        """Validate action configuration.
+
+        Returns:
+            self: The action instance
+
+        Raises:
+            PolicyValidationError: If configuration is invalid
+        """
+        if self.data.get('state') is False and 'rules' in self.data:
+            raise PolicyValidationError(
+                "set-lifecycle can't use statements and state: false")
+        elif self.data.get('state', True) and not self.data.get('rules'):
+            raise PolicyValidationError(
+                "set-lifecycle requires rules with state: true")
+        return self
+
+    def process(self, resources):
+        """Process resources list, create lifecycle rules for each repository.
+
+        :param resources: List of resources to process
+        :return: Processed resources
+        """
+
+        is_set = True if self.data.get('state', True) else False
+
+        namespace_repos = {}
+        # Group by instance and namespace
+        for resource in resources:
+            self._create_or_update_retention_policy(resource['instance_id'],
+                                                    resource['namespace_name'],
+                                                    resource['namespace_id'],
+                                                    is_set)
+
+    def perform_action(self, resource):
+        pass
+
+    def _create_or_update_retention_policy(self, instance_id, namespace_name, namespace_id,
+                                           is_set):
+        """Implement abstract method, perform action for a single resource.
+
+        :param resource: Single resource to process
+        :return: Updated resource with action results
+        """
+
+        client = self.manager.get_client()
+        policy_name = f"custodian-retention-{namespace_name}"
+
+        try:
+
+            # Query if the retention policy already exists
+            retentions = _pagination_limit_offset(
+                client,
+                "list_instance_retention_policies",
+                "retentions",
+                ListInstanceRetentionPoliciesRequest(
+                    instance_id=instance_id,
+                    namespace_id=int(namespace_id),
+                    limit=100
+                )
+            )
+
+            # If the policy does not exist and is_set is False (cancel), return directly
+            if len(retentions) <= 0 and is_set is False:
+                return
+
+            # If the namespace has already been manually configured with a policy,
+            # skip and do not create a new one
+            if len(retentions) > 0 and retentions[0]['name'] != policy_name:
+                log.warning(
+                    f"instance: {instance_id}, namespace: {namespace_name}, "
+                    f"policy has been manually created")
+                return
+
+            repo_pattern = build_pattern(repos)
+            if len(retentions) > 0:
+                rule_dict = retentions[0]['rules'][0]
+                if len(rule_dict['scope_selectors']['repository']) > 0:
+                    old_repo_pattern = rule_dict['scope_selectors']['repository'][0]['pattern']
+                    old_repos = parse_pattern(old_repo_pattern)
+                    fin_repos = []
+
+                    if is_set:
+                        fin_repos = merge_repos(old_repos, repos)
+                    else:
+                        fin_repos = sub_repos(old_repos, repos)
+
+                    repo_pattern = build_pattern(fin_repos)
+
+            # Create rule objects
+            rules = []
+            config_rules = self.data.get('rules', [])
+            if not is_set:
+                config_rules = retentions[0]['rules']
+
+            for rule_data in config_rules:
+
+                # Create tag selectors
+                tag_selectors = []
+                for selector_data in rule_data.get('tag_selectors', []):
+                    # Ensure kind and pattern are string type
+                    kind = selector_data.get('kind')
+                    pattern = selector_data.get('pattern')
+
+                    if not kind or not pattern:
+                        log.warning(
+                            f"Skipping invalid tag_selector: {selector_data}"
+                        )
+                        continue
+
+                    selector = RetentionSelector(
+                        kind=kind,
+                        decoration="matches",
+                        pattern=pattern
+                    )
+                    tag_selectors.append(selector)
+
+                # Ensure there are tag selectors
+                if not tag_selectors:
+                    log.warning(
+                        "No valid tag_selectors, will use default empty tag selector")
+                    # Add a default tag selector to avoid API error
+                    tag_selectors.append(RetentionSelector(
+                        kind="doublestar",
+                        decoration="matches",
+                        pattern="**"
+                    ))
+
+                    # Create scope selectors
+                repository_selectors = []
+                for scope_data in rule_data['scope_selectors'].get('repository', []):
+                    # Ensure kind and pattern are string type
+                    kind = scope_data.get('kind')
+                    pattern = scope_data.get('pattern')
+
+                    if not kind or not pattern:
+                        log.warning(
+                            f"Skipping invalid scope_selectors: {scope_data}"
+                        )
+                        continue
+
+                    fin_pattern = pattern
+
+                    # 如果取消老化策略，则repo pattern清空
+                    if not is_set:
+                        fin_pattern = '{}'
+
+                    selector = RetentionSelector(
+                        kind=kind,
+                        decoration="repoMatches",
+                        pattern=fin_pattern
+                    )
+                    repository_selectors.append(selector)
+
+                # Ensure there are scope selectors
+                if not repository_selectors:
+                    log.warning(
+                        "No valid repository_selectors, will use default empty repository selector")
+                    # Add a default scope selector to avoid API error
+                    repository_selectors.append(RetentionSelector(
+                        kind="doublestar",
+                        decoration="repoMatches",
+                        pattern="{}"
+                    ))
+
+                scope_selectors = {"repository": repository_selectors}
+
+                rule = RetentionRule(priority=0, disabled=False, action='retain',
+                                     template=rule_data.get('template'),
+                                     params=rule_data.get('params', {}),
+                                     tag_selectors=tag_selectors,
+                                     scope_selectors=scope_selectors,
+                                     repo_scope_mode='regular')
+                rules.append(rule)
+
+            # Log final generated rules
+            log.debug(f"Final generated rules: {rules}")
+
+            trigger_setting = TriggerSetting(cron="0 59 23 * * ?")
+            trigger_config = TriggerConfig(type="scheduled", trigger_settings=trigger_setting)
+
+            if len(retentions) <= 0:
+                # Create request body
+                body = CreateRetentionPolicyRequestBody(
+                    algorithm=self.data.get('algorithm', 'or'),
+                    rules=rules,
+                    trigger=trigger_config,
+                    enabled=True,
+                    name=policy_name
+                )
+
+                request = CreateInstanceRetentionPolicyRequest(instance_id=instance_id,
+                                                               namespace_name=namespace_name,
+                                                               body=body)
+
+                # Output complete request content for debugging
+                if hasattr(request, 'to_dict'):
+                    log.debug(f"Complete request: {request.to_dict()}")
+
+                # Send request
+                log.debug(
+                    f"Sending create lifecycle rule request: "
+                    f"instance_id={instance_id}, namespace_name={namespace_name}"
+                )
+                response = client.create_instance_retention_policy(request)
+
+                # Process response
+                retention_id = response.id
+
+                log.info(
+                    f"Successfully created lifecycle rule: "
+                    f"{instance_id}/{namespace_name}, ID: {retention_id}"
+                )
+            else:
+                # Create request body
+                body = UpdateRetentionPolicyRequestBody(
+                    algorithm=self.data.get('algorithm', 'or'),
+                    rules=rules,
+                    trigger=trigger_config,
+                    enabled=True,
+                    name=policy_name
+                )
+
+                request = UpdateInstanceRetentionPolicyRequest(instance_id=instance_id,
+                                                               namespace_name=namespace_name,
+                                                               policy_id=retentions[0]['id'],
+                                                               body=body)
+
+                # Output complete request content for debugging
+                if hasattr(request, 'to_dict'):
+                    log.debug(f"Complete request: {request.to_dict()}")
+
+                # Send request
+                log.info(
+                    f"Sending update lifecycle rule request: "
+                    f"instance_id={instance_id}, namespace_name={namespace_name}"
+                )
+                response = client.update_instance_retention_policy(request)
+
+                log.info(
+                    f"Successfully updated lifecycle rule: "
+                    f"{instance_id}/{namespace_name}, ID: {retentions[0]['id']}"
+                )
+
+        except Exception as e:
+            # Record detailed exception information
+            error_msg = str(e)
+            error_detail = traceback.format_exc()
+            log.error(
+                f"Failed to create lifecycle rule: "
+                f"{instance_id}/{namespace_name}: {error_msg}"
+            )
+            log.debug(f"Exception details: {error_detail}")
+
+
+@SwrEeNamespace.action_registry.register('set-immutability')
+class SwrEeSetImmutability(HuaweiCloudBaseAction):
+    permissions = ('swr:PutImageTagMutability',)
+    schema = type_schema(
+        'set-immutability',
+        state={'type': 'boolean', 'default': True})
+
+    def process(self, resources):
+        s = True if self.data.get('state', True) else False
+
+        namespace_repos = {}
+        # Group by instance and namespace
+        for resource in resources:
+            key = "{}|{}|{}".format(resource['instance_id'], resource['namespace_name'],
+                                    resource['namespace_id'])
+            namespace_repo = []
+            if key in namespace_repos:
+                namespace_repo = namespace_repos[key]
+
+            namespace_repo.append(resource["name"])
+            namespace_repos[key] = namespace_repo
+
+        for key, value in namespace_repos.items():
+            key_list = key.split("|")
+
+            self._create_or_update_immutablerule_policy(resource['instance_id'],
+                                                        resource['namespace_name'],
+                                                        resource['namespace_id'], s)
+
+    def perform_action(self, resource):
+        pass
+
+    def _create_or_update_immutablerule_policy(self, instance_id, namespace_name, namespace_id,
+                                               repos, enable_immutability):
+        """Implement abstract method, perform action for a single resource.
+
+        :param resource: Single resource to process
+        :return: Updated resource with action results
+        """
+        client = self.manager.get_client()
+        priority = 101
+
+        # Query immutablerule policy by namespace
+        imutable_rules = _pagination_limit_offset(client, 'list_immutable_rules',
+                                                  'immutable_rules',
+                                                  ListImmutableRulesRequest(
+                                                      instance_id=instance_id,
+                                                      namespace_id=int(namespace_id),
+                                                      limit=100))
+        tag_selectors = []
+        tag_selectors.append(RuleSelector(
+            kind="doublestar",
+            decoration="matches",
+            pattern="**"
+        ))
+
+        # If the immutability rule does not exist and you want to remove the immutability policy,
+        # return directly
+        if len(imutable_rules) <= 0:
+            if enable_immutability:
+                repository_rule = RuleSelector(
+                    kind="doublestar",
+                    decoration="repoMatches",
+                    pattern="**"
+                )
+                scope_selectors = {"repository": [repository_rule]}
+
+                rule = CreateImmutableRuleBody(namespace_id=int(namespace_id),
+                                               namespace_name=namespace_name,
+                                               disabled=False, action='immutable',
+                                               template='immutable_template',
+                                               tag_selectors=tag_selectors,
+                                               scope_selectors=scope_selectors,
+                                               priority=priority)
+                response = client.create_immutable_rule(CreateImmutableRuleRequest(
+                    instance_id=instance_id,
+                    namespace_name=namespace_name,
+                    body=rule))
+
+                log.info(
+                    f"Successfully created immutable rule: "
+                    f"{instance_id}/{namespace_name}, ID: {response.id}"
+                )
+
+            return
+
+        imutableDict = imutable_rules[0]
+        # 101 is the unique priority configured by custodian
+        if imutableDict['priority'] != priority:
+            log.warning(
+                f"instance_id: {instance_id}, namespace_name: {namespace_name}, "
+                f"has been manually set")
+            return
+
+        repo_pattern = "**"
+        if not enable_immutability:
+            repo_pattern = "{}"
+
+        repository_rule = RuleSelector(
+            kind="doublestar",
+            decoration="repoMatches",
+            pattern=repo_pattern
+        )
+        scope_selectors = {"repository": [repository_rule]}
+
+        rule = UpdateImmutableRuleBody(namespace_id=int(namespace_id),
+                                       namespace_name=namespace_name,
+                                       disabled=False, action='immutable',
+                                       template='immutable_template',
+                                       tag_selectors=tag_selectors,
+                                       scope_selectors=scope_selectors,
+                                       priority=priority)
+        response = client.update_immutable_rule(UpdateImmutableRuleRequest(
+            instance_id=instance_id,
+            namespace_name=namespace_name,
+            immutable_rule_id=imutableDict['id'],
+            body=rule))
+        log.info(
+            f"Successfully updated immutable rule: "
+            f"{instance_id}/{namespace_name}, ID: {imutableDict['id']}"
+        )
 
 
 def _pagination_limit_offset(client, enum_op, path, request):
