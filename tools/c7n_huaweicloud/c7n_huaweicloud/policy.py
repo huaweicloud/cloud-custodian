@@ -37,7 +37,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'handler': {'type': 'string'},
             'memory_size': {'type': 'number'},
             'xrole': {'type': 'string'},
-            'func_vpc': {'type': 'object', 'required': ['vpc_id', 'subnet_id']},
+            'func_vpc': {'type': 'object', 'required': ['vpc_name', 'subnet_name']},
             'description': {'type': 'string'},
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},

@@ -42,6 +42,7 @@ def run(event, context=None):
     options_overrides['secret_access_key'] = context.getSecuritySecretKey()
     options_overrides['security_token'] = context.getSecurityToken()
     options_overrides['region'] = context.getUserData('HUAWEI_DEFAULT_REGION')
+    options_overrides['domain_id'] = context.getUserData('DOMAIN_ID')
 
     # merge all our options in
     options = Config.empty(**options_overrides)
