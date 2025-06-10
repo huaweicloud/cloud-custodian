@@ -1247,8 +1247,6 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
         # Ensure there are scope selectors
         if not repository_selectors:
-            log.warning(
-                "No valid repository_selectors, will use default empty repository selector")
             # Add a default scope selector to avoid API error
             repository_selectors.append(RetentionSelector(
                 kind="doublestar",
