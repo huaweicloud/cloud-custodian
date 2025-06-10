@@ -1195,13 +1195,13 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                                                       limit=100))
         tag_selectors = []
 
-        for tag_selectors in self.data.get('tag_selectors', []):
-            kind = selector_data.get('kind')
-            pattern = selector_data.get('pattern')
+        for tag_selector in self.data.get('tag_selectors', []):
+            kind = tag_selector.get('kind')
+            pattern = tag_selector.get('pattern')
 
             if not kind or not pattern:
                 log.warning(
-                    f"Skipping invalid tag_selector: {selector_data}"
+                    f"Skipping invalid tag_selector: {tag_selector}"
                 )
                 continue
 
