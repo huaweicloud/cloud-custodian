@@ -650,13 +650,8 @@ class LifecycleRule(Filter):
             for retention in retentions:
                 if resource["namespace_id"] != retention["namespace_id"]:
                     continue
+                retention_list.append(retention)
 
-                for rule in retention.get('rules', []):
-                    repository_selectors = rule.get('scope_selectors', {}).get('repository', [])
-                    for repository_selector in repository_selectors:
-                        if match_pattern(repository_selector['pattern'], resource['name']):
-                            retention_list.append(retention)
-                            break
             resource[self.policy_annotation] = retention_list
 
         state = self.data.get('state', True)
@@ -964,21 +959,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     f"policy has been manually created")
                 return
 
-            repo_pattern = build_pattern(repos)
-            if len(retentions) > 0:
-                rule_dict = retentions[0]['rules'][0]
-                if len(rule_dict['scope_selectors']['repository']) > 0:
-                    old_repo_pattern = rule_dict['scope_selectors']['repository'][0]['pattern']
-                    old_repos = parse_pattern(old_repo_pattern)
-                    fin_repos = []
-
-                    if is_set:
-                        fin_repos = merge_repos(old_repos, repos)
-                    else:
-                        fin_repos = sub_repos(old_repos, repos)
-
-                    repo_pattern = build_pattern(fin_repos)
-
             # Create rule objects
             rules = []
             config_rules = self.data.get('rules', [])
@@ -1158,7 +1138,6 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         namespace_repos = {}
         # Group by instance and namespace
         for resource in resources:
-
             self._create_or_update_immutablerule_policy(resource['instance_id'],
                                                         resource['namespace'],
                                                         resource['namespace_id'], s)
@@ -1292,77 +1271,3 @@ def _pagination_limit_offset(client, enum_op, path, request):
         else:
             return resources
     return resources
-
-
-def match_pattern(pattern, input_str):
-    """Match input string against pattern.
-
-    Args:
-        pattern: Pattern to match against
-        input_str: String to match
-
-    Returns:
-        bool: True if pattern matches input string
-    """
-    if pattern == "**":
-        return True
-
-    options = pattern.strip("{}").split(",")
-
-    for option in options:
-        if fnmatch.fnmatch(option, input_str):
-            return True
-
-
-def parse_pattern(input_str):
-    """Parse pattern string into list of items.
-
-    Args:
-        input_str: Pattern string to parse
-
-    Returns:
-        list: List of parsed items
-    """
-    content = input_str.strip().strip('{}')
-    if not content:
-        return []
-    return [item.strip() for item in content.split(',')]
-
-
-def build_pattern(repos):
-    """Build pattern string from list of repositories.
-
-    Args:
-        repos: List of repository names
-
-    Returns:
-        str: Pattern string
-    """
-    repo_pattern = ",".join(repos)
-    return "{" + repo_pattern + "}"
-
-
-def merge_repos(old_repos, new_repos):
-    """Merge two lists of repositories.
-
-    Args:
-        old_repos: List of existing repositories
-        new_repos: List of new repositories
-
-    Returns:
-        list: Merged list of repositories
-    """
-    return list(set(old_repos) | set(new_repos))
-
-
-def sub_repos(old_repos, new_repos):
-    """Subtract new repositories from old repositories.
-
-    Args:
-        old_repos: List of existing repositories
-        new_repos: List of repositories to remove
-
-    Returns:
-        list: List of remaining repositories
-    """
-    return list(set(old_repos) - set(new_repos))
