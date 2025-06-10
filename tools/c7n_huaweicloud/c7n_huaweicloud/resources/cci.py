@@ -649,9 +649,11 @@ class NamespaceUidFilter(CCIUidFilter):
     """Namespace UID Filter"""
     pass
 
+
 # ===============================
-# CCI Base Action Class  
+# CCI Base Action Class
 # ===============================
+
 
 class CCIBaseAction(HuaweiCloudBaseAction):
     """CCI Service Base Action Class
@@ -810,9 +812,11 @@ class DeletePod(CCIBaseAction):
                 log.debug(f"Response was: {response}")
             return None
 
+
 # ===============================
-# ConfigMap Actions  
+# ConfigMap Actions
 # ===============================
+
 
 @CCIConfigMap.action_registry.register("modify")
 class ModifyConfigMap(CCIBaseAction):
