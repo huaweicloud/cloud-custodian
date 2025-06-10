@@ -538,7 +538,7 @@ class CCIClient:
         endpoint = f"api/{self.api_version}/namespaces"
         return self._make_request("GET", endpoint)
 
-    def list_namespaced_pods(self, namespace="default", request=None):
+    def list_namespaced_pods(self, request=None):
         """List Pods in all namespaces
         Args:
             namespace: Namespace name (this parameter will
@@ -580,7 +580,7 @@ class CCIClient:
         self._process_response_data(combined_response)
         return combined_response
 
-    def list_namespaced_configmaps(self, namespace="default", request=None):
+    def list_namespaced_configmaps(self, request=None):
 
         """List ConfigMaps in all namespaces
         Args:
@@ -624,7 +624,7 @@ class CCIClient:
         self._process_response_data(combined_response)
         return combined_response
 
-    def list_namespaced_secrets(self, namespace="default", request=None):
+    def list_namespaced_secrets(self, request=None):
         """List Secrets in all namespaces
         Args:
             namespace: Namespace name (this parameter will be ignored,
