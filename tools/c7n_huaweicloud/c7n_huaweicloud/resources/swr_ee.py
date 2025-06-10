@@ -920,7 +920,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
         # Group by instance and namespace
         for resource in resources:
             self._create_or_update_retention_policy(resource['instance_id'],
-                                                    resource['namespace_name'],
+                                                    resource['name'],
                                                     resource['namespace_id'],
                                                     is_set)
 
@@ -1158,20 +1158,9 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         namespace_repos = {}
         # Group by instance and namespace
         for resource in resources:
-            key = "{}|{}|{}".format(resource['instance_id'], resource['namespace_name'],
-                                    resource['namespace_id'])
-            namespace_repo = []
-            if key in namespace_repos:
-                namespace_repo = namespace_repos[key]
-
-            namespace_repo.append(resource["name"])
-            namespace_repos[key] = namespace_repo
-
-        for key, value in namespace_repos.items():
-            key_list = key.split("|")
 
             self._create_or_update_immutablerule_policy(resource['instance_id'],
-                                                        resource['namespace_name'],
+                                                        resource['namespace'],
                                                         resource['namespace_id'], s)
 
     def perform_action(self, resource):
