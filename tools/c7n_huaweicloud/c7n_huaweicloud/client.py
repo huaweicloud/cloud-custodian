@@ -4,11 +4,9 @@
 import logging
 import os
 import sys
-import copy
 import hashlib
 import hmac
 import binascii
-from datetime import datetime
 from urllib.parse import quote, unquote
 
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
@@ -148,9 +146,6 @@ from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
 
 # CCI related imports - for Huawei Cloud Container Instance Service
 try:
-    from kubernetes import client as k8s_client, config as k8s_config
-    from kubernetes.client.rest import ApiException
-
     K8S_AVAILABLE = True
 except ImportError:
     K8S_AVAILABLE = False
