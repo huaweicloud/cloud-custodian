@@ -435,12 +435,12 @@ class CCIClient:
             body = ""
             if 'json' in kwargs:
                 body = json.dumps(kwargs.pop('json'))
-                headers['Content-Type'] = 'application/json'
+                headers['Content-Type'] = 'application/merge-patch+json'
             elif 'data' in kwargs:
                 body = kwargs.pop('data')
                 if isinstance(body, dict):
                     body = json.dumps(body)
-                    headers['Content-Type'] = 'application/json'
+                    headers['Content-Type'] = 'application/merge-patch+json'
 
             # Add Huawei Cloud authentication header
             if self.signer:
