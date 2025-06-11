@@ -18,7 +18,7 @@ from huaweicloudsdkkafka.v2.model import (
 from c7n.filters import ValueFilter, AgeFilter, OPERATORS
 from c7n.utils import type_schema, local_session
 
-log = logging.getLogger("custodian.huaweicloud.resources.kafka")
+log = logging.getLogger("custodian.huaweicloud.resources.dms-kafka")
 
 
 @resources.register('dms-kafka')
