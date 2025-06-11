@@ -19,7 +19,7 @@ from c7n.utils import type_schema
 log = logging.getLogger("custodian.huaweicloud.resources.rocketmq")
 
 
-@resources.register('reliability')
+@resources.register('dms-rocketmq')
 class RocketMQ(QueryResourceManager):
     """HuaweiCloud RocketMQ Instance Resource Manager.
 
@@ -32,7 +32,7 @@ class RocketMQ(QueryResourceManager):
 
         policies:
           - name: rocketmq-instances-discovery  # Policy name
-            resource: huaweicloud.reliability  # Specify resource type as HuaweiCloud RocketMQ
+            resource: huaweicloud.dms-rocketmq  # Specify resource type as HuaweiCloud RocketMQ
     """
 
     class resource_type(TypeInfo):
@@ -87,7 +87,7 @@ class RocketMQSecurityGroupFilter(SecurityGroupFilter):
 
         policies:
           - name: rocketmq-with-public-sg
-            resource: huaweicloud.reliability
+            resource: huaweicloud.dms-rocketmq
             filters:
               - type: value
                 key: security_group_id
@@ -112,7 +112,7 @@ class DeleteRocketMQ(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-old-marked-rocketmq
-            resource: huaweicloud.reliability
+            resource: huaweicloud.dms-rocketmq
             filters:
               - type: marked-for-op
                 op: delete
@@ -184,7 +184,7 @@ class RocketMQAgeFilter(Filter):
 
         policies:
           - name: rocketmq-older-than-30-days
-            resource: huaweicloud.reliability
+            resource: huaweicloud.dms-rocketmq
             filters:
               - type: age                   # Filter type
                 days: 30                    # Specify days
