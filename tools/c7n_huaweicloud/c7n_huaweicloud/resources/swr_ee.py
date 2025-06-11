@@ -927,12 +927,9 @@ class SetLifecycle(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         pass
 
-        Args:
-            instance_id: Instance ID
-            namespace_name: Namespace name
-            namespace_id: Namespace ID
-            is_set: Whether to set or unset the policy
-        """
+    def _create_or_update_retention_policy(self, instance_id, namespace_name, namespace_id,
+                                           is_set):
+
         client = self.manager.get_client()
         policy_name = f"custodian-retention-{namespace_name}"
 
@@ -1183,7 +1180,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         pass
 
     def _create_or_update_immutablerule_policy(self, instance_id, namespace_name, namespace_id,
-                                              enable_immutability):
+                                               enable_immutability):
         """Create or update immutability rule policy.
 
         Args:
