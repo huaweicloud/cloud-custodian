@@ -217,7 +217,7 @@ class ByUnencryptedConfigFilter(Filter):
                     metadata = config.instance_config.metadata
                     encrypted_value = getattr(
                         metadata, '__system__encrypted', None)
-                    if (encrypted_value == '0' or 
+                    if (encrypted_value == '0' or
                             not hasattr(metadata, '__system__encrypted')):
                         if hasattr(config, 'scaling_configuration_id'):
                             unencrypted_config_ids.add(
@@ -294,7 +294,7 @@ class ByUserDataFilter(Filter):
 
             if not matched_config_ids:
                 self.manager.log.info(
-                    f"No scaling configurations found with the specified user_data")
+                    "No scaling configurations found with the specified user_data")
                 return []
 
             # Find scaling groups using these configurations
@@ -695,7 +695,7 @@ class AsConfigByImageIdFilter(Filter):
 
         for resource in resources:
             # Check if instance_config.imageRef matches the specified image_id
-            if ('instance_config' in resource and 
+            if ('instance_config' in resource and
                     resource['instance_config'].get('imageRef') == image_id):
                 resource['matched_image_id'] = True
                 results.append(resource)
@@ -786,14 +786,14 @@ class AsConfigAgeFilter(AgeFilter):
 class InvalidResourcesFilter(Filter):
     """Filter Auto Scaling Groups with invalid resources
 
-    Identifies scaling groups with invalid subnets, ELB pools, 
+    Identifies scaling groups with invalid subnets, ELB pools,
     or security groups based on the following conditions:
     1. Subnet no longer exists or is invalid
     2. Load balancer pool no longer exists or is invalid
     3. Security group no longer exists or is invalid
 
     All three conditions must be met, and the scaling
-    configuration ID must exist in the scaling group list that 
+    configuration ID must exist in the scaling group list that
     meets conditions 1 and 2
 
     :example:
