@@ -103,7 +103,7 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         **{
             "parameters": {
                 "type": "object",
-                "required": ["notification_name", "action_type"],
+                "required": ["action_type"],
                 "properties": {
                     "notification_name": {
                         "type": "string",
