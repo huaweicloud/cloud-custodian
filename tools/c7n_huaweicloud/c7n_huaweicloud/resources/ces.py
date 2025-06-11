@@ -91,6 +91,7 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
           - type: alarm-update-notification
             parameters:
               action_type: "notification"
+              notification_name: "Email_Notification_to_Owner"
               notification_list:
                 - "urn:smn:cn-north-4:xxxxx:CES_notification_xxxxxxx"
 
@@ -107,6 +108,10 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
                     "notification_name": {
                         "type": "string",
                     },
+                    "notification_list": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
                     "action_type": {
                         "type": "string",
                         "enum": ["notification"]
@@ -120,11 +125,18 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         params = self.data.get('parameters', {})
         action_type = params.get('action_type', 'notification')
         response = None
+        topic_urns = None
         smnClient = local_session(self.manager.session_factory).client('smn')
-        request = ListTopicsRequest()
-        request.name = params['notification_name']
-        response = smnClient.list_topics(request)
-        topic_urns = [topic.topic_urn for topic in response.topics]
+        if params['notification_name'] is not None:
+            request = ListTopicsRequest()
+            request.name = params['notification_name']
+            response = smnClient.list_topics(request)
+            topic_urns = [topic.topic_urn for topic in response.topics]
+        elif params['notification_list'] is not None:
+            topic_urns = params['notification_list']
+        else:
+            log.error("Update alarm notification need setting notification_name, notification_list param")
+            raise RuntimeError("missing notification_name, notification_list param")
 
         request = UpdateAlarmNotificationsRequest()
         request.alarm_id = resource["alarm_id"]
