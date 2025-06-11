@@ -21,7 +21,7 @@ from c7n.utils import type_schema, local_session
 log = logging.getLogger("custodian.huaweicloud.resources.kafka")
 
 
-@resources.register('kafka')
+@resources.register('dms-kafka')
 class Kafka(QueryResourceManager):
     """HuaweiCloud distributed message service Kafka (DMS Kafka) instance resource manager.
 
@@ -37,7 +37,7 @@ class Kafka(QueryResourceManager):
 
         policies:
           - name: kafka-instances-discovery # Policy name
-            resource: huaweicloud.kafka      # Specify resource type as HuaweiCloud Kafka
+            resource: huaweicloud.dms-kafka      # Specify resource type as HuaweiCloud dms-kafka
     """
 
     class resource_type(TypeInfo):
@@ -97,7 +97,7 @@ class KafkaSecurityGroupFilter(SecurityGroupFilter):
 
         policies:
           - name: kafka-with-public-sg
-            resource: huaweicloud.kafka
+            resource: huaweicloud.dms-kafka
             filters:
               - type: security-group        # Filter type
                 key: name              # Security group attribute to match (e.g., name, Id)
@@ -122,7 +122,7 @@ class KafkaAgeFilter(AgeFilter):
 
         policies:
           - name: kafka-older-than-30-days
-            resource: huaweicloud.kafka
+            resource: huaweicloud.dms-kafka
             filters:
               - type: age                   # Filter type
                 days: 30                    # Specify days
@@ -198,7 +198,7 @@ class KafkaConfigComplianceFilter(ValueFilter):
 
         policies:
           - name: kafka-with-auto-topic-creation
-            resource: huaweicloud.kafka
+            resource: huaweicloud.dms-kafka
             filters:
               - type: config-compliance      # Filter type
                 key: auto.create.topics.enable # Kafka configuration item name to check
@@ -320,7 +320,7 @@ class DeleteKafka(HuaweiCloudBaseAction):
 
         policies:
           - name: delete-old-marked-kafka
-            resource: huaweicloud.kafka
+            resource: huaweicloud.dms-kafka
             filters:
               - type: marked-for-op
                 op: delete
@@ -396,7 +396,7 @@ class SetKafkaConfig(HuaweiCloudBaseAction):
 
         policies:
           - name: enable-kafka-log-collection
-            resource: huaweicloud.kafka
+            resource: huaweicloud.dms-kafka
             filters:
               - type: config-compliance
                 key: enable.log.collection
