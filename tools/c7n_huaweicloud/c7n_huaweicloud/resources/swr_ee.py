@@ -886,7 +886,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
         }
     )
 
-    permissions = ('swr:*:*:*',)
+    permissions = ('swr:repository:createRetentionPolicy','swr:repository:updateRetentionPolicy')
 
     def validate(self):
         """Validate action configuration.
@@ -1134,7 +1134,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 class SwrEeSetImmutability(HuaweiCloudBaseAction):
     """Set immutability rules for SWR repositories."""
 
-    permissions = ('swr:PutImageTagMutability',)
+    permissions = ('swr:repository:createImmutableRule','swr:repository:updateImmutableRule')
     schema = type_schema(
         'set-immutability',
         state={'type': 'boolean', 'default': True},
