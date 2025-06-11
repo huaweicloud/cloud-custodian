@@ -314,27 +314,6 @@ class AsConfigTest(BaseTest):
         # Verify resource is marked as not in use
         self.assertFalse(resources[0]['in_use'])
 
-    def test_by_image_id_filter(self):
-        """Test filtering Auto Scaling Configurations by image ID"""
-        factory = self.replay_flight_data('as_config_by_image_id')
-        p = self.load_policy(
-            {
-                'name': 'as-config-by-image-id',
-                'resource': 'huaweicloud.as-config',
-                'filters': [
-                    {
-                        'type': 'by-image-id',
-                        'image_id': '37ca2b35-6fc7-47ab-93c7-900324809c5c'
-                    }
-                ]
-            },
-            session_factory=factory
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        # Verify that the resource contains the matched image ID marker
-        self.assertTrue(resources[0]['matched_image_id'])
-
     def test_age_filter(self):
         """Test the age filter for Auto Scaling Configurations"""
         factory = self.replay_flight_data('as_config_age')

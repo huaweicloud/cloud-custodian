@@ -152,6 +152,212 @@ class InstanceDeficitFilter(Filter):
         return results
 
 
+@AsGroup.filter_registry.register('invalid-resources')
+class InvalidResourcesFilter(Filter):
+    """Filter Auto Scaling Groups with invalid resources
+
+    Identifies scaling groups with invalid subnets, ELB pools,
+    or security groups based on the following conditions:
+    1. Subnet no longer exists or is invalid
+    2. Load balancer pool no longer exists or is invalid
+    3. Security group no longer exists or is invalid
+
+    All three conditions must be met, and the scaling
+    configuration ID must exist in the scaling group list that
+    meets conditions 1 and 2
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: as-group-with-invalid-resources
+            resource: huaweicloud.as-group
+            filters:
+              - type: invalid-resources
+    """
+    schema = type_schema('invalid-resources')
+    permissions = ("as:scaling_group:list", "as:scaling_configuration:list",
+                   "vpc:subnets:get", "vpc:securityGroups:get", "elb:pools:get")
+
+    def process(self, resources, event=None):
+        if not resources:
+            return []
+
+        # Step 1: Check invalid subnets
+        invalid_subnet_groups = self._check_invalid_subnets(resources)
+        if not invalid_subnet_groups:
+            return []
+
+        # Step 2: Check invalid ELB pool
+        invalid_elb_groups = self._check_invalid_elb_pools(resources)
+        if not invalid_elb_groups:
+            return []
+
+        # Intersection of Step 1 and Step 2
+        invalid_groups = []
+        subnet_group_ids = {r['scaling_group_id']
+            : r for r in invalid_subnet_groups}
+        elb_group_ids = {r['scaling_group_id']: r for r in invalid_elb_groups}
+
+        # Find scaling groups that appear in both lists
+        common_group_ids = set(subnet_group_ids.keys()
+                               ) & set(elb_group_ids.keys())
+        for group_id in common_group_ids:
+            group = subnet_group_ids[group_id]
+            group['has_invalid_elb_pool'] = True
+            invalid_groups.append(group)
+
+        if not invalid_groups:
+            return []
+
+        # Step 3: Check invalid security group
+        # Further check security groups for groups filtered out in Step 1 and Step 2
+        final_results = self._check_invalid_security_groups(invalid_groups)
+
+        # Ensure that the scaling_configuration_id in the final results
+        # exists in the results of Step 1 and Step 2
+        config_ids_from_steps_1_2 = {r.get('scaling_configuration_id')
+                                     for r in invalid_groups if r.get('scaling_configuration_id')}
+        return [r for r in final_results
+                if r.get('scaling_configuration_id') in config_ids_from_steps_1_2]
+
+    def _check_invalid_subnets(self, resources):
+        """Check if scaling group networks are valid"""
+        vpc_client = local_session(
+            self.manager.session_factory).client('vpc_v2')
+        invalid_groups = []
+
+        for resource in resources:
+            networks = resource.get('networks', [])
+            has_invalid_subnet = False
+
+            for network in networks:
+                subnet_id = network.get('id')
+                if not subnet_id:
+                    continue
+
+                try:
+                    # Query subnet
+                    request = NeutronShowSubnetRequest()
+                    request.subnet_id = subnet_id
+                    vpc_client.neutron_show_subnet(request)
+                except exceptions.ClientRequestException as e:
+                    # If request fails, it means the subnet is invalid
+                    self.manager.log.debug(
+                        f"Invalid subnet ID {subnet_id}, error: {e.error_msg}")
+                    has_invalid_subnet = True
+                    break
+
+            if has_invalid_subnet:
+                resource['has_invalid_subnet'] = True
+                invalid_groups.append(resource)
+
+        return invalid_groups
+
+    def _check_invalid_elb_pools(self, resources):
+        """Check if scaling group load balancer pools are valid"""
+        elb_client = local_session(
+            self.manager.session_factory).client('elb_v2')
+        invalid_groups = []
+
+        for resource in resources:
+            lbaas_listeners = resource.get('lbaas_listeners', [])
+            has_invalid_pool = False
+
+            for listener in lbaas_listeners:
+                pool_id = listener.get('pool_id')
+                if not pool_id:
+                    continue
+
+                try:
+                    # Query ELB pool
+                    request = ShowPoolRequest()
+                    request.pool_id = pool_id
+                    elb_client.show_pool(request)
+                except exceptions.ClientRequestException as e:
+                    # If request fails, it means the ELB pool is invalid
+                    self.manager.log.debug(
+                        f"Invalid ELB pool ID {pool_id}, error: {e.error_msg}")
+                    has_invalid_pool = True
+                    break
+
+            if has_invalid_pool:
+                resource['has_invalid_pool'] = True
+                invalid_groups.append(resource)
+
+        return invalid_groups
+
+    def _check_invalid_security_groups(self, resources):
+        """Check if security groups in scaling group configuration are valid"""
+        vpc_client = local_session(
+            self.manager.session_factory).client('vpc_v2')
+        config_client = local_session(
+            self.manager.session_factory).client('as-config')
+        final_results = []
+
+        # Get all resource scaling configuration IDs
+        config_ids = set()
+        for resource in resources:
+            config_id = resource.get('scaling_configuration_id')
+            if config_id:
+                config_ids.add(config_id)
+
+        if not config_ids:
+            return []
+
+        # Query all scaling configurations
+        configs = {}
+        for config_id in config_ids:
+            try:
+                request = ListScalingConfigsRequest()
+                request.scaling_configuration_id = config_id
+                response = config_client.list_scaling_configs(request)
+
+                if hasattr(response, 'scaling_configurations') and response.scaling_configurations:
+                    configs[config_id] = response.scaling_configurations[0]
+            except Exception as e:
+                self.manager.log.error(
+                    f"Failed to query scaling configuration {config_id}: {e}")
+
+        # Check each scaling group's security groups
+        for resource in resources:
+            config_id = resource.get('scaling_configuration_id')
+            if not config_id or config_id not in configs:
+                continue
+
+            config = configs[config_id]
+            if (not hasattr(config, 'instance_config') or
+                    not hasattr(config.instance_config, 'security_groups')):
+                continue
+
+            security_groups = config.instance_config.security_groups
+            has_invalid_sg = False
+
+            for sg in security_groups:
+                sg_id = getattr(sg, 'id', None)
+                if not sg_id:
+                    continue
+
+                try:
+                    # Query security group
+                    request = NeutronShowSecurityGroupRequest()
+                    request.security_group_id = sg_id
+                    vpc_client.neutron_show_security_group(request)
+                except exceptions.ClientRequestException as e:
+                    # If request fails, it means the security group is invalid
+                    self.manager.log.debug(
+                        f"Invalid security group ID {sg_id}, error: {e.error_msg}")
+                    has_invalid_sg = True
+                    break
+
+            if has_invalid_sg:
+                resource['has_invalid_security_group'] = True
+                final_results.append(resource)
+
+        return final_results
+
+
 @AsGroup.filter_registry.register('by-unencrypted-config')
 class ByUnencryptedConfigFilter(Filter):
     """Filter scaling groups using unencrypted configurations
@@ -643,41 +849,6 @@ class NotInUseFilter(Filter):
         return results
 
 
-@AsConfig.filter_registry.register('by-image-id')
-class AsConfigByImageIdFilter(Filter):
-    """Filter scaling configurations by image ID
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: as-config-by-image-id
-            resource: huaweicloud.as-config
-            filters:
-              - type: by-image-id
-                image_id: 37ca2b35-6fc7-47ab-93c7-900324809c5c
-    """
-    schema = type_schema(
-        'by-image-id',
-        required=['image_id'],
-        image_id={'type': 'string'}
-    )
-
-    def process(self, resources, event=None):
-        image_id = self.data.get('image_id')
-        results = []
-
-        for resource in resources:
-            # Check if instance_config.imageRef matches the specified image_id
-            if ('instance_config' in resource and
-                    resource['instance_config'].get('imageRef') == image_id):
-                resource['matched_image_id'] = True
-                results.append(resource)
-
-        return results
-
-
 @AsConfig.action_registry.register('delete')
 class DeleteAsConfig(BaseAction):
     """Delete Auto Scaling Configuration
@@ -755,209 +926,3 @@ class AsConfigAgeFilter(AgeFilter):
 
     # Specify the name of the date attribute in the resource dictionary
     date_attribute = "create_time"
-
-
-@AsGroup.filter_registry.register('invalid-resources')
-class InvalidResourcesFilter(Filter):
-    """Filter Auto Scaling Groups with invalid resources
-
-    Identifies scaling groups with invalid subnets, ELB pools,
-    or security groups based on the following conditions:
-    1. Subnet no longer exists or is invalid
-    2. Load balancer pool no longer exists or is invalid
-    3. Security group no longer exists or is invalid
-
-    All three conditions must be met, and the scaling
-    configuration ID must exist in the scaling group list that
-    meets conditions 1 and 2
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: as-group-with-invalid-resources
-            resource: huaweicloud.as-group
-            filters:
-              - type: invalid-resources
-    """
-    schema = type_schema('invalid-resources')
-    permissions = ("as:scaling_group:list", "as:scaling_configuration:list",
-                   "vpc:subnets:get", "vpc:securityGroups:get", "elb:pools:get")
-
-    def process(self, resources, event=None):
-        if not resources:
-            return []
-
-        # Step 1: Check invalid subnets
-        invalid_subnet_groups = self._check_invalid_subnets(resources)
-        if not invalid_subnet_groups:
-            return []
-
-        # Step 2: Check invalid ELB pool
-        invalid_elb_groups = self._check_invalid_elb_pools(resources)
-        if not invalid_elb_groups:
-            return []
-
-        # Intersection of Step 1 and Step 2
-        invalid_groups = []
-        subnet_group_ids = {r['scaling_group_id']
-            : r for r in invalid_subnet_groups}
-        elb_group_ids = {r['scaling_group_id']: r for r in invalid_elb_groups}
-
-        # Find scaling groups that appear in both lists
-        common_group_ids = set(subnet_group_ids.keys()
-                               ) & set(elb_group_ids.keys())
-        for group_id in common_group_ids:
-            group = subnet_group_ids[group_id]
-            group['has_invalid_elb_pool'] = True
-            invalid_groups.append(group)
-
-        if not invalid_groups:
-            return []
-
-        # Step 3: Check invalid security group
-        # Further check security groups for groups filtered out in Step 1 and Step 2
-        final_results = self._check_invalid_security_groups(invalid_groups)
-
-        # Ensure that the scaling_configuration_id in the final results
-        # exists in the results of Step 1 and Step 2
-        config_ids_from_steps_1_2 = {r.get('scaling_configuration_id')
-                                     for r in invalid_groups if r.get('scaling_configuration_id')}
-        return [r for r in final_results
-                if r.get('scaling_configuration_id') in config_ids_from_steps_1_2]
-
-    def _check_invalid_subnets(self, resources):
-        """Check if scaling group networks are valid"""
-        vpc_client = local_session(
-            self.manager.session_factory).client('vpc_v2')
-        invalid_groups = []
-
-        for resource in resources:
-            networks = resource.get('networks', [])
-            has_invalid_subnet = False
-
-            for network in networks:
-                subnet_id = network.get('id')
-                if not subnet_id:
-                    continue
-
-                try:
-                    # Query subnet
-                    request = NeutronShowSubnetRequest()
-                    request.subnet_id = subnet_id
-                    vpc_client.neutron_show_subnet(request)
-                except exceptions.ClientRequestException as e:
-                    # If request fails, it means the subnet is invalid
-                    self.manager.log.debug(
-                        f"Invalid subnet ID {subnet_id}, error: {e.error_msg}")
-                    has_invalid_subnet = True
-                    break
-
-            if has_invalid_subnet:
-                resource['has_invalid_subnet'] = True
-                invalid_groups.append(resource)
-
-        return invalid_groups
-
-    def _check_invalid_elb_pools(self, resources):
-        """Check if scaling group load balancer pools are valid"""
-        elb_client = local_session(
-            self.manager.session_factory).client('elb_v2')
-        invalid_groups = []
-
-        for resource in resources:
-            lbaas_listeners = resource.get('lbaas_listeners', [])
-            has_invalid_pool = False
-
-            for listener in lbaas_listeners:
-                pool_id = listener.get('pool_id')
-                if not pool_id:
-                    continue
-
-                try:
-                    # Query ELB pool
-                    request = ShowPoolRequest()
-                    request.pool_id = pool_id
-                    elb_client.show_pool(request)
-                except exceptions.ClientRequestException as e:
-                    # If request fails, it means the ELB pool is invalid
-                    self.manager.log.debug(
-                        f"Invalid ELB pool ID {pool_id}, error: {e.error_msg}")
-                    has_invalid_pool = True
-                    break
-
-            if has_invalid_pool:
-                resource['has_invalid_pool'] = True
-                invalid_groups.append(resource)
-
-        return invalid_groups
-
-    def _check_invalid_security_groups(self, resources):
-        """Check if security groups in scaling group configuration are valid"""
-        vpc_client = local_session(
-            self.manager.session_factory).client('vpc_v2')
-        config_client = local_session(
-            self.manager.session_factory).client('as-config')
-        final_results = []
-
-        # Get all resource scaling configuration IDs
-        config_ids = set()
-        for resource in resources:
-            config_id = resource.get('scaling_configuration_id')
-            if config_id:
-                config_ids.add(config_id)
-
-        if not config_ids:
-            return []
-
-        # Query all scaling configurations
-        configs = {}
-        for config_id in config_ids:
-            try:
-                request = ListScalingConfigsRequest()
-                request.scaling_configuration_id = config_id
-                response = config_client.list_scaling_configs(request)
-
-                if hasattr(response, 'scaling_configurations') and response.scaling_configurations:
-                    configs[config_id] = response.scaling_configurations[0]
-            except Exception as e:
-                self.manager.log.error(
-                    f"Failed to query scaling configuration {config_id}: {e}")
-
-        # Check each scaling group's security groups
-        for resource in resources:
-            config_id = resource.get('scaling_configuration_id')
-            if not config_id or config_id not in configs:
-                continue
-
-            config = configs[config_id]
-            if (not hasattr(config, 'instance_config') or
-                    not hasattr(config.instance_config, 'security_groups')):
-                continue
-
-            security_groups = config.instance_config.security_groups
-            has_invalid_sg = False
-
-            for sg in security_groups:
-                sg_id = getattr(sg, 'id', None)
-                if not sg_id:
-                    continue
-
-                try:
-                    # Query security group
-                    request = NeutronShowSecurityGroupRequest()
-                    request.security_group_id = sg_id
-                    vpc_client.neutron_show_security_group(request)
-                except exceptions.ClientRequestException as e:
-                    # If request fails, it means the security group is invalid
-                    self.manager.log.debug(
-                        f"Invalid security group ID {sg_id}, error: {e.error_msg}")
-                    has_invalid_sg = True
-                    break
-
-            if has_invalid_sg:
-                resource['has_invalid_security_group'] = True
-                final_results.append(resource)
-
-        return final_results
