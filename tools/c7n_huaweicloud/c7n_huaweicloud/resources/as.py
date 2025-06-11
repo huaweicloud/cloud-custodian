@@ -15,7 +15,7 @@ from huaweicloudsdkas.v1.model import (
     ResumeScalingGroupRequest, PauseScalingGroupRequest,
     UpdateScalingGroupRequest, DeleteScalingGroupRequest,
     DeleteScalingConfigRequest, ListScalingGroupsRequest,
-    ListScalingConfigsRequest, ListScalingInstancesRequest,
+    ListScalingConfigsRequest,
 )
 from huaweicloudsdkvpc.v2.model import (
     NeutronShowSubnetRequest, NeutronShowSecurityGroupRequest
