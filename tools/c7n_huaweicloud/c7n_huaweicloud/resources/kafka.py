@@ -20,6 +20,7 @@ from c7n.utils import type_schema, local_session
 
 log = logging.getLogger("custodian.huaweicloud.resources.dms-kafka")
 
+
 @resources.register('dms-kafka')
 class Kafka(QueryResourceManager):
     """HuaweiCloud distributed message service Kafka (DMS Kafka) instance resource manager.
