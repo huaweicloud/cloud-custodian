@@ -16,7 +16,7 @@ from c7n.filters import Filter, OPERATORS
 from c7n.utils import type_schema
 
 
-log = logging.getLogger("custodian.huaweicloud.resources.rocketmq")
+log = logging.getLogger("custodian.huaweicloud.resources.dms-rocketmq")
 
 
 @resources.register('dms-rocketmq')
