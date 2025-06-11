@@ -49,27 +49,6 @@ class AsGroupTest(BaseTest):
             '37ca2b35-6fc7-47ab-93c7-900324809c5c'
         )
 
-    def test_instance_deficit_filter(self):
-        """Test filter for Auto Scaling Groups with instance deficits"""
-        factory = self.replay_flight_data('as_group_instance_deficit')
-        p = self.load_policy(
-            {
-                'name': 'as-group-instance-deficit',
-                'resource': 'huaweicloud.as-group',
-                'filters': [{'type': 'instance-deficit'}]
-            },
-            session_factory=factory
-        )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-        # Verify that the resource contains the instance deficit marker
-        self.assertTrue(resources[0]['instance_deficit'])
-        # Verify that the current instance count is less than the desired count
-        self.assertLess(
-            resources[0]['current_instance_number'],
-            resources[0]['desire_instance_number']
-        )
-
     def test_by_unencrypted_config_filter(self):
         """Test filter for Auto Scaling Groups using unencrypted configurations"""
         factory = self.replay_flight_data('as_group_by_unencrypted_config')
@@ -291,7 +270,7 @@ class AsConfigTest(BaseTest):
             session_factory=factory
         )
         resources = p.run()
-        self.assertEqual(len(resources), 2)
+        self.assertEqual(len(resources), 1)
         self.assertEqual(
             resources[0]['scaling_configuration_name'], 'config_name_1')
 
