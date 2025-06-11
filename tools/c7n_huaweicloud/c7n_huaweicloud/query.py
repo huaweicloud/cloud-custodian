@@ -136,10 +136,12 @@ class ResourceQuery:
             else:
                 return resources
         return resources
+
     def _pagination_limit_start_number(self, m, enum_op, path, limit):
         """Process API pagination using start_number parameter
 
-        Similar to offset pagination, but uses start_number parameter to specify the starting position
+        Similar to offset pagination, but uses 
+        start_number parameter to specify the starting position
         """
         session = local_session(self.session_factory)
         client = session.client(m.service)

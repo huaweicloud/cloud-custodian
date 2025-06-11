@@ -1,7 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from unittest.mock import patch
 from huaweicloud_common import BaseTest
 
 
@@ -374,4 +373,4 @@ class AsConfigTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        self.assertTrue(resources[0]['scaling_configuration_id'],'test-scaling-configuration-id')
+        self.assertTrue(resources[0]['scaling_configuration_id'], 'test-scaling-configuration-id')

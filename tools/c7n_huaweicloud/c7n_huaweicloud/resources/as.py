@@ -4,7 +4,6 @@
 import logging
 from c7n.filters.core import (
     Filter, AgeFilter,
-    type_schema,
 )
 from c7n.utils import local_session, type_schema
 
@@ -213,7 +212,8 @@ class ByUnencryptedConfigFilter(Filter):
             # Extract all unencrypted configuration IDs
             unencrypted_config_ids = set()
             for config in scaling_configs:
-                if hasattr(config, 'instance_config') and hasattr(config.instance_config, 'metadata'):
+                if (hasattr(config, 'instance_config') and
+                     hasattr(config.instance_config, 'metadata')):
                     metadata = config.instance_config.metadata
                     encrypted_value = getattr(
                         metadata, '__system__encrypted', None)
@@ -248,7 +248,7 @@ class ByUnencryptedConfigFilter(Filter):
 class ByUserDataFilter(Filter):
     """Filter scaling groups by user_data
 
-    First queries scaling configurations with the specified user_data, 
+    First queries scaling configurations with the specified user_data,
     then finds matching scaling groups
 
     :example:
@@ -555,9 +555,9 @@ class UpdateAsGroup(BaseAction):
         health_periodic_audit_time={'type': 'integer'},
         health_periodic_audit_grace_period={'type': 'integer', 'minimum': 0},
         instance_terminate_policy={'enum': [
-            'OLD_CONFIG_OLD_INSTANCE', 
+            'OLD_CONFIG_OLD_INSTANCE',
             'OLD_CONFIG_NEW_INSTANCE',
-            'OLD_INSTANCE', 
+            'OLD_INSTANCE',
             'NEW_INSTANCE'
         ]},
         scaling_configuration_id={'type': 'string'},
@@ -695,7 +695,8 @@ class AsConfigByImageIdFilter(Filter):
 
         for resource in resources:
             # Check if instance_config.imageRef matches the specified image_id
-            if 'instance_config' in resource and resource['instance_config'].get('imageRef') == image_id:
+            if ('instance_config' in resource and 
+                    resource['instance_config'].get('imageRef') == image_id):
                 resource['matched_image_id'] = True
                 results.append(resource)
 
@@ -825,7 +826,8 @@ class InvalidResourcesFilter(Filter):
 
         # Intersection of Step 1 and Step 2
         invalid_groups = []
-        subnet_group_ids = {r['scaling_group_id']: r for r in invalid_subnet_groups}
+        subnet_group_ids = {r['scaling_group_id']
+            : r for r in invalid_subnet_groups}
         elb_group_ids = {r['scaling_group_id']: r for r in invalid_elb_groups}
 
         # Find scaling groups that appear in both lists
@@ -847,7 +849,7 @@ class InvalidResourcesFilter(Filter):
         # exists in the results of Step 1 and Step 2
         config_ids_from_steps_1_2 = {r.get('scaling_configuration_id')
                                      for r in invalid_groups if r.get('scaling_configuration_id')}
-        return [r for r in final_results 
+        return [r for r in final_results
                 if r.get('scaling_configuration_id') in config_ids_from_steps_1_2]
 
     def _check_invalid_subnets(self, resources):
@@ -956,7 +958,7 @@ class InvalidResourcesFilter(Filter):
 
             config = configs[config_id]
             if (not hasattr(config, 'instance_config') or
-                not hasattr(config.instance_config, 'security_groups')):
+                    not hasattr(config.instance_config, 'security_groups')):
                 continue
 
             security_groups = config.instance_config.security_groups
