@@ -27,8 +27,8 @@ interactions:
         } } ], "available_zones": [ "XXXa", "XXXb" ], "detail": null, "scaling_group_name":
         "as-group-test", "scaling_group_id": "77a7a397-7d2f-4e79-9da9-6a35e2709150",
         "scaling_group_status": "INSERVICE", "scaling_configuration_id": "1d281494-6085-4579-b817-c1f813be835f",
-        "scaling_configuration_name": "healthCheck", "current_instance_number": 0,
-        "desire_instance_number": 1, "min_instance_number": 0, "max_instance_number":
+        "scaling_configuration_name": "healthCheck", "current_instance_number": 1,
+        "desire_instance_number": 3, "min_instance_number": 2, "max_instance_number":
         500, "cool_down_time": 300, "lb_listener_id": "f06c0112570743b51c0e8fbe1f235bab",
         "security_groups": [ { "id": "8a4b1d5b-0054-419f-84b1-5c8a59ebc829" } ], "create_time":
         "2015-07-23T02:46:29Z", "vpc_id": "863ccae2-ee85-4d27-bc5b-3ba2a198a9e2",
@@ -65,59 +65,3 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Host:
-      - as.ap-southeast-1.myhwclouds.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
-      X-Sdk-Date:
-      - 20250609T063323Z
-    method: GET
-    uri: https://as.ap-southeast-1.myhwclouds.com/autoscaling-api/v1/ap-southeat-1/scaling_group_instance/77a7a397-7d2f-4e79-9da9-6a35e2709150/list
-  response:
-    body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"ba4315f8ba3c83d7e79c002cf8a5e5eb"}
-
-        '
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 09 Jun 2025 06:33:23 GMT
-      Server:
-      - CloudWAF
-      Set-Cookie:
-      - HWWAFSESTIME=1749450801255; path=/
-      - HWWAFSESID=0c366769a8d919234d; path=/
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - ba4315f8ba3c83d7e79c002cf8a5e5eb
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 401
-      message: Unauthorized
-version: 1

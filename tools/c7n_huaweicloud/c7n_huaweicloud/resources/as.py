@@ -133,45 +133,20 @@ class InstanceDeficitFilter(Filter):
     schema = type_schema('instance-deficit')
     permissions = ("as:scaling_instance:list",)
 
-    def get_instances(self, resources):
-        client = local_session(self.manager.session_factory).client('as-group')
-        instances_map = {}
-
-        for resource in resources:
-            group_id = resource['scaling_group_id']
-            instances = []
-
-            # Query scaling group instances
-            request = ListScalingInstancesRequest()
-            request.scaling_group_id = group_id
-            response = client.list_scaling_instances(request)
-
-            if hasattr(response, 'scaling_group_instances'):
-                instances = response.scaling_group_instances
-
-            instances_map[group_id] = instances
-
-        return instances_map
-
     def process(self, resources, event=None):
-        instances_map = self.get_instances(resources)
         results = []
 
         for resource in resources:
-            group_id = resource['scaling_group_id']
-            instances = instances_map.get(group_id, [])
-            current_instance_count = len(instances)
-
-            # Get desired and minimum instance counts
+            # Get the current number of instances,
+            # the desired number of instances, and the minimum number of instances.
             desire_instance_number = resource.get('desire_instance_number', 0)
             min_instance_number = resource.get('min_instance_number', 0)
+            current_instance_number = resource.get('current_instance_number', 0)
 
-            # Check if less than desired or minimum instance count
-            if (current_instance_count < desire_instance_number or
-                    current_instance_count < min_instance_number):
-                resource['current_instance_number'] = current_instance_count
+            # Check if it is less than the desired or minimum number of instances.
+            if (current_instance_number < desire_instance_number or
+                    current_instance_number < min_instance_number):
                 resource['instance_deficit'] = True
-                resource['instances'] = instances
                 results.append(resource)
 
         return results
