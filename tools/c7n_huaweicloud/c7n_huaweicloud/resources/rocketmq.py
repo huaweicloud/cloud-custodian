@@ -25,14 +25,6 @@ class RocketMQ(QueryResourceManager):
 
     Responsible for discovering, filtering, and managing RocketMQ instance resources.
 
-    :example:
-    Define a simple policy to get all RocketMQ instances:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: rocketmq-instances-discovery  # Policy name
-            resource: huaweicloud.dms-rocketmq  # Specify resource type as HuaweiCloud RocketMQ
     """
 
     class resource_type(TypeInfo):
