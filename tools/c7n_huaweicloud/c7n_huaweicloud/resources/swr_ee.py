@@ -1316,7 +1316,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         response = client.update_immutable_rule(UpdateImmutableRuleRequest(
             instance_id=instance_id,
             namespace_name=namespace_name,
-            immutable_rule_id=imutableDict['id'],
+            immutable_rule_id=imutable_dict['id'],
             body=rule))
         log.info(
             f"Successfully updated immutable rule: "
