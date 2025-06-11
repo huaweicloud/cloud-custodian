@@ -135,7 +135,8 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         elif params['notification_list'] is not None:
             topic_urns = params['notification_list']
         else:
-            log.error("Update alarm notification need setting notification_name, notification_list param")
+            log.error("Update alarm notification need setting notification_name, "
+                      "notification_list param")
             raise RuntimeError("missing notification_name, notification_list param")
 
         request = UpdateAlarmNotificationsRequest()
