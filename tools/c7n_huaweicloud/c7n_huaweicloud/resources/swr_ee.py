@@ -1,6 +1,5 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-import fnmatch
 import logging
 import traceback
 import jmespath
@@ -485,7 +484,7 @@ class SwrEeNamespace(QueryResourceManager):
 
 
 @SwrEeNamespace.filter_registry.register('age')
-class SwrEeAgeFilter(AgeFilter):
+class SwrEeNamespaceAgeFilter(AgeFilter):
     """SWR Namespace creation time filter.
 
     :example:
@@ -909,31 +908,31 @@ class SetLifecycle(HuaweiCloudBaseAction):
     def process(self, resources):
         """Process resources list, create lifecycle rules for each repository.
 
-        :param resources: List of resources to process
-        :return: Processed resources
+        Args:
+            resources: List of resources to process
+
+        Returns:
+            Processed resources
         """
+        is_set = self.data.get('state', True)
 
-        is_set = True if self.data.get('state', True) else False
-
-        namespace_repos = {}
-        # Group by instance and namespace
         for resource in resources:
-            self._create_or_update_retention_policy(resource['instance_id'],
-                                                    resource['name'],
-                                                    resource['namespace_id'],
-                                                    is_set)
+            self._create_or_update_retention_policy(
+                resource['instance_id'],
+                resource['name'],
+                resource['namespace_id'],
+                is_set
+            )
 
     def perform_action(self, resource):
         pass
 
-    def _create_or_update_retention_policy(self, instance_id, namespace_name, namespace_id,
-                                           is_set):
-        """Implement abstract method, perform action for a single resource.
-
-        :param resource: Single resource to process
-        :return: Updated resource with action results
+        Args:
+            instance_id: Instance ID
+            namespace_name: Namespace name
+            namespace_id: Namespace ID
+            is_set: Whether to set or unset the policy
         """
-
         client = self.manager.get_client()
         policy_name = f"custodian-retention-{namespace_name}"
 
@@ -952,12 +951,12 @@ class SetLifecycle(HuaweiCloudBaseAction):
             )
 
             # If the policy does not exist and is_set is False (cancel), return directly
-            if len(retentions) <= 0 and is_set is False:
+            if not retentions and not is_set:
                 return
 
             # If the namespace has already been manually configured with a policy,
             # skip and do not create a new one
-            if len(retentions) > 0 and retentions[0]['name'] != policy_name:
+            if retentions and retentions[0]['name'] != policy_name:
                 log.warning(
                     f"instance: {instance_id}, namespace: {namespace_name}, "
                     f"policy has been manually created")
@@ -970,7 +969,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 config_rules = retentions[0]['rules']
 
             for rule_data in config_rules:
-
                 # Create tag selectors
                 tag_selectors = []
                 for selector_data in rule_data.get('tag_selectors', []):
@@ -1002,9 +1000,9 @@ class SetLifecycle(HuaweiCloudBaseAction):
                         pattern="**"
                     ))
 
-                    # Create scope selectors
+                # Create scope selectors
                 repository_selectors = []
-                for scope_data in rule_data['scope_selectors'].get('repository', []):
+                for scope_data in rule_data.get('scope_selectors', {}).get('repository', []):
                     # Ensure kind and pattern are string type
                     kind = scope_data.get('kind')
                     pattern = scope_data.get('pattern')
@@ -1041,12 +1039,16 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                 scope_selectors = {"repository": repository_selectors}
 
-                rule = RetentionRule(priority=0, disabled=False, action='retain',
-                                     template=rule_data.get('template'),
-                                     params=rule_data.get('params', {}),
-                                     tag_selectors=tag_selectors,
-                                     scope_selectors=scope_selectors,
-                                     repo_scope_mode='regular')
+                rule = RetentionRule(
+                    priority=0,
+                    disabled=False,
+                    action='retain',
+                    template=rule_data.get('template'),
+                    params=rule_data.get('params', {}),
+                    tag_selectors=tag_selectors,
+                    scope_selectors=scope_selectors,
+                    repo_scope_mode='regular'
+                )
                 rules.append(rule)
 
             # Log final generated rules
@@ -1055,7 +1057,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
             trigger_setting = TriggerSetting(cron="0 59 23 * * ?")
             trigger_config = TriggerConfig(type="scheduled", trigger_settings=trigger_setting)
 
-            if len(retentions) <= 0:
+            if not retentions:
                 # Create request body
                 body = CreateRetentionPolicyRequestBody(
                     algorithm=self.data.get('algorithm', 'or'),
@@ -1064,9 +1066,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     name=policy_name
                 )
 
-                request = CreateInstanceRetentionPolicyRequest(instance_id=instance_id,
-                                                               namespace_name=namespace_name,
-                                                               body=body)
+                request = CreateInstanceRetentionPolicyRequest(
+                    instance_id=instance_id,
+                    namespace_name=namespace_name,
+                    body=body
+                )
 
                 # Output complete request content for debugging
                 if hasattr(request, 'to_dict'):
@@ -1095,10 +1099,12 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     name=policy_name
                 )
 
-                request = UpdateInstanceRetentionPolicyRequest(instance_id=instance_id,
-                                                               namespace_name=namespace_name,
-                                                               policy_id=retentions[0]['id'],
-                                                               body=body)
+                request = UpdateInstanceRetentionPolicyRequest(
+                    instance_id=instance_id,
+                    namespace_name=namespace_name,
+                    policy_id=retentions[0]['id'],
+                    body=body
+                )
 
                 # Output complete request content for debugging
                 if hasattr(request, 'to_dict'):
@@ -1129,6 +1135,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
 @SwrEeNamespace.action_registry.register('set-immutability')
 class SwrEeSetImmutability(HuaweiCloudBaseAction):
+    """Set immutability rules for SWR repositories."""
+
     permissions = ('swr:PutImageTagMutability',)
     schema = type_schema(
         'set-immutability',
@@ -1166,8 +1174,6 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
     def process(self, resources):
         s = True if self.data.get('state', True) else False
 
-        namespace_repos = {}
-        # Group by instance and namespace
         for resource in resources:
             self._create_or_update_immutablerule_policy(resource['instance_id'],
                                                         resource['name'],
@@ -1177,22 +1183,30 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         pass
 
     def _create_or_update_immutablerule_policy(self, instance_id, namespace_name, namespace_id,
-                                               enable_immutability):
-        """Implement abstract method, perform action for a single resource.
+                                              enable_immutability):
+        """Create or update immutability rule policy.
 
-        :param resource: Single resource to process
-        :return: Updated resource with action results
+        Args:
+            instance_id: Instance ID
+            namespace_name: Namespace name
+            namespace_id: Namespace ID
+            enable_immutability: Whether to enable or disable immutability
         """
         client = self.manager.get_client()
         priority = 101
 
         # Query immutablerule policy by namespace
-        imutable_rules = _pagination_limit_offset(client, 'list_immutable_rules',
-                                                  'immutable_rules',
-                                                  ListImmutableRulesRequest(
-                                                      instance_id=instance_id,
-                                                      namespace_id=int(namespace_id),
-                                                      limit=100))
+        imutable_rules = _pagination_limit_offset(
+            client,
+            'list_immutable_rules',
+            'immutable_rules',
+            ListImmutableRulesRequest(
+                instance_id=instance_id,
+                namespace_id=int(namespace_id),
+                limit=100
+            )
+        )
+
         tag_selectors = []
 
         for tag_selector in self.data.get('tag_selectors', []):
@@ -1212,7 +1226,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             )
             tag_selectors.append(selector)
 
-        if len(tag_selectors) <= 0:
+        if not tag_selectors:
             tag_selectors.append(RuleSelector(
                 kind="doublestar",
                 decoration="matches",
@@ -1248,6 +1262,8 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         # Ensure there are scope selectors
         if not repository_selectors:
             # Add a default scope selector to avoid API error
+            log.warning(
+                "No valid repository_selectors, will use default empty repository selector")
             repository_selectors.append(RetentionSelector(
                 kind="doublestar",
                 decoration="repoMatches",
@@ -1258,19 +1274,25 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
         # If the immutability rule does not exist and you want to remove the immutability policy,
         # return directly
-        if len(imutable_rules) <= 0:
+        if not imutable_rules:
             if enable_immutability:
-                rule = CreateImmutableRuleBody(namespace_id=int(namespace_id),
-                                               namespace_name=namespace_name,
-                                               disabled=False, action='immutable',
-                                               template='immutable_template',
-                                               tag_selectors=tag_selectors,
-                                               scope_selectors=scope_selectors,
-                                               priority=priority)
-                response = client.create_immutable_rule(CreateImmutableRuleRequest(
-                    instance_id=instance_id,
+                rule = CreateImmutableRuleBody(
+                    namespace_id=int(namespace_id),
                     namespace_name=namespace_name,
-                    body=rule))
+                    disabled=False,
+                    action='immutable',
+                    template='immutable_template',
+                    tag_selectors=tag_selectors,
+                    scope_selectors=scope_selectors,
+                    priority=priority
+                )
+                response = client.create_immutable_rule(
+                    CreateImmutableRuleRequest(
+                        instance_id=instance_id,
+                        namespace_name=namespace_name,
+                        body=rule
+                    )
+                )
 
                 log.info(
                     f"Successfully created immutable rule: "
@@ -1279,9 +1301,9 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
             return
 
-        imutableDict = imutable_rules[0]
+        imutable_dict = imutable_rules[0]
         # 101 is the unique priority configured by custodian
-        if imutableDict['priority'] != priority:
+        if imutable_dict['priority'] != priority:
             log.warning(
                 f"instance_id: {instance_id}, namespace_name: {namespace_name}, "
                 f"has been manually set")
@@ -1299,7 +1321,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             body=rule))
         log.info(
             f"Successfully updated immutable rule: "
-            f"{instance_id}/{namespace_name}, ID: {imutableDict['id']}"
+            f"{instance_id}/{namespace_name}, ID: {imutable_dict['id']}"
         )
 
 
