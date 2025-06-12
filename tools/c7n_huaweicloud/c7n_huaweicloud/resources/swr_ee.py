@@ -364,11 +364,11 @@ class SwrEeImage(QueryResourceManager):
             art_urn = "/".join(resource_id_list[1:])
 
             for temp_resource in temp_resources:
-                if 'repositories_name' not in temp_resource:
+                if 'repository_name' not in temp_resource:
                     log.debug("not have repository name")
                     continue
 
-                art = f"{temp_resource['repositories_name']}/{temp_resource['digest']}"
+                art = f"{temp_resource['repository_name']}/{temp_resource['digest']}"
                 if art == art_urn:
                     resources.append(temp_resource)
 
