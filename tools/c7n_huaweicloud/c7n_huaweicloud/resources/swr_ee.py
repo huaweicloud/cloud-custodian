@@ -12,6 +12,7 @@ from c7n.utils import local_session, type_schema
 from c7n.exceptions import PolicyValidationError
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from c7n_huaweicloud.actions.base import is_retryable_exception
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
@@ -1360,6 +1361,14 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         )
 
 
+@retry(retry_on_exception=is_retryable_exception,
+       wait_exponential_multiplier=1000,
+       wait_exponential_max=10000,
+       stop_max_attempt_number=5)
+def _invoke_client_enum(self, client, enum_op, request):
+    _invoker = getattr(client, enum_op)
+    return _invoker(request)
+
 def _pagination_limit_offset(client, enum_op, path, request):
     """Handle pagination for API requests with limit and offset.
 
@@ -1378,7 +1387,7 @@ def _pagination_limit_offset(client, enum_op, path, request):
     while True:
         request.limit = request.limit or limit
         request.offset = offset
-        response = getattr(client, enum_op)(request)
+        response = _invoke_client_enum(client, enum_op, request)
         res = jmespath.search(
             path,
             eval(
