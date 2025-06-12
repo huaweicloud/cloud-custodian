@@ -137,7 +137,6 @@ class SwrEe(QueryResourceManager):
 
                 for repository in repositories:
                     repository['instance_id'] = instance['id']
-                    repository['instance_name'] = instance['name']
                     repository['uid'] = f"{instance['id']}/{repository['name']}"
                     repository['is_public'] = namespaces_public_mapping.get(
                         repository['namespace_id'], False
@@ -262,7 +261,7 @@ class SwrEeImage(QueryResourceManager):
         log.info("Retrieved a total of %d SWR images", len(all_images))
         return all_images
 
-    def _get_artifacts(self):
+    def _get_artifacts(self, query):
         """Get artifacts using list_instance_all_artifacts API.
 
         Returns:
@@ -272,19 +271,15 @@ class SwrEeImage(QueryResourceManager):
         client = self.get_client()
 
         instances = []
-        temp_instances = _pagination_limit_offset(
-            client,
-            "list_instance",
-            "instances",
-            ListInstanceRequest(limit=limit)
-        )
-
         if query and 'instance_id' in query:
-            for instance in temp_instances:
-                if instance["id"] == query['instance_id']:
-                    instances.append(instance)
+            instances.append({"id": query['instance_id']})
         else:
-            instances = temp_instances
+            instances = _pagination_limit_offset(
+                client,
+                "list_instance",
+                "instances",
+                ListInstanceRequest(limit=limit)
+            )
 
         all_artifacts = []
         for instance in instances:
@@ -299,7 +294,6 @@ class SwrEeImage(QueryResourceManager):
             )
             for artifact in artifacts:
                 artifact['instance_id'] = instance['id']
-                artifact['instance_name'] = instance['name']
                 artifact['uid'] = f"{instance['id']}/{artifact['id']}"
             all_artifacts.extend(artifacts)
 
@@ -333,7 +327,6 @@ class SwrEeImage(QueryResourceManager):
             )
             for artifact in artifacts:
                 artifact['instance_id'] = repo['instance_id']
-                artifact['instance_name'] = repo['instance_name']
                 artifact['uid'] = f"{repo['instance_id']}/{artifact['id']}"
 
             all_artifacts.extend(artifacts)
@@ -357,19 +350,6 @@ class SwrEeImage(QueryResourceManager):
         Returns:
             list: List of matching resources
         """
-        resources = []
-        for resource_id in resource_ids:
-            namespace_repo = resource_id.split(':')[0]
-            namespace = namespace_repo.split('/')[0]
-            repository = "/".join(namespace_repo.split('/')[1:])
-            temp_resources = self._fetch_resources({
-                "namespace": namespace,
-                "name": repository
-            })
-            resources.append(temp_resources)
-
-        return self.filter_resources(resources)
-
         resources = []
         for resource_id in resource_ids:
             # resource_id: {instance_id}/{namespace_name}/{repo_name}/{digest}
@@ -498,7 +478,6 @@ class SwrEeNamespace(QueryResourceManager):
 
                 for namespace in namespaces:
                     namespace['instance_id'] = instance['id']
-                    namespace['instance_name'] = instance['name']
                     namespace['uid'] = f"{instance['id']}/{namespace['name']}"
                     namespace['is_public'] = namespace["metadata"]["public"].lower() == "true"
                     all_namespaces.append(namespace)
