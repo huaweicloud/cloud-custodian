@@ -1,0 +1,119 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpcep.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250612T094131Z
+    method: GET
+    uri: https://vpcep.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/vpc-endpoints?limit=100&offset=0
+  response:
+    body:
+      string: '{"endpoints":[{"id":"endpoint-12345678","service_type":"interface",
+        "status":"accepted","active_status":["active"],
+        "endpoint_service_name":"com.huaweicloud.service.test",
+        "marker_id":1234,"endpoint_service_id":"endpoint-service-12345678","enable_dns":true,
+        "dns_names":["endpoint-12345678.com.huaweicloud.service.test.ap-southeast-1.vpcep.huaweicloud.com"],
+        "subnet_id":"subnet-12345678","vpc_id":"vpc-12345678","created_at":"2025-06-12T09:41:31Z",
+        "updated_at":"2025-06-12T09:41:31Z","project_id":"ap-southeat-1"}],
+        "total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 12 Jun 2025 09:41:31 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1749721291987; path=/
+      - HWWAFSESID=b2e5c7f9525bca1179; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 701e9c2d9294526dfc959439fae1a753
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"subject":"VPC\u7ec8\u7aef\u8282\u70b9\u914d\u7f6e\u901a\u77e5","message":"alert:xxxx
+      Please check whether VPC vpc-12345678 has a VPC endpoint configured, and whether the
+      endpoint service name is com.huaweicloud.service.test."}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '213'
+      Content-Type:
+      - application/json
+      Host:
+      - smn.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250612T094131Z
+    method: POST
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn:smn:region:account-id:topic-name/publish
+  response:
+    body:
+      string: '{"request_id": "7b1855f8-1121-5f81-b7b6-6712e8549d1c", "message_id": "test-message-id"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 12 Jun 2025 09:41:31 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1749721291990; path=/
+      - HWWAFSESID=f52e94d7913eca3514; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7b1855f8-1121-5f81-b7b6-6712e8549d1c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1 
