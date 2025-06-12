@@ -15,10 +15,11 @@ from huaweicloudsdkas.v1.model import (
     ResumeScalingGroupRequest, PauseScalingGroupRequest,
     UpdateScalingGroupRequest, DeleteScalingGroupRequest,
     DeleteScalingConfigRequest, ListScalingGroupsRequest,
-    ListScalingConfigsRequest,
+    ListScalingConfigsRequest, ResumeScalingGroupOption,
+    PauseScalingGroupOption
 )
 from huaweicloudsdkvpc.v2.model import (
-    NeutronShowSubnetRequest, NeutronShowSecurityGroupRequest
+    ShowSecurityGroupRequest, ShowSubnetRequest
 )
 from huaweicloudsdkelb.v2.model import (
     ShowPoolRequest
@@ -141,7 +142,8 @@ class InstanceDeficitFilter(Filter):
             # the desired number of instances, and the minimum number of instances.
             desire_instance_number = resource.get('desire_instance_number', 0)
             min_instance_number = resource.get('min_instance_number', 0)
-            current_instance_number = resource.get('current_instance_number', 0)
+            current_instance_number = resource.get(
+                'current_instance_number', 0)
 
             # Check if it is less than the desired or minimum number of instances.
             if (current_instance_number < desire_instance_number or
@@ -162,9 +164,7 @@ class InvalidResourcesFilter(Filter):
     2. Load balancer pool no longer exists or is invalid
     3. Security group no longer exists or is invalid
 
-    All three conditions must be met, and the scaling
-    configuration ID must exist in the scaling group list that
-    meets conditions 1 and 2
+    If any of the above conditions is met, the scaling group is considered invalid.
 
     :example:
 
@@ -184,50 +184,37 @@ class InvalidResourcesFilter(Filter):
         if not resources:
             return []
 
+        results = []
+
         # Step 1: Check invalid subnets
         invalid_subnet_groups = self._check_invalid_subnets(resources)
-        if not invalid_subnet_groups:
-            return []
+        results.extend(invalid_subnet_groups)
 
-        # Step 2: Check invalid ELB pool
+        # Step 2: Check invalid ELB pools
         invalid_elb_groups = self._check_invalid_elb_pools(resources)
-        if not invalid_elb_groups:
-            return []
 
-        # Intersection of Step 1 and Step 2
-        invalid_groups = []
-        subnet_group_ids = {r['scaling_group_id']
-            : r for r in invalid_subnet_groups}
-        elb_group_ids = {r['scaling_group_id']: r for r in invalid_elb_groups}
+        # Add groups with invalid ELB pools that are not already in results
+        existing_group_ids = {r['scaling_group_id'] for r in results}
+        for group in invalid_elb_groups:
+            if group['scaling_group_id'] not in existing_group_ids:
+                results.append(group)
+                existing_group_ids.add(group['scaling_group_id'])
 
-        # Find scaling groups that appear in both lists
-        common_group_ids = set(subnet_group_ids.keys()
-                               ) & set(elb_group_ids.keys())
-        for group_id in common_group_ids:
-            group = subnet_group_ids[group_id]
-            group['has_invalid_elb_pool'] = True
-            invalid_groups.append(group)
+        # If we already have invalid groups from steps 1 and 2, no need to check security groups
+        if results:
+            return results
 
-        if not invalid_groups:
-            return []
+        # Step 3: Check invalid security groups only if no invalid resources found in steps 1 and 2
+        invalid_sg_groups = self._check_invalid_security_groups(resources)
+        results.extend(invalid_sg_groups)
 
-        # Step 3: Check invalid security group
-        # Further check security groups for groups filtered out in Step 1 and Step 2
-        final_results = self._check_invalid_security_groups(invalid_groups)
-
-        # Ensure that the scaling_configuration_id in the final results
-        # exists in the results of Step 1 and Step 2
-        config_ids_from_steps_1_2 = {r.get('scaling_configuration_id')
-                                     for r in invalid_groups if r.get('scaling_configuration_id')}
-        return [r for r in final_results
-                if r.get('scaling_configuration_id') in config_ids_from_steps_1_2]
+        return results
 
     def _check_invalid_subnets(self, resources):
         """Check if scaling group networks are valid"""
         vpc_client = local_session(
             self.manager.session_factory).client('vpc_v2')
         invalid_groups = []
-
         for resource in resources:
             networks = resource.get('networks', [])
             has_invalid_subnet = False
@@ -239,11 +226,11 @@ class InvalidResourcesFilter(Filter):
 
                 try:
                     # Query subnet
-                    request = NeutronShowSubnetRequest()
+                    request = ShowSubnetRequest()
                     request.subnet_id = subnet_id
-                    vpc_client.neutron_show_subnet(request)
+                    vpc_client.show_subnet(request)
                 except exceptions.ClientRequestException as e:
-                    # If request fails, it means the subnet is invalid
+                    # If the response is empty or returns a 404 error code, it indicates an invalid subnet
                     self.manager.log.debug(
                         f"Invalid subnet ID {subnet_id}, error: {e.error_msg}")
                     has_invalid_subnet = True
@@ -276,14 +263,14 @@ class InvalidResourcesFilter(Filter):
                     request.pool_id = pool_id
                     elb_client.show_pool(request)
                 except exceptions.ClientRequestException as e:
-                    # If request fails, it means the ELB pool is invalid
+                    # If the response is empty or returns a 404 error code, it indicates an invalid ELB pool
                     self.manager.log.debug(
                         f"Invalid ELB pool ID {pool_id}, error: {e.error_msg}")
                     has_invalid_pool = True
                     break
 
             if has_invalid_pool:
-                resource['has_invalid_pool'] = True
+                resource['has_invalid_elb_pool'] = True
                 invalid_groups.append(resource)
 
         return invalid_groups
@@ -294,14 +281,12 @@ class InvalidResourcesFilter(Filter):
             self.manager.session_factory).client('vpc_v2')
         config_client = local_session(
             self.manager.session_factory).client('as-config')
-        final_results = []
+        invalid_groups = []
 
         # Get all resource scaling configuration IDs
-        config_ids = set()
-        for resource in resources:
-            config_id = resource.get('scaling_configuration_id')
-            if config_id:
-                config_ids.add(config_id)
+        config_ids = {resource.get('scaling_configuration_id')
+                      for resource in resources
+                      if resource.get('scaling_configuration_id')}
 
         if not config_ids:
             return []
@@ -341,11 +326,11 @@ class InvalidResourcesFilter(Filter):
 
                 try:
                     # Query security group
-                    request = NeutronShowSecurityGroupRequest()
+                    request = ShowSecurityGroupRequest()
                     request.security_group_id = sg_id
-                    vpc_client.neutron_show_security_group(request)
+                    vpc_client.show_security_group(request)
                 except exceptions.ClientRequestException as e:
-                    # If request fails, it means the security group is invalid
+                    # If the response is empty or returns a 404 error code, it indicates an invalid security group
                     self.manager.log.debug(
                         f"Invalid security group ID {sg_id}, error: {e.error_msg}")
                     has_invalid_sg = True
@@ -353,9 +338,9 @@ class InvalidResourcesFilter(Filter):
 
             if has_invalid_sg:
                 resource['has_invalid_security_group'] = True
-                final_results.append(resource)
+                invalid_groups.append(resource)
 
-        return final_results
+        return invalid_groups
 
 
 @AsGroup.filter_registry.register('by-unencrypted-config')
@@ -394,7 +379,7 @@ class ByUnencryptedConfigFilter(Filter):
             unencrypted_config_ids = set()
             for config in scaling_configs:
                 if (hasattr(config, 'instance_config') and
-                     hasattr(config.instance_config, 'metadata')):
+                        hasattr(config.instance_config, 'metadata')):
                     metadata = config.instance_config.metadata
                     encrypted_value = getattr(
                         metadata, '__system__encrypted', None)
@@ -585,7 +570,7 @@ class DeleteAsGroup(BaseAction):
                 value: INSERVICE
             actions:
               - type: delete
-                force: true
+                force: yes
     """
     schema = type_schema(
         'delete',
@@ -595,7 +580,7 @@ class DeleteAsGroup(BaseAction):
 
     def process(self, resources):
         client = local_session(self.manager.session_factory).client('as-group')
-        force = self.data.get('force', False)
+        force = self.data.get('force', 'no')
 
         for resource in resources:
             self.process_resource(client, resource, force)
@@ -652,6 +637,10 @@ class EnableAsGroup(BaseAction):
             request = ResumeScalingGroupRequest()
             request.scaling_group_id = group_id
 
+            body = ResumeScalingGroupOption()
+            body.action = "resume"
+            request.body = body
+
             try:
                 client.resume_scaling_group(request)
                 self.manager.log.info(
@@ -696,6 +685,10 @@ class DisableAsGroup(BaseAction):
             request = PauseScalingGroupRequest()
             request.scaling_group_id = group_id
 
+            body = PauseScalingGroupOption()
+            body.action = "pause"
+            request.body = body
+
             try:
                 client.pause_scaling_group(request)
                 self.manager.log.info(
@@ -728,10 +721,11 @@ class UpdateAsGroup(BaseAction):
     """
     schema = type_schema(
         'update',
+        scaling_group_name={'type': 'string', 'minLength': 1, 'maxLength': 64},
         min_instance_number={'type': 'integer', 'minimum': 0},
         max_instance_number={'type': 'integer', 'minimum': 0},
         desire_instance_number={'type': 'integer', 'minimum': 0},
-        cool_down_time={'type': 'integer', 'minimum': 0},
+        cool_down_time={'type': 'integer', 'minimum': 0, 'maximum': 86400},
         health_periodic_audit_method={'enum': ['ELB_AUDIT', 'NOVA_AUDIT']},
         health_periodic_audit_time={'type': 'integer'},
         health_periodic_audit_grace_period={'type': 'integer', 'minimum': 0},
@@ -743,6 +737,27 @@ class UpdateAsGroup(BaseAction):
         ]},
         scaling_configuration_id={'type': 'string'},
         notifications={'type': 'array', 'items': {'type': 'string'}},
+        enterprise_project_id={'type': 'string'},
+        multi_az_priority_policy={
+            'enum': ['EQUILIBRIUM_DISTRIBUTE', 'PICK_FIRST']},
+        available_zones={'type': 'array', 'items': {'type': 'string'}},
+        networks={'type': 'array', 'items': {'type': 'object', 'properties': {
+            'id': {'type': 'string'},
+            'ipv6_enable': {'type': 'boolean'},
+            'ipv6_bandwidth': {'type': 'object', 'properties': {'id': {'type': 'string'}}, 'required': ['id']},
+            'allowed_address_pairs': {'type': 'array', 'items': 
+                                      {'type': 'object', 'properties': {'ip_address': {'type': 'string'}}}}
+        }, 'required': ['id']}},
+        security_groups={'type': 'array', 'items': {'type': 'object', 'properties': {
+            'id': {'type': 'string'}}, 'required': ['id']}},
+        lbaas_listeners={'type': 'array', 'items': {'type': 'object', 'properties': {
+            'pool_id': {'type': 'string'},
+            'protocol_port': {'type': 'integer'},
+            'weight': {'type': 'integer'},
+            'protocol_version': {'type': 'string'}
+        }, 'required': ['pool_id', 'protocol_port']}},
+        deletion_protection={'type': 'boolean'},
+        iam_agency_name={'type': 'string'}
     )
     permissions = ("as:scaling_group:update",)
 
@@ -755,7 +770,7 @@ class UpdateAsGroup(BaseAction):
     def process_resource(self, client, resource):
         group_id = resource['scaling_group_id']
 
-        # Create update request
+        # 创建更新请求
         request = UpdateScalingGroupRequest()
         request.scaling_group_id = group_id
 
@@ -766,7 +781,7 @@ class UpdateAsGroup(BaseAction):
                 # Convert key format (snake_case to camelCase)
                 body[key] = self.data[key]
 
-        request.body = {"scaling_group": body}
+        request.body = body
 
         try:
             client.update_scaling_group(request)
@@ -926,3 +941,27 @@ class AsConfigAgeFilter(AgeFilter):
 
     # Specify the name of the date attribute in the resource dictionary
     date_attribute = "create_time"
+
+
+@resources.register('as-policy')
+class AsPolicy(QueryResourceManager):
+    """Huawei Cloud Auto Scaling Policy Resource
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: as-policy-query
+            resource: huaweicloud.as-policy
+    """
+    class resource_type(TypeInfo):
+        service = 'as-policy'
+        enum_spec = ('list_all_scaling_v2_policies',
+                     'scaling_policies', 'start_number')
+        id = 'scaling_policy_id'
+        name = 'scaling_policy_name'
+        filter_name = 'scaling_policy_name'
+        filter_type = 'scalar'
+        taggable = True
+        tag_resource_type = 'scaling_policy'

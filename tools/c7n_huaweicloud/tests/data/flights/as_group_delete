@@ -120,4 +120,61 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - as.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250612T132739Z
+    method: DELETE
+    uri: https://as.ap-southeast-1.myhwclouds.com/autoscaling-api/v1/ap-southeat-1/scaling_group/test-scaling-group-id?force_delete=yes
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"db86e248e59fb7dae8bf211a0bf33e71"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 12 Jun 2025 13:27:39 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=246807383f908a73fc; path=/
+      - HWWAFSESTIME=1749734859831; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - db86e248e59fb7dae8bf211a0bf33e71
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
 version: 1

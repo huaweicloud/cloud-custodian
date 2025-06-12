@@ -56,11 +56,10 @@ interactions:
       X-Sdk-Date:
       - 20250609T073702Z
     method: GET
-    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v2.0/subnets/invalid-subnet-id
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/subnets/invalid-subnet-id
   response:
     body:
-      string: '{"NeutronError": {"message": "Subnet invalid-subnet-id could not be
-        found.", "type": "SubnetNotFound", "detail": ""}}'
+      string: '{"error_msg":"Subnet invalid-subnet-id could not be found","error_code":"VPC.0501"}'
     headers:
       Connection:
       - keep-alive
@@ -164,11 +163,10 @@ interactions:
       X-Sdk-Date:
       - 20250609T073707Z
     method: GET
-    uri: https://vpc.ap-southeast-1.myhwclouds.com/v2.0/security-groups/invalid-security-group-id
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v2.0/security-groups/invalid-security-group-id
   response:
     body:
-      string: '{"NeutronError": {"message": "Security Group invalid-security-group-id
-        could not be found.", "type": "SecurityGroupNotFound", "detail": ""}}'
+      string: '{"error_msg":"Security Group invalid-security-group-id could not be found","error_code":"VPC.0501"}'
     headers:
       Connection:
       - keep-alive
@@ -179,59 +177,4 @@ interactions:
     status:
       code: 404
       message: Not Found
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Host:
-      - vpc.ap-southeast-1.myhuaweicloud.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
-      X-Sdk-Date:
-      - 20250609T120428Z
-    method: GET
-    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v2.0/security-groups/invalid-security-group-id
-  response:
-    body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"ed86a82582396a0b40a94ae264242bb8"}
-
-        '
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 09 Jun 2025 12:04:28 GMT
-      Server:
-      - CloudWAF
-      Set-Cookie:
-      - HWWAFSESID=184917c471622f6fb6; path=/
-      - HWWAFSESTIME=1749470667591; path=/
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - ed86a82582396a0b40a94ae264242bb8
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 401
-      message: Unauthorized
 version: 1

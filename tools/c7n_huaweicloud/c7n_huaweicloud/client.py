@@ -139,7 +139,7 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
-from huaweicloudsdkas.v1 import AsClient, ListScalingGroupsRequest, ListScalingConfigsRequest
+from huaweicloudsdkas.v1 import AsClient, ListScalingGroupsRequest, ListScalingConfigsRequest, ListAllScalingV2PoliciesRequest
 from huaweicloudsdkas.v1.region.as_region import AsRegion
 from huaweicloudsdkelb.v2 import ElbClient as ElbClientV2
 from huaweicloudsdkelb.v2.region.elb_region import ElbRegion as ElbRegionV2
@@ -556,6 +556,13 @@ class Session:
                 .with_region(AsRegion.value_of(self.region))
                 .build()
             )
+        elif service == 'as-policy':
+            client = (
+                AsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AsRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -710,4 +717,6 @@ class Session:
             request = ListScalingGroupsRequest()
         elif service == 'as-config':
             request = ListScalingConfigsRequest()
+        elif service == 'as-policy':
+            request = ListAllScalingV2PoliciesRequest()
         return request

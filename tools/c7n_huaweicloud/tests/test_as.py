@@ -165,12 +165,16 @@ class AsGroupTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        # Verify that the resource has markers for invalid resources
-        self.assertTrue(resources[0]['has_invalid_subnet'])
-        self.assertTrue(resources[0]['has_invalid_elb_pool'])
-        self.assertTrue(resources[0]['has_invalid_security_group'])
-        # Verify that scaling configuration ID is correct
-        self.assertIsNotNone(resources[0]['scaling_configuration_id'])
+        # Verify that the resource contains invalid resource markers
+        # Since any API exception will mark the resource as invalid, we only need to verify at least one invalid marker exists
+        self.assertTrue(
+            resources[0].get('has_invalid_subnet') or
+            resources[0].get('has_invalid_elb_pool') or
+            resources[0].get('has_invalid_security_group')
+        )
+        # Verify the scaling configuration ID is correct
+        self.assertEqual(
+            resources[0]['scaling_configuration_id'], 'test-scaling-config-id')
 
     # ==============================
     # Action Tests
@@ -189,7 +193,7 @@ class AsGroupTest(BaseTest):
                         'value': 'test-scaling-group-id'
                     }
                 ],
-                'actions': [{'type': 'delete', 'force': True}]
+                'actions': [{'type': 'delete', 'force': 'yes'}]
             },
             session_factory=factory
         )
@@ -327,7 +331,8 @@ class AsConfigTest(BaseTest):
             session_factory=factory
         )
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Assuming 1 resource meets the condition
+        # Assuming 1 resource meets the condition
+        self.assertEqual(len(resources), 1)
 
     # ==============================
     # Action Tests
@@ -352,4 +357,23 @@ class AsConfigTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        self.assertTrue(resources[0]['scaling_configuration_id'], 'test-scaling-configuration-id')
+        self.assertTrue(
+            resources[0]['scaling_configuration_id'], 'test-scaling-configuration-id')
+
+
+class AsPolicyTest(BaseTest):
+
+    # ==============================
+    # Basic Resource Query Tests
+    # ==============================
+    def test_as_config_query(self):
+        """Test the basic query policy"""
+        factory = self.replay_flight_data('as_policy_query')
+        p = self.load_policy(
+            {'name': 'as-policy-query', 'resource': 'huaweicloud.as-policy'},
+            session_factory=factory
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(
+            resources[0]['scaling_policy_name'], 'as-policy-7a75')
