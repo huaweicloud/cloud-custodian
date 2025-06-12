@@ -251,8 +251,10 @@ class SwrEeImage(QueryResourceManager):
             list: List of all SWR images
         """
         all_images = []
-
         instances = []
+
+        client = self.get_client()
+
         if query and 'instance_id' in query:
             instances.append({"id": query['instance_id']})
         else:
