@@ -266,15 +266,19 @@ class SwrEeImage(QueryResourceManager):
                 ListInstanceRequest(limit=limit)
             )
 
+        all_images = []
         for instance in instances:
             try:
-                all_images = self._get_artifacts(instance)
+                temp_images = self._get_artifacts(instance)
                 log.info("instance: %s, Retrieved a total of %d SWR images",
                          instance['id'],
-                         len(all_images))
+                         len(temp_images))
+
+                all_images.extend(temp_images)
             except Exception as artifact_err:
                 log.debug("Failed to get artifacts: %s", artifact_err)
-                all_images = self._get_artifacts_by_traverse_repos(instance)
+                temp_images = self._get_artifacts_by_traverse_repos(instance)
+                all_images.extend(temp_images)
 
         log.info("Retrieved a total of %d SWR images", len(all_images))
         return all_images
