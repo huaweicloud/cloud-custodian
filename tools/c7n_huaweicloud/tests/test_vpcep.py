@@ -186,7 +186,7 @@ class VpcEndpointTest(BaseTest):
 
         # Verify message sending request
         mock_publish_message.assert_called_once()
-        args, kwargs = mock_publish_message.call_args
+        args = mock_publish_message.call_args
         request = args[0]
         self.assertEqual(request.topic_urn,
                          'urn:smn:region:account-id:topic-name')
