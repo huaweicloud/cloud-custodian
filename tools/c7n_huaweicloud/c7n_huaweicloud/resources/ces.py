@@ -127,13 +127,15 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         response = None
         topic_urns = None
         smnClient = local_session(self.manager.session_factory).client('smn')
-        if params['notification_name'] is not None:
+        notification_name = params.get('notification_name')
+        notification_list = params.get('notification_list')
+        if notification_name is not None:
             request = ListTopicsRequest()
-            request.name = params['notification_name']
+            request.name = notification_name
             response = smnClient.list_topics(request)
             topic_urns = [topic.topic_urn for topic in response.topics]
-        elif params['notification_list'] is not None:
-            topic_urns = params['notification_list']
+        elif notification_list is not None:
+            topic_urns = notification_list
         else:
             log.error("Update alarm notification need setting notification_name, "
                       "notification_list param")
