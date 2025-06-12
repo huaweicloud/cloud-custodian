@@ -253,6 +253,7 @@ class SwrEeImage(QueryResourceManager):
         all_images = []
         instances = []
 
+        limit = 100
         client = self.get_client()
 
         if query and 'instance_id' in query:
@@ -270,7 +271,7 @@ class SwrEeImage(QueryResourceManager):
                 all_images = self._get_artifacts(instance)
             except Exception as artifact_err:
                 log.debug("Failed to get artifacts: %s", artifact_err)
-                all_images = self._get_artifacts_by_traverse_repos(query)
+                all_images = self._get_artifacts_by_traverse_repos(instance)
 
         log.info("Retrieved a total of %d SWR images", len(all_images))
         return all_images
