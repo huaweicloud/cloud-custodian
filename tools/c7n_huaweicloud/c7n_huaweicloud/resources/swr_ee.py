@@ -155,15 +155,25 @@ class SwrEe(QueryResourceManager):
         return all_repositories
 
     def get_resources(self, resource_ids):
-        resources = (
-                self.augment(self.source.get_resources(self.get_resource_query())) or []
-        )
-        result = []
-        for resource in resources:
-            resource_id = f"{resource['namespace']}/{resource['id']}"
-            if resource_id in resource_ids:
-                result.append(resource)
-        return result
+
+        resources = []
+        for resource_id in resource_ids:
+            # resource_id: {instance_id}/{namespace_name}/{repo_name}
+            resource_id_list = resource_id.split("/")
+            if len(resource_id_list) < 3:
+                continue
+
+            temp_resources = self._fetch_resources({
+                "instance_id": resource_id_list[0]
+            })
+
+            repository = "/".join(resource_id_list[2:])
+            for temp_resource in temp_resources:
+                if temp_resource["namespace_name"] == resource_id_list[1] and temp_resource[
+                    "name"] == repository:
+                    resources.append(temp_resource)
+
+        return self.filter_resources(resources)
 
 
 @SwrEe.filter_registry.register('age')
@@ -244,10 +254,10 @@ class SwrEeImage(QueryResourceManager):
         all_images = []
 
         try:
-            all_images = self._get_artifacts()
+            all_images = self._get_artifacts(query)
         except Exception as artifact_err:
             log.debug("Failed to get artifacts: %s", artifact_err)
-            all_images = self._get_artifacts_by_traverse_repos()
+            all_images = self._get_artifacts_by_traverse_repos(query)
 
         log.info("Retrieved a total of %d SWR images", len(all_images))
         return all_images
@@ -261,12 +271,20 @@ class SwrEeImage(QueryResourceManager):
         limit = 100
         client = self.get_client()
 
-        instances = _pagination_limit_offset(
+        instances = []
+        temp_instances = _pagination_limit_offset(
             client,
             "list_instance",
             "instances",
             ListInstanceRequest(limit=limit)
         )
+
+        if query and 'instance_id' in query:
+            for instance in temp_instances:
+                if instance["id"] == query['instance_id']:
+                    instances.append(instance)
+        else:
+            instances = temp_instances
 
         all_artifacts = []
         for instance in instances:
@@ -287,7 +305,7 @@ class SwrEeImage(QueryResourceManager):
 
         return all_artifacts
 
-    def _get_artifacts_by_traverse_repos(self):
+    def _get_artifacts_by_traverse_repos(self, query):
         """Get artifacts by traversing repositories.
 
         Returns:
@@ -295,7 +313,7 @@ class SwrEeImage(QueryResourceManager):
         """
         from c7n_huaweicloud.provider import resources as huaweicloud_resources
         swr_manager = huaweicloud_resources.get('swr-ee')(self.ctx, {})
-        repositories = swr_manager.resources()
+        repositories = swr_manager.resources(query=query)
 
         limit = 100
         client = self.get_client()
@@ -349,6 +367,30 @@ class SwrEeImage(QueryResourceManager):
                 "name": repository
             })
             resources.append(temp_resources)
+
+        return self.filter_resources(resources)
+
+        resources = []
+        for resource_id in resource_ids:
+            # resource_id: {instance_id}/{namespace_name}/{repo_name}/{digest}
+            resource_id_list = resource_id.split("/")
+            if len(resource_id_list) < 3:
+                continue
+
+            temp_resources = self._fetch_resources({
+                "instance_id": resource_id_list[0]
+            })
+
+            art_urn = "/".join(resource_id_list[1:])
+
+            for temp_resource in temp_resources:
+                if 'repositories_name' not in temp_resource:
+                    log.debug("not have repository name")
+                    continue
+
+                art = f"{temp_resource['repositories_name']}/{temp_resource['digest']}"
+                if art == art_urn:
+                    resources.append(temp_resource)
 
         return self.filter_resources(resources)
 
@@ -472,15 +514,23 @@ class SwrEeNamespace(QueryResourceManager):
         return all_namespaces
 
     def get_resources(self, resource_ids):
-        resources = (
-                self.augment(self.source.get_resources(self.get_resource_query())) or []
-        )
-        result = []
-        for resource in resources:
-            resource_id = f"{resource['namespace']}/{resource['id']}"
-            if resource_id in resource_ids:
-                result.append(resource)
-        return result
+
+        resources = []
+        for resource_id in resource_ids:
+            # resource_id: {instance_id}/{namespace_name}
+            resource_id_list = resource_id.split("/")
+            if len(resource_id_list) < 2:
+                continue
+
+            temp_resources = self._fetch_resources({
+                "instance_id": resource_id_list[0]
+            })
+
+            for temp_resource in temp_resources:
+                if temp_resource["name"] == resource_id_list[1]:
+                    resources.append(temp_resource)
+
+        return self.filter_resources(resources)
 
 
 @SwrEeNamespace.filter_registry.register('age')
@@ -886,7 +936,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
         }
     )
 
-    permissions = ('swr:repository:createRetentionPolicy','swr:repository:updateRetentionPolicy')
+    permissions = ('swr:repository:createRetentionPolicy', 'swr:repository:updateRetentionPolicy')
 
     def validate(self):
         """Validate action configuration.
@@ -1134,7 +1184,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 class SwrEeSetImmutability(HuaweiCloudBaseAction):
     """Set immutability rules for SWR repositories."""
 
-    permissions = ('swr:repository:createImmutableRule','swr:repository:updateImmutableRule')
+    permissions = ('swr:repository:createImmutableRule', 'swr:repository:updateImmutableRule')
     schema = type_schema(
         'set-immutability',
         state={'type': 'boolean', 'default': True},
