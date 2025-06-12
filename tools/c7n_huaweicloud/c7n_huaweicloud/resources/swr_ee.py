@@ -1092,6 +1092,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 # Create request body
                 body = CreateRetentionPolicyRequestBody(
                     algorithm=self.data.get('algorithm', 'or'),
+                    enabled=True,
                     rules=rules,
                     trigger=trigger_config,
                     name=policy_name
@@ -1124,6 +1125,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
             else:
                 # Create request body
                 body = UpdateRetentionPolicyRequestBody(
+                    enabled=True,
                     algorithm=self.data.get('algorithm', 'or'),
                     rules=rules,
                     trigger=trigger_config,
@@ -1310,8 +1312,6 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         if not imutable_rules:
             if enable_immutability:
                 rule = CreateImmutableRuleBody(
-                    namespace_id=int(namespace_id),
-                    namespace_name=namespace_name,
                     disabled=False,
                     action='immutable',
                     template='immutable_template',
