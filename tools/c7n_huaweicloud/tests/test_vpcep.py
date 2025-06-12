@@ -129,7 +129,7 @@ class VpcEndpointTest(BaseTest):
             'resource': 'huaweicloud.vpcep-ep',
             'actions': [
                 {
-                    'type': 'send-msg',
+                    'type': 'eps-check-ep-msg',
                     'topic_urn_list': [
                         "urn:smn:cn-north-4:0df25bbc878091b62f88c00c2959df9a:test"
                     ],
@@ -169,7 +169,7 @@ class VpcEndpointTest(BaseTest):
             'name': 'vpcep-action-send-msg-detail-test',
             'resource': 'huaweicloud.vpcep-ep',
             'actions': [{
-                'type': 'send-msg',
+                'type': 'eps-check-ep-msg',
                 'topic_urn_list': ['urn:smn:region:account-id:topic-name'],
                 'message': 'alert:xxxx'
             }]},

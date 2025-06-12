@@ -117,7 +117,7 @@ class VpcEndpointServiceAndVpcFilter(Filter):
         return []
 
 
-@VpcEndpoint.action_registry.register('send-msg')
+@VpcEndpoint.action_registry.register('eps-check-ep-msg')
 class VpcEndpointSendMsg(HuaweiCloudBaseAction):
     """VPC Endpoint message notification action.
 
@@ -135,14 +135,14 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
               - type: by-service-and-vpc-check
                 endpoint_service_name: "com.huaweicloud.service.test"
             actions:
-              - type: send-msg
+              - type: eps-check-ep-msg
                 topic_urn_list:
                   - "urn:smn:region:account-id:topic-name"
                 message: "alert: xxxxx"
     """
 
     schema = type_schema(
-        'send-msg',
+        'eps-check-ep-msg',
         required=['topic_urn_list'],
         topic_urn_list={'type': 'array', 'items': {'type': 'string'}},
         message={'type': 'string'}
