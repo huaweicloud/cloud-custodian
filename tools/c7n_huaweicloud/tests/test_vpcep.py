@@ -18,6 +18,8 @@ class VpcEndpointTest(BaseTest):
             'resource': 'huaweicloud.vpcep-ep'},
             session_factory=factory)
         resources = p.run()
-        self.assertEqual(len(resources), 1)  # Assume there is 1 endpoint in the recording
+        # Assume there is 1 endpoint in the recording
+        self.assertEqual(len(resources), 1)
         # Endpoint service name
-        self.assertEqual(resources[0]['endpoint_service_name'], "com.huaweicloud.service.test")
+        self.assertEqual(
+            resources[0]['endpoint_service_name'], "com.huaweicloud.service.test")
