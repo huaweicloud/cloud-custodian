@@ -139,6 +139,9 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
+from huaweicloudsdkvpcep.v1 import VpcepClient
+from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
+from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -538,6 +541,13 @@ class Session:
                 .with_region(CcmRegion.value_of("ap-southeast-3"))
                 .build()
             )
+        elif service == 'vpcep-ep':
+            client = (
+                VpcepClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(VpcepRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -688,4 +698,6 @@ class Session:
             request = ListCertificateAuthorityRequest()
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
+        elif service == 'vpcep-ep':
+            request = ListEndpointsRequest()
         return request
