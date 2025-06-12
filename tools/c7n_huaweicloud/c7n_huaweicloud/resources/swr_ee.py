@@ -252,24 +252,6 @@ class SwrEeImage(QueryResourceManager):
         """
         all_images = []
 
-        try:
-            all_images = self._get_artifacts(query)
-        except Exception as artifact_err:
-            log.debug("Failed to get artifacts: %s", artifact_err)
-            all_images = self._get_artifacts_by_traverse_repos(query)
-
-        log.info("Retrieved a total of %d SWR images", len(all_images))
-        return all_images
-
-    def _get_artifacts(self, query):
-        """Get artifacts using list_instance_all_artifacts API.
-
-        Returns:
-            list: List of artifacts
-        """
-        limit = 100
-        client = self.get_client()
-
         instances = []
         if query and 'instance_id' in query:
             instances.append({"id": query['instance_id']})
@@ -281,25 +263,42 @@ class SwrEeImage(QueryResourceManager):
                 ListInstanceRequest(limit=limit)
             )
 
-        all_artifacts = []
         for instance in instances:
-            artifacts = _pagination_limit_offset(
-                client,
-                "list_instance_all_artifacts",
-                "artifacts",
-                ListInstanceAllArtifactsRequest(
-                    instance_id=instance['id'],
-                    limit=limit
-                )
+            try:
+                all_images = self._get_artifacts(instance)
+            except Exception as artifact_err:
+                log.debug("Failed to get artifacts: %s", artifact_err)
+                all_images = self._get_artifacts_by_traverse_repos(query)
+
+        log.info("Retrieved a total of %d SWR images", len(all_images))
+        return all_images
+
+    def _get_artifacts(self, instance):
+        """Get artifacts using list_instance_all_artifacts API.
+
+        Returns:
+            list: List of artifacts
+        """
+        limit = 100
+        client = self.get_client()
+
+        artifacts = _pagination_limit_offset(
+            client,
+            "list_instance_all_artifacts",
+            "artifacts",
+            ListInstanceAllArtifactsRequest(
+                instance_id=instance['id'],
+                limit=limit
             )
-            for artifact in artifacts:
-                artifact['instance_id'] = instance['id']
-                artifact['uid'] = f"{instance['id']}/{artifact['id']}"
-            all_artifacts.extend(artifacts)
+        )
 
-        return all_artifacts
+        for artifact in artifacts:
+            artifact['instance_id'] = instance['id']
+            artifact['uid'] = f"{instance['id']}/{artifact['id']}"
 
-    def _get_artifacts_by_traverse_repos(self, query):
+        return artifacts
+
+    def _get_artifacts_by_traverse_repos(self, instance):
         """Get artifacts by traversing repositories.
 
         Returns:
@@ -307,7 +306,7 @@ class SwrEeImage(QueryResourceManager):
         """
         from c7n_huaweicloud.provider import resources as huaweicloud_resources
         swr_manager = huaweicloud_resources.get('swr-ee')(self.ctx, {})
-        repositories = swr_manager.resources(query=query)
+        repositories = swr_manager.resources(query={"instance_id": instance['id']})
 
         limit = 100
         client = self.get_client()
