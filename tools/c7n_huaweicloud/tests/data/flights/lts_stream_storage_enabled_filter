@@ -1,0 +1,140 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - lts.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T084929Z
+    method: GET
+    uri: https://lts.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/groups
+  response:
+    body:
+      string: '{ "log_groups" : [ { "creation_time" : 1630547141853, "log_group_name"
+        : "lts-group-01nh", "log_group_id" : "test-log-group-id", "ttl_in_days" :
+        7 } ] }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 08:49:29 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=424fd7314e9aec080f; path=/
+      - HWWAFSESTIME=1748940569498; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - bbc2b6eceb2e4c2e275a1183d3f78045
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - lts.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T085436Z
+    method: GET
+    uri: https://lts.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/groups/test-log-group-id/streams
+  response:
+    body:
+      string: '{
+  "log_streams" : [ {
+    "log_stream_name_alias" : "3",
+    "creation_time" : 1723102152593,
+    "auth_web_tracking" : false,
+    "log_stream_name" : "3",
+    "is_favorite" : false,
+    "hot_storage_days" : -1,
+    "tag" : {
+      "_sys_enterprise_project_id" : "0"
+    },
+    "hot_cold_separation" : false,
+    "filter_count" : 0,
+    "log_stream_id" : "test-log-stream-id",
+    "ttl_in_days" : -1,
+    "whether_log_storage" : true
+  }, {
+    "log_stream_name_alias" : "5",
+    "creation_time" : 1723102172632,
+    "auth_web_tracking" : false,
+    "log_stream_name" : "5",
+    "is_favorite" : false,
+    "hot_storage_days" : -1,
+    "tag" : {
+      "_sys_enterprise_project_id" : "0"
+    },
+    "hot_cold_separation" : false,
+    "filter_count" : 0,
+    "log_stream_id" : "fb08a859-69ed-4bbe-9ba0-xxxxxxxx",
+    "ttl_in_days" : -1,
+    "whether_log_storage" : true
+  } ]
+}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 08:54:36 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=bb7af735700be16692; path=/
+      - HWWAFSESTIME=1748940876882; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e0231926fa782ac0f6053c6b63be14c6
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
