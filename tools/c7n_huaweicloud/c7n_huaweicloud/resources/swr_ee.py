@@ -5,6 +5,7 @@ import traceback
 import jmespath
 
 from urllib.parse import quote_plus
+from retrying import retry
 
 from c7n.filters import Filter
 from c7n.filters.core import ValueFilter, AgeFilter
@@ -1365,7 +1366,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
        wait_exponential_multiplier=1000,
        wait_exponential_max=10000,
        stop_max_attempt_number=5)
-def _invoke_client_enum(self, client, enum_op, request):
+def _invoke_client_enum(client, enum_op, request):
     _invoker = getattr(client, enum_op)
     return _invoker(request)
 
