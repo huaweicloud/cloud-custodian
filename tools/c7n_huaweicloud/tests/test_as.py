@@ -166,7 +166,8 @@ class AsGroupTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         # Verify that the resource contains invalid resource markers
-        # Since any API exception will mark the resource as invalid, we only need to verify at least one invalid marker exists
+        # Since any API exception will mark the resource as invalid,
+        # we only need to verify at least one invalid marker exists
         self.assertTrue(
             resources[0].get('has_invalid_subnet') or
             resources[0].get('has_invalid_elb_pool') or

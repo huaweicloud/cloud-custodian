@@ -230,7 +230,8 @@ class InvalidResourcesFilter(Filter):
                     request.subnet_id = subnet_id
                     vpc_client.show_subnet(request)
                 except exceptions.ClientRequestException as e:
-                    # If the response is empty or returns a 404 error code, it indicates an invalid subnet
+                    # If the response is empty or returns a 404 error code,
+                    # it indicates an invalid subnet
                     self.manager.log.debug(
                         f"Invalid subnet ID {subnet_id}, error: {e.error_msg}")
                     has_invalid_subnet = True
@@ -263,7 +264,8 @@ class InvalidResourcesFilter(Filter):
                     request.pool_id = pool_id
                     elb_client.show_pool(request)
                 except exceptions.ClientRequestException as e:
-                    # If the response is empty or returns a 404 error code, it indicates an invalid ELB pool
+                    # If the response is empty or returns a 404 error code,
+                    # it indicates an invalid ELB pool
                     self.manager.log.debug(
                         f"Invalid ELB pool ID {pool_id}, error: {e.error_msg}")
                     has_invalid_pool = True
@@ -330,7 +332,8 @@ class InvalidResourcesFilter(Filter):
                     request.security_group_id = sg_id
                     vpc_client.show_security_group(request)
                 except exceptions.ClientRequestException as e:
-                    # If the response is empty or returns a 404 error code, it indicates an invalid security group
+                    # If the response is empty or returns a 404 error code,
+                    # it indicates an invalid security group
                     self.manager.log.debug(
                         f"Invalid security group ID {sg_id}, error: {e.error_msg}")
                     has_invalid_sg = True
@@ -574,7 +577,7 @@ class DeleteAsGroup(BaseAction):
     """
     schema = type_schema(
         'delete',
-        force={'type': 'boolean'}
+        force={'type': 'string'}
     )
     permissions = ("as:scaling_group:delete",)
 
@@ -744,9 +747,10 @@ class UpdateAsGroup(BaseAction):
         networks={'type': 'array', 'items': {'type': 'object', 'properties': {
             'id': {'type': 'string'},
             'ipv6_enable': {'type': 'boolean'},
-            'ipv6_bandwidth': {'type': 'object', 'properties': {'id': {'type': 'string'}}, 'required': ['id']},
+            'ipv6_bandwidth': {'type': 'object', 
+                               'properties': {'id': {'type': 'string'}}, 'required': ['id']},
             'allowed_address_pairs': {'type': 'array', 'items': 
-                                      {'type': 'object', 'properties': {'ip_address': {'type': 'string'}}}}
+                        {'type': 'object', 'properties': {'ip_address': {'type': 'string'}}}}
         }, 'required': ['id']}},
         security_groups={'type': 'array', 'items': {'type': 'object', 'properties': {
             'id': {'type': 'string'}}, 'required': ['id']}},
