@@ -139,6 +139,7 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
+from c7n_huaweicloud.utils.cci_client import CCIClient
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -538,6 +539,8 @@ class Session:
                 .with_region(CcmRegion.value_of("ap-southeast-3"))
                 .build()
             )
+        elif service == "cci":
+            client = CCIClient(self.region, credentials)
         return client
 
     def region_client(self, service, region):
@@ -688,4 +691,8 @@ class Session:
             request = ListCertificateAuthorityRequest()
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
+        elif service == "cci":
+            # CCI service uses special processing,
+            # returns True indicating no need to preconstruct request object
+            request = True
         return request

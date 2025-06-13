@@ -1,0 +1,278 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250609T081501Z
+      content-length:
+      - '0'
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: GET
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/default/pods
+  response:
+    body:
+      string: '{ "apiVersion": "v1", "items": [ { "metadata": { "annotations": { "cri.cci.io/container-type":
+        "secure-container", "kubernetes.io/availablezone": "dc1", "network.alpha.kubernetes.io/network":
+        "[{\"name\":\"namespace-test-dc1-default-network\",\"interface\":\"eth0\",\"network_plane\":\"default\"}]"
+        }, "creationTimestamp": "2018-09-03T12:26:12Z", "labels": { "name": "pod-test"
+        }, "name": "test-pod", "namespace": "namespace-test", "resourceVersion": "5030610",
+        "selfLink": "/apis/cci/v2/namespaces/namespace-test/pods/pod-test", "uid": "8b985a27-af74-11e8-9d5d-c88d83be759f"
+        }, "spec": { "containers": [ { "image": "redis", "imagePullPolicy": "Always",
+        "name": "test", "resources": { "limits": { "cpu": "500m", "memory": "1Gi"
+        }, "requests": { "cpu": "500m", "memory": "1Gi" } }, "terminationMessagePath":
+        "/dev/termination-log", "terminationMessagePolicy": "File" } ], "dnsPolicy":
+        "ClusterFirst", "imagePullSecrets": [ { "name": "imagepull-secret" } ], "nodeName":
+        "c0dd6256-195a-e811-90a2-10c17294fcbc", "restartPolicy": "Always", "schedulerName":
+        "default-scheduler", "securityContext": {
+
+        }, "tolerations": [ { "effect": "NoExecute", "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists", "tolerationSeconds": 300 }, { "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable", "operator": "Exists", "tolerationSeconds":
+        300 } ] }, "status": { "conditions": [ { "lastProbeTime": null, "lastTransitionTime":
+        "2018-09-03T12:26:12Z", "status": "True", "type": "Initialized" }, { "lastProbeTime":
+        null, "lastTransitionTime": "2018-09-03T12:26:16Z", "status": "True", "type":
+        "Ready" }, { "lastProbeTime": null, "lastTransitionTime": "2018-09-03T12:26:12Z",
+        "status": "True", "type": "PodScheduled" } ], "containerStatuses": [ { "containerID":
+        "docker://aee55d8dedb8371f96aa5d5116f69a53bf1cb23afe1802567c24081514d3b048",
+        "image": "redis", "imageID": "docker-pullable://redis@sha256:3ab7046bd035a47aa06963d8240651d00b57e82dab07ba374ad01f84dfa1230c",
+        "lastState": {
+
+        }, "name": "test", "ready": true, "restartCount": 0, "state": { "running":
+        { "startedAt": "2018-09-03T12:26:16Z" } } } ], "phase": "Running", "podIP":
+        "192.168.245.185", "qosClass": "Guaranteed", "startTime": "2018-09-03T12:26:12Z"
+        } } ], "kind": "PodList", "metadata": { "resourceVersion": "5032373", "selfLink":
+        "/apis/cci/v2/namespaces/namespace-test/pods" } }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 08:15:01 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=a904d825208b15621f; path=/
+      - HWWAFSESTIME=1749456898550; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - c87478209a393005630f80cdd3c08448
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250609T111546Z
+      content-length:
+      - '0'
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: GET
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces
+  response:
+    body:
+      string: '{ "apiVersion" : "v1", "items" : [ { "metadata" : { "creationTimestamp"
+        : "2017-06-24T02:05:16Z", "name" : "default", "resourceVersion" : "6", "selfLink"
+        : "/apis/cci/v2/namespaces/default", "uid" : "90dd5244-5881-11e7-b5d7-fa163e08a2fd"
+        }, "spec" : { "finalizers" : [ "kubernetes" ] }, "status" : { "phase" : "Active"
+        } }, { "metadata" : { "creationTimestamp" : "2017-06-24T02:05:17Z", "name"
+        : "kube-system", "resourceVersion" : "25", "selfLink" : "/apis/cci/v2/namespaces/kube-system",
+        "uid" : "9178fce6-5881-11e7-b5d7-fa163e08a2fd" }, "spec" : { "finalizers"
+        : [ "kubernetes" ] }, "status" : { "phase" : "Active" } } ], "kind" : "NamespaceList",
+        "metadata" : { "resourceVersion" : "594181", "selfLink" : "/apis/cci/v2/namespaces"
+        } }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 11:15:46 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1749467746733; path=/
+      - HWWAFSESID=ebb7e73d55dda09a27; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 91ed644d8f418ed93aa1ccb1c1378b02
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250609T112227Z
+      content-length:
+      - '0'
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: GET
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/kube-system/pods
+  response:
+    body:
+      string: '{ "apiVersion": "v1", "items": [ { "metadata": { "annotations": { "cri.cci.io/container-type":
+        "secure-container", "kubernetes.io/availablezone": "dc1", "network.alpha.kubernetes.io/network":
+        "[{\"name\":\"namespace-test-dc1-default-network\",\"interface\":\"eth0\",\"network_plane\":\"default\"}]"
+        }, "creationTimestamp": "2018-09-03T12:26:12Z", "labels": { "name": "pod-test"
+        }, "name": "test-pod", "namespace": "namespace-test", "resourceVersion": "5030610",
+        "selfLink": "/apis/cci/v2/namespaces/namespace-test/pods/pod-test", "uid": "8b985a27-af74-11e8-9d5d-c88d83be759f"
+        }, "spec": { "containers": [ { "image": "redis", "imagePullPolicy": "Always",
+        "name": "test", "resources": { "limits": { "cpu": "500m", "memory": "1Gi"
+        }, "requests": { "cpu": "500m", "memory": "1Gi" } }, "terminationMessagePath":
+        "/dev/termination-log", "terminationMessagePolicy": "File" } ], "dnsPolicy":
+        "ClusterFirst", "imagePullSecrets": [ { "name": "imagepull-secret" } ], "nodeName":
+        "c0dd6256-195a-e811-90a2-10c17294fcbc", "restartPolicy": "Always", "schedulerName":
+        "default-scheduler", "securityContext": {
+
+        }, "tolerations": [ { "effect": "NoExecute", "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists", "tolerationSeconds": 300 }, { "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable", "operator": "Exists", "tolerationSeconds":
+        300 } ] }, "status": { "conditions": [ { "lastProbeTime": null, "lastTransitionTime":
+        "2018-09-03T12:26:12Z", "status": "True", "type": "Initialized" }, { "lastProbeTime":
+        null, "lastTransitionTime": "2018-09-03T12:26:16Z", "status": "True", "type":
+        "Ready" }, { "lastProbeTime": null, "lastTransitionTime": "2018-09-03T12:26:12Z",
+        "status": "True", "type": "PodScheduled" } ], "containerStatuses": [ { "containerID":
+        "docker://aee55d8dedb8371f96aa5d5116f69a53bf1cb23afe1802567c24081514d3b048",
+        "image": "redis", "imageID": "docker-pullable://redis@sha256:3ab7046bd035a47aa06963d8240651d00b57e82dab07ba374ad01f84dfa1230c",
+        "lastState": {
+
+        }, "name": "test", "ready": true, "restartCount": 0, "state": { "running":
+        { "startedAt": "2018-09-03T12:26:16Z" } } } ], "phase": "Running", "podIP":
+        "192.168.245.185", "qosClass": "Guaranteed", "startTime": "2018-09-03T12:26:12Z"
+        } } ], "kind": "PodList", "metadata": { "resourceVersion": "5032373", "selfLink":
+        "/apis/cci/v2/namespaces/namespace-test/pods" } }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 11:22:27 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=c797b733b1d8032326; path=/
+      - HWWAFSESTIME=1749468147747; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7df68d060c84081530e549fd0b57f03d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"metadata": {"labels": {"env": "production"}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '47'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250609T113538Z
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: PATCH
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/namespace-test/pods/test-pod
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: ak access_key_id
+        not exist","error_code":"APIGW.0301","request_id":"0f536621a37269586a450a727b7b22b8"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 11:35:38 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1749468938452; path=/
+      - HWWAFSESID=77519731dc6a69408f; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 0f536621a37269586a450a727b7b22b8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1
