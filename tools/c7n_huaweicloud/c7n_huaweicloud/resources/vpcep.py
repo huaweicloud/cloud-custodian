@@ -171,15 +171,23 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
             user_message = self.data.get(
                 'message', 'Notification: VPC Endpoint Configuration Check')
 
-        vpc_id = resource.get('vpc_id', '')
         endpoint_service_name = resource.get('endpoint_service_name', '')
-
-        # Build message content
-        message = (
-            f"{user_message} Please check whether VPC {vpc_id} "
-            "has a VPC endpoint configured, "
-            f"and whether the endpoint service name is {endpoint_service_name}."
-        )
+        
+        vpc_ids = resource.get('vpc_ids', [])
+        if vpc_ids:
+            vpc_id_str = ", ".join(vpc_ids)
+            # Build message content for multiple VPC IDs
+            message = (
+                f"{user_message} Please check whether VPC ({vpc_id_str}) "
+                "has VPC endpoints configured, "
+                f"and whether the endpoint service name is {endpoint_service_name}."
+            )
+        else:
+            message = (
+                f"{user_message} Please check whether VPC"
+                "has a VPC endpoint configured, "
+                f"and whether the endpoint service name is {endpoint_service_name}."
+            )
 
         subject = "VPC Endpoint Configuration Notification"
         body = PublishMessageRequestBody(subject=subject, message=message)
