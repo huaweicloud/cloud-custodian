@@ -385,7 +385,6 @@ class ByUnencryptedConfigFilter(Filter):
                         hasattr(config.instance_config, 'disk')):
                     disks = config.instance_config.disk
                     is_unencrypted = False
-                    
                     # Check each disk's metadata for encryption status
                     for disk in disks:
                         if hasattr(disk, 'metadata'):
@@ -759,7 +758,7 @@ class UpdateAsGroup(BaseAction):
             'ipv6_bandwidth': {'type': 'object',
                                'properties': {'id': {'type': 'string'}}, 'required': ['id']},
             'allowed_address_pairs': {'type': 'array', 'items':
-                                      {'type': 'object', 'properties': {'ip_address': {'type': 'string'}}}}
+                    {'type': 'object', 'properties': {'ip_address': {'type': 'string'}}}}
         }, 'required': ['id']}},
         security_groups={'type': 'array', 'items': {'type': 'object', 'properties': {
             'id': {'type': 'string'}}, 'required': ['id']}},
