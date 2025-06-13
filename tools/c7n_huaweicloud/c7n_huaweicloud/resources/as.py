@@ -573,7 +573,7 @@ class DeleteAsGroup(BaseAction):
                 value: INSERVICE
             actions:
               - type: delete
-                force: yes
+                force: "yes"
     """
     schema = type_schema(
         'delete',
@@ -747,9 +747,9 @@ class UpdateAsGroup(BaseAction):
         networks={'type': 'array', 'items': {'type': 'object', 'properties': {
             'id': {'type': 'string'},
             'ipv6_enable': {'type': 'boolean'},
-            'ipv6_bandwidth': {'type': 'object', 
+            'ipv6_bandwidth': {'type': 'object',
                                'properties': {'id': {'type': 'string'}}, 'required': ['id']},
-            'allowed_address_pairs': {'type': 'array', 'items': 
+            'allowed_address_pairs': {'type': 'array', 'items':
                         {'type': 'object', 'properties': {'ip_address': {'type': 'string'}}}}
         }, 'required': ['id']}},
         security_groups={'type': 'array', 'items': {'type': 'object', 'properties': {

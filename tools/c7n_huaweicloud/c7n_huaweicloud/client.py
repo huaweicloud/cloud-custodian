@@ -142,7 +142,7 @@ from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
 from huaweicloudsdkas.v1 import (
      AsClient, ListScalingGroupsRequest,
     ListScalingConfigsRequest, ListAllScalingV2PoliciesRequest
-) 
+)
 from huaweicloudsdkas.v1.region.as_region import AsRegion
 from huaweicloudsdkelb.v2 import ElbClient as ElbClientV2
 from huaweicloudsdkelb.v2.region.elb_region import ElbRegion as ElbRegionV2
