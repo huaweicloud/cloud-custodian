@@ -1370,6 +1370,7 @@ def _invoke_client_enum(client, enum_op, request):
     _invoker = getattr(client, enum_op)
     return _invoker(request)
 
+
 def _pagination_limit_offset(client, enum_op, path, request):
     """Handle pagination for API requests with limit and offset.
 
