@@ -382,15 +382,24 @@ class ByUnencryptedConfigFilter(Filter):
             unencrypted_config_ids = set()
             for config in scaling_configs:
                 if (hasattr(config, 'instance_config') and
-                        hasattr(config.instance_config, 'metadata')):
-                    metadata = config.instance_config.metadata
-                    encrypted_value = getattr(
-                        metadata, '__system__encrypted', None)
-                    if (encrypted_value == '0' or
-                            not hasattr(metadata, '__system__encrypted')):
-                        if hasattr(config, 'scaling_configuration_id'):
-                            unencrypted_config_ids.add(
-                                config.scaling_configuration_id)
+                        hasattr(config.instance_config, 'disk')):
+                    disks = config.instance_config.disk
+                    is_unencrypted = False
+
+                    # Check each disk's metadata for encryption status
+                    for disk in disks:
+                        if hasattr(disk, 'metadata'):
+                            metadata = disk.metadata
+                            encrypted_value = getattr(
+                                metadata, '__system__encrypted', None)
+                            if (encrypted_value == '0' or not
+                                    hasattr(metadata, '__system__encrypted')):
+                                is_unencrypted = True
+                                break
+
+                    if is_unencrypted and hasattr(config, 'scaling_configuration_id'):
+                        unencrypted_config_ids.add(
+                            config.scaling_configuration_id)
 
             if not unencrypted_config_ids:
                 self.manager.log.info(
@@ -750,7 +759,7 @@ class UpdateAsGroup(BaseAction):
             'ipv6_bandwidth': {'type': 'object',
                                'properties': {'id': {'type': 'string'}}, 'required': ['id']},
             'allowed_address_pairs': {'type': 'array', 'items':
-                        {'type': 'object', 'properties': {'ip_address': {'type': 'string'}}}}
+                                      {'type': 'object', 'properties': {'ip_address': {'type': 'string'}}}}
         }, 'required': ['id']}},
         security_groups={'type': 'array', 'items': {'type': 'object', 'properties': {
             'id': {'type': 'string'}}, 'required': ['id']}},
