@@ -385,15 +385,15 @@ class ByUnencryptedConfigFilter(Filter):
                         hasattr(config.instance_config, 'disk')):
                     disks = config.instance_config.disk
                     is_unencrypted = False
-
+                    
                     # Check each disk's metadata for encryption status
                     for disk in disks:
                         if hasattr(disk, 'metadata'):
                             metadata = disk.metadata
                             encrypted_value = getattr(
-                                metadata, '__system__encrypted', None)
+                                metadata, 'system__encrypted', None)
                             if (encrypted_value == '0' or not
-                                    hasattr(metadata, '__system__encrypted')):
+                                    hasattr(metadata, 'system__encrypted')):
                                 is_unencrypted = True
                                 break
 
