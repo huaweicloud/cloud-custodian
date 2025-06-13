@@ -172,7 +172,7 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
                 'message', 'Notification: VPC Endpoint Configuration Check')
 
         endpoint_service_name = resource.get('endpoint_service_name', '')
-        
+
         vpc_ids = resource.get('vpc_ids', [])
         if vpc_ids:
             vpc_id_str = ", ".join(vpc_ids)
