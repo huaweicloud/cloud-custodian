@@ -14,7 +14,7 @@ class RocketMQInstanceTest(BaseTest):
         factory = self.replay_flight_data('rocketmq_query')
         p = self.load_policy({
             'name': 'rocketmq-query-test',
-            'resource': 'huaweicloud.reliability'},
+            'resource': 'huaweicloud.dms-rocketmq'},
             session_factory=factory)
         resources = p.run()
         # Assuming there is 1 instance in the recording
@@ -40,7 +40,7 @@ class RocketMQInstanceTest(BaseTest):
         factory = self.replay_flight_data('rocketmq_filter_sg')
         p = self.load_policy({
             'name': 'rocketmq-filter-sg-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'filters': [{
                 'type': 'security-group',
                 'key': 'id',  # or name
@@ -60,7 +60,7 @@ class RocketMQInstanceTest(BaseTest):
         # Most RocketMQ instances should be at least 1 day old
         p_gt = self.load_policy({
             'name': 'rocketmq-filter-age-gt-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'filters': [{'type': 'age', 'days': 1, 'op': 'gt'}]  # Age > 1 day
         }, session_factory=factory)
         resources_gt = p_gt.run()
@@ -71,7 +71,7 @@ class RocketMQInstanceTest(BaseTest):
         # All instances should be younger than 10000 days
         p_lt = self.load_policy({
             'name': 'rocketmq-filter-lt-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             # Age < 10000 days
             'filters': [{'type': 'age', 'days': 10000, 'op': 'lt'}]
         }, session_factory=factory)
@@ -84,7 +84,7 @@ class RocketMQInstanceTest(BaseTest):
         # Test if in one of the specified availability zones - using value filter
         p = self.load_policy({
             'name': 'rocketmq-filter-az-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'filters': [{
                 'type': 'value',
                 'key': 'available_zones',
@@ -98,7 +98,7 @@ class RocketMQInstanceTest(BaseTest):
         # Test using array value
         p_array = self.load_policy({
             'name': 'rocketmq-filter-az-array-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'filters': [{
                 'type': 'value',
                 'key': 'available_zones',
@@ -112,7 +112,7 @@ class RocketMQInstanceTest(BaseTest):
         # Test no match case
         p_no_match = self.load_policy({
             'name': 'rocketmq-filter-az-no-match-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'filters': [{
                 'type': 'value',
                 'key': 'available_zones',
@@ -130,7 +130,7 @@ class RocketMQInstanceTest(BaseTest):
         # Using value filter to search tag keys in tags list as HuaweiCloud tags are in list format
         p = self.load_policy({
             'name': 'rocketmq-filter-tag-exists-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'filters': [{
                 'type': 'value',
                 'key': 'tags[].key',
@@ -145,7 +145,7 @@ class RocketMQInstanceTest(BaseTest):
         # Edge case: test tag not match
         p_wrong_tag = self.load_policy({
             'name': 'rocketmq-filter-wrong-tag-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'filters': [{
                 'type': 'value',
                 'key': 'tags[].key',
@@ -163,7 +163,7 @@ class RocketMQInstanceTest(BaseTest):
         factory = self.replay_flight_data('rocketmq_action_mark')
         p = self.load_policy({
             'name': 'rocketmq-action-mark-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'actions': [{
                 'type': 'mark-for-op',
                 'op': 'delete',
@@ -181,7 +181,7 @@ class RocketMQInstanceTest(BaseTest):
         factory = self.replay_flight_data('rocketmq_action_tag')
         p = self.load_policy({
             'name': 'rocketmq-action-tag-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'actions': [{'type': 'tag', 'key': 'CostCenter', 'value': 'Finance'}]},
             session_factory=factory)
         resources = p.run()
@@ -193,7 +193,7 @@ class RocketMQInstanceTest(BaseTest):
         factory = self.replay_flight_data('rocketmq_action_remove_tag')
         p = self.load_policy({
             'name': 'rocketmq-action-remove-tag-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'actions': [{'type': 'remove-tag', 'tags': ['environment', 'temp-tag']}]},
             session_factory=factory)
         resources = p.run()
@@ -203,7 +203,7 @@ class RocketMQInstanceTest(BaseTest):
         factory = self.replay_flight_data('rocketmq_action_rename_tag')
         p = self.load_policy({
             'name': 'rocketmq-action-rename-tag-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'actions': [{'type': 'rename-tag', 'old_key': 'env', 'new_key': 'Environment'}]
             },
             session_factory=factory)
@@ -214,7 +214,7 @@ class RocketMQInstanceTest(BaseTest):
         factory = self.replay_flight_data('rocketmq_action_delete')
         p = self.load_policy({
             'name': 'rocketmq-action-delete-test',
-            'resource': 'huaweicloud.reliability',
+            'resource': 'huaweicloud.dms-rocketmq',
             'actions': ['delete']},
             session_factory=factory)
         resources = p.run()

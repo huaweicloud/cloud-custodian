@@ -1,7 +1,6 @@
 import json
 import logging
 
-from tests.common import instance
 from c7n import utils
 from c7n.filters import Filter
 from c7n.exceptions import PolicyValidationError
@@ -79,7 +78,7 @@ def get_tags_from_resource(resource):
                      tags):
                 # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
                 return {item['key']: item['value'] for item in tags}
-        raise PolicyValidationError(f"tags:{instance(tags)} type error "
+        raise PolicyValidationError(f"tags:{tags} type error "
                                     f"in resource {resource['id']}")
     except Exception:
         log.error(f"tags:{tags} type error "
