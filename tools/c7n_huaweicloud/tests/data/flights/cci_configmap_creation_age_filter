@@ -19,7 +19,7 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces/default/configmaps
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/default/configmaps
   response:
     body:
       string: '{ "apiVersion": "v1", "items": [ { "data": { "property_1": "test" },
@@ -75,7 +75,7 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces
   response:
     body:
       string: '{ "apiVersion" : "v1", "items" : [ { "metadata" : { "creationTimestamp"
@@ -135,7 +135,7 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces/kube-system/configmaps
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/kube-system/configmaps
   response:
     body:
       string: '{

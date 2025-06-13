@@ -256,7 +256,7 @@ class CCIClient:
         self.region = region
         self.credentials = credentials
         self.base_url = f"https://cci.{region}.myhuaweicloud.com"
-        self.api_version = "v1"
+        self.api_version = "v2"
 
         # Initialize signer
         if hasattr(credentials, 'ak') and hasattr(credentials, 'sk'):
@@ -390,7 +390,7 @@ class CCIClient:
         Returns:
             dict: Response data containing namespace list
         """
-        endpoint = f"api/{self.api_version}/namespaces"
+        endpoint = f"apis/cci/{self.api_version}/namespaces"
         return self._make_request("GET", endpoint)
 
     def list_namespaced_pods(self, request=None):
@@ -419,7 +419,7 @@ class CCIClient:
 
                     try:
                         # Get all pods in this namespace
-                        endpoint = f"api/{self.api_version}/namespaces/{namespace_name}/pods"
+                        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace_name}/pods"
                         pods_response = self._make_request("GET", endpoint)
 
                         # Add pods from this namespace to merged response
@@ -461,7 +461,7 @@ class CCIClient:
 
                     try:
                         # Get all configmaps in this namespace
-                        endpoint = f"api/{self.api_version}/namespaces/{namespace_name}/configmaps"
+                        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace_name}/configmaps"
                         configmaps_response = self._make_request("GET", endpoint)
 
                         # Add configmaps from this namespace to merged response
@@ -504,7 +504,7 @@ class CCIClient:
 
                     try:
                         # Get all secrets in this namespace
-                        endpoint = f"api/{self.api_version}/namespaces/{namespace_name}/secrets"
+                        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace_name}/secrets"
                         secrets_response = self._make_request("GET", endpoint)
 
                         # Add secrets from this namespace to merged response
@@ -528,7 +528,7 @@ class CCIClient:
         Returns:
             dict: Response result of modification operation
         """
-        endpoint = f"api/{self.api_version}/namespaces/{namespace}/pods/{name}"
+        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace}/pods/{name}"
         return self._make_request("PATCH", endpoint, json=body)
 
     def delete_namespaced_pod(self, name, namespace):
@@ -539,7 +539,7 @@ class CCIClient:
         Returns:
             dict: Response result of deletion operation
         """
-        endpoint = f"api/{self.api_version}/namespaces/{namespace}/pods/{name}"
+        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace}/pods/{name}"
         return self._make_request("DELETE", endpoint)
 
     def patch_namespaced_configmap(self, name, namespace, body):
@@ -551,7 +551,7 @@ class CCIClient:
         Returns:
             dict: Response result of modification operation
         """
-        endpoint = f"api/{self.api_version}/namespaces/{namespace}/configmaps/{name}"
+        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace}/configmaps/{name}"
         return self._make_request("PATCH", endpoint, json=body)
 
     def delete_namespaced_configmap(self, name, namespace):
@@ -562,7 +562,7 @@ class CCIClient:
         Returns:
             dict: Response result of deletion operation
         """
-        endpoint = f"api/{self.api_version}/namespaces/{namespace}/configmaps/{name}"
+        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace}/configmaps/{name}"
         return self._make_request("DELETE", endpoint)
 
     def patch_namespaced_secret(self, name, namespace, body):
@@ -574,7 +574,7 @@ class CCIClient:
         Returns:
             dict: Response result of modification operation
         """
-        endpoint = f"api/{self.api_version}/namespaces/{namespace}/secrets/{name}"
+        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace}/secrets/{name}"
         return self._make_request("PATCH", endpoint, json=body)
 
     def delete_namespaced_secret(self, name, namespace):
@@ -585,7 +585,7 @@ class CCIClient:
         Returns:
             dict: Response result of deletion operation
         """
-        endpoint = f"api/{self.api_version}/namespaces/{namespace}/secrets/{name}"
+        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace}/secrets/{name}"
         return self._make_request("DELETE", endpoint)
 
     def delete_namespace(self, name):
@@ -595,5 +595,5 @@ class CCIClient:
         Returns:
             dict: Response result of deletion operation
         """
-        endpoint = f"api/{self.api_version}/namespaces/{name}"
+        endpoint = f"apis/cci/{self.api_version}/namespaces/{name}"
         return self._make_request("DELETE", endpoint)

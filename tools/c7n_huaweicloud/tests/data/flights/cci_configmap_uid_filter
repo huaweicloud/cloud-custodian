@@ -19,14 +19,14 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces/default/configmaps
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/default/configmaps
   response:
     body:
       string: '{ "apiVersion": "v1", "items": [ { "data": { "property_1": "test" },
         "metadata": { "creationTimestamp": "2017-12-13T03:15:57Z", "name": "test-12130306",
-        "namespace": "ns-12130306-s", "resourceVersion": "419081", "selfLink": "/api/v1/namespaces/ns-12130306-s/configmaps/test-12130306",
+        "namespace": "ns-12130306-s", "resourceVersion": "419081", "selfLink": "/apis/cci/v2/namespaces/ns-12130306-s/configmaps/test-12130306",
         "uid": "efd6d9e0-dfb3-11e7-9c19-fa163e2d897b" } } ], "kind": "ConfigMapList",
-        "metadata": { "resourceVersion": "419140", "selfLink": "/api/v1/namespaces/ns-12130306-s/configmaps"
+        "metadata": { "resourceVersion": "419140", "selfLink": "/apis/cci/v2/namespaces/ns-12130306-s/configmaps"
         } }'
     headers:
       Connection:
@@ -75,18 +75,18 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces
   response:
     body:
       string: '{ "apiVersion" : "v1", "items" : [ { "metadata" : { "creationTimestamp"
         : "2017-06-24T02:05:16Z", "name" : "default", "resourceVersion" : "6", "selfLink"
-        : "/api/v1/namespaces/default", "uid" : "90dd5244-5881-11e7-b5d7-fa163e08a2fd"
+        : "/apis/cci/v2/namespaces/default", "uid" : "90dd5244-5881-11e7-b5d7-fa163e08a2fd"
         }, "spec" : { "finalizers" : [ "kubernetes" ] }, "status" : { "phase" : "Active"
         } }, { "metadata" : { "creationTimestamp" : "2017-06-24T02:05:17Z", "name"
-        : "kube-system", "resourceVersion" : "25", "selfLink" : "/api/v1/namespaces/kube-system",
+        : "kube-system", "resourceVersion" : "25", "selfLink" : "/apis/cci/v2/namespaces/kube-system",
         "uid" : "9178fce6-5881-11e7-b5d7-fa163e08a2fd" }, "spec" : { "finalizers"
         : [ "kubernetes" ] }, "status" : { "phase" : "Active" } } ], "kind" : "NamespaceList",
-        "metadata" : { "resourceVersion" : "594181", "selfLink" : "/api/v1/namespaces"
+        "metadata" : { "resourceVersion" : "594181", "selfLink" : "/apis/cci/v2/namespaces"
         } }'
     headers:
       Connection:
@@ -135,7 +135,7 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces/kube-system/configmaps
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/kube-system/configmaps
   response:
     body:
       string: '{
@@ -150,7 +150,7 @@ interactions:
                 "name": "test-12130306",
                 "namespace": "ns-12130306-s",
                 "resourceVersion": "419081",
-                "selfLink": "/api/v1/namespaces/ns-12130306-s/configmaps/test-12130306",
+                "selfLink": "/apis/cci/v2/namespaces/ns-12130306-s/configmaps/test-12130306",
                 "uid": "efd6d9e0-dfb3-11e7-9c19-fa163e2d897b"
             }
         }
@@ -158,7 +158,7 @@ interactions:
     "kind": "ConfigMapList",
     "metadata": {
         "resourceVersion": "419140",
-        "selfLink": "/api/v1/namespaces/ns-12130306-s/configmaps"
+        "selfLink": "/apis/cci/v2/namespaces/ns-12130306-s/configmaps"
     }
 }'
     headers:

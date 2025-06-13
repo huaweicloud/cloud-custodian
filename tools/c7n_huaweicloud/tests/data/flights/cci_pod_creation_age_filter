@@ -19,7 +19,7 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces/default/pods
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/default/pods
   response:
     body:
       string: '{ "apiVersion": "v1", "items": [ { "metadata": { "annotations": { "cri.cci.io/container-type":
@@ -27,7 +27,7 @@ interactions:
         "[{\"name\":\"namespace-test-dc1-default-network\",\"interface\":\"eth0\",\"network_plane\":\"default\"}]"
         }, "creationTimestamp": "2018-09-03T12:26:12Z", "labels": { "name": "pod-test"
         }, "name": "test-pod", "namespace": "namespace-test", "resourceVersion": "5030610",
-        "selfLink": "/api/v1/namespaces/namespace-test/pods/pod-test", "uid": "8b985a27-af74-11e8-9d5d-c88d83be759f"
+        "selfLink": "/apis/cci/v2/namespaces/namespace-test/pods/pod-test", "uid": "8b985a27-af74-11e8-9d5d-c88d83be759f"
         }, "spec": { "containers": [ { "image": "redis", "imagePullPolicy": "Always",
         "name": "test", "resources": { "limits": { "cpu": "500m", "memory": "1Gi"
         }, "requests": { "cpu": "500m", "memory": "1Gi" } }, "terminationMessagePath":
@@ -52,7 +52,7 @@ interactions:
         { "startedAt": "2018-09-03T12:26:16Z" } } } ], "phase": "Running", "podIP":
         "192.168.245.185", "qosClass": "Guaranteed", "startTime": "2018-09-03T12:26:12Z"
         } } ], "kind": "PodList", "metadata": { "resourceVersion": "5032373", "selfLink":
-        "/api/v1/namespaces/namespace-test/pods" } }'
+        "/apis/cci/v2/namespaces/namespace-test/pods" } }'
     headers:
       Connection:
       - keep-alive
@@ -100,18 +100,18 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces
   response:
     body:
       string: '{ "apiVersion" : "v1", "items" : [ { "metadata" : { "creationTimestamp"
         : "2017-06-24T02:05:16Z", "name" : "default", "resourceVersion" : "6", "selfLink"
-        : "/api/v1/namespaces/default", "uid" : "90dd5244-5881-11e7-b5d7-fa163e08a2fd"
+        : "/apis/cci/v2/namespaces/default", "uid" : "90dd5244-5881-11e7-b5d7-fa163e08a2fd"
         }, "spec" : { "finalizers" : [ "kubernetes" ] }, "status" : { "phase" : "Active"
         } }, { "metadata" : { "creationTimestamp" : "2017-06-24T02:05:17Z", "name"
-        : "kube-system", "resourceVersion" : "25", "selfLink" : "/api/v1/namespaces/kube-system",
+        : "kube-system", "resourceVersion" : "25", "selfLink" : "/apis/cci/v2/namespaces/kube-system",
         "uid" : "9178fce6-5881-11e7-b5d7-fa163e08a2fd" }, "spec" : { "finalizers"
         : [ "kubernetes" ] }, "status" : { "phase" : "Active" } } ], "kind" : "NamespaceList",
-        "metadata" : { "resourceVersion" : "594181", "selfLink" : "/api/v1/namespaces"
+        "metadata" : { "resourceVersion" : "594181", "selfLink" : "/apis/cci/v2/namespaces"
         } }'
     headers:
       Connection:
@@ -160,7 +160,7 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces/kube-system/pods
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/kube-system/pods
   response:
     body:
       string: '{
@@ -180,7 +180,7 @@ interactions:
                 "name": "test-pod",
                 "namespace": "namespace-test",
                 "resourceVersion": "5030610",
-                "selfLink": "/api/v1/namespaces/namespace-test/pods/pod-test",
+                "selfLink": "/apis/cci/v2/namespaces/namespace-test/pods/pod-test",
                 "uid": "8b985a27-af74-11e8-9d5d-c88d83be759f"
             },
             "spec": {
@@ -279,7 +279,7 @@ interactions:
     "kind": "PodList",
     "metadata": {
         "resourceVersion": "5032373",
-        "selfLink": "/api/v1/namespaces/namespace-test/pods"
+        "selfLink": "/apis/cci/v2/namespaces/namespace-test/pods"
     }
 }'
     headers:

@@ -19,7 +19,7 @@ interactions:
       host:
       - cci.ap-southeast-1.myhuaweicloud.com
     method: GET
-    uri: https://cci.ap-southeast-1.myhuaweicloud.com/api/v1/namespaces
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces
   response:
     body:
       string: '{
@@ -29,7 +29,7 @@ interactions:
       "creationTimestamp" : "2017-06-24T02:05:16Z",
       "name" : "default",
       "resourceVersion" : "6",
-      "selfLink" : "/api/v1/namespaces/default",
+      "selfLink" : "/apis/cci/v2/namespaces/default",
       "uid" : "test-uid-123"
     },
     "spec" : {
@@ -43,7 +43,7 @@ interactions:
       "creationTimestamp" : "2017-06-24T02:05:17Z",
       "name" : "kube-system",
       "resourceVersion" : "25",
-      "selfLink" : "/api/v1/namespaces/kube-system",
+      "selfLink" : "/apis/cci/v2/namespaces/kube-system",
       "uid" : "9178fce6-5881-11e7-b5d7-fa163e08a2fd"
     },
     "spec" : {
@@ -56,7 +56,7 @@ interactions:
   "kind" : "NamespaceList",
   "metadata" : {
     "resourceVersion" : "594181",
-    "selfLink" : "/api/v1/namespaces"
+    "selfLink" : "/apis/cci/v2/namespaces"
   }
 }'
     headers:
