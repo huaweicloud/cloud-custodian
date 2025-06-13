@@ -461,7 +461,8 @@ class CCIClient:
 
                     try:
                         # Get all configmaps in this namespace
-                        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace_name}/configmaps"
+                        endpoint = (f"apis/cci/{self.api_version}/"
+                                    f"namespaces/{namespace_name}/configmaps")
                         configmaps_response = self._make_request("GET", endpoint)
 
                         # Add configmaps from this namespace to merged response
@@ -504,7 +505,8 @@ class CCIClient:
 
                     try:
                         # Get all secrets in this namespace
-                        endpoint = f"apis/cci/{self.api_version}/namespaces/{namespace_name}/secrets"
+                        endpoint = (f"apis/cci/{self.api_version}"
+                                    f"/namespaces/{namespace_name}/secrets")
                         secrets_response = self._make_request("GET", endpoint)
 
                         # Add secrets from this namespace to merged response
