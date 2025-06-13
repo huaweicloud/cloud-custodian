@@ -187,7 +187,7 @@ class SwrEeAgeFilter(AgeFilter):
 
         policies:
           - name: swr-old-repos
-            resource: huaweicloud.swr
+            resource: huaweicloud.swr-ee
             filters:
               - type: age
                 days: 90
@@ -397,7 +397,7 @@ class SwrEeImageAgeFilter(AgeFilter):
 
             policies:
               - name: swr-image-old
-                resource: huaweicloud.swr-image
+                resource: huaweicloud.swr-ee-image
                 filters:
                   - type: age
                     days: 90
