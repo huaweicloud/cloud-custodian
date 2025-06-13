@@ -386,7 +386,7 @@ class FunctionGraphManager:
         if (old_config['func_vpc'] is None) or (params['func_vpc'] is None):
             need_update_params['func_vpc'] = params['func_vpc']
         else:
-            vpc_fields = ['vpc_id', 'subnet_id', 'vpc_name', 'subnet_name']
+            vpc_fields = ['vpc_id', 'subnet_id', 'vpc_name', 'subnet_name', 'is_safety']
             for field in vpc_fields:
                 if old_config['func_vpc'][field] != params['func_vpc'][field]:
                     need_update_params['func_vpc'] = params['func_vpc']
@@ -730,7 +730,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     @property
     def func_name(self):
-        prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
+        prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
         return "%s%s" % (prefix, self.policy.name)
 
     event_name = func_name
@@ -761,6 +761,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     @property
     def func_vpc(self):
+        is_safety_support_region = ["sa-brazil-1"]
         func_vpc = self.policy.data['mode'].get('func_vpc')
         if func_vpc:
             vpc_id, subnet_id = self.get_vpc_and_subnet_id_by_name(
@@ -769,6 +770,9 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
             )
             func_vpc["vpc_id"] = vpc_id
             func_vpc["subnet_id"] = subnet_id
+            # 设置安全访问默认值，函数服务部分只支持部分局点开启安全访问
+            if not func_vpc.get('is_safety'):
+                func_vpc["is_safety"] = self.session.region in is_safety_support_region
 
         return func_vpc
 
