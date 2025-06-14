@@ -184,7 +184,7 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
             )
         else:
             message = (
-                f"{user_message} Please check whether VPC"
+                f"{user_message} Please check whether VPC "
                 "has a VPC endpoint configured, "
                 f"and whether the endpoint service name is {endpoint_service_name}."
             )
