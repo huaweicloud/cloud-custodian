@@ -14,7 +14,9 @@ from huaweicloudsdkelb.v3 import (DeleteLoadBalancerCascadeRequest,
                                   UpdateLoadBalancerRequest, UpdateLoadBalancerRequestBody,
                                   DeleteListenerForceRequest, DeletePoolCascadeRequest,
                                   UpdateListenerRequest, UpdateListenerRequestBody,
-                                  UpdateListenerOption, UpdateListenerIpGroupOption)
+                                  UpdateListenerOption, UpdateListenerIpGroupOption,
+                                  CreateL7PolicyRequest, CreateL7PolicyRequestBody,
+                                  CreateL7PolicyOption, ListListenersRequest)
 from huaweicloudsdkgeip.v3 import DisassociateInstanceRequest
 from huaweicloudsdklts.v2 import CreateTransferRequestBodyLogTransferInfo, TransferDetail, \
     CreateTransferRequestBodyLogStreams, CreateTransferRequestBody, CreateTransferRequest
@@ -361,3 +363,76 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         response = client.update_listener(request)
         log.info(f"Update ipgroup of listener: {resource['id']}")
         return response
+
+
+class ListenerRedirectAction(HuaweiCloudBaseAction):
+    """Set redirect for ELB Listeners.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: redirect-listener-policy
+            resource: huaweicloud.elb-listener
+            filters:
+              - not:
+                - type: is-redirect-to-listener
+                  protocol: HTTPS
+                  name: my-https-listener
+            actions:
+              - type: redirect-to-listener
+                protocol: HTTPS
+                name: my-https-listener
+    """
+
+    schema = type_schema(type_name="redirect-to-listener",
+                         id={'type': 'string'},
+                         protocol={'type': 'string'},
+                         name={'type': 'string'},
+                         port={'type': 'number', 'minimum': 0})
+
+    def perform_action(self, resource):
+        redirect_listener_id = self.data.get('id', None)
+        protocol = self.data.get('protocol', None)
+        name = self.data.get('name', None)
+        port = self.data.get('port', None)
+        listener_id = resource['id']
+        
+        client = self.manager.get_client()
+        # List all listeners by the given parameters
+        request = ListListenersRequest(       
+            enterprise_project_id=["all_granted_eps"],
+            id=[redirect_listener_id] if redirect_listener_id else None,
+            name=[name] if name else None,
+            protocol=[protocol] if protocol else None,
+            protocol_port=[port] if port is not None else None
+        )
+        response = client.list_listeners(request)
+        check_elb_resource(response)
+        listener = response.listeners[0]
+        redirect_listener_id = listener.id
+        request = CreateL7PolicyRequest(
+            body=CreateL7PolicyRequestBody(
+                l7policy=CreateL7PolicyOption(
+                    action='REDIRECT_TO_LISTENER',
+                    listener_id=listener_id,
+                    redirect_listener_id=redirect_listener_id
+                )
+            )
+        )
+        response = client.create_l7_policy(request)
+        check_elb_resource(response)
+        log.info(f"Redirect listener {listener_id} to listener {redirect_listener_id}")
+        return response
+    
+
+def check_elb_resource(response):
+      if response is None:
+          log.error("Failed to get response from ELB service")
+          raise exceptions.ClientRequestException()
+      if response.status_code != 200 and response.status_code != 201 and \
+        response.status_code != 204:
+          log.error(response.status_code, response.request_id,
+                    response.error_code, response.error_msg)
+          raise exceptions.ClientRequestException()
