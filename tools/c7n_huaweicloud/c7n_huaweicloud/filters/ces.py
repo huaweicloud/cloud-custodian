@@ -70,12 +70,11 @@ class AlarmNameSpaceAndMetricFilter(Filter):
         return True
 
 
-
 class AlarmNotificationFilter(Filter):
     schema = type_schema(
         'alarm-notification',
         required=['notification_list'],
-        notification_list={'type': 'array', 'items': {'type': 'string'}},  # 目标notification_list列表
+        notification_list={'type': 'array', 'items': {'type': 'string'}},
     )
 
     def process(self, resources, event=None):
