@@ -764,12 +764,16 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
         is_safety_support_region = ["sa-brazil-1"]
         func_vpc = self.policy.data['mode'].get('func_vpc')
         if func_vpc:
-            vpc_id, subnet_id = self.get_vpc_and_subnet_id_by_name(
-                vpc_name=func_vpc["vpc_name"],
-                subnet_name=func_vpc["subnet_name"],
-            )
-            func_vpc["vpc_id"] = vpc_id
-            func_vpc["subnet_id"] = subnet_id
+            if func_vpc.get('vpc_id') and func_vpc.get('subnet_id'):
+                pass
+            else:
+                vpc_id, subnet_id = self.get_vpc_and_subnet_id_by_name(
+                    vpc_name=func_vpc["vpc_name"],
+                    subnet_name=func_vpc["subnet_name"],
+                    cidr=func_vpc["cidr"],
+                )
+                func_vpc["vpc_id"] = vpc_id
+                func_vpc["subnet_id"] = subnet_id
             # 设置安全访问默认值，函数服务部分只支持部分局点开启安全访问
             if not func_vpc.get('is_safety'):
                 func_vpc["is_safety"] = self.session.region in is_safety_support_region
@@ -829,7 +833,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
                     self.policy.data['mode'], session_factory))
         return events
 
-    def get_vpc_and_subnet_id_by_name(self, vpc_name, subnet_name):
+    def get_vpc_and_subnet_id_by_name(self, vpc_name, subnet_name, cidr):
         vpc_client_v3 = self.session.client('vpc')
         get_vpcs_request = ListVpcsRequest(
             name=[vpc_name],
@@ -863,7 +867,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
         subnet_id = ""
         for subnet in subnets:
-            if subnet.name == subnet_name:
+            if subnet.name == subnet_name and subnet.cidr == cidr:
                 subnet_id = subnet.id
                 break
         if subnet_id == "":
