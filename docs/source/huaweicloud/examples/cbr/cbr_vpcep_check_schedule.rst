@@ -10,9 +10,9 @@ policies:
       schedule_type: Rate
     filters:
       - type: by-service-and-vpc-check
-        endpoint_service_name: "com.myhuaweicloud.sa-brazil-1.cbr"
+        endpoint_service_name: "com.myhuaweicloud.xxxxxxx.cbr"
     actions:
       - type: eps-check-ep-msg
         topic_urn_list:
-          - "urn:smn:sa-brazil-1:0d8df128318091f52ff1c0069c340775:custodian_test"
+          - "urn:smn:xxxx:xxxxx:custodian_test"
         message: "Alert: please check whether the vpc endpoint for cbr has been created."
