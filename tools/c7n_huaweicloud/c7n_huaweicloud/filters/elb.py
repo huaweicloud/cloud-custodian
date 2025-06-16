@@ -5,7 +5,9 @@ import logging
 
 from dateutil.parser import parse
 
-from huaweicloudsdkelb.v3 import ListAllMembersRequest
+from huaweicloudsdkelb.v3 import ListAllMembersRequest, ListL7PoliciesRequest,\
+    ShowListenerRequest
+
 
 from c7n.filters import ValueFilter, AgeFilter, OPERATORS, Filter
 from huaweicloudsdkcore.exceptions import exceptions
@@ -236,6 +238,63 @@ class LoadbalancerIsNotLTSLogTransferFilter(LoadbalancerIsLTSLogTransferFilter):
         return diff
 
 
+class ListenerRedirectListenerFilter(Filter):
+    """Filter elb resources by redirect listener.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: is-redirect-to-listener-policy
+            resource: huaweicloud.elb-listener
+            filters:
+              - not:
+                - type: is-redirect-to-listener
+                  protocol: HTTPS
+                  name: my-https-listener
+      """
+
+    schema = type_schema('is-redirect-to-listener',
+                         id={'type': 'string'},
+                         protocol={'type': 'string'},
+                         name={'type': 'string'},
+                         port={'type': 'number', 'minimum': 0})
+
+    def __call__(self, resource):
+        id = self.data.get('id', None)
+        protocol = self.data.get('protocol', None)
+        name = self.data.get('name', None)
+        port = self.data.get('port', None)
+        listener_id = resource['id']
+        # Get the policy information for the listener
+        client = self.manager.get_client()
+        request = ListL7PoliciesRequest(
+            enterprise_project_id=["all_granted_eps"],
+            listener_id=[listener_id],
+            action=['REDIRECT_TO_LISTENER'],
+            redirect_listener_id=[id] if id else None
+        )
+        response = client.list_l7_policies(request)
+        check_elb_resource(response)
+        
+        for policy in response.l7policies:
+            if (policy.redirect_listener_id is None):
+                continue
+            # Get the listener information for the redirect listener
+            request = ShowListenerRequest(listener_id=policy.redirect_listener_id)
+            response = client.show_listener(request)
+            check_elb_resource(response)
+
+            listener = response.listener
+            if (protocol and listener.protocol != protocol) or \
+                (name and listener.name != name) or \
+                (port and listener.protocol_port != port):
+                continue
+            return True
+        return False
+
+
 class ELBAttributesFilter(ValueFilter):
     """Filter by ELB resources attributes
 
@@ -288,3 +347,14 @@ class ELBAgeFilter(AgeFilter):
     def get_resource_date(self, resource):
         return parse(resource.get(
             self.date_attribute, "2000-01-01T01:01:01.000Z"))
+
+
+def check_elb_resource(response):
+      if response is None:
+          log.error("Failed to get response from ELB service")
+          raise exceptions.ClientRequestException()
+      if response.status_code != 200 and response.status_code != 201 and \
+        response.status_code != 204:
+          log.error(response.status_code, response.request_id,
+                    response.error_code, response.error_msg)
+          raise exceptions.ClientRequestException()

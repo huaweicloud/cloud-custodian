@@ -612,9 +612,9 @@ class Session:
         elif service == "functiongraph":
             request = ListFunctionsRequest()
         elif service == "elb_loadbalancer":
-            request = ListLoadBalancersRequest()
+            request = ListLoadBalancersRequest(enterprise_project_id=["all_granted_eps"])
         elif service == "elb_listener":
-            request = ListListenersRequest()
+            request = ListListenersRequest(enterprise_project_id=["all_granted_eps"])
         elif service == "eip":
             request = ListPublicipsRequest()
         elif service == "ims":
