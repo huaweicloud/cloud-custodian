@@ -60,7 +60,7 @@ class Listener(QueryResourceManager):
 Listener.action_registry.register('delete', ListenerDeleteAction)
 Listener.action_registry.register('set-acl-ipgroup', ListenerSetAclIpgroupAction)
 Listener.action_registry.register('redirect-to-listener', ListenerRedirectAction)
-    
+
 Listener.filter_registry.register('attributes', ELBAttributesFilter)
 Listener.filter_registry.register('age', ELBAgeFilter)
 Listener.filter_registry.register('is-redirect-to-listener', ListenerRedirectListenerFilter)

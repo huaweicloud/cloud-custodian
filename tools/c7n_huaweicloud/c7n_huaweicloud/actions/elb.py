@@ -398,10 +398,10 @@ class ListenerRedirectAction(HuaweiCloudBaseAction):
         name = self.data.get('name', None)
         port = self.data.get('port', None)
         listener_id = resource['id']
-        
+
         client = self.manager.get_client()
         # List all listeners by the given parameters
-        request = ListListenersRequest(       
+        request = ListListenersRequest(
             enterprise_project_id=["all_granted_eps"],
             id=[redirect_listener_id] if redirect_listener_id else None,
             name=[name] if name else None,
@@ -425,14 +425,14 @@ class ListenerRedirectAction(HuaweiCloudBaseAction):
         check_elb_resource(response)
         log.info(f"Redirect listener {listener_id} to listener {redirect_listener_id}")
         return response
-    
+
 
 def check_elb_resource(response):
-      if response is None:
-          log.error("Failed to get response from ELB service")
-          raise exceptions.ClientRequestException()
-      if response.status_code != 200 and response.status_code != 201 and \
-        response.status_code != 204:
-          log.error(response.status_code, response.request_id,
-                    response.error_code, response.error_msg)
-          raise exceptions.ClientRequestException()
+  if response is None:
+    log.error("Failed to get response from ELB service")
+    raise exceptions.ClientRequestException()
+  if response.status_code != 200 and response.status_code != 201 and \
+    response.status_code != 204:
+    log.error(response.status_code, response.request_id,
+              response.error_code, response.error_msg)
+    raise exceptions.ClientRequestException()
