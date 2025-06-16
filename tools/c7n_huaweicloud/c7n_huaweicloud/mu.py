@@ -386,7 +386,7 @@ class FunctionGraphManager:
         if (old_config['func_vpc'] is None) or (params['func_vpc'] is None):
             need_update_params['func_vpc'] = params['func_vpc']
         else:
-            vpc_fields = ['vpc_id', 'subnet_id', 'vpc_name', 'subnet_name', 'is_safety']
+            vpc_fields = ['vpc_id', 'subnet_id', 'is_safety']
             for field in vpc_fields:
                 if old_config['func_vpc'][field] != params['func_vpc'][field]:
                     need_update_params['func_vpc'] = params['func_vpc']
