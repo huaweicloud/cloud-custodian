@@ -325,7 +325,8 @@ class FunctionGraphManager:
 
     def _create_or_update(self, func, role=None):
         role = func.xrole or role
-        assert role, "FunctionGraph function xrole must be specified"
+        if not role:
+            raise PolicyExecutionError("FunctionGraph function xrole must be specified")
         archive = func.get_archive()
         existing = self.show_function_config(func.func_name, is_public=True)
 
