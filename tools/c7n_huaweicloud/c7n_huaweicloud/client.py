@@ -550,7 +550,7 @@ class Session:
                 .with_region(CcmRegion.value_of("ap-southeast-3"))
                 .build()
             )
-        elif service in ['as-group', 'as-config','as-policy']:
+        elif service in ['as-group', 'as-config', 'as-policy']:
             client = (
                 AsClient.new_builder()
                 .with_credentials(credentials)
