@@ -146,6 +146,9 @@ from huaweicloudsdkas.v1 import (
 from huaweicloudsdkas.v1.region.as_region import AsRegion
 from huaweicloudsdkelb.v2 import ElbClient as ElbClientV2
 from huaweicloudsdkelb.v2.region.elb_region import ElbRegion as ElbRegionV2
+from huaweicloudsdkvpcep.v1 import VpcepClient
+from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
+from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -159,13 +162,15 @@ class Session:
         self.region = None
         self.ak = None
         self.sk = None
-
         if options is not None:
             self.ak = options.get("access_key_id")
             self.sk = options.get("secret_access_key")
             self.token = options.get("security_token")
             self.domain_id = options.get("domain_id")
             self.region = options.get("region")
+            self.domain_name = options.get("name")
+            self.status = options.get("status")
+            self.tags = options.get("tags")
 
         self.ak = self.ak or os.getenv("HUAWEI_ACCESS_KEY_ID")
         self.sk = self.sk or os.getenv("HUAWEI_SECRET_ACCESS_KEY")
@@ -545,18 +550,18 @@ class Session:
                 .with_region(CcmRegion.value_of("ap-southeast-3"))
                 .build()
             )
-        elif service in ['as-group', 'as-config']:
+        elif service in ['as-group', 'as-config','as-policy']:
             client = (
                 AsClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(AsRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'as-policy':
+        elif service == 'vpcep-ep':
             client = (
-                AsClient.new_builder()
+                VpcepClient.new_builder()
                 .with_credentials(credentials)
-                .with_region(AsRegion.value_of(self.region))
+                .with_region(VpcepRegion.value_of(self.region))
                 .build()
             )
         return client
@@ -715,6 +720,8 @@ class Session:
             request = ListScalingConfigsRequest()
         elif service == 'as-policy':
             request = ListAllScalingV2PoliciesRequest()
+        elif service == 'vpcep-ep':
+            request = ListEndpointsRequest()
         return request
 
 

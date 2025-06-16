@@ -764,6 +764,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.151"
 
 [[package]]
+name = "huaweicloudsdkvpcep"
+version = "3.1.151"
+description = "VPCEP"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkvpcep-3.1.151-py2.py3-none-any.whl", hash = "sha256:f66437297d86e6db73499eae073037846856e93d3499165f6433b916ed6bc4f0"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.151"
+
+[[package]]
 name = "huaweicloudsdkworkspace"
 version = "3.1.151"
 description = "Workspace"
