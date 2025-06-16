@@ -428,11 +428,11 @@ class ListenerRedirectAction(HuaweiCloudBaseAction):
 
 
 def check_elb_resource(response):
-  if response is None:
-    log.error("Failed to get response from ELB service")
-    raise exceptions.ClientRequestException()
-  if response.status_code != 200 and response.status_code != 201 and \
-    response.status_code != 204:
-    log.error(response.status_code, response.request_id,
-              response.error_code, response.error_msg)
-    raise exceptions.ClientRequestException()
+    if response is None:
+      log.error("Failed to get response from ELB service")
+      raise exceptions.ClientRequestException()
+    if response.status_code != 200 and response.status_code != 201 and \
+      response.status_code != 204:
+      log.error(response.status_code, response.request_id,
+                response.error_code, response.error_msg)
+      raise exceptions.ClientRequestException()
