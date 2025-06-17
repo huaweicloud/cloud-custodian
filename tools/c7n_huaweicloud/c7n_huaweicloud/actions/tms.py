@@ -20,7 +20,7 @@ from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 
 MAX_WORKERS = 5
 MAX_TAGS_SIZE = 10
-RSOURCE_MAX_SIZE = 50
+RESOURCE_MAX_SIZE = 50
 DEFAULT_TAG = "mark-for-op-tag"
 
 
@@ -45,11 +45,11 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
 
     :example:
 
-        .. code-block :: yaml
+        . code-block :: yaml
 
             policies:
             - name: multiple-tags-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - type: value
                   key: metadata.__system__encrypted
@@ -102,7 +102,7 @@ class CreateResourceTagAction(HuaweiCloudBaseAction):
                      if "tag_resource_type" in resource.keys() and len(
                 resource['tag_resource_type']) > 0]
 
-        for resource_batch in chunks(resources, RSOURCE_MAX_SIZE):
+        for resource_batch in chunks(resources, RESOURCE_MAX_SIZE):
             try:
                 failed_resources = self.process_resource_set(tms_client, resource_batch, tags,
                                                              project_id)
@@ -152,11 +152,11 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
 
     :example:
 
-        .. code-block :: yaml
+        . code-block :: yaml
 
             policies:
             - name: multiple-untags-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - type: value
                   key: metadata.__system__encrypted
@@ -169,7 +169,7 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
 
             policies:
             - name: multiple-untags-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - type: value
                   key: metadata.__system__encrypted
@@ -214,7 +214,7 @@ class DeleteResourceTagAction(HuaweiCloudBaseAction):
                      if "tag_resource_type" in resource.keys() and len(
                 resource['tag_resource_type']) > 0]
 
-        for resource_batch in chunks(resources, RSOURCE_MAX_SIZE):
+        for resource_batch in chunks(resources, RESOURCE_MAX_SIZE):
             try:
                 failed_resources = self.process_resource_set(tms_client, resource_batch, key_values,
                                                              project_id)
@@ -264,11 +264,11 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
 
     :example:
 
-        .. code-block :: yaml
+        . code-block :: yaml
 
             policies:
             - name: multiple-rename-tag-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - type: value
                   key: metadata.__system__encrypted
@@ -402,17 +402,17 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
 
 
 class NormalizeResourceTagAction(HuaweiCloudBaseAction):
-    """Normaliz the specified tags from the specified resources.
+    """Normalize the specified tags from the specified resources.
     Set the tag value to uppercase, title, lowercase, replace, or strip text
     from a tag key
 
     :example:
 
-        .. code-block :: yaml
+        . code-block :: yaml
 
             policies:
             - name: multiple-normalize-tag-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - "tag:test-key": present
               actions:
@@ -422,7 +422,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
             policies:
             - name: multiple-normalize-tag-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - "tag:test-key": present
               actions:
@@ -433,7 +433,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
             policies:
             - name: multiple-normalize-tag-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - "tag:test-key": present
               actions:
@@ -447,7 +447,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
     log = logging.getLogger("custodian.huaweicloud.actions.tms.NormalizeResourceTagAction")
 
-    action_list = ['uppper', 'lower', 'title', 'strip', 'replace']
+    action_list = ['upper', 'lower', 'title', 'strip', 'replace']
     schema = type_schema("normalize-tag",
                          key={'type': 'string'},
                          value={'type': 'string'},
@@ -465,7 +465,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
         if not self.data.get('action') and self.data.get('action') not in self.action_list:
             raise PolicyValidationError(
                 "Can not perform normalize tag when "
-                "action not in [uppper, lower, title, strip, replace]")
+                "action not in [upper, lower, title, strip, replace]")
         action = self.data.get('action')
         if action == 'strip' and not self.data.get('old_sub_str'):
             raise PolicyValidationError(
@@ -615,15 +615,15 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
 
 class TrimResourceTagAction(HuaweiCloudBaseAction):
-    """Rename the specified tags from the specified resources.
+    """Trim the specified tags from the specified resources.
 
     :example:
 
-        .. code-block :: yaml
+        . code-block :: yaml
 
             policies:
             - name: multiple-tag-trim-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - type: value
                   key: "length(tags)"
@@ -647,6 +647,11 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
         """validate"""
         if not self.data.get('space'):
             raise PolicyValidationError("Can not perform tag-trim without space")
+        if self.data.get('space') > MAX_TAGS_SIZE:
+            raise PolicyValidationError(
+                "Can not perform tag-trim when space more than %d" % MAX_TAGS_SIZE)
+        if self.data.get('space') < 0:
+            raise PolicyValidationError("Can not perform tag-trim when space less than zero")
         return self
 
     def process(self, resources):
@@ -698,6 +703,12 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
         pass
 
     def get_delete_keys(self, tags, space, preserve):
+        if len(tags) > MAX_TAGS_SIZE:
+            self.log.warn("Can not perform tag-trim when tags more than %d, please reduce to %d",
+                          MAX_TAGS_SIZE, MAX_TAGS_SIZE)
+            raise PolicyValidationError(
+                "Can not perform tag-trim when tags more than %d, please reduce to %d" %
+                                        (MAX_TAGS_SIZE, MAX_TAGS_SIZE))
         if MAX_TAGS_SIZE - len(tags) >= space:
             return []
         else:
@@ -771,11 +782,11 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
         If neither 'days' nor 'hours' is specified, Cloud Custodian will default
         to marking the resource for action 4 days in the future.
 
-        .. code-block :: yaml
+        . code-block :: yaml
 
           policies:
             - name: multiple-tags-example
-              resource: huaweicloud.volume
+              resource: huaweicloud.evs-volume
               filters:
                 - type: value
                   key: metadata.__system__encrypted
@@ -855,7 +866,7 @@ class CreateResourceTagDelayedAction(HuaweiCloudBaseAction):
                      if "tag_resource_type" in resource.keys() and len(
                 resource['tag_resource_type']) > 0]
 
-        for resource_batch in chunks(resources, RSOURCE_MAX_SIZE):
+        for resource_batch in chunks(resources, RESOURCE_MAX_SIZE):
             try:
                 failed_resources = self.process_resource_set(tms_client, resource_batch, tags,
                                                              project_id)

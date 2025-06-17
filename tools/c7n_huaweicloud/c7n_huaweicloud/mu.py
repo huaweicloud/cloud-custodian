@@ -37,6 +37,11 @@ from huaweicloudsdkfunctiongraph.v2 import (
     FuncAsyncDestinationConfig,
     FuncDestinationConfig,
     DeleteFunctionAsyncInvokeConfigRequest,
+    ListFunctionTagsRequest,
+    DeleteTagsRequest,
+    UpdateFunctionTagsRequestBody,
+    KvItem,
+    CreateTagsRequest,
 )
 from huaweicloudsdkeg.v1 import (
     ListChannelsRequest,
@@ -47,6 +52,8 @@ from huaweicloudsdkeg.v1 import (
     SubscriptionCreateReq
 )
 from huaweicloudsdkcore.exceptions import exceptions
+from huaweicloudsdkvpc.v2 import ListSubnetsRequest
+from huaweicloudsdkvpc.v3 import ListVpcsRequest
 
 log = logging.getLogger('c7n_huaweicloud.mu')
 
@@ -194,12 +201,14 @@ class FunctionGraphManager:
                 return dependency_versions
             else:
                 dependency_versions += dependency_version_list
-                log.info(
-                    f'Can not find public dependency, using [{owner}] private dependency {dependency_version_list}')  # noqa: E501
 
         if len(dependency_versions) == 0:
-            log.error(f'Not find any dependency named: {depend_name}, please add dependencies manually')  # noqa: E501
+            log.error(
+                f'Not find any dependency named: {depend_name}, please add dependencies manually')
+            return dependency_versions
 
+        log.info(
+            f'Can not find public dependency, using private dependency {dependency_versions}')
         return dependency_versions
 
     def show_function_config(self, func_name, is_public=False):
@@ -321,7 +330,8 @@ class FunctionGraphManager:
 
     def _create_or_update(self, func, role=None):
         role = func.xrole or role
-        assert role, "FunctionGraph function xrole must be specified"
+        if not role:
+            raise PolicyExecutionError("FunctionGraph function xrole must be specified")
         archive = func.get_archive()
         existing = self.show_function_config(func.func_name, is_public=True)
 
@@ -352,6 +362,8 @@ class FunctionGraphManager:
 
         if result:
             self.process_async_invoke_config(func, result.func_urn)
+            if func.func_tags:
+                self.process_function_tags(func.func_tags, result.func_urn)
         else:
             raise PolicyExecutionError("Create or update failed.")
 
@@ -369,8 +381,9 @@ class FunctionGraphManager:
         if old_config.get('user_data', ""):
             old_user_data = json.loads(old_config['user_data'])
         for param in params:
-            # 跳过异步配置、环境变量
-            if param in ["async_invoke_config", "user_data"]:
+            # 跳过异步配置、环境变量、vpc配置、网络控制配置、func_tags
+            if param in ["async_invoke_config", "user_data", "func_vpc", "network_controller",
+                         "func_tags"]:
                 continue
             if params[param] != old_config.get(param):
                 need_update_params[param] = params[param]
@@ -378,6 +391,22 @@ class FunctionGraphManager:
         # 单独比较user_data:
         if new_user_data != old_user_data:
             need_update_params['user_data'] = json.dumps(new_user_data)
+        # 单独比较func_vpc:
+        if (old_config['func_vpc'] is None) or (params['func_vpc'] is None):
+            need_update_params['func_vpc'] = params['func_vpc']
+        else:
+            vpc_fields = ['vpc_id', 'subnet_id', 'is_safety']
+            for field in vpc_fields:
+                if old_config['func_vpc'][field] != params['func_vpc'][field]:
+                    need_update_params['func_vpc'] = params['func_vpc']
+        # 单独比较network_controller:
+        if (old_config['network_controller'] is None) or (params['network_controller'] is None):
+            need_update_params['network_controller'] = params['network_controller']
+        else:
+            if old_config['network_controller']['disable_public_network'] != \
+                    params['network_controller']['disable_public_network']:
+                need_update_params['network_controller'] = params['network_controller']
+
         return need_update_params
 
     def process_async_invoke_config(self, func, func_urn):
@@ -451,6 +480,82 @@ class FunctionGraphManager:
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
                 return
+
+    def process_function_tags(self, func_tags, func_urn):
+        new_tags = func_tags
+        new_tags_map = {}
+        for tag in new_tags:
+            new_tags_map[tag['key']] = tag['value']
+        list_function_tags_request = ListFunctionTagsRequest(
+            resource_type='functions',
+            resource_id=func_urn
+        )
+        try:
+            old_tags = self.client.list_function_tags(list_function_tags_request).tags
+        except exceptions.ClientRequestException as e:
+            log.error(f'List function tags failed, request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            return
+        need_delete_tags = []
+        if old_tags is None or len(old_tags) == 0:
+            pass
+        else:
+            for tag in old_tags:
+                if tag.key in new_tags_map.keys() and tag.value == new_tags_map[tag.key]:
+                    # tag已存在时跳过
+                    pass
+                else:
+                    need_delete_tags.append(tag)
+
+        if need_delete_tags:
+            delete_tags_request = DeleteTagsRequest(
+                resource_type='functions',
+                resource_id=func_urn,
+            )
+            delete_tags_request.body = UpdateFunctionTagsRequestBody(
+                action='delete',
+                tags=need_delete_tags,
+            )
+            try:
+                log.warning(f'Delete function tags{need_delete_tags}...')
+                _ = self.client.delete_tags(delete_tags_request)
+            except exceptions.ClientRequestException as e:
+                log.error(f'Delete function tags failed, request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
+                return
+
+        create_tags = []
+        for key, value in new_tags_map.items():
+            create_tags.append(KvItem(
+                key=key,
+                value=value
+            ))
+
+        if create_tags == old_tags:
+            # tags无需更新
+            return
+
+        create_tags_request = CreateTagsRequest(
+            resource_type='functions',
+            resource_id=func_urn,
+        )
+        create_tags_request.body = UpdateFunctionTagsRequestBody(
+            action='create',
+            tags=create_tags,
+        )
+        try:
+            log.warning(f'Create function tags{create_tags}...')
+            _ = self.client.create_tags(create_tags_request)
+        except exceptions.ClientRequestException as e:
+            log.error(f'Create function tags failed, request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            return
 
     @staticmethod
     def calculate_sha512(archive, buffer_size=65536) -> str:
@@ -567,6 +672,11 @@ class AbstractFunctionGraph:
     def code_encrypt_kms_key_id(self):
         """KMS key id for encrypt function code"""
 
+    @property
+    @abc.abstractmethod
+    def func_tags(self):
+        """Function tags"""
+
     @abc.abstractmethod
     def get_events(self, session_factory):
         """ """
@@ -592,7 +702,16 @@ class AbstractFunctionGraph:
             'async_invoke_config': self.async_invoke_config,
             'user_data_encrypt_kms_key_id': self.user_data_encrypt_kms_key_id,
             'code_encrypt_kms_key_id': self.code_encrypt_kms_key_id,
+            'func_tags': self.func_tags,
         }
+        if conf["func_vpc"]:
+            conf["network_controller"] = {
+                "disable_public_network": True,
+            }
+        else:
+            conf["network_controller"] = {
+                "disable_public_network": False,
+            }
 
         return conf
 
@@ -673,6 +792,10 @@ class FunctionGraph(AbstractFunctionGraph):
     def code_encrypt_kms_key_id(self):
         return self.func_data.get('code_encrypt_kms_key_id', "")
 
+    @property
+    def func_tags(self):
+        return self.func_data.get('func_tags', None)
+
     def get_events(self, session_factory):
         return self.func_data.get('events', ())
 
@@ -697,11 +820,12 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     def __init__(self, policy):
         self.policy = policy
+        self.session = self.policy.session_factory()
         self.archive = custodian_archive(packages=self.packages)
 
     @property
     def func_name(self):
-        prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
+        prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
         return "%s%s" % (prefix, self.policy.name)
 
     event_name = func_name
@@ -732,14 +856,33 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     @property
     def func_vpc(self):
-        return self.policy.data['mode'].get('func_vpc', None)
+        is_safety_support_region = ["sa-brazil-1"]
+        func_vpc = self.policy.data['mode'].get('func_vpc')
+        if func_vpc:
+            if func_vpc.get('vpc_id') and func_vpc.get('subnet_id'):
+                pass
+            else:
+                vpc_id, subnet_id = self.get_vpc_and_subnet_id_by_name(
+                    vpc_name=func_vpc["vpc_name"],
+                    subnet_name=func_vpc["subnet_name"],
+                    cidr=func_vpc["cidr"],
+                )
+                func_vpc["vpc_id"] = vpc_id
+                func_vpc["subnet_id"] = subnet_id
+            # 设置安全访问默认值，函数服务部分只支持部分局点开启安全访问
+            if not func_vpc.get('is_safety'):
+                func_vpc["is_safety"] = self.session.region in is_safety_support_region
+
+        return func_vpc
 
     @property
     def user_data(self):
         user_data = {
-            "HUAWEI_DEFAULT_REGION": local_session(self.policy.session_factory).region,
+            "HUAWEI_DEFAULT_REGION": self.session.region,
             "LOG_LEVEL": self.policy.data['mode'].get('log_level', "WARNING"),
         }
+        if self.session.domain_id:
+            user_data["DOMAIN_ID"] = self.session.domain_id
         return json.dumps(user_data)
 
     @property
@@ -773,6 +916,10 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     def code_encrypt_kms_key_id(self):
         return self.policy.data['mode'].get('code_encrypt_kms_key_id', None)
 
+    @property
+    def func_tags(self):
+        return self.policy.data['mode'].get('func_tags', None)
+
     def get_events(self, session_factory):
         events = []
         if self.policy.data['mode']['type'] == 'cloudtrace':
@@ -784,6 +931,49 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
                 TimerServiceSource(
                     self.policy.data['mode'], session_factory))
         return events
+
+    def get_vpc_and_subnet_id_by_name(self, vpc_name, subnet_name, cidr):
+        vpc_client_v3 = self.session.client('vpc')
+        get_vpcs_request = ListVpcsRequest(
+            name=[vpc_name],
+        )
+        try:
+            vpcs = vpc_client_v3.list_vpcs(get_vpcs_request).vpcs
+        except exceptions.ClientRequestException as e:
+            log.error(f'Get vpc_id by vpc_name failed, request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError("Get vpc_id by vpc_name failed")
+
+        if len(vpcs) != 1:
+            log.error(f'The count of vpc[{vpc_name}] is not 1.')
+            raise PolicyExecutionError("Get vpc_id by vpc_name failed")
+        vpc_id = vpcs[0].id
+
+        vpc_client_v2 = self.session.client('vpc_v2')
+        get_subnets_request = ListSubnetsRequest(
+            vpc_id=vpc_id,
+        )
+        try:
+            subnets = vpc_client_v2.list_subnets(get_subnets_request).subnets
+        except exceptions.ClientRequestException as e:
+            log.error(f'Get subnet_id by subnet_name failed, request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError("Get subnet_id by subnet_name failed")
+
+        subnet_id = ""
+        for subnet in subnets:
+            if subnet.name == subnet_name and subnet.cidr == cidr:
+                subnet_id = subnet.id
+                break
+        if subnet_id == "":
+            log.error(f'Get subnet_id by subnet_name[{subnet_name}] failed')
+            raise PolicyExecutionError("Get subnet_id by subnet_name failed")
+
+        return vpc_id, subnet_id
 
     def get_archive(self):
         self.archive.add_contents(

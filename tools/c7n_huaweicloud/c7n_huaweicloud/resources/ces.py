@@ -5,7 +5,7 @@ import logging
 import os
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from c7n_huaweicloud.filters.ces import AlarmNameSpaceAndMetricFilter
+from c7n_huaweicloud.filters.ces import AlarmNameSpaceAndMetricFilter, AlarmNotificationFilter
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkces.v2 import UpdateAlarmNotificationsRequest, Notification, \
@@ -68,6 +68,7 @@ class Alarm(QueryResourceManager):
 
 Alarm.filter_registry.register('missing', Missing)
 Alarm.filter_registry.register('alarm-namespace-metric', AlarmNameSpaceAndMetricFilter)
+Alarm.filter_registry.register('alarm-notification', AlarmNotificationFilter)
 
 
 @Alarm.action_registry.register("alarm-update-notification")
@@ -84,13 +85,13 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
                       Update the SMN notifications corresponding to these alarm settings"
         resource: huaweicloud.ces-alarm
         filters:
-          - type: value
-            key: notification_enabled
-            value: false
+          - type: alarm-notification
+            notification_list: ["urn:smn:cn-north-4:xxxxx:CES_notification_xxxxxxx"]
         actions:
           - type: alarm-update-notification
             parameters:
               action_type: "notification"
+              notification_name: "Email_Notification_to_Owner"
               notification_list:
                 - "urn:smn:cn-north-4:xxxxx:CES_notification_xxxxxxx"
 
@@ -102,10 +103,14 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         **{
             "parameters": {
                 "type": "object",
-                "required": ["notification_name", "action_type"],
+                "required": ["action_type"],
                 "properties": {
                     "notification_name": {
                         "type": "string",
+                    },
+                    "notification_list": {
+                        "type": "array",
+                        "items": {"type": "string"}
                     },
                     "action_type": {
                         "type": "string",
@@ -120,26 +125,68 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         params = self.data.get('parameters', {})
         action_type = params.get('action_type', 'notification')
         response = None
+        alarm_topic_urns = None
+        ok_topic_urns = None
+        alarm_contact_notification_list = None
+        ok_contact_notification_list = None
         smnClient = local_session(self.manager.session_factory).client('smn')
-        request = ListTopicsRequest()
-        request.name = params['notification_name']
-        response = smnClient.list_topics(request)
-        topic_urns = [topic.topic_urn for topic in response.topics]
+        notification_name = params.get('notification_name')
+        notification_list = params.get('notification_list')
+        if notification_name is not None:
+            request = ListTopicsRequest()
+            request.name = notification_name
+            response = smnClient.list_topics(request)
+            alarm_topic_urns = [topic.topic_urn for topic in response.topics]
+            ok_topic_urns = [topic.topic_urn for topic in response.topics]
+        elif notification_list is not None:
+            alarm_topic_urns = notification_list
+            ok_topic_urns = notification_list
+        else:
+            log.error("Update alarm notification need setting notification_name, "
+                      "notification_list param")
+            raise RuntimeError("missing notification_name, notification_list param")
+        alarm_notifications = resource["alarm_notifications"]
+        for item in alarm_notifications:
+            if item["type"] == "notification":
+                alarm_topic_urns += item["notification_list"]
+            if item["type"] == "contact":
+                alarm_contact_notification_list = item["notification_list"]
+
+        ok_notifications = resource["ok_notifications"]
+        for item in ok_notifications:
+            if item["type"] == "notification":
+                ok_topic_urns += item["notification_list"]
+            if item["type"] == "contact":
+                ok_contact_notification_list = item["notification_list"]
 
         request = UpdateAlarmNotificationsRequest()
         request.alarm_id = resource["alarm_id"]
         list_ok_notifications_body = [
             Notification(
                 type=action_type,
-                notification_list=topic_urns
+                notification_list=ok_topic_urns
             )
         ]
+        if ok_contact_notification_list is not None:
+            ok_notifications = Notification(
+                type="contact",
+                notification_list=ok_contact_notification_list
+            )
+            list_ok_notifications_body.append(ok_notifications)
+
         list_alarm_notifications_body = [
             Notification(
                 type=action_type,
-                notification_list=topic_urns
+                notification_list=alarm_topic_urns
             )
         ]
+        if alarm_contact_notification_list is not None:
+            alarm_notifications = Notification(
+                type="contact",
+                notification_list=alarm_contact_notification_list
+            )
+            list_alarm_notifications_body.append(alarm_notifications)
+
         request.body = PutAlarmNotificationReq(
             notification_end_time="23:59",
             notification_begin_time="00:00",

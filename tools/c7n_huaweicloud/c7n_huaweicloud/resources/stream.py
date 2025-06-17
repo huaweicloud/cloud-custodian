@@ -4,7 +4,8 @@
 import logging
 import time
 
-from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, ListLogGroupsRequest
+from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, \
+    ListLogGroupsRequest, ListLogStreamRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -26,12 +27,36 @@ class Stream(QueryResourceManager):
         tag_resource_type = 'lts-stream'
 
     def get_resources(self, resource_ids):
-        log.error("after listen get all groups")
+        log.info("after listen get all groups")
         client = self.get_client()
+        streams = []
         request = ListLogGroupsRequest()
+        stream_request = ListLogStreamRequest()
         response = client.list_log_groups(request)
-        log.error(response)
-        return response.log_groups
+        should_break = False
+        for group in response.log_groups:
+            if group.log_group_name.startswith("functiongraph.log.group"):
+                continue
+            time.sleep(0.22)
+            stream_request.log_group_id = group.log_group_id
+            try:
+                stream_response = client.list_log_stream(stream_request)
+                for stream in stream_response.log_streams:
+                    if stream.log_stream_id == resource_ids[0] and stream.whether_log_storage:
+                        streamDict = {}
+                        streamDict["log_group_id"] = group.log_group_id
+                        streamDict["log_stream_id"] = stream.log_stream_id
+                        streamDict["log_stream_name"] = stream.log_stream_name
+                        streams.append(streamDict)
+                        should_break = True
+                        break
+            except Exception as e:
+                log.error(e)
+                raise
+            if should_break:
+                break
+        log.info("The number of streams to disable storage is " + str(len(streams)))
+        return streams
 
 
 Stream.filter_registry.register('streams-storage-enabled', LtsStreamStorageEnabledFilter)
@@ -44,7 +69,7 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
     schema = type_schema("disable-stream-storage")
 
     def perform_action(self, resource):
-        time.sleep(0.3)
+        time.sleep(0.22)
         client = self.manager.get_client()
         request = UpdateLogStreamRequest()
         request.log_group_id = resource["log_group_id"]
@@ -52,6 +77,6 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
         request.body = UpdateLogStreamParams(
             whether_log_storage=False
         )
-        log.error("disable stream storage: " + resource["log_stream_id"])
+        log.info("disable storage: " + resource["log_stream_id"])
         response = client.update_log_stream(request)
         return response

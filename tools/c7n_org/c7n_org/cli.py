@@ -122,10 +122,11 @@ CONFIG_SCHEMA = {
             'required': ['domain_id'],
             'properties': {
                 'domain_id': {'type': 'string'},
+                'status': {'type': 'string'},
                 'agency_urn': {'type': 'string'},
                 'duration_seconds': {'type': 'integer', 'minimum': 900},
                 'regions': {'type': 'array', 'items': {'type': 'string'}},
-                'tags': {'type': 'array', 'items': {'type': 'string'}},
+                'tags': {'type': 'object'},
                 'vars': {'type': 'object'},
             }
         }
@@ -631,6 +632,7 @@ def accounts_iterator(config):
              "agency_urn": a["agency_urn"],
              "duration_seconds": a["duration_seconds"],
              'provider': 'huaweicloud',
+             'status': a.get('status', None),
              'tags': a.get('tags', ()),
              'vars': _update(a.get('vars', {}), org_vars)}
         yield d
@@ -684,6 +686,8 @@ def run_account(account, region, policies_config, output_path,
         config['regions'] = account['regions']
         config['domain_id'] = account['domain_id']
         config['name'] = account['name']
+        config['status'] = account['status']
+        config['tags'] = account['tags']
 
     policies = PolicyCollection.from_data(policies_config, config)
     policy_counts = {}
