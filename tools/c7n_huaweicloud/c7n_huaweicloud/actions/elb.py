@@ -58,112 +58,6 @@ class LoadbalancerDeleteAction(HuaweiCloudBaseAction):
         log.info(f"Successfully deleted loadbalancer: {resource['id']}")
 
 
-class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
-    """Enable logging for loadbalancers.
-
-    :Example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: enable-logging-for-loadbalancers
-            filters:
-              - type: is-not-logging
-            actions:
-              - type: enable-logging
-                log_group_name: "{my-log-group}  # Replace with your log group name"
-                log_topic_name: "{my-log-topic}  # Replace with your log topic name"
-    """
-
-    schema = type_schema(type_name="enable-logging",
-                         log_group_id={'type': 'string'},
-                         log_group_name={'type': 'string'},
-                         log_topic_id={
-                             'type': 'string',
-                             "aliases": ['log_topic_id', 'log_stream_id']
-                         },
-                         log_topic_name={
-                             'type': 'string',
-                             "aliases": ['log_topic_name', 'log_stream_name']
-                         })
-
-    def perform_action(self, resource):
-        loadbalancer_id = resource['id']
-        log_group_id = self.data.get("log_group_id")
-        log_topic_id = self.data.get("log_topic_id")
-        log_group_name = self.data.get("log_group_name")
-        log_topic_name = self.data.get("log_topic_name")
-
-        if not log_group_id and not log_group_name:
-            log.error("log_group_id or log_group_name must be provided.")
-            raise Exception("log_group_id or log_group_name must be provided.")
-        if not log_topic_id and not log_topic_name:
-            log.error("log_topic_id or log_topic_name must be provided.")
-            raise Exception("log_topic_id or log_topic_name must be provided.")
-
-        lts_client = local_session(self.manager.session_factory).client('lts')
-        log_group_response = lts_client.list_log_groups(ListLogGroupsRequest())
-        check_response(log_group_response)
-        resp_log_group_id = None
-        if log_group_id:
-            for group in log_group_response.log_groups:
-                if group.log_group_id == log_group_id:
-                    if log_group_name and group.log_group_name != log_group_name:
-                        log.error(f"Log group name '{log_group_name}' does not"
-                                  f" match log group id '{log_group_id}'")
-                        raise Exception(f"Log group name '{log_group_name}' "
-                                        f"does not match log group id '{log_group_id}'")
-                    resp_log_group_id = group.log_group_id
-                    break
-        elif log_group_name:
-            for group in log_group_response.log_groups:
-                if group.log_group_name == log_group_name:
-                    resp_log_group_id = group.log_group_id
-                    break
-        if not resp_log_group_id:
-            log.error("Log group with specified 'log_group_name' "
-                      "or 'log_group_id' not found.")
-            raise Exception("Log group with specified"
-                " 'log_group_name' or 'log_group_id' not found.")
-
-        log_stream_response = lts_client.list_log_stream(
-            ListLogStreamRequest(log_group_id=resp_log_group_id)
-        )
-        check_response(log_stream_response, f"log_group_id={resp_log_group_id}")
-        resp_log_stream_id = None
-        if log_topic_id:
-            for topic in log_stream_response.log_streams:
-                if topic.log_stream_id == log_topic_id:
-                    if log_topic_name and topic.log_stream_name != log_topic_name:
-                        log.error(
-                            f"Log topic name '{log_topic_name}' does not match "
-                            f"log topic id '{log_topic_id}'"
-                        )
-                        raise Exception(
-                            f"Log topic name '{log_topic_name}' does not match "
-                            f"log topic id '{log_topic_id}'"
-                        )
-                    resp_log_stream_id = topic.log_stream_id
-                    break
-        elif log_topic_name:
-            for topic in log_stream_response.log_streams:
-                if topic.log_stream_name == log_topic_name:
-                    resp_log_stream_id = topic.log_stream_id
-                    break
-        if not resp_log_stream_id:
-            log.error("Log topic with specified 'log_topic_name' or 'log_topic_id' not found.")
-            raise Exception("Log topic with specified 'log_topic_name' or 'log_topic_id' not found.")
-
-        client = self.manager.get_client()
-        logtank = CreateLogtankOption(loadbalancer_id=loadbalancer_id,
-                                      log_group_id=resp_log_group_id,
-                                      log_topic_id=resp_log_stream_id)
-        request = CreateLogtankRequest(CreateLogtankRequestBody(logtank))
-        response = client.create_logtank(request)
-        check_response(response, params=logtank)
-        log.info(f"Successfully enabled logging for loadbalancer: {loadbalancer_id}")
-
-
 class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
     """Unbind all public IP of loadbalancers.
 
@@ -233,6 +127,108 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
                          f"{loadbalancer_id}")
 
 
+class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
+    """Enable logging for loadbalancers.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: enable-logging-for-loadbalancers
+            filters:
+              - type: is-not-logging
+            actions:
+              - type: enable-logging
+                log_group_name: "{my-log-group}  # Replace with your log group name"
+                log_topic_name: "{my-log-topic}  # Replace with your log topic name"
+    """
+
+    schema = type_schema(type_name="enable-logging",
+                         log_group_id={'type': 'string'},
+                         log_group_name={'type': 'string'},
+                         log_topic_id={'type': 'string'},
+                         log_topic_name={'type': 'string'})
+
+    def perform_action(self, resource):
+        loadbalancer_id = resource['id']
+        log_group_id = self.data.get("log_group_id")
+        log_topic_id = self.data.get("log_topic_id")
+        log_group_name = self.data.get("log_group_name")
+        log_topic_name = self.data.get("log_topic_name")
+
+        if not log_group_id and not log_group_name:
+            log.error("log_group_id or log_group_name must be provided.")
+            raise Exception("log_group_id or log_group_name must be provided.")
+        if not log_topic_id and not log_topic_name:
+            log.error("log_topic_id or log_topic_name must be provided.")
+            raise Exception("log_topic_id or log_topic_name must be provided.")
+
+        lts_client = local_session(self.manager.session_factory).client('lts-stream')
+        log_group_response = lts_client.list_log_groups(ListLogGroupsRequest())
+        check_response(log_group_response)
+        resp_log_group_id = None
+        if log_group_id:
+            for group in log_group_response.log_groups:
+                if group.log_group_id == log_group_id:
+                    if log_group_name and group.log_group_name != log_group_name:
+                        log.error(f"Log group name '{log_group_name}' does not"
+                                  f" match log group id '{log_group_id}'")
+                        raise Exception(f"Log group name '{log_group_name}' "
+                                        f"does not match log group id '{log_group_id}'")
+                    resp_log_group_id = group.log_group_id
+                    break
+        elif log_group_name:
+            for group in log_group_response.log_groups:
+                if group.log_group_name == log_group_name:
+                    resp_log_group_id = group.log_group_id
+                    break
+        if not resp_log_group_id:
+            log.error("Log group with specified 'log_group_name' "
+                      "or 'log_group_id' not found.")
+            raise Exception("Log group with specified"
+                " 'log_group_name' or 'log_group_id' not found.")
+
+        log_stream_response = lts_client.list_log_stream(
+            ListLogStreamRequest(log_group_id=resp_log_group_id)
+        )
+        check_response(log_stream_response, f"log_group_id={resp_log_group_id}")
+        resp_log_stream_id = None
+        if log_topic_id:
+            for topic in log_stream_response.log_streams:
+                if topic.log_stream_id == log_topic_id:
+                    if log_topic_name and topic.log_stream_name != log_topic_name:
+                        log.error(
+                            f"Log topic name '{log_topic_name}' does not match "
+                            f"log topic id '{log_topic_id}'"
+                        )
+                        raise Exception(
+                            f"Log topic name '{log_topic_name}' does not match "
+                            f"log topic id '{log_topic_id}'"
+                        )
+                    resp_log_stream_id = topic.log_stream_id
+                    break
+        elif log_topic_name:
+            for topic in log_stream_response.log_streams:
+                if topic.log_stream_name == log_topic_name:
+                    resp_log_stream_id = topic.log_stream_id
+                    break
+        if not resp_log_stream_id:
+            log.error("Log topic with specified 'log_topic_name' or 'log_topic_id' not found.")
+            raise Exception("Log topic with specified 'log_topic_name' or 'log_topic_id' not found.")
+
+        client = self.manager.get_client()
+        logtank = CreateLogtankOption(loadbalancer_id=loadbalancer_id,
+                                      log_group_id=resp_log_group_id,
+                                      log_topic_id=resp_log_stream_id)
+        request = CreateLogtankRequest(CreateLogtankRequestBody(logtank))
+        response = client.create_logtank(request)
+        check_response(response, params=logtank)
+        resource['log_group_id'] = resp_log_group_id
+        resource['log_topic_id'] = resp_log_stream_id
+        log.info(f"Successfully enabled logging for loadbalancer: {loadbalancer_id}")
+
+
 class LoadbalancerCreateLTSLogTransferAction(LtsCreateTransferLog):
     """Enable logging transfer for loadbalancers.
 
@@ -264,17 +260,17 @@ class LoadbalancerCreateLTSLogTransferAction(LtsCreateTransferLog):
 
     def process(self, resources):
         if "log_transfer_type" not in self.data or not self.data["log_transfer_type"]:
-            self.data.set("log_transfer_type", "OBS")
+            self.data["log_transfer_type"] = "OBS"
         if "log_transfer_mode" not in self.data or not self.data["log_transfer_mode"]:
-            self.data.set("log_transfer_mode", "cycle")
+            self.data["log_transfer_mode"] = "cycle"
         if "log_transfer_status" not in self.data or not self.data["log_transfer_status"]:
-            self.data.set("log_transfer_status", "ENABLE")
+            self.data["log_transfer_status"] = "ENABLE"
         if "log_storage_format" not in self.data or not self.data["log_storage_format"]:
-            self.data.set("log_storage_format", "JSON")
+            self.data["log_storage_format"] = "JSON"
         if "obs_period" not in self.data or not self.data["obs_period"]:
-            self.data.set("obs_period", 2)
+            self.data["obs_period"] = 2
         if "obs_period_unit" not in self.data or not self.data["obs_period_unit"]:
-            self.data.set("obs_period_unit", "min")
+            self.data["obs_period_unit"] = "min"
 
         log_topic_id_set = []
         for resource in resources:
@@ -381,7 +377,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
                   value: "white"
             actions:
               - type: set-acl-ipgroup
-                ipgroup_name: "my-ipgroup"
+                ipgroup_name: ["my-ipgroup"]
                 ipgroup_type: white
     """
 
@@ -401,7 +397,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         enable = self.data.get("enable")
         ipgroup_type = self.data.get("ipgroup_type")
 
-        if (ipgroup_id or len(ipgroup_id) == 0) and (ipgroup_name or len(ipgroup_name) == 0):
+        if (not ipgroup_id or len(ipgroup_id) == 0) and (not ipgroup_name or len(ipgroup_name) == 0):
             log.error("Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
             raise Exception("Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
 
@@ -413,10 +409,10 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         )
         ipgroup_response = client.list_ip_groups(ipgroup_request)
         check_response(ipgroup_response)
-        if not ipgroup_response.ip_groups or len(ipgroup_response.ip_groups) == 0:
+        if not ipgroup_response.ipgroups or len(ipgroup_response.ipgroups) == 0:
             log.error(f"No ip_groups found for name: {ipgroup_name} or id: {ipgroup_id}")
             raise Exception(f"No ip_groups found for name: {ipgroup_name} or id: {ipgroup_id}")
-        ipgroup_ids = [ipgroup.id for ipgroup in ipgroup_response.ip_groups]
+        ipgroup_ids = [ipgroup.id for ipgroup in ipgroup_response.ipgroups]
         ipgroup_ids_str = ",".join(ipgroup_ids)
 
         request = UpdateListenerRequest(listener_id=resource["id"])
