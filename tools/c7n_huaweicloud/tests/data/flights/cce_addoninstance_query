@@ -1,0 +1,61 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250618T080230Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons
+  response:
+    body:
+      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"Addon","apiVersion":"v3",
+        "metadata":{"uid":"8ca46d8a-8f8e-11eb-b5b7-0255ac1001b0","name":"test-addon-instance",
+        "creationTimestamp":"2025-06-18T08:02:30Z","updateTimestamp":"2025-06-18T08:02:30Z"},
+        "spec":{"version":"1.0.0","clusterID":"4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6",
+        "addonTemplateName":"test-addon-template","values":{"basic":{}}},
+        "status":{"status":"running","Reason":"","message":"","targetVersions":null,
+        "currentVersion":"1.0.0"}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 18 Jun 2025 08:02:30 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=dde5776a9ab62d16c1; path=/
+      - HWWAFSESTIME=1750233749968; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 88d84af3cdfd82c5fa78307a5034b5a9
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

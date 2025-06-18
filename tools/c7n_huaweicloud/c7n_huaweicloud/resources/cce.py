@@ -4,21 +4,23 @@
 import logging
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.provider import resources
+from c7n.utils import local_session
 
 log = logging.getLogger("custodian.huaweicloud.cce")
 
 
 @resources.register("cce-cluster")
 class CceCluster(QueryResourceManager):
-    """华为云CCE集群资源管理器
-    
-    容器集群提供高可靠、高性能的企业级容器应用管理服务。
-    支持标准Kubernetes API，集成了华为云的计算、网络、存储等服务。
-    
+    """Huawei Cloud CCE Cluster Resource Manager
+
+    Container clusters provide high-reliability, high-performance enterprise-level 
+    container application management services. Support standard Kubernetes API, 
+    integrated with Huawei Cloud computing, network, storage and other services.
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: list-cce-clusters
             resource: huaweicloud.cce-cluster
@@ -27,54 +29,27 @@ class CceCluster(QueryResourceManager):
                 key: status.phase
                 value: Available
     """
-    
+
     class resource_type(TypeInfo):
         service = "cce-cluster"
-        enum_spec = ("list_clusters", "items", "marker")
+        enum_spec = ("list_clusters", "items", None)
         id = "metadata.uid"
         name = "metadata.name"
-        tag_resource_type = "cce"
-
-
-@resources.register("cce-autopilot-cluster") 
-class CceAutopilotCluster(QueryResourceManager):
-    """华为云CCE Autopilot集群资源管理器
-    
-    CCE Autopilot是华为云推出的免运维Kubernetes容器集群，
-    提供serverless的容器运行环境，用户无需关心节点管理。
-    
-    :example:
-    
-    .. code-block:: yaml
-    
-        policies:
-          - name: list-autopilot-clusters
-            resource: huaweicloud.cce-autopilot-cluster
-            filters:
-              - type: value
-                key: status.phase
-                value: Available
-    """
-    
-    class resource_type(TypeInfo):
-        service = "cce-autopilot-cluster"
-        enum_spec = ("list_autopilot_clusters", "items", "marker")
-        id = "metadata.uid"
-        name = "metadata.name" 
+        taggable = True
         tag_resource_type = "cce"
 
 
 @resources.register("cce-nodepool")
 class CceNodePool(QueryResourceManager):
-    """华为云CCE节点池资源管理器
-    
-    节点池是集群中一组具有相同配置的节点。
-    通过节点池可以方便地管理集群中的节点，支持弹性伸缩。
-    
+    """Huawei Cloud CCE Node Pool Resource Manager
+
+    A node pool is a group of nodes with the same configuration in a cluster.
+    Node pools make it easy to manage nodes in a cluster and support elastic scaling.
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: list-cce-nodepools
             resource: huaweicloud.cce-nodepool
@@ -83,26 +58,61 @@ class CceNodePool(QueryResourceManager):
                 key: status.phase
                 value: Active
     """
-    
+
     class resource_type(TypeInfo):
-        service = "cce-nodepool"
-        enum_spec = ("list_node_pools", "items", "marker")
+        service = "cce-cluster"  # Use cluster service
+        enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
         tag_resource_type = "cce"
 
+    def get_resources(self, resource_ids):
+        # Get all node pools
+        all_nodepools = self._fetch_resources({})
+        result = []
+        for nodepool in all_nodepools:
+            if nodepool["id"] in resource_ids:
+                result.append(nodepool)
+        return result
+
+    def augment(self, clusters):
+        """Get node pools for all clusters"""
+        client = self.get_client()
+        session = local_session(self.session_factory)
+
+        # Get node pools for each cluster
+        result = []
+        for cluster in clusters:
+            cluster_id = cluster['metadata']['uid']
+            try:
+                # Create node pool request object
+                nodepool_request = session.request('cce-nodepool')
+                nodepool_request.cluster_id = cluster_id
+                node_pools_response = client.list_node_pools(nodepool_request)
+                node_pools = node_pools_response.items
+                for node_pool in node_pools:
+                    # Convert to dictionary format
+                    node_pool_dict = node_pool.to_dict() if hasattr(
+                        node_pool, 'to_dict') else node_pool
+                    result.append(node_pool_dict)
+            except Exception as e:
+                log.warning(
+                    f"Failed to get node pools for cluster {cluster_id}: {e}")
+
+        return result
+
 
 @resources.register("cce-node")
 class CceNode(QueryResourceManager):
-    """华为云CCE节点资源管理器
-    
-    集群中的工作节点，用于运行容器应用。
-    节点可以是虚拟机或物理机，承载Pod的运行。
-    
+    """Huawei Cloud CCE Node Resource Manager
+
+    Worker nodes in the cluster for running container applications.
+    Nodes can be virtual machines or physical machines that host Pod operations.
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: list-cce-nodes
             resource: huaweicloud.cce-node
@@ -111,26 +121,61 @@ class CceNode(QueryResourceManager):
                 key: status.phase
                 value: Active
     """
-    
+
     class resource_type(TypeInfo):
-        service = "cce-node"
-        enum_spec = ("list_nodes", "items", "marker")
+        service = "cce-cluster"  # Use cluster service
+        enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
         tag_resource_type = "cce"
 
+    def get_resources(self, resource_ids):
+        # Get all nodes
+        all_nodes = self._fetch_resources({})
+        result = []
+        for node in all_nodes:
+            if node["id"] in resource_ids:
+                result.append(node)
+        return result
+
+    def augment(self, clusters):
+        """Get nodes for all clusters"""
+        client = self.get_client()
+        session = local_session(self.session_factory)
+
+        # Get nodes for each cluster
+        result = []
+        for cluster in clusters:
+            cluster_id = cluster['metadata']['uid']
+            try:
+                # Create node request object
+                nodes_request = session.request('cce-node')
+                nodes_request.cluster_id = cluster_id
+                nodes_response = client.list_nodes(nodes_request)
+                nodes = nodes_response.items
+                for node in nodes:
+                    # Convert to dictionary format
+                    node_dict = node.to_dict() if hasattr(node, 'to_dict') else node
+                    result.append(node_dict)
+            except Exception as e:
+                log.warning(
+                    f"Failed to get nodes for cluster {cluster_id}: {e}")
+
+        return result
+
 
 @resources.register("cce-addontemplate")
 class CceAddonTemplate(QueryResourceManager):
-    """华为云CCE插件模板资源管理器
-    
-    插件模板定义了插件的规格和配置。
-    华为云CCE提供多种插件模板，如网络插件、存储插件、监控插件等。
-    
+    """Huawei Cloud CCE Addon Template Resource Manager
+
+    Addon templates define the specifications and configuration of addons.
+    Huawei Cloud CCE provides various addon templates such as network addons, 
+    storage addons, monitoring addons, etc.
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: list-addon-templates
             resource: huaweicloud.cce-addontemplate
@@ -139,26 +184,26 @@ class CceAddonTemplate(QueryResourceManager):
                 key: spec.type
                 value: helm
     """
-    
+
     class resource_type(TypeInfo):
         service = "cce-addontemplate"
-        enum_spec = ("list_addon_templates", "items", "marker")
+        enum_spec = ("list_addon_templates", "items", None)
         id = "metadata.uid"
         name = "metadata.name"
-        # 插件模板通常不支持标签功能
+        # Addon templates usually do not support tagging
 
 
 @resources.register("cce-addoninstance")
 class CceAddonInstance(QueryResourceManager):
-    """华为云CCE插件实例资源管理器
-    
-    基于插件模板创建的具体插件实例。
-    插件实例运行在集群中，为集群提供额外的功能。
-    
+    """Huawei Cloud CCE Addon Instance Resource Manager
+
+    Specific addon instances created based on addon templates.
+    Addon instances run in clusters and provide additional functionality for clusters.
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: list-addon-instances
             resource: huaweicloud.cce-addoninstance
@@ -167,26 +212,26 @@ class CceAddonInstance(QueryResourceManager):
                 key: status.status
                 value: running
     """
-    
+
     class resource_type(TypeInfo):
         service = "cce-addoninstance"
-        enum_spec = ("list_addon_instances", "items", "marker")
+        enum_spec = ("list_addon_instances", "items", None)
         id = "metadata.uid"
         name = "metadata.name"
-        # 插件实例通常不支持标签功能
+        # Addon instances usually do not support tagging
 
 
 @resources.register("cce-chart")
 class CceChart(QueryResourceManager):
-    """华为云CCE图表资源管理器
-    
-    Helm图表资源，用于定义Kubernetes应用的部署配置。
-    图表包含应用的所有资源定义和配置信息。
-    
+    """Huawei Cloud CCE Chart Resource Manager
+
+    Helm chart resources for defining Kubernetes application deployment configurations.
+    Charts contain all resource definitions and configuration information for applications.
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: list-cce-charts
             resource: huaweicloud.cce-chart
@@ -195,38 +240,68 @@ class CceChart(QueryResourceManager):
                 key: spec.chart_type
                 value: helm
     """
-    
+
     class resource_type(TypeInfo):
         service = "cce-chart"
         enum_spec = ("list_charts", "body", None)
         id = "name"
         name = "name"
-        # 图表资源通常不支持标签功能
+        # Chart resources usually do not support tagging
 
 
 @resources.register("cce-release")
 class CceRelease(QueryResourceManager):
-    """华为云CCE发布资源管理器
-    
-    基于Helm图表创建的应用发布。
-    发布表示在集群中部署的具体应用实例。
-    
+    """Huawei Cloud CCE Release Resource Manager
+
+    Application releases created based on Helm charts.
+    Releases represent specific application instances deployed in clusters.
+
     :example:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: list-cce-releases
             resource: huaweicloud.cce-release
-            filters:
-              - type: value
-                key: status
-                value: deployed
     """
-    
+
     class resource_type(TypeInfo):
-        service = "cce-release"
-        enum_spec = ("list_releases", "body", None)
-        id = "name"
-        name = "name"
-        # 发布资源通常不支持标签功能
+        service = "cce-cluster"  # Use cluster service
+        enum_spec = ("list_clusters", "items", None)  # Query clusters first
+        id = "metadata.uid"
+        name = "metadata.name"
+        # Release resources usually do not support tagging
+
+    def get_resources(self, resource_ids):
+        # Get all releases
+        all_releases = self._fetch_resources({})
+        result = []
+        for release in all_releases:
+            if release["id"] in resource_ids:
+                result.append(release)
+        return result
+
+    def augment(self, clusters):
+        """Get releases for all clusters"""
+        client = self.get_client()
+        session = local_session(self.session_factory)
+
+        # Get releases for each cluster
+        result = []
+        for cluster in clusters:
+            cluster_id = cluster['metadata']['uid']
+            try:
+                # Create release request object
+                releases_request = session.request('cce-release')
+                releases_request.cluster_id = cluster_id
+                releases_response = client.list_releases(releases_request)
+                releases = releases_response.body
+                for release in releases:
+                    # Convert to dictionary format
+                    release_dict = release.to_dict() if hasattr(release, 'to_dict') else release
+                    result.append(release_dict)
+            except Exception as e:
+                log.warning(
+                    f"Failed to get releases for cluster {cluster_id}: {e}")
+
+        return result

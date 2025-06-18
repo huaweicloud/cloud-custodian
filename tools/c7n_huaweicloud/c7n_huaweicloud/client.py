@@ -152,8 +152,7 @@ from huaweicloudsdkcce.v3 import (
     ListAddonTemplatesRequest,
     ListAddonInstancesRequest,
     ListChartsRequest,
-    ListReleasesRequest,
-    ListAutopilotClustersRequest,
+    ListReleasesRequest
 )
 from huaweicloudsdkcce.v3.region.cce_region import CceRegion
 
@@ -559,7 +558,7 @@ class Session:
             )
         # CCE相关服务支持
         elif service in ["cce-cluster", "cce-nodepool", "cce-node", "cce-addontemplate", 
-                        "cce-addoninstance", "cce-chart", "cce-release", "cce-autopilot-cluster"]:
+                        "cce-addoninstance", "cce-chart", "cce-release"]:
             client = (
                 CceClient.new_builder()
                 .with_credentials(credentials)
@@ -720,8 +719,6 @@ class Session:
             request = ListEndpointsRequest()
         elif service == "cce-cluster":
             request = ListClustersRequest()
-        elif service == "cce-autopilot-cluster":
-            request = ListAutopilotClustersRequest()
         elif service == "cce-nodepool":
             request = ListNodePoolsRequest()
         elif service == "cce-node":

@@ -251,7 +251,20 @@ class ResourceQuery:
         # re-set id
         if "id" not in resources[0]:
             for data in resources:
-                data["id"] = data[manager.id]
+                # Handle nested object data
+                if isinstance(manager.id, str) and "." in manager.id:
+                    parts = manager.id.split('.')
+                    value = data
+                    for part in parts:
+                        if isinstance(value, dict) and part in value:
+                            value = value[part]
+                        else:
+                            value = None
+                            break
+                    if value is not None:
+                        data["id"] = value
+                else:
+                    data["id"] = data[manager.id]
         if "tag_resource_type" not in resources[0] and manager.service == 'ccm-ssl-certificate':
             for data in resources:
                 data["tag_resource_type"] = manager.tag_resource_type
