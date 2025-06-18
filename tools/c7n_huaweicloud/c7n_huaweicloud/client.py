@@ -557,7 +557,7 @@ class Session:
                 .build()
             )
         # CCE相关服务支持
-        elif service in ["cce-cluster", "cce-nodepool", "cce-node", "cce-addontemplate", 
+        elif service in ["cce-cluster", "cce-nodepool", "cce-node", "cce-addontemplate",
                         "cce-addoninstance", "cce-chart", "cce-release"]:
             client = (
                 CceClient.new_builder()

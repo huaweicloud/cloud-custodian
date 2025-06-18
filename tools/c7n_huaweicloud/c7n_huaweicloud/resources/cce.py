@@ -13,8 +13,8 @@ log = logging.getLogger("custodian.huaweicloud.cce")
 class CceCluster(QueryResourceManager):
     """Huawei Cloud CCE Cluster Resource Manager
 
-    Container clusters provide high-reliability, high-performance enterprise-level 
-    container application management services. Support standard Kubernetes API, 
+    Container clusters provide high-reliability, high-performance enterprise-level
+    container application management services. Support standard Kubernetes API,
     integrated with Huawei Cloud computing, network, storage and other services.
 
     :example:
@@ -169,7 +169,7 @@ class CceAddonTemplate(QueryResourceManager):
     """Huawei Cloud CCE Addon Template Resource Manager
 
     Addon templates define the specifications and configuration of addons.
-    Huawei Cloud CCE provides various addon templates such as network addons, 
+    Huawei Cloud CCE provides various addon templates such as network addons,
     storage addons, monitoring addons, etc.
 
     :example:
