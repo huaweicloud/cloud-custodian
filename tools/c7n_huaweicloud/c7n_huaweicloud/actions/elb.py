@@ -215,7 +215,9 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     break
         if not resp_log_stream_id:
             log.error("Log topic with specified 'log_topic_name' or 'log_topic_id' not found.")
-            raise Exception("Log topic with specified 'log_topic_name' or 'log_topic_id' not found.")
+            raise Exception(
+                "Log topic with specified 'log_topic_name' or 'log_topic_id' not found."
+            )
 
         client = self.manager.get_client()
         logtank = CreateLogtankOption(loadbalancer_id=loadbalancer_id,
