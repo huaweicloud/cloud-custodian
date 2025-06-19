@@ -6,7 +6,7 @@ policies:
       xrole: fgs_admin
       eg_agency: EG_TARGET_AGENCY
       enable_lts_log: true
-      schedule: "1m"
+      schedule: "1h"
       schedule_type: Rate
     filters:
       - type: vault_without_worm
