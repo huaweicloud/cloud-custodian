@@ -414,7 +414,7 @@ class EcsTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        
+
     def test_instance_update_imds_version(self):
         factory = self.replay_flight_data("ecs_instance_update_imds_version")
         p = self.load_policy(
