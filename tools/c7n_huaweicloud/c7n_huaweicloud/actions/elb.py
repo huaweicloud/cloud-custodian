@@ -399,7 +399,10 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         enable = self.data.get("enable")
         ipgroup_type = self.data.get("ipgroup_type")
 
-        if (not ipgroup_id or len(ipgroup_id) == 0) and (not ipgroup_name or len(ipgroup_name) == 0):
+        if (
+            (not ipgroup_id or len(ipgroup_id) == 0)
+            and (not ipgroup_name or len(ipgroup_name) == 0)
+        ):
             log.error("Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
             raise Exception("Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
 
@@ -488,7 +491,9 @@ class ListenerRedirectAction(HuaweiCloudBaseAction):
         )
         response = client.create_l7_policy(request)
         check_response(response, params=request.body)
-        log.info(f"Successfully redirected listener {listener_id} to listener {redirect_listener_id}")
+        log.info(
+            f"Successfully redirected listener {listener_id} to listener {redirect_listener_id}"
+        )
         return response
 
 
