@@ -8,7 +8,8 @@ from huaweicloudsdkcbr.v1 import (
     VaultAssociate, CreatePolicyRequest,
     PolicyTriggerPropertiesReq,
     PolicyTriggerReq, PolicyoODCreate,
-    PolicyCreate, PolicyCreateReq
+    PolicyCreate, PolicyCreateReq,
+    UpdateVaultRequest, VaultUpdate, VaultUpdateReq
 )
 
 from c7n.filters import Filter
@@ -216,6 +217,29 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             raise
         return response.to_dict()
 
+@CbrVault.action_registry.register('enable_vault_worm')
+class CbrVaultEnableWorm(HuaweiCloudBaseAction):
+    '''
+        enable the worm feature of vault.
+    '''
+    schema = type_schema('enable_vault_worm')
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        try:
+            request = UpdateVaultRequest()
+            request.vault_id = resource['id']
+            vaultbody = VaultUpdate(
+                locked=True
+            )
+            request.body = VaultUpdateReq(
+                vault = vaultbody
+            )
+            response = client.update_vault(request)
+        except exceptions.ClientRequestException as e:
+            log.error("enable worm for vault:%s failed, status code:%s, request id:%s, error code：%s, error msg:%s" %
+                      (resource['id'], e.status_code, e.request_id, e.error_code, e.error_msg))
+            raise
+        return  response
 
 @CbrVault.filter_registry.register('unassociated_with_specific_replication_policy')
 class CbrVaultUnassociatedReplicationFilter(Filter):
@@ -264,3 +288,24 @@ class CbrVaultWithoutSpecificTagsFilter(Filter):
             if count != num_key:
                 results.append(r)
         return results
+
+@CbrVault.filter_registry.register('vault_without_worm')
+class CbrVaultWithoutWormFilter(Filter):
+    '''
+        Filter out vaults that are not configured for worm.
+    '''
+    schema = type_schema('vault_without_worm')
+
+    def process(self, resources, event=None):
+        without_worm_results = []
+        #except_valuts = self.data.get('except_valuts')
+        with_worm_results = []
+        for vault in resources:
+            worm_lock = vault['locked']
+            if not worm_lock or str(worm_lock).lower() == 'false':
+                without_worm_results.append(vault)
+            else:
+                with_worm_results.append(vault)
+        log.info("find vaults without worm: %s", [item['id'] for item in without_worm_results])
+        log.info("find vaults with worm: %s", [item['id'] for item in with_worm_results])
+        return without_worm_results
