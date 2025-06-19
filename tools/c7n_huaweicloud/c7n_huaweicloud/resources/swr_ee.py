@@ -820,7 +820,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
           - name: swr-set-lifecycle
             resource: huaweicloud.swr-ee-namespace
             filters:
-              - type: get-lifecycle
+              - type: lifecycle-rule
                 state: False
             actions:
               - type: set-lifecycle
@@ -843,7 +843,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
           - name: swr-set-lifecycle
             resource: huaweicloud.swr-ee-namespace
             filters:
-              - type: get-lifecycle
+              - type: lifecycle-rule
                 state: False
             actions:
               - type: set-lifecycle
@@ -866,7 +866,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
           - name: swr-set-lifecycle
             resource: huaweicloud.swr-ee-namespace
             filters:
-              - type: get-lifecycle
+              - type: lifecycle-rule
                 state: True
             actions:
               - type: set-lifecycle
