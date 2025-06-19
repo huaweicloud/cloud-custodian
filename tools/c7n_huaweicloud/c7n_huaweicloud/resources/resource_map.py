@@ -3,6 +3,7 @@
 
 ResourceMap = {
     "huaweicloud.lts-transfer": "c7n_huaweicloud.resources.transfer.Transfer",
+    "huaweicloud.lts-stream": "c7n_huaweicloud.resources.stream.Stream",
     "huaweicloud.evs-volume": "c7n_huaweicloud.resources.evs.Volume",
     "huaweicloud.er": "c7n_huaweicloud.resources.er.ERInstance",
     "huaweicloud.deh": "c7n_huaweicloud.resources.deh.Deh",
@@ -48,12 +49,13 @@ ResourceMap = {
     "huaweicloud.org-unit": "c7n_huaweicloud.resources.organizations.OrgUnit",
     "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
     "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
-    "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
+    "huaweicloud.dms-kafka": "c7n_huaweicloud.resources.kafka.Kafka",
     "huaweicloud.apig-api": "c7n_huaweicloud.resources.apig.ApiResource",
     "huaweicloud.apig-stage": "c7n_huaweicloud.resources.apig.StageResource",
     "huaweicloud.apig-api-groups": "c7n_huaweicloud.resources.apig.ApiGroupResource",
-    "huaweicloud.reliability": "c7n_huaweicloud.resources.rocketmq.RocketMQ",
+    "huaweicloud.dms-rocketmq": "c7n_huaweicloud.resources.rocketmq.RocketMQ",
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
+    "huaweicloud.dc-vif": "c7n_huaweicloud.resources.dc.Vif",
     "huaweicloud.ccm-ssl-certificate": "c7n_huaweicloud.resources.scm.Scm",
     "huaweicloud.swr": "c7n_huaweicloud.resources.swr.Swr",
     "huaweicloud.swr-image": "c7n_huaweicloud.resources.swr.SwrImage",
@@ -65,5 +67,6 @@ ResourceMap = {
     "huaweicloud.eg-subscription": "c7n_huaweicloud.resources.eg.Subscription",
     "huaweicloud.workspace-desktop": "c7n_huaweicloud.resources.workspace.Workspace",
     "huaweicloud.ccm-private-ca": "c7n_huaweicloud.resources.ccm.CertificateAuthority",
-    "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate"
+    "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate",
+    "huaweicloud.vpcep-ep": "c7n_huaweicloud.resources.vpcep.VpcEndpoint",
 }

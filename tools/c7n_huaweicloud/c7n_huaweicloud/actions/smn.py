@@ -95,7 +95,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                   topic_urn_list:
                    - urn:smn:cn-north-4:xxxx:test
                   subject: 'test subject'
-                  message_structure: '{\"default\": \"test\"}'
+                  message_structure: '{\"default\": \"test\",\"sms\": \"test\",\"email\": \"test\"}'
     """
 
     log = logging.getLogger("custodian.huaweicloud.actions.smn.NotifyMessageStructureAction")
@@ -157,7 +157,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                    - urn:smn:cn-north-4:xxxx:test
                   subject: 'test subject'
                   message_template_name: test
-                  tags:
+                  message_template_variables:
                     key1: 123
                     key2: 456
     """
@@ -176,7 +176,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
             },
             'subject': {'type': 'string'},
             'message_template_name': {'type': 'string'},
-            'tags': {'type': 'object'}
+            'message_template_variables': {'type': 'object'}
 
         }
     })
@@ -187,7 +187,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
                 message_template_name=self.data.get('message_template_name'),
-                tags=self.data.get('tags')
+                tags=self.data.get('message_template_variables')
             )
 
             for topic_urn in self.data.get('topic_urn_list', []):

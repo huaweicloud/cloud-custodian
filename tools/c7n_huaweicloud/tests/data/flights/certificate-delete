@@ -55,7 +55,7 @@ interactions:
       X-Sdk-Date:
       - 20250409T093110Z
     method: GET
-    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates?expired_days_since=1095
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/certificates?expired_days_since=1095&limit=50&offset=0
   response:
     body:
       string: '{"certificates":[{"id":"scs1554192131150","name":"test","domain":"www.zx.com",
@@ -116,3 +116,57 @@ interactions:
     status:
       code: 204
       message: No Content
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - scm.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Domain-Id:
+      - mock-domain-id
+      X-Sdk-Date:
+      - 20250529T084331Z
+    method: GET
+    uri: https://scm.ap-southeast-1.myhuaweicloud.com/v3/scm/scs1554192131150/tags
+  response:
+    body:
+      string: '{"tags":[{"key":"key1","value":"value1"},{"key":"key2","value":"value2"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 29 May 2025 08:43:31 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=010fb731d800def163; path=/
+      - HWWAFSESTIME=1748508211367; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 2cfdd146835bb25b09dcd5d4b7526eda
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

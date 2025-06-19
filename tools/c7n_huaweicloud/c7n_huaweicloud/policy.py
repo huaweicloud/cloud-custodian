@@ -37,11 +37,44 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'handler': {'type': 'string'},
             'memory_size': {'type': 'number'},
             'xrole': {'type': 'string'},
-            'func_vpc': {'type': 'object', 'required': ['vpc_id', 'subnet_id']},
+            'func_vpc': {
+                'oneOf': [
+                    {
+                        'type': 'object',
+                        'required': ['vpc_name', 'subnet_name', 'cidr'],
+                        'properties': {
+                            'vpc_name': {'type': 'string'},
+                            'subnet_name': {'type': 'string'},
+                            'cidr': {'type': 'string'},
+                            'is_safety': {'type': 'boolean'},
+                        },
+                    },
+                    {
+                        'type': 'object',
+                        'required': ['vpc_id', 'subnet_id'],
+                        'properties': {
+                            'vpc_id': {'type': 'string'},
+                            'subnet_id': {'type': 'string'},
+                            'is_safety': {'type': 'boolean'},
+                        },
+                    },
+                ],
+            },
             'description': {'type': 'string'},
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},
             'log_config': {'type': 'object'},
+            'func_tags': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'required': ['key', 'value'],
+                    'properties': {
+                        'key': {'type': 'string'},
+                        'value': {'type': 'string'},
+                    }
+                }
+            },
             'async_invoke_config': {
                 'type': "object",
                 'additionalProperties': False,
@@ -223,7 +256,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         resource_ids = CloudTraceServiceEvents.get_ids(event, mode)
         if resource_ids is None:
             raise ValueError("Unknown push event mode %s", self.data)
-        log.info(f'Found resource ids:[{resource_ids}]')
+        log.info(f'Found resource ids:{resource_ids}')
         if not resource_ids:
             log.warning("Could not find resource ids")
             return []
@@ -327,7 +360,8 @@ class CloudTraceMode(FunctionGraphMode):
                  'properties': {
                      'source': {'type': 'string'},
                      'event': {'type': 'string'},
-                     'ids': {'type': 'string'}
+                     'ids': {'type': 'string'},
+                     'code': {'type': 'integer'},
                  }}]
         }},
         rinherit=FunctionGraphMode.schema)

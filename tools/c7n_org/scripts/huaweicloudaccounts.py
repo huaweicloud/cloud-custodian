@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import click
-from huaweicloudsdkorganizations.v1 import ListAccountsRequest
-
+from huaweicloudsdkcore.auth.provider import MetadataCredentialProvider
+from huaweicloudsdkorganizations.v1 import ListAccountsRequest, OrganizationsClient, \
+    ListTagResourcesRequest
+from huaweicloudsdkorganizations.v1.region.organizations_region import OrganizationsRegion
 from c7n.utils import yaml_dump
-from c7n_huaweicloud.client import Session
 
 
 def get_next_page_params(response=None):
@@ -34,6 +35,10 @@ def get_next_page_params(response=None):
     multiple=True, type=str,
     help="The account name specified for the query")
 @click.option(
+'-e', '--exclude_name',
+    multiple=True, type=str,
+    help="The account name specified for the exclude query")
+@click.option(
 '-o', '--ou_ids',
     multiple=True, type=str,
     help="The Organizational Unit id specified for the query")
@@ -49,7 +54,16 @@ def get_next_page_params(response=None):
 '-r', '--regions',
     multiple=True, type=str, default=('cn-north-4',),
     help="huaweicloud region for executing policy. default:cn-north-4")
-def main(output, agency_name, name, ou_ids, status, duration_seconds, regions):
+@click.option(
+    '--domain_id',
+    type=str, default=None,
+    help="Account ID of the executing machine.")
+@click.option(
+    '-t', '--is_set_tags',
+    type=bool, default=False,
+    help="Set account tags or not.")
+def main(output, agency_name, name, exclude_name, ou_ids, status, duration_seconds, regions,
+         domain_id, is_set_tags):
     """
     Generate a c7n-org huawei cloud accounts config file
     """
@@ -57,17 +71,28 @@ def main(output, agency_name, name, ou_ids, status, duration_seconds, regions):
     marker = None
     index = 0
     ou_id_len = len(ou_ids)
-    options = {"region": 'cn-north-4'}
-    session = Session(options)
-    client = session.client("org-account")
+
+    global_provider = (
+        MetadataCredentialProvider.get_global_credential_metadata_provider()
+    )
+    globalCredentials = global_provider.get_credentials().with_domain_id(domain_id)
+    client = (
+        OrganizationsClient.new_builder()
+        .with_credentials(globalCredentials)
+        .with_region(OrganizationsRegion.CN_NORTH_4)
+        .build()
+    )
+
     while True:
         while True:
             parent_id = None if ou_id_len == 0 else ou_ids[index]
-            request = ListAccountsRequest(parent_id=parent_id, limit=1000, marker=marker)
+            request = ListAccountsRequest(parent_id=parent_id, limit=500, marker=marker)
             response = client.list_accounts(request)
             marker = get_next_page_params(response)
             for account in response.accounts:
                 if name and account.name not in name:
+                    continue
+                if exclude_name and account.name in exclude_name:
                     continue
                 if status and account.status not in status:
                     continue
@@ -81,13 +106,34 @@ def main(output, agency_name, name, ou_ids, status, duration_seconds, regions):
 
     results = []
     for account in accounts:
+        marker = None
+        while is_set_tags:
+            request = ListTagResourcesRequest(
+                resource_type='organizations:accounts', resource_id=account.id,
+                limit=200, marker=marker)
+            response = client.list_tag_resources(request)
+            marker = get_next_page_params(response)
+            if hasattr(account, 'tags'):
+                [account.tags.append(tag) for tag in response.tags]
+            else:
+                setattr(account, 'tags', response.tags)
+
+            if not marker:
+                break
+
         acc_info = {
             'name': account.name,
             'domain_id': account.id,
+            'status': account.status,
             'agency_urn': f"iam::{account.id}:agency:{agency_name}",
             'duration_seconds': duration_seconds,
             'regions': regions
         }
+
+        if hasattr(account, 'tags'):
+            tags_dict = {tag.key: tag.value for tag in account.tags} if account.tags else {}
+            acc_info['tags'] = tags_dict
+
         results.append(acc_info)
 
     print(yaml_dump({'domains': results}), file=output)
