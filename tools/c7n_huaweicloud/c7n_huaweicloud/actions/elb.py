@@ -426,35 +426,33 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
 
 
 class ListenerRedirectAction(HuaweiCloudBaseAction):
-    """Set redirect to listener for ELB Listeners.
+    """Set redirect to HTTPS listener for HTTP Listeners.
+    Note: Only support HTTP to HTTPS redirection.
 
     :Example:
 
     .. code-block:: yaml
 
         policies:
-          - name: redirect-listener-policy
+          - name: redirect-to-https-listener
             resource: huaweicloud.elb-listener
             filters:
               - not:
-                - type: is-redirect-to-listener
-                  protocol: HTTPS
-                  name: my-https-listener
+                - type: is-redirect-to-https-listener
             actions:
-              - type: redirect-to-listener
-                protocol: HTTPS
+              - type: redirect-to-https-listener
                 name: my-https-listener
     """
 
-    schema = type_schema(type_name="redirect-to-listener",
+    schema = type_schema(type_name="redirect-to-https-listener",
                          id={'type': 'string'},
                          name={'type': 'string'},
-                         protocol={'type': 'string', "default": "HTTPS"},
                          port={'type': 'number', 'minimum': 0})
 
     def perform_action(self, resource):
+        if resource['protocol'] != 'HTTP':
+            return
         redirect_listener_id = self.data.get('id', None)
-        protocol = self.data.get('protocol', None)
         name = self.data.get('name', None)
         port = self.data.get('port', None)
         listener_id = resource['id']
@@ -465,16 +463,16 @@ class ListenerRedirectAction(HuaweiCloudBaseAction):
             enterprise_project_id=["all_granted_eps"],
             id=[redirect_listener_id] if redirect_listener_id else None,
             name=[name] if name else None,
-            protocol=[protocol] if protocol else None,
+            protocol=['HTTPS'],
             protocol_port=[port] if port is not None else None
         )
         response = client.list_listeners(request)
         check_response(response)
         if not response.listeners or len(response.listeners) == 0:
             log.error(f"No listeners found for id: {redirect_listener_id}, "
-                      f"name: {name}, protocol: {protocol}, port: {port}")
+                      f"name: {name}, protocol: HTTPS, port: {port}")
             raise Exception(f"No listeners found for id: {redirect_listener_id}, "
-                            f"name: {name}, protocol: {protocol}, port: {port}")
+                            f"name: {name}, protocol: HTTPS, port: {port}")
         listener = response.listeners[0]
         redirect_listener_id = listener.id
         request = CreateL7PolicyRequest(

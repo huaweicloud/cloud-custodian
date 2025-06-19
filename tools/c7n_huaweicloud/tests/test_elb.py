@@ -35,12 +35,10 @@ class ElbTest(BaseTest):
                 "key": "protocol",
                 "value": "HTTP"
             }, {"not": [{
-                "type": "is-redirect-to-listener",
-                "protocol": "HTTPS"
+                "type": "is-redirect-to-https-listener"
             }]}],
             "actions": [{
-                "type": "redirect-to-listener",
-                "protocol": "HTTPS"
+                "type": "redirect-to-https-listener"
             }]
         }, session_factory=factory)
         resources = p.run()

@@ -235,33 +235,36 @@ class LoadbalancerIsNotLTSLogTransferFilter(LoadbalancerIsLTSLogTransferFilter):
 
 
 class ListenerRedirectListenerFilter(Filter):
-    """Allows filtering on checking if listener has been redirected to another listener.
+    """Allows filtering on checking if https listener has been redirected to https listener.
+    Note: This filter only works for HTTP listeners.
 
     :example:
 
     .. code-block:: yaml
 
         policies:
-          - name: has-redirect-to-listener-policy
+          - name: has-redirect-to-https-listener
             resource: huaweicloud.elb-listener
             filters:
+              - type: attributes
+                key: protocol
+                value: HTTP
               - not:
-                - type: is-redirect-to-listener
-                  protocol: HTTPS
-                  name: my-https-listener
+                - type: is-redirect-to-https-listener
     """
 
     schema = type_schema(
-        "is-redirect-to-listener",
+        "is-redirect-to-https-listener",
         id={"type": "string"},
-        protocol={"type": "string", "default": "HTTPS"},
         name={"type": "string"},
         port={"type": "number", "minimum": 0},
     )
 
     def __call__(self, resource):
+        if resource["protocol"] != "HTTP":
+            # This filter only applies to HTTP listeners
+            return False
         id = self.data.get("id", None)
-        protocol = self.data.get("protocol", None)
         name = self.data.get("name", None)
         port = self.data.get("port", None)
         listener_id = resource["id"]
@@ -286,7 +289,7 @@ class ListenerRedirectListenerFilter(Filter):
 
             listener = response.listener
             if (
-                (protocol and listener.protocol != protocol)
+                (listener.protocol != 'HTTPS')
                 or (name and listener.name != name)
                 or (port and listener.protocol_port != port)
             ):
