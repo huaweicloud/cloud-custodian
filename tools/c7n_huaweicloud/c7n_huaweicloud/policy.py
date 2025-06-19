@@ -38,18 +38,43 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'memory_size': {'type': 'number'},
             'xrole': {'type': 'string'},
             'func_vpc': {
-                'type': 'object',
-                'required': ['vpc_name', 'subnet_name'],
-                'properties': {
-                    'vpc_name': {'type': 'string'},
-                    'subnet_name': {'type': 'string'},
-                    'is_safety': {'type': 'boolean'},
-                },
+                'oneOf': [
+                    {
+                        'type': 'object',
+                        'required': ['vpc_name', 'subnet_name', 'cidr'],
+                        'properties': {
+                            'vpc_name': {'type': 'string'},
+                            'subnet_name': {'type': 'string'},
+                            'cidr': {'type': 'string'},
+                            'is_safety': {'type': 'boolean'},
+                        },
+                    },
+                    {
+                        'type': 'object',
+                        'required': ['vpc_id', 'subnet_id'],
+                        'properties': {
+                            'vpc_id': {'type': 'string'},
+                            'subnet_id': {'type': 'string'},
+                            'is_safety': {'type': 'boolean'},
+                        },
+                    },
+                ],
             },
             'description': {'type': 'string'},
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},
             'log_config': {'type': 'object'},
+            'func_tags': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'required': ['key', 'value'],
+                    'properties': {
+                        'key': {'type': 'string'},
+                        'value': {'type': 'string'},
+                    }
+                }
+            },
             'async_invoke_config': {
                 'type': "object",
                 'additionalProperties': False,

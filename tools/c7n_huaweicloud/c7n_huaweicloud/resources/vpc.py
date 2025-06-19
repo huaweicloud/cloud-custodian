@@ -748,7 +748,6 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
     def process_remove_result(self, resources):
         remove_result = {"remove_succeeded_rules": [], "remove_failed_rules": self.failed_resources}
         remove_result.get("remove_succeeded_rules").extend(resources)
-        print(remove_result)
         return remove_result
 
     def perform_action(self, rules):
@@ -886,7 +885,6 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
         multi_result = {"add_succeeded_rules": [], "add_failed_rules": []}
         multi_result.get("add_succeeded_rules").extend(add_rules)
         multi_result.update(remove_result)
-        print(multi_result)
         return multi_result
 
     def perform_action(self, resource):
@@ -1278,7 +1276,6 @@ class SetFlowLog(HuaweiCloudBaseAction):
         action_result = {"action": action}
         self.result.get("succeeded_resources").extend(resources)
         self.result.update(action_result)
-        print(self.result)
         return self.result
 
 
