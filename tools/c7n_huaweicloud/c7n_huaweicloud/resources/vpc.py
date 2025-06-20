@@ -913,28 +913,29 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                          direction={'enum': ['ingress', 'egress']},
                          risk_ports_path={'type': 'string'},
                          trust_map_path={'type': 'string'},
-                         required=['direction', 'risk_ports_path', 'trust_map_path'])
+                         required=['direction', 'risk_ports_path'])
 
     def process(self, resources, event=None):
         results = []
         risk_ports_path = self.data.get('risk_ports_path')
         trust_map_path = self.data.get('trust_map_path')
         direction = self.data.get('direction')
-        if not risk_ports_path or not trust_map_path:
-            log.error("risk-ports-path and trust-map-path are required")
+        if not risk_ports_path:
+            log.error("risk-ports-path is required")
             return []
         risk_ports_obj = self.get_file_content(risk_ports_path)
         trust_map_obj = self.get_file_content(trust_map_path)
         # {sg_id : deny_rules}
         deny_rule_map = {}
-        if risk_ports_obj and trust_map_obj:
-            risk_ports = self._extend_ports(risk_ports_obj)
+        if risk_ports_obj:
             for rule in resources:
-                if rule.get('direction') != direction:
+                if rule.get('direction') != direction or rule.get('action') != 'allow':
                     continue
-                ip = rule.get('remote_ip_prefix')
-                if ip and ip not in ('0.0.0.0/0', '::/0'):
+                protocol = rule.get('protocol')
+                if not protocol:
+                    results.append(rule)
                     continue
+                risk_ports = self._extend_ports(risk_ports_obj.get(protocol))
                 ports = rule.get('multiport')
                 port_list = []
                 if ports:
@@ -951,7 +952,6 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     new_sg = {sg: deny_rules}
                     deny_rule_map.update(new_sg)
                 deny_rules = deny_rule_map.get(sg)
-                protocol = rule.get('protocol')
                 ethertype = rule.get('ethertype')
                 for deny_rule in deny_rules:
                     if protocol == deny_rule.get('protocol') and \
@@ -970,17 +970,14 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         if (trust_protocol and protocol in trust_protocol) or not trust_protocol:
                             trust_port = self._extend_ports([trust_port])
                             risk_rule_ports = [p for p in risk_rule_ports if p not in trust_port]
-
                 if risk_rule_ports:
-                    if len(port_list) == len(risk_rule_ports):
-                        risk_rule_ports = risk_ports
-                    new_ports = self.get_multiport(risk_rule_ports)
-                    rule['multiport'] = new_ports
                     results.append(rule)
 
         return results
 
     def get_file_content(self, obs_url):
+        if not obs_url:
+            return {}
         obs_client = local_session(self.manager.session_factory).client("obs")
         protocol_end = len("https://")
         path_without_protocol = obs_url[protocol_end:]
@@ -1023,7 +1020,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         if len(risk_ports) == 1:
             multiport = str(risk_ports[0])
             return multiport
-        order_ports = risk_ports.sort()
+        order_ports = risk_ports
+        order_ports.sort()
         start = order_ports[0]
         end = order_ports[0]
         port_len = len(order_ports)
