@@ -217,12 +217,14 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             raise
         return response.to_dict()
 
+
 @CbrVault.action_registry.register('enable_vault_worm')
 class CbrVaultEnableWorm(HuaweiCloudBaseAction):
     '''
         enable the worm feature of vault.
     '''
     schema = type_schema('enable_vault_worm')
+
     def perform_action(self, resource):
         client = self.manager.get_client()
         try:
@@ -232,14 +234,16 @@ class CbrVaultEnableWorm(HuaweiCloudBaseAction):
                 locked=True
             )
             request.body = VaultUpdateReq(
-                vault = vaultbody
+                vault=vaultbody
             )
             response = client.update_vault(request)
         except exceptions.ClientRequestException as e:
-            log.error("enable worm for vault:%s failed, status code:%s, request id:%s, error code：%s, error msg:%s" %
-                      (resource['id'], e.status_code, e.request_id, e.error_code, e.error_msg))
+            log.error(
+                "enable worm for vault:%s failed, status code:%s, request id:%s, error code：%s, error msg:%s" %
+                (resource['id'], e.status_code, e.request_id, e.error_code, e.error_msg))
             raise
-        return  response
+        return response
+
 
 @CbrVault.filter_registry.register('unassociated_with_specific_replication_policy')
 class CbrVaultUnassociatedReplicationFilter(Filter):
@@ -289,6 +293,7 @@ class CbrVaultWithoutSpecificTagsFilter(Filter):
                 results.append(r)
         return results
 
+
 @CbrVault.filter_registry.register('vault_without_worm')
 class CbrVaultWithoutWormFilter(Filter):
     '''
@@ -298,7 +303,6 @@ class CbrVaultWithoutWormFilter(Filter):
 
     def process(self, resources, event=None):
         without_worm_results = []
-        #except_valuts = self.data.get('except_valuts')
         with_worm_results = []
         for vault in resources:
             worm_lock = vault['locked']
