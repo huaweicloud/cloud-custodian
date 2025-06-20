@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import json
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from c7n.utils import local_session, type_schema, dumps, loads
+from c7n.utils import local_session, type_schema,
 from huaweicloudsdkcore.exceptions import exceptions
 
 # Import Huawei Cloud CCE SDK related request and response classes
@@ -1085,11 +1084,11 @@ class CceAddonInstance(QueryResourceManager):
                 for addon_instance in addon_instances:
                     # Convert to dictionary format recursively
                     addon_instance_dict = self._convert_to_dict(addon_instance)
-                    
+
                     # Ensure we have at least basic structure
                     if not isinstance(addon_instance_dict, dict):
                         addon_instance_dict = {}
-                    
+
                     # Add cluster information to addon instance resource
                     addon_instance_dict['clusterId'] = cluster_id
                     addon_instance_dict['clusterName'] = cluster['metadata']['name']
