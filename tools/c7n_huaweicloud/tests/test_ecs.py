@@ -397,16 +397,16 @@ class EcsTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
-    def test_instance_imds_version(self):
-        factory = self.replay_flight_data("ecs_instance_imds_version")
+    def test_instance_imds_token(self):
+        factory = self.replay_flight_data("ecs_instance_imds_token")
         p = self.load_policy(
             {
-                "name": "ecs_instance_imds_version",
+                "name": "ecs_instance_imds_token",
                 "resource": "huaweicloud.ecs",
                 "filters": [
                     {
-                        "type": "instance-imds-version",
-                        "version": "v1"
+                        "type": "instance-imds-token",
+                        "http_tokens": "optional"
                     }
                 ],
             },
@@ -415,16 +415,16 @@ class EcsTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
-    def test_instance_update_imds_version(self):
-        factory = self.replay_flight_data("ecs_instance_update_imds_version")
+    def test_instance_update_imds_token(self):
+        factory = self.replay_flight_data("ecs_instance_update_imds_token")
         p = self.load_policy(
             {
-                "name": "ecs_instance_update_imds_version",
+                "name": "ecs_instance_update_imds_token",
                 "resource": "huaweicloud.ecs",
                 "actions": [
                     {
-                        "type": "instance-update-imds-version",
-                        "version": "v2"
+                        "type": "instance-update-imds-token",
+                        "http_tokens": "required"
                     }
                 ],
             },
