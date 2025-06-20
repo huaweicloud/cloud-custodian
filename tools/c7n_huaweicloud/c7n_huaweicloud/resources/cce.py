@@ -5,7 +5,7 @@ import logging
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from c7n.utils import local_session, type_schema,
+from c7n.utils import local_session, type_schema
 from huaweicloudsdkcore.exceptions import exceptions
 
 # Import Huawei Cloud CCE SDK related request and response classes
