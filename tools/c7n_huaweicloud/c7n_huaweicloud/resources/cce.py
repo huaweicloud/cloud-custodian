@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import json
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -265,7 +264,7 @@ class UpdateCceCluster(HuaweiCloudBaseAction):
               - type: update
                 spec:
                   description: "Updated cluster description"
-                  custom_san: 
+                  custom_san:
                     - "example.com"
                     - "test.example.com"
                   deletion_protection: true
