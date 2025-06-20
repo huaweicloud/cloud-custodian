@@ -1562,7 +1562,6 @@ class InstanceMetadataOptionsVersion(Filter):
         for key, value in instance_metadata_options_map.items():
             if value.http_tokens == version:
                 results.append(index_dict.get(key))
-        self.log.info(instance_metadata_options_map)
         return results
 
     def show_server_metadata_options(self, instence_set, ecs_client):
