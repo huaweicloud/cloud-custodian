@@ -18,7 +18,7 @@ interactions:
       X-Sdk-Date:
       - 20250320T063810Z
     method: GET
-    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/listeners?limit=100
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/listeners?enterprise_project_id=all_granted_eps&limit=100
     body: null
   response:
     status: {code: 200, message: OK}
@@ -175,7 +175,7 @@ interactions:
       X-Sdk-Date:
       - 20250320T063810Z
     method: GET
-    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/loadbalancers?limit=100
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/loadbalancers?enterprise_project_id=all_granted_eps&limit=100
     body: null
   response:
     status: {code: 200, message: OK}
