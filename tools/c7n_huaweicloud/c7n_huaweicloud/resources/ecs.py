@@ -885,7 +885,7 @@ class InstanceDeleteMetadataKey(HuaweiCloudBaseAction):
         pass
 
 
-@Ecs.action_registry.register("instance-update-imds-version")
+@Ecs.action_registry.register("instance-update-imds-token")
 class InstancUpdateMetadataOptions(HuaweiCloudBaseAction):
     """Update Instance imds version
 
@@ -894,33 +894,29 @@ class InstancUpdateMetadataOptions(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-        - name: instance-update-imds-version
+        - name: instance-update-imds-token
             resource: huaweicloud.ecs
             filters:
-            - type: instance-imds-version
-                version: v1
+            - type: instance-imds-token
+                http_tokens: optional
             actions:
-            - type: instance-update-imds-version
-                version: v2
+            - type: instance-update-imds-token
+                http_tokens: required
 
     """
 
-    schema = type_schema("instance-update-imds-version",
-                         version={"enum": ["v1", "v2"]})
+    schema = type_schema("instance-update-imds-token",
+                         http_tokens={"enum": ["optional", "required"]})
 
     def process(self, resources):
         results = []
-        version = self.data.get("version")
-        if version is None:
-            self.log.error("version should not be None")
+        http_tokens = self.data.get("http_tokens")
+        if http_tokens is None:
+            self.log.error("http_tokens should not be None")
             return results
-        elif version == "v1":
-            version = "optional"
-        elif version == "v2":
-            version = "required"
         client = self.manager.get_client()
         for resource in resources:
-            body = UpdateServerMetadataOptionsRequestBody(http_tokens=version)
+            body = UpdateServerMetadataOptionsRequestBody(http_tokens=http_tokens)
             request = UpdateServerMetadataOptionsRequest(server_id=resource["id"], body=body)
             try:
                 response = client.update_server_metadata_options(request)
@@ -1513,8 +1509,8 @@ class InstanceTag(ValueFilter):
         return results
 
 
-@Ecs.filter_registry.register("instance-imds-version")
-class InstanceMetadataOptionsVersion(Filter):
+@Ecs.filter_registry.register("instance-imds-token")
+class InstanceMetadataOptionsToken(Filter):
     """ECS instance imds filter.
 
     :Example:
@@ -1526,24 +1522,20 @@ class InstanceMetadataOptionsVersion(Filter):
            resource: huaweicloud.ecs
            filters:
              - type: instance-imds-version
-               version: v2
+               http_tokens: optional
     """
 
-    schema = type_schema("instance-imds-version",
-                         version={"enum": ["v1", "v2"]})
+    schema = type_schema("instance-imds-token",
+                         http_tokens={"enum": ["optional", "required"]})
     schema_alias = False
     batch_size = 50
 
     def process(self, resources, event=None):
         results = []
-        version = self.data.get("version")
-        if version is None:
-            self.log.error("version should not be None")
+        http_tokens = self.data.get("http_tokens")
+        if http_tokens is None:
+            self.log.error("http_tokens should not be None")
             return results
-        elif version == "v1":
-            version = "optional"
-        elif version == "v2":
-            version = "required"
         client = self.manager.get_client()
         instance_metadata_options_map = {}
         index_dict = {r['id']: r for r in resources}
@@ -1560,7 +1552,11 @@ class InstanceMetadataOptionsVersion(Filter):
                     )
                 instance_metadata_options_map.update(f.result())
         for key, value in instance_metadata_options_map.items():
-            if value.http_tokens == version:
+            if value.http_tokens == http_tokens:
+                results.append(index_dict.get(key))
+            # 特殊处理http_tokens为null的场景
+            elif value.http_tokens is None and http_tokens == "optional":
+                self.log.info("server %s http_tokens is null", key)
                 results.append(index_dict.get(key))
         return results
 
