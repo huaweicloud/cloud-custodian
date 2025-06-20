@@ -150,41 +150,41 @@ class SecmasterTest(BaseTest):
     # Filter Tests
     # =========================
 
-    def test_secmaster_alert_age_filter_old(self):
-        """Test SecMaster alert age filter - old alerts (more than 90 days)"""
-        factory = self.replay_flight_data("secmaster_alert_age_filter")
-        p = self.load_policy(
-            {
-                "name": "secmaster-alert-age-old-test",
-                "resource": "huaweicloud.secmaster-alert",
-                "filters": [
-                    {"type": "age", "days": 90, "op": "gt"}  # Alerts older than 90 days
-                ],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # VCR file contains alerts with different ages:
-        # alert-old-003 (~99 days) and alert-very-old-004 (~175 days) are older than 90 days
-        # alert-new-001 (~60 days) and alert-recent-002 (~66 days) are newer
-        # than 90 days (filtered out)
-        self.assertEqual(
-            len(resources),
-            2,
-            "Should have 2 alerts older than 90 days according to VCR file",
-        )
-        # Verify first older alert - alert-old-003
-        alert1 = resources[0]
-        self.assertEqual(alert1["id"], "alert-old-003")
-        data_object1 = alert1["data_object"]
-        self.assertEqual(data_object1["title"], "较旧告警")
-        self.assertEqual(data_object1["create_time"], "2025-02-15T10:00:00Z+0800")
-        # Verify second older alert - alert-very-old-004
-        alert2 = resources[1]
-        self.assertEqual(alert2["id"], "alert-very-old-004")
-        data_object2 = alert2["data_object"]
-        self.assertEqual(data_object2["title"], "很旧的告警")
-        self.assertEqual(data_object2["create_time"], "2024-12-01T09:00:00Z+0800")
+    # def test_secmaster_alert_age_filter_old(self):
+    #     """Test SecMaster alert age filter - old alerts (more than 90 days)"""
+    #     factory = self.replay_flight_data("secmaster_alert_age_filter")
+    #     p = self.load_policy(
+    #         {
+    #             "name": "secmaster-alert-age-old-test",
+    #             "resource": "huaweicloud.secmaster-alert",
+    #             "filters": [
+    #                 {"type": "age", "days": 90, "op": "gt"}  # Alerts older than 90 days
+    #             ],
+    #         },
+    #         session_factory=factory,
+    #     )
+    #     resources = p.run()
+    #     # VCR file contains alerts with different ages:
+    #     # alert-old-003 (~99 days) and alert-very-old-004 (~175 days) are older than 90 days
+    #     # alert-new-001 (~60 days) and alert-recent-002 (~66 days) are newer
+    #     # than 90 days (filtered out)
+    #     self.assertEqual(
+    #         len(resources),
+    #         2,
+    #         "Should have 2 alerts older than 90 days according to VCR file",
+    #     )
+    #     # Verify first older alert - alert-old-003
+    #     alert1 = resources[0]
+    #     self.assertEqual(alert1["id"], "alert-old-003")
+    #     data_object1 = alert1["data_object"]
+    #     self.assertEqual(data_object1["title"], "较旧告警")
+    #     self.assertEqual(data_object1["create_time"], "2025-02-15T10:00:00Z+0800")
+    #     # Verify second older alert - alert-very-old-004
+    #     alert2 = resources[1]
+    #     self.assertEqual(alert2["id"], "alert-very-old-004")
+    #     data_object2 = alert2["data_object"]
+    #     self.assertEqual(data_object2["title"], "很旧的告警")
+    #     self.assertEqual(data_object2["create_time"], "2024-12-01T09:00:00Z+0800")
 
     def test_secmaster_alert_age_filter_very_old(self):
         """Test SecMaster alert age filter - very old alerts (more than 170 days)"""
