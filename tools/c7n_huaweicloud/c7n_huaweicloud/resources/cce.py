@@ -2,9 +2,27 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import json
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.provider import resources
-from c7n.utils import local_session
+from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from c7n.utils import local_session, type_schema
+from huaweicloudsdkcore.exceptions import exceptions
+
+# Import Huawei Cloud CCE SDK related request and response classes
+from huaweicloudsdkcce.v3 import (
+    DeleteClusterRequest,
+    HibernateClusterRequest, AwakeClusterRequest, UpdateClusterRequest,
+    DeleteNodePoolRequest, UpdateNodePoolRequest,
+    DeleteNodeRequest,
+    DeleteAddonInstanceRequest,
+    DeleteChartRequest,
+    DeleteReleaseRequest,
+    NodePoolUpdate, NodePoolMetadataUpdate, NodePoolSpecUpdate,
+    ClusterInformation, ClusterInformationSpec, ClusterMetadataForUpdate,
+    ContainerNetworkUpdate, EniNetworkUpdate, ClusterInformationSpecHostNetwork,
+    NodePoolNodeAutoscaling
+)
 
 log = logging.getLogger("custodian.huaweicloud.cce")
 
@@ -37,6 +55,371 @@ class CceCluster(QueryResourceManager):
         name = "metadata.name"
         taggable = True
         tag_resource_type = "cce"
+
+
+@CceCluster.action_registry.register("delete")
+class DeleteCceCluster(HuaweiCloudBaseAction):
+    """Delete CCE Cluster
+
+    This operation will permanently delete the specified CCE cluster and all its related resources.
+    Please use this operation with caution as deletion cannot be undone.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-old-cce-clusters
+            resource: huaweicloud.cce-cluster
+            filters:
+              - type: value
+                key: status.phase
+                value: Available
+            actions:
+              - type: delete
+                delete_evs: true
+                delete_eni: true
+    """
+
+    schema = type_schema(
+        "delete",
+        # Whether to delete cluster-associated EVS disks
+        delete_evs={"type": "boolean", "default": False},
+        # Whether to delete cluster-associated ENI
+        delete_eni={"type": "boolean", "default": False},
+        # Whether to delete cluster-associated network resources
+        delete_net={"type": "boolean", "default": False},
+        # Whether to delete cluster-associated OBS storage
+        delete_obs={"type": "boolean", "default": False}
+    )
+
+    permissions = ('cce:deleteCluster',)
+
+    def perform_action(self, resource):
+        """Perform delete operation on a single CCE cluster"""
+        cluster_id = resource.get('metadata', {}).get('uid')
+        cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
+
+        if not cluster_id:
+            log.error(
+                f"Cannot delete CCE cluster, missing cluster ID: {cluster_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            # Build delete cluster request
+            request = DeleteClusterRequest()
+            request.cluster_id = cluster_id
+
+            # Set delete options
+            request.delete_evs = self.data.get('delete_evs', False)
+            request.delete_eni = self.data.get('delete_eni', False)
+            request.delete_net = self.data.get('delete_net', False)
+            request.delete_obs = self.data.get('delete_obs', False)
+
+            # Execute delete operation
+            response = client.delete_cluster(request)
+            log.info(
+                f"Started deleting CCE cluster {cluster_name} ({cluster_id})")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to delete CCE cluster {cluster_name} ({cluster_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error("Error occurred while deleting"
+                      f"CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
+            return None
+
+
+@CceCluster.action_registry.register("hibernate")
+class HibernateCceCluster(HuaweiCloudBaseAction):
+    """Hibernate CCE Cluster
+
+    Put the CCE cluster into hibernation state to save computing resource costs.
+    Hibernated clusters can be restarted through the awaken operation.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: hibernate-idle-clusters
+            resource: huaweicloud.cce-cluster
+            filters:
+              - type: value
+                key: status.phase
+                value: Available
+            actions:
+              - type: hibernate
+    """
+
+    schema = type_schema("hibernate")
+    permissions = ('cce:hibernateCluster',)
+
+    def perform_action(self, resource):
+        """Perform hibernate operation on a single CCE cluster"""
+        cluster_id = resource.get('metadata', {}).get('uid')
+        cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
+
+        if not cluster_id:
+            log.error(
+                f"Cannot hibernate CCE cluster, missing cluster ID: {cluster_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            request = HibernateClusterRequest()
+            request.cluster_id = cluster_id
+
+            response = client.hibernate_cluster(request)
+            log.info(
+                f"Started hibernating CCE cluster {cluster_name} ({cluster_id})")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to hibernate CCE cluster {cluster_name} ({cluster_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                "Error occurred while hibernating"
+                f"CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
+            return None
+
+
+@CceCluster.action_registry.register("awaken")
+class AwakenCceCluster(HuaweiCloudBaseAction):
+    """Awaken CCE Cluster
+
+    Restart hibernated CCE cluster to resume normal operation.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: awaken-hibernated-clusters
+            resource: huaweicloud.cce-cluster
+            filters:
+              - type: value
+                key: status.phase
+                value: Hibernating
+            actions:
+              - type: awaken
+    """
+
+    schema = type_schema("awaken")
+    permissions = ('cce:awakenCluster',)
+
+    def perform_action(self, resource):
+        """Perform awaken operation on a single CCE cluster"""
+        cluster_id = resource.get('metadata', {}).get('uid')
+        cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
+
+        if not cluster_id:
+            log.error(
+                f"Cannot awaken CCE cluster, missing cluster ID: {cluster_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            request = AwakeClusterRequest()
+            request.cluster_id = cluster_id
+
+            response = client.awake_cluster(request)
+            log.info(
+                f"Started awakening CCE cluster {cluster_name} ({cluster_id})")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to awaken CCE cluster {cluster_name} ({cluster_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                "Error occurred while awakening"
+                f"CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
+            return None
+
+
+@CceCluster.action_registry.register("update")
+class UpdateCceCluster(HuaweiCloudBaseAction):
+    """Update CCE Cluster
+
+    Update CCE cluster configuration information,
+    such as cluster description, custom SAN, network configuration, etc.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: update-cluster-description
+            resource: huaweicloud.cce-cluster
+            actions:
+              - type: update
+                spec:
+                  description: "Updated cluster description"
+                  custom_san: 
+                    - "example.com"
+                    - "test.example.com"
+                  deletion_protection: true
+                metadata:
+                  alias: "new-cluster-alias"
+    """
+
+    schema = type_schema(
+        "update",
+        spec={
+            "type": "object",
+            "properties": {
+                "description": {"type": "string"},  # Cluster description
+                "custom_san": {  # Custom SAN list
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "container_network": {  # Container network update configuration
+                    "type": "object",
+                    "properties": {
+                        "cidrs": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "cidr": {"type": "string"}
+                                }
+                            }
+                        }
+                    }
+                },
+                "eni_network": {  # ENI network update configuration
+                    "type": "object",
+                    "properties": {
+                        "subnets": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "subnet_id": {"type": "string"}
+                                }
+                            }
+                        }
+                    }
+                },
+                "host_network": {  # Host network configuration
+                    "type": "object",
+                    "properties": {
+                        "subnet_id": {"type": "string"}
+                    }
+                },
+                # Deletion protection
+                "deletion_protection": {"type": "boolean"}
+            }
+        },
+        metadata={
+            "type": "object",
+            "properties": {
+                "alias": {"type": "string"}  # Cluster alias
+            }
+        }
+    )
+    permissions = ('cce:updateCluster',)
+
+    def perform_action(self, resource):
+        """Perform update operation on a single CCE cluster"""
+        cluster_id = resource.get('metadata', {}).get('uid')
+        cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
+
+        if not cluster_id:
+            log.error(
+                f"Cannot update CCE cluster, missing cluster ID: {cluster_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            # Build update cluster request
+            request = UpdateClusterRequest()
+            request.cluster_id = cluster_id
+
+            # Create cluster information object
+            cluster_info = ClusterInformation()
+
+            # Set spec configuration
+            spec_config = self.data.get('spec', {})
+            if spec_config:
+                cluster_spec = ClusterInformationSpec()
+
+                # Set description
+                if spec_config.get('description'):
+                    cluster_spec.description = spec_config.get('description')
+
+                # Set custom SAN
+                if spec_config.get('custom_san'):
+                    cluster_spec.custom_san = spec_config.get('custom_san')
+
+                # Set container network configuration
+                if spec_config.get('container_network'):
+                    container_net = ContainerNetworkUpdate()
+                    if spec_config['container_network'].get('cidrs'):
+                        # Set CIDR according to actual SDK structure
+                        container_net.cidrs = spec_config['container_network']['cidrs']
+                    cluster_spec.container_network = container_net
+
+                # Set ENI network configuration
+                if spec_config.get('eni_network'):
+                    eni_net = EniNetworkUpdate()
+                    if spec_config['eni_network'].get('subnets'):
+                        # Set subnets according to actual SDK structure
+                        eni_net.subnets = spec_config['eni_network']['subnets']
+                    cluster_spec.eni_network = eni_net
+
+                # Set host network configuration
+                if spec_config.get('host_network'):
+                    host_net = ClusterInformationSpecHostNetwork()
+                    if spec_config['host_network'].get('subnet_id'):
+                        host_net.subnet_id = spec_config['host_network']['subnet_id']
+                    cluster_spec.host_network = host_net
+
+                # Set deletion protection
+                if 'deletion_protection' in spec_config:
+                    cluster_spec.deletion_protection = spec_config.get(
+                        'deletion_protection')
+
+                cluster_info.spec = cluster_spec
+
+            # Set metadata configuration
+            metadata_config = self.data.get('metadata', {})
+            if metadata_config:
+                cluster_metadata = ClusterMetadataForUpdate()
+
+                # Set cluster alias
+                if metadata_config.get('alias'):
+                    cluster_metadata.alias = metadata_config.get('alias')
+
+                cluster_info.metadata = cluster_metadata
+
+            request.body = cluster_info
+
+            response = client.update_cluster(request)
+            log.info(
+                f"Started updating CCE cluster {cluster_name} ({cluster_id})")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to update CCE cluster {cluster_name} ({cluster_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                "Error occurred while updating"
+                f"CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
+            return None
 
 
 @resources.register("cce-nodepool")
@@ -94,12 +477,380 @@ class CceNodePool(QueryResourceManager):
                     # Convert to dictionary format
                     node_pool_dict = node_pool.to_dict() if hasattr(
                         node_pool, 'to_dict') else node_pool
+                    # Add cluster information to node resource
+                    node_pool_dict['clusterId'] = cluster_id
+                    node_pool_dict['clusterName'] = cluster['metadata']['name']
                     result.append(node_pool_dict)
             except Exception as e:
                 log.warning(
                     f"Failed to get node pools for cluster {cluster_id}: {e}")
 
         return result
+
+
+@CceNodePool.action_registry.register("delete")
+class DeleteCceNodePool(HuaweiCloudBaseAction):
+    """Delete CCE Node Pool
+
+    Delete the specified CCE node pool, including all nodes in the pool.
+    Please note that this operation is irreversible.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-empty-nodepools
+            resource: huaweicloud.cce-nodepool
+            filters:
+              - type: value
+                key: metadata.uid
+                value: test-nodepool-uid
+            actions:
+              - type: delete
+    """
+
+    schema = type_schema("delete")
+    permissions = ('cce:deleteNodePool',)
+
+    def perform_action(self, resource):
+        """Perform delete operation on a single node pool"""
+        nodepool_id = resource.get('metadata', {}).get('uid')
+        nodepool_name = resource.get('metadata', {}).get('name', 'Unknown')
+        cluster_id = resource.get('clusterId')
+
+        if not nodepool_id or not cluster_id:
+            log.error(
+                f"Cannot delete node pool, missing required ID: {nodepool_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            request = DeleteNodePoolRequest()
+            request.cluster_id = cluster_id
+            request.nodepool_id = nodepool_id
+
+            response = client.delete_node_pool(request)
+            log.info(
+                f"Started deleting CCE node pool {nodepool_name} ({nodepool_id})")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to delete CCE node pool {nodepool_name} ({nodepool_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                "Error occurred while deleting"
+                f"CCE node pool {nodepool_name} ({nodepool_id}): {str(e)}")
+            return None
+
+
+@CceNodePool.action_registry.register("update")
+class UpdateCceNodePool(HuaweiCloudBaseAction):
+    """Update CCE Node Pool
+
+    Update CCE node pool configuration, such as node count, labels, node template, etc.
+    Supports updating node pool metadata and spec configuration.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: update-nodepool-config
+            resource: huaweicloud.cce-nodepool
+            actions:
+              - type: update
+                metadata:
+                  name: updated-nodepool-name
+                spec:
+                  initial_node_count: 3
+                  ignore_initial_node_count: false
+                  autoscaling:
+                    enable: true
+                    min_node_count: 1
+                    max_node_count: 10
+                  node_template:
+                    flavor: s6.large.2
+                    az: cn-north-4a
+                    os: EulerOS 2.5
+                    login:
+                      ssh_key: my-keypair
+                    rootVolume:
+                      size: 40
+                      volumetype: SAS
+                    dataVolumes:
+                      - size: 100
+                        volumetype: SAS
+                    k8s_tags:
+                      environment: production
+                      team: dev
+                    user_tags:
+                      - key: owner
+                        value: admin
+                  taint_policy_on_existing_nodes: ignore
+                  label_policy_on_existing_nodes: ignore
+    """
+
+    schema = type_schema(
+        "update",
+        metadata={
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"}  # Node pool name
+            }
+        },
+        spec={
+            "type": "object",
+            "properties": {
+                # Expected node count of node pool
+                "initial_node_count": {"type": "integer"},
+                # Whether to ignore initial_node_count
+                "ignore_initial_node_count": {"type": "boolean"},
+                "autoscaling": {  # Auto-scaling configuration
+                    "type": "object",
+                    "properties": {
+                        "enable": {"type": "boolean"},
+                        "min_node_count": {"type": "integer"},
+                        "max_node_count": {"type": "integer"},
+                        "scale_down_cooldown_time": {"type": "integer"},
+                        "priority": {"type": "integer"}
+                    }
+                },
+                "node_template": {  # Node template configuration
+                    "type": "object",
+                    "properties": {
+                        "flavor": {"type": "string"},
+                        "az": {"type": "string"},
+                        "os": {"type": "string"},
+                        "login": {
+                            "type": "object",
+                            "properties": {
+                                "ssh_key": {"type": "string"},
+                                "user_password": {
+                                    "type": "object",
+                                    "properties": {
+                                        "username": {"type": "string"},
+                                        "password": {"type": "string"}
+                                    }
+                                }
+                            }
+                        },
+                        "rootVolume": {
+                            "type": "object",
+                            "properties": {
+                                "size": {"type": "integer"},
+                                "volumetype": {"type": "string"}
+                            }
+                        },
+                        "dataVolumes": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "size": {"type": "integer"},
+                                    "volumetype": {"type": "string"}
+                                }
+                            }
+                        },
+                        "k8s_tags": {"type": "object"},
+                        "user_tags": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "key": {"type": "string"},
+                                    "value": {"type": "string"}
+                                }
+                            }
+                        }
+                    }
+                },
+                "taint_policy_on_existing_nodes": {  # Taint policy
+                    "type": "string",
+                    "enum": ["refresh", "ignore"]
+                },
+                "label_policy_on_existing_nodes": {  # Label policy
+                    "type": "string",
+                    "enum": ["refresh", "ignore"]
+                },
+                "user_tags_policy_on_existing_nodes": {  # User tag policy
+                    "type": "string",
+                    "enum": ["refresh", "ignore"]
+                }
+            }
+        }
+    )
+    permissions = ('cce:updateNodePool',)
+
+    def perform_action(self, resource):
+        """Perform update operation on a single node pool"""
+        nodepool_id = resource.get('metadata', {}).get('uid')
+        nodepool_name = resource.get('metadata', {}).get('name', 'Unknown')
+        cluster_id = resource.get('clusterId')
+
+        if not nodepool_id or not cluster_id:
+            log.error(
+                f"Cannot update node pool, missing required ID: {nodepool_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            request = UpdateNodePoolRequest()
+            request.cluster_id = cluster_id
+            request.nodepool_id = nodepool_id
+
+            # Build request body
+            node_pool_update = NodePoolUpdate()
+
+            # Set metadata
+            metadata_config = self.data.get('metadata', {})
+            if metadata_config:
+                metadata_update = NodePoolMetadataUpdate()
+                if 'name' in metadata_config:
+                    metadata_update.name = metadata_config['name']
+                node_pool_update.metadata = metadata_update
+
+            # Set spec
+            spec_config = self.data.get('spec', {})
+            if spec_config:
+                spec_update = NodePoolSpecUpdate()
+
+                # Set node count related configuration
+                if 'initial_node_count' in spec_config:
+                    spec_update.initial_node_count = spec_config['initial_node_count']
+
+                if 'ignore_initial_node_count' in spec_config:
+                    spec_update.ignore_initial_node_count = spec_config['ignore_initial_node_count']
+
+                # Set auto-scaling configuration
+                if 'autoscaling' in spec_config:
+                    autoscaling_config = spec_config['autoscaling']
+                    autoscaling = NodePoolNodeAutoscaling()
+                    if 'enable' in autoscaling_config:
+                        autoscaling.enable = autoscaling_config['enable']
+                    if 'min_node_count' in autoscaling_config:
+                        autoscaling.min_node_count = autoscaling_config['min_node_count']
+                    if 'max_node_count' in autoscaling_config:
+                        autoscaling.max_node_count = autoscaling_config['max_node_count']
+                    if 'scale_down_cooldown_time' in autoscaling_config:
+                        autoscaling.scale_down_cooldown_time = autoscaling_config[
+                            'scale_down_cooldown_time']
+                    if 'priority' in autoscaling_config:
+                        autoscaling.priority = autoscaling_config['priority']
+                    spec_update.autoscaling = autoscaling
+
+                # Set node template configuration
+                if 'node_template' in spec_config:
+                    from huaweicloudsdkcce.v3.model.node_spec_update import NodeSpecUpdate
+                    node_template_config = spec_config['node_template']
+                    node_template = NodeSpecUpdate()
+
+                    if 'flavor' in node_template_config:
+                        node_template.flavor = node_template_config['flavor']
+                    if 'az' in node_template_config:
+                        node_template.az = node_template_config['az']
+                    if 'os' in node_template_config:
+                        node_template.os = node_template_config['os']
+
+                    # Set login method
+                    if 'login' in node_template_config:
+                        from huaweicloudsdkcce.v3.model.login import Login
+                        login_config = node_template_config['login']
+                        login = Login()
+                        if 'ssh_key' in login_config:
+                            login.ssh_key = login_config['ssh_key']
+                        if 'user_password' in login_config:
+                            from huaweicloudsdkcce.v3.model.user_password import UserPassword
+                            password_config = login_config['user_password']
+                            user_password = UserPassword()
+                            if 'username' in password_config:
+                                user_password.username = password_config['username']
+                            if 'password' in password_config:
+                                user_password.password = password_config['password']
+                            login.user_password = user_password
+                        node_template.login = login
+
+                    # Set system disk
+                    if 'rootVolume' in node_template_config:
+                        from huaweicloudsdkcce.v3.model.volume import Volume
+                        root_volume_config = node_template_config['rootVolume']
+                        root_volume = Volume()
+                        if 'size' in root_volume_config:
+                            root_volume.size = root_volume_config['size']
+                        if 'volumetype' in root_volume_config:
+                            root_volume.volumetype = root_volume_config['volumetype']
+                        node_template.root_volume = root_volume
+
+                    # Set data disks
+                    if 'dataVolumes' in node_template_config:
+                        from huaweicloudsdkcce.v3.model.volume import Volume
+                        data_volumes_config = node_template_config['dataVolumes']
+                        data_volumes = []
+                        for dv_config in data_volumes_config:
+                            data_volume = Volume()
+                            if 'size' in dv_config:
+                                data_volume.size = dv_config['size']
+                            if 'volumetype' in dv_config:
+                                data_volume.volumetype = dv_config['volumetype']
+                            data_volumes.append(data_volume)
+                        node_template.data_volumes = data_volumes
+
+                    # Set K8S labels
+                    if 'k8s_tags' in node_template_config:
+                        node_template.k8s_tags = node_template_config['k8s_tags']
+
+                    # Set user tags
+                    if 'user_tags' in node_template_config:
+                        from huaweicloudsdkcce.v3.model.user_tag import UserTag
+                        user_tags_config = node_template_config['user_tags']
+                        user_tags = []
+                        for tag_config in user_tags_config:
+                            user_tag = UserTag()
+                            if 'key' in tag_config:
+                                user_tag.key = tag_config['key']
+                            if 'value' in tag_config:
+                                user_tag.value = tag_config['value']
+                            user_tags.append(user_tag)
+                        node_template.user_tags = user_tags
+
+                    spec_update.node_template = node_template
+
+                # Set policy configuration
+                if 'taint_policy_on_existing_nodes' in spec_config:
+                    spec_update.taint_policy_on_existing_nodes = spec_config[
+                        'taint_policy_on_existing_nodes']
+
+                if 'label_policy_on_existing_nodes' in spec_config:
+                    spec_update.label_policy_on_existing_nodes = spec_config[
+                        'label_policy_on_existing_nodes']
+
+                if 'user_tags_policy_on_existing_nodes' in spec_config:
+                    spec_update.user_tags_policy_on_existing_nodes = spec_config[
+                        'user_tags_policy_on_existing_nodes']
+
+                node_pool_update.spec = spec_update
+
+            # Set request body
+            request.body = node_pool_update
+
+            log.info(
+                f"Started updating CCE node pool {nodepool_name} ({nodepool_id})")
+            response = client.update_node_pool(request)
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to update CCE node pool {nodepool_name} ({nodepool_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                "Error occurred while updating"
+                f"CCE node pool {nodepool_name} ({nodepool_id}): {str(e)}")
+            return None
 
 
 @resources.register("cce-node")
@@ -156,12 +907,71 @@ class CceNode(QueryResourceManager):
                 for node in nodes:
                     # Convert to dictionary format
                     node_dict = node.to_dict() if hasattr(node, 'to_dict') else node
+                    # Add cluster information to node resource
+                    node_dict['clusterId'] = cluster_id
+                    node_dict['clusterName'] = cluster['metadata']['name']
                     result.append(node_dict)
             except Exception as e:
                 log.warning(
                     f"Failed to get nodes for cluster {cluster_id}: {e}")
 
         return result
+
+
+@CceNode.action_registry.register("delete")
+class DeleteCceNode(HuaweiCloudBaseAction):
+    """Delete CCE Node
+
+    Delete the specified CCE node from the cluster.
+    Note: Please ensure workloads on the node are migrated or backed up before deleting the node.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-failed-nodes
+            resource: huaweicloud.cce-node
+            filters:
+              - type: value
+                key: status.phase
+                value: Error
+            actions:
+              - type: delete
+    """
+
+    schema = type_schema("delete")
+    permissions = ('cce:deleteNode',)
+
+    def perform_action(self, resource):
+        """Perform delete operation on a single node"""
+        node_id = resource.get('metadata', {}).get('uid')
+        node_name = resource.get('metadata', {}).get('name', 'Unknown')
+        cluster_id = resource.get('clusterId')
+
+        if not node_id or not cluster_id:
+            log.error(f"Cannot delete node, missing required ID: {node_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            request = DeleteNodeRequest()
+            request.cluster_id = cluster_id
+            request.node_id = node_id
+
+            response = client.delete_node(request)
+            log.info(f"Started deleting CCE node {node_name} ({node_id})")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to delete CCE node {node_name} ({node_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                f"Error occurred while deleting CCE node {node_name} ({node_id}): {str(e)}")
+            return None
 
 
 @resources.register("cce-addontemplate")
@@ -221,6 +1031,63 @@ class CceAddonInstance(QueryResourceManager):
         # Addon instances usually do not support tagging
 
 
+@CceAddonInstance.action_registry.register("delete")
+class DeleteCceAddonInstance(HuaweiCloudBaseAction):
+    """Delete CCE Addon Instance
+
+    Delete the specified CCE addon instance.
+    Deleting addon instances may affect cluster functionality, please operate with caution.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-unused-addons
+            resource: huaweicloud.cce-addoninstance
+            filters:
+              - type: value
+                key: metadata.uid
+                value: test-addon
+            actions:
+              - type: delete
+    """
+
+    schema = type_schema("delete")
+    permissions = ('cce:deleteAddonInstance',)
+
+    def perform_action(self, resource):
+        """Perform delete operation on a single addon instance"""
+        addon_id = resource.get('metadata', {}).get('uid')
+        addon_name = resource.get('metadata', {}).get('name', 'Unknown')
+
+        if not addon_id:
+            log.error(
+                f"Cannot delete addon instance, missing required ID: {addon_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            request = DeleteAddonInstanceRequest()
+            request.id = addon_id
+
+            response = client.delete_addon_instance(request)
+            log.info(
+                f"Started deleting CCE addon instance {addon_name} ({addon_id})")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to delete CCE addon instance {addon_name} ({addon_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                "Error occurred while deleting"
+                f"CCE addon instance {addon_name} ({addon_id}): {str(e)}")
+            return None
+
+
 @resources.register("cce-chart")
 class CceChart(QueryResourceManager):
     """Huawei Cloud CCE Chart Resource Manager
@@ -235,18 +1102,67 @@ class CceChart(QueryResourceManager):
         policies:
           - name: list-cce-charts
             resource: huaweicloud.cce-chart
-            filters:
-              - type: value
-                key: spec.chart_type
-                value: helm
     """
 
     class resource_type(TypeInfo):
         service = "cce-chart"
         enum_spec = ("list_charts", "body", None)
-        id = "name"
+        id = "id"
         name = "name"
         # Chart resources usually do not support tagging
+
+
+@CceChart.action_registry.register("delete")
+class DeleteCceChart(HuaweiCloudBaseAction):
+    """Delete CCE Chart
+
+    Deleting charts will not affect Release instances created based on the chart.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-unused-charts
+            resource: huaweicloud.cce-chart
+            filters:
+              - type: value
+                key: name
+                value: unused-chart
+            actions:
+              - type: delete
+    """
+
+    schema = type_schema("delete")
+    permissions = ('cce:deleteChart',)
+
+    def perform_action(self, resource):
+        """Perform delete operation on a single chart"""
+        chart_id = resource.get('id')
+        chart_name = resource.get('name', 'Unknown')
+
+        if not chart_id:
+            log.error(f"Cannot delete chart, missing chart ID: {chart_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            request = DeleteChartRequest()
+            request.chart_id = chart_id
+
+            response = client.delete_chart(request)
+            log.info(f"Started deleting CCE chart {chart_name} ({chart_id})")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to delete CCE chart {chart_name} ({chart_id}): "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                f"Error occurred while deleting CCE chart {chart_name} ({chart_id}): {str(e)}")
+            return None
 
 
 @resources.register("cce-release")
@@ -305,3 +1221,62 @@ class CceRelease(QueryResourceManager):
                     f"Failed to get releases for cluster {cluster_id}: {e}")
 
         return result
+
+
+@CceRelease.action_registry.register("delete")
+class DeleteCceRelease(HuaweiCloudBaseAction):
+    """Delete CCE Release
+
+    Delete the specified Helm Release instance.
+    Deleting releases will uninstall applications deployed in the cluster.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-failed-releases
+            resource: huaweicloud.cce-release
+            filters:
+              - type: value
+                key: status.phase
+                value: failed
+            actions:
+              - type: delete
+    """
+
+    schema = type_schema("delete")
+    permissions = ('cce:deleteRelease',)
+
+    def perform_action(self, resource):
+        """Perform delete operation on a single release"""
+        release_name = resource.get('name')
+        cluster_id = resource.get('cluster_id')
+        namespace = resource.get('namespace', 'default')
+
+        if not release_name or not cluster_id:
+            log.error(
+                f"Cannot delete release, missing required information: {release_name}")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            request = DeleteReleaseRequest()
+            request.cluster_id = cluster_id
+            request.name = release_name
+            request.namespace = namespace
+
+            response = client.delete_release(request)
+            log.info(
+                f"Started deleting CCE release {release_name} in cluster {cluster_id}")
+            return response
+
+        except exceptions.ClientRequestException as e:
+            log.error(f"Failed to delete CCE release {release_name}: "
+                      f"{e.error_msg} (status code: {e.status_code})")
+            return None
+        except Exception as e:
+            log.error(
+                f"Error occurred while deleting CCE release {release_name}: {str(e)}")
+            return None

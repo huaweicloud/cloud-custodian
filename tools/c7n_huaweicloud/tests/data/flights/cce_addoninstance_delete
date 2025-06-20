@@ -1,0 +1,112 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T110645Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons
+  response:
+    body:
+      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"Addon","apiVersion":"v3",
+        "metadata":{"uid":"test-addon","name":"test-addon-instance", "creationTimestamp":"2025-06-18T08:02:30Z","updateTimestamp":"2025-06-18T08:02:30Z"},
+        "spec":{"version":"1.0.0","clusterID":"4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6",
+        "addonTemplateName":"test-addon-template","values":{"basic":{}}}, "status":{"status":"abnormal","Reason":"","message":"","targetVersions":null,
+        "currentVersion":"1.0.0"}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 11:06:45 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1750331205440; path=/
+      - HWWAFSESID=236537363db41b0a8e; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 1d21c09838342520c25950a1b573eebe
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250620T013204Z
+    method: DELETE
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons/test-addon
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 01:32:04 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=d941e73190da64c548; path=/
+      - HWWAFSESTIME=1750383124699; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - fdb88fd6d8edff66696fb73e4c506f51
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

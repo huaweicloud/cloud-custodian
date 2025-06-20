@@ -22,10 +22,12 @@ interactions:
     uri: https://cce.ap-southeast-1.myhuaweicloud.com/v2/charts
   response:
     body:
-      string: '{"body":[{"name":"test-chart","version":"1.0.0","description":"Test chart",
-        "spec":{"chart_type":"helm","chart_name":"test-chart","chart_version":"1.0.0",
-        "chart_description":"Test chart description","chart_values":"{\"global\":{}}",
-        "chart_path":"charts/test-chart"}}]}'
+      string: '{"body":[ { "id" : "1abd3bd6-0258-11ec-b8b0-0255ac100b05", "name" :
+        "test-chart", "values" : "{\"basic\":{\"admin_password\":\"******\",\"admin_username\":\"username\",\"app_name\":\"magento\",\"mysql_database\":\"magento\",\"mysql_name\":\"mysql\",\"mysql_password\":\"******\",\"mysql_port\":3306,\"mysql_root_password\":\"******\",\"mysql_user\":\"magento\",\"storage_class\":\"csi-nas\",\"storage_mode\":\"ReadWriteMany\",\"storage_size\":\"10G\"},\"global\":{\"magento_EIP\":\"100.100.100.100\",\"magento_EPORT\":32080,\"namespace\":\"default\"},\"image\":{\"magento_image\":\"example.com/everest/magento:latest\",\"mysql_image\":\"example.com/everest/mysql:5.7.14\"}}",
+        "translate" : "", "instruction" : "", "version" : "1.0.0", "description" :
+        "chart description", "source" : "", "icon_url" : "https://example.com/magento-stack-110x117.png",
+        "public" : false, "chart_url" : "magento-mysql-1.0.0.tgz", "create_at" : "2021-08-20T08:00:29Z",
+        "update_at" : "2021-08-20T08:00:29Z" } ]}'
     headers:
       Connection:
       - keep-alive
