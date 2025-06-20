@@ -1,0 +1,86 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - as.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250609T073701Z
+    method: GET
+    uri: https://as.ap-southeast-1.myhwclouds.com/autoscaling-api/v1/ap-southeat-1/scaling_configuration?limit=100&start_number=0
+  response:
+    body:
+      string: '{
+        "limit": 100, 
+        "total_number": 2, 
+        "start_number": 0, 
+        "scaling_configurations": [
+          {
+            "tenant": "ce061903a53545dcaddb300093b477d2", 
+            "scaling_configuration_id": "6afe46f9-7d3d-4046-8748-3b2a1085ad86", 
+            "scaling_configuration_name": "config_name_1", 
+            "instance_config": {
+              "disk": [
+                {"size": 40, "volume_type": "SATA", "disk_type": "SYS"}, 
+                {"size": 100, "volume_type": "SATA", "disk_type": "DATA"}
+              ], 
+              "personality": null, 
+              "instance_name": null, 
+              "instance_id": null, 
+              "flavorRef": "103", 
+              "imageRef": "37ca2b35-6fc7-47ab-93c7-900324809c5c", 
+              "key_name": "keypair01", 
+              "key_fingerprint": "SHA256:qlvdUkYgSjKUxcr2uJgJJRMCKMLkJO5BPLooBcgsF8k", 
+              "public_ip": null, 
+              "user_data": null, 
+              "metadata": {}, 
+              "security_groups": [
+                {"id": "6c22a6c0-b5d2-4a84-ac56-51090dcc33be"}
+              ]
+            }, 
+            "create_time": "2015-07-23T01:04:07Z"
+          }
+        ]
+      }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 07:37:02 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=56a9573eecd64735d2; path=/
+      - HWWAFSESTIME=1749454622078; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a06f76123afa88b743504827244111bf
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1
