@@ -68,19 +68,19 @@ class CceClusterTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['status']['phase'], 'Available')
 
-    def test_cluster_awaken_action(self):
-        """Test CCE cluster awaken operation"""
-        factory = self.replay_flight_data('cce_cluster_awaken')
+    def test_cluster_awake_action(self):
+        """Test CCE cluster awake operation"""
+        factory = self.replay_flight_data('cce_cluster_awake')
         p = self.load_policy({
-            'name': 'awaken-cce-cluster',
+            'name': 'awake-cce-cluster',
             'resource': 'huaweicloud.cce-cluster',
             'filters': [{
                 'type': 'value',
                 'key': 'status.phase',
-                'value': 'Hibernating'  # Only awaken hibernating clusters
+                'value': 'Hibernating'  # Only awake hibernating clusters
             }],
             'actions': [{
-                'type': 'awaken'
+                'type': 'awake'
             }]
         }, session_factory=factory)
         resources = p.run()

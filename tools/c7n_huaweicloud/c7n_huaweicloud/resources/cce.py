@@ -129,7 +129,7 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
             return None
         except Exception as e:
             log.error("Error occurred while deleting"
-                      f"CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
+                      f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
             return None
 
 
@@ -186,11 +186,11 @@ class HibernateCceCluster(HuaweiCloudBaseAction):
         except Exception as e:
             log.error(
                 "Error occurred while hibernating"
-                f"CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
+                f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
             return None
 
 
-@CceCluster.action_registry.register("awaken")
+@CceCluster.action_registry.register("awake")
 class AwakenCceCluster(HuaweiCloudBaseAction):
     """Awaken CCE Cluster
 
@@ -201,27 +201,27 @@ class AwakenCceCluster(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-          - name: awaken-hibernated-clusters
+          - name: awake-hibernated-clusters
             resource: huaweicloud.cce-cluster
             filters:
               - type: value
                 key: status.phase
                 value: Hibernating
             actions:
-              - type: awaken
+              - type: awake
     """
 
-    schema = type_schema("awaken")
-    permissions = ('cce:awakenCluster',)
+    schema = type_schema("awake")
+    permissions = ('cce:awakeCluster',)
 
     def perform_action(self, resource):
-        """Perform awaken operation on a single CCE cluster"""
+        """Perform awake operation on a single CCE cluster"""
         cluster_id = resource.get('metadata', {}).get('uid')
         cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
 
         if not cluster_id:
             log.error(
-                f"Cannot awaken CCE cluster, missing cluster ID: {cluster_name}")
+                f"Cannot awake CCE cluster, missing cluster ID: {cluster_name}")
             return None
 
         client = self.manager.get_client()
@@ -236,13 +236,13 @@ class AwakenCceCluster(HuaweiCloudBaseAction):
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to awaken CCE cluster {cluster_name} ({cluster_id}): "
+            log.error(f"Failed to awake CCE cluster {cluster_name} ({cluster_id}): "
                       f"{e.error_msg} (status code: {e.status_code})")
             return None
         except Exception as e:
             log.error(
-                "Error occurred while awakening"
-                f"CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
+                "Error occurred while awaking"
+                f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
             return None
 
 
@@ -417,7 +417,7 @@ class UpdateCceCluster(HuaweiCloudBaseAction):
         except Exception as e:
             log.error(
                 "Error occurred while updating"
-                f"CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
+                f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
             return None
 
 
@@ -542,7 +542,7 @@ class DeleteCceNodePool(HuaweiCloudBaseAction):
         except Exception as e:
             log.error(
                 "Error occurred while deleting"
-                f"CCE node pool {nodepool_name} ({nodepool_id}): {str(e)}")
+                f" CCE node pool {nodepool_name} ({nodepool_id}): {str(e)}")
             return None
 
 
@@ -848,7 +848,7 @@ class UpdateCceNodePool(HuaweiCloudBaseAction):
         except Exception as e:
             log.error(
                 "Error occurred while updating"
-                f"CCE node pool {nodepool_name} ({nodepool_id}): {str(e)}")
+                f" CCE node pool {nodepool_name} ({nodepool_id}): {str(e)}")
             return None
 
 
