@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import json
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from c7n.utils import local_session, type_schema
+from c7n.utils import local_session, type_schema, dumps, loads
 from huaweicloudsdkcore.exceptions import exceptions
 
 # Import Huawei Cloud CCE SDK related request and response classes
@@ -14,7 +15,7 @@ from huaweicloudsdkcce.v3 import (
     HibernateClusterRequest, AwakeClusterRequest, UpdateClusterRequest,
     DeleteNodePoolRequest, UpdateNodePoolRequest,
     DeleteNodeRequest,
-    DeleteAddonInstanceRequest,
+    ListAddonInstancesRequest, DeleteAddonInstanceRequest,
     DeleteChartRequest,
     DeleteReleaseRequest,
     NodePoolUpdate, NodePoolMetadataUpdate, NodePoolSpecUpdate,
@@ -1008,6 +1009,8 @@ class CceAddonInstance(QueryResourceManager):
 
     Specific addon instances created based on addon templates.
     Addon instances run in clusters and provide additional functionality for clusters.
+    Note: This resource requires cluster_id parameter and queries addon instances
+    across all clusters in the account.
 
     :example:
 
@@ -1016,18 +1019,86 @@ class CceAddonInstance(QueryResourceManager):
         policies:
           - name: list-addon-instances
             resource: huaweicloud.cce-addoninstance
-            filters:
-              - type: value
-                key: status.status
-                value: running
     """
 
     class resource_type(TypeInfo):
-        service = "cce-addoninstance"
-        enum_spec = ("list_addon_instances", "items", None)
+        service = "cce-cluster"  # Use cluster service
+        enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
         # Addon instances usually do not support tagging
+
+    def get_resources(self, resource_ids):
+        # Get all addon instances
+        all_addon_instances = self._fetch_resources({})
+        result = []
+        for addon_instance in all_addon_instances:
+            if addon_instance["id"] in resource_ids:
+                result.append(addon_instance)
+        return result
+
+    def _convert_to_dict(self, obj):
+        """Recursively convert SDK objects to dictionaries for JSON serialization"""
+        if obj is None:
+            return None
+        elif hasattr(obj, 'to_dict'):
+            # SDK object with to_dict method
+            try:
+                dict_obj = obj.to_dict()
+                return self._convert_to_dict(dict_obj)
+            except Exception:
+                return str(obj)
+        elif isinstance(obj, dict):
+            # Dictionary - recursively convert values
+            return {key: self._convert_to_dict(value) for key, value in obj.items()}
+        elif isinstance(obj, (list, tuple)):
+            # List or tuple - recursively convert elements
+            return [self._convert_to_dict(item) for item in obj]
+        elif hasattr(obj, '__dict__'):
+            # Object with attributes - convert to dict
+            try:
+                return {key: self._convert_to_dict(value) for key, value in obj.__dict__.items()}
+            except Exception:
+                return str(obj)
+        else:
+            # Basic types (str, int, float, bool) or convert to string
+            if isinstance(obj, (str, int, float, bool, type(None))):
+                return obj
+            else:
+                # For other types like datetime, convert to string
+                return str(obj)
+
+    def augment(self, clusters):
+        """Get addon instances for all clusters"""
+        client = self.get_client()
+
+        # Get addon instances for each cluster
+        result = []
+        for cluster in clusters:
+            cluster_id = cluster['metadata']['uid']
+            try:
+                # Create addon instance request object
+                request = ListAddonInstancesRequest()
+                request.cluster_id = cluster_id
+                response = client.list_addon_instances(request)
+                addon_instances = response.items if response.items else []
+                for addon_instance in addon_instances:
+                    # Convert to dictionary format recursively
+                    addon_instance_dict = self._convert_to_dict(addon_instance)
+                    
+                    # Ensure we have at least basic structure
+                    if not isinstance(addon_instance_dict, dict):
+                        addon_instance_dict = {}
+                    
+                    # Add cluster information to addon instance resource
+                    addon_instance_dict['clusterId'] = cluster_id
+                    addon_instance_dict['clusterName'] = cluster['metadata']['name']
+                    result.append(addon_instance_dict)
+            except Exception as e:
+                log.warning(
+                    f"Failed to get addon instances for cluster {cluster_id}: {e}")
+
+        return result
 
 
 @CceAddonInstance.action_registry.register("delete")
@@ -1059,6 +1130,7 @@ class DeleteCceAddonInstance(HuaweiCloudBaseAction):
         """Perform delete operation on a single addon instance"""
         addon_id = resource.get('metadata', {}).get('uid')
         addon_name = resource.get('metadata', {}).get('name', 'Unknown')
+        cluster_id = resource.get('clusterId')
 
         if not addon_id:
             log.error(
@@ -1070,6 +1142,9 @@ class DeleteCceAddonInstance(HuaweiCloudBaseAction):
         try:
             request = DeleteAddonInstanceRequest()
             request.id = addon_id
+            # Set cluster_id if available (optional parameter for delete operation)
+            if cluster_id:
+                request.cluster_id = cluster_id
 
             response = client.delete_addon_instance(request)
             log.info(
