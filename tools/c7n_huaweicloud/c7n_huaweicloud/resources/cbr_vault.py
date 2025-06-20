@@ -239,8 +239,11 @@ class CbrVaultEnableWorm(HuaweiCloudBaseAction):
             response = client.update_vault(request)
         except exceptions.ClientRequestException as e:
             log.error(
-                "enable worm for vault:%s failed, status code:%s, request id:%s, error code：%s, error msg:%s" %
-                (resource['id'], e.status_code, e.request_id, e.error_code, e.error_msg))
+                "enable worm for vault:{} failed, status code:{}, request id:{}, "
+                "error code:{}, error msg:{}".format(
+                    resource['id'], e.status_code, e.request_id, e.error_code, e.error_msg
+                )
+            )
             raise
         return response
 
