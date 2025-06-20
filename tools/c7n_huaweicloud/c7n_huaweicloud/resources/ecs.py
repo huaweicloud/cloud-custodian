@@ -1572,6 +1572,6 @@ class InstanceMetadataOptionsVersion(Filter):
                 resp = ecs_client.show_server_metadata_options(req)
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-                return
+                continue
             results.setdefault(r["id"], resp)
         return results
