@@ -191,8 +191,8 @@ class HibernateCceCluster(HuaweiCloudBaseAction):
 
 
 @CceCluster.action_registry.register("awake")
-class AwakenCceCluster(HuaweiCloudBaseAction):
-    """Awaken CCE Cluster
+class AwakeCceCluster(HuaweiCloudBaseAction):
+    """Awake CCE Cluster
 
     Restart hibernated CCE cluster to resume normal operation.
 
