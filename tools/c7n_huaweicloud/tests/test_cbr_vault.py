@@ -110,7 +110,6 @@ class CbrVaultTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 2)
 
-
     def test_filter_vault_without_worm(self):
         factory = self.replay_flight_data('cbr_vault_filter_without_worm')
         p = self.load_policy(
