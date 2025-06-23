@@ -1428,7 +1428,7 @@ def _pagination_limit_marker(client, enum_op, path, request):
     resources = []
     while True:
         request.limit = request.limit or limit
-        request.marker = request.marker or marker
+        request.marker = marker
         response = _invoke_client_enum(client, enum_op, request)
         res = jmespath.search(
             path,
@@ -1445,6 +1445,6 @@ def _pagination_limit_marker(client, enum_op, path, request):
         data_json = json.loads(str(response))
         if "next_marker" not in data_json or not data_json["next_marker"]:
             return resources
-        marker = response["next_marker"]
+        marker = data_json["next_marker"]
 
     return resources
