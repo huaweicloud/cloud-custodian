@@ -3,6 +3,7 @@
 import logging
 import traceback
 import jmespath
+import json
 
 from urllib.parse import quote_plus
 from retrying import retry
@@ -1440,7 +1441,9 @@ def _pagination_limit_marker(client, enum_op, path, request):
         )
 
         resources.extend(res)
-        if "next_marker" not in response or not response["next_marker"]:
+
+        data_json = json.loads(str(response))
+        if "next_marker" not in data_json or not data_json["next_marker"]:
             return resources
         marker = response["next_marker"]
 
