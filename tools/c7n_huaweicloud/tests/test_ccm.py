@@ -392,7 +392,7 @@ class ReusableFeaturesTest(BaseTest):
         factory = self.replay_flight_data("ccm_ca_filter_value")
         target_id = "a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe"
 
-       # 使用较宽松的过滤器
+        # 使用较宽松的过滤器
         p = self.load_policy(
             {
                 "name": "ccm-filter-value-match",
