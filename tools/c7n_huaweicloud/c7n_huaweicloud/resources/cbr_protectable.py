@@ -162,7 +162,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
     def create_new_vault(self, resources, policy_id, vault_name, vault_billing):
         client = self.manager.get_client()
         if (policy_id is None or policy_id == '' or
-                vault_name is None or vault_name == '' or vault_billing is None or vault_billing == ''):
+                vault_name is None or vault_name == '' or
+                vault_billing is None or vault_billing == ''):
             error_msg = "param error, policy_id:{}, vault_name:{}, vault_billing:{}".format(
                 policy_id, vault_name, vault_billing
             )
