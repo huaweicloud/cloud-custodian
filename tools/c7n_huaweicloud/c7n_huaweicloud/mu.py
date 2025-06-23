@@ -37,6 +37,11 @@ from huaweicloudsdkfunctiongraph.v2 import (
     FuncAsyncDestinationConfig,
     FuncDestinationConfig,
     DeleteFunctionAsyncInvokeConfigRequest,
+    ListFunctionTagsRequest,
+    DeleteTagsRequest,
+    UpdateFunctionTagsRequestBody,
+    KvItem,
+    CreateTagsRequest,
 )
 from huaweicloudsdkeg.v1 import (
     ListChannelsRequest,
@@ -325,7 +330,8 @@ class FunctionGraphManager:
 
     def _create_or_update(self, func, role=None):
         role = func.xrole or role
-        assert role, "FunctionGraph function xrole must be specified"
+        if not role:
+            raise PolicyExecutionError("FunctionGraph function xrole must be specified")
         archive = func.get_archive()
         existing = self.show_function_config(func.func_name, is_public=True)
 
@@ -356,6 +362,8 @@ class FunctionGraphManager:
 
         if result:
             self.process_async_invoke_config(func, result.func_urn)
+            if func.func_tags:
+                self.process_function_tags(func.func_tags, result.func_urn)
         else:
             raise PolicyExecutionError("Create or update failed.")
 
@@ -373,8 +381,9 @@ class FunctionGraphManager:
         if old_config.get('user_data', ""):
             old_user_data = json.loads(old_config['user_data'])
         for param in params:
-            # 跳过异步配置、环境变量、vpc配置、网络控制配置
-            if param in ["async_invoke_config", "user_data", "func_vpc", "network_controller"]:
+            # 跳过异步配置、环境变量、vpc配置、网络控制配置、func_tags
+            if param in ["async_invoke_config", "user_data", "func_vpc", "network_controller",
+                         "func_tags"]:
                 continue
             if params[param] != old_config.get(param):
                 need_update_params[param] = params[param]
@@ -386,7 +395,7 @@ class FunctionGraphManager:
         if (old_config['func_vpc'] is None) or (params['func_vpc'] is None):
             need_update_params['func_vpc'] = params['func_vpc']
         else:
-            vpc_fields = ['vpc_id', 'subnet_id', 'vpc_name', 'subnet_name', 'is_safety']
+            vpc_fields = ['vpc_id', 'subnet_id', 'is_safety']
             for field in vpc_fields:
                 if old_config['func_vpc'][field] != params['func_vpc'][field]:
                     need_update_params['func_vpc'] = params['func_vpc']
@@ -471,6 +480,82 @@ class FunctionGraphManager:
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
                 return
+
+    def process_function_tags(self, func_tags, func_urn):
+        new_tags = func_tags
+        new_tags_map = {}
+        for tag in new_tags:
+            new_tags_map[tag['key']] = tag['value']
+        list_function_tags_request = ListFunctionTagsRequest(
+            resource_type='functions',
+            resource_id=func_urn
+        )
+        try:
+            old_tags = self.client.list_function_tags(list_function_tags_request).tags
+        except exceptions.ClientRequestException as e:
+            log.error(f'List function tags failed, request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            return
+        need_delete_tags = []
+        if old_tags is None or len(old_tags) == 0:
+            pass
+        else:
+            for tag in old_tags:
+                if tag.key in new_tags_map.keys() and tag.value == new_tags_map[tag.key]:
+                    # tag已存在时跳过
+                    pass
+                else:
+                    need_delete_tags.append(tag)
+
+        if need_delete_tags:
+            delete_tags_request = DeleteTagsRequest(
+                resource_type='functions',
+                resource_id=func_urn,
+            )
+            delete_tags_request.body = UpdateFunctionTagsRequestBody(
+                action='delete',
+                tags=need_delete_tags,
+            )
+            try:
+                log.warning(f'Delete function tags{need_delete_tags}...')
+                _ = self.client.delete_tags(delete_tags_request)
+            except exceptions.ClientRequestException as e:
+                log.error(f'Delete function tags failed, request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
+                return
+
+        create_tags = []
+        for key, value in new_tags_map.items():
+            create_tags.append(KvItem(
+                key=key,
+                value=value
+            ))
+
+        if create_tags == old_tags:
+            # tags无需更新
+            return
+
+        create_tags_request = CreateTagsRequest(
+            resource_type='functions',
+            resource_id=func_urn,
+        )
+        create_tags_request.body = UpdateFunctionTagsRequestBody(
+            action='create',
+            tags=create_tags,
+        )
+        try:
+            log.warning(f'Create function tags{create_tags}...')
+            _ = self.client.create_tags(create_tags_request)
+        except exceptions.ClientRequestException as e:
+            log.error(f'Create function tags failed, request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            return
 
     @staticmethod
     def calculate_sha512(archive, buffer_size=65536) -> str:
@@ -587,6 +672,11 @@ class AbstractFunctionGraph:
     def code_encrypt_kms_key_id(self):
         """KMS key id for encrypt function code"""
 
+    @property
+    @abc.abstractmethod
+    def func_tags(self):
+        """Function tags"""
+
     @abc.abstractmethod
     def get_events(self, session_factory):
         """ """
@@ -612,6 +702,7 @@ class AbstractFunctionGraph:
             'async_invoke_config': self.async_invoke_config,
             'user_data_encrypt_kms_key_id': self.user_data_encrypt_kms_key_id,
             'code_encrypt_kms_key_id': self.code_encrypt_kms_key_id,
+            'func_tags': self.func_tags,
         }
         if conf["func_vpc"]:
             conf["network_controller"] = {
@@ -701,6 +792,10 @@ class FunctionGraph(AbstractFunctionGraph):
     def code_encrypt_kms_key_id(self):
         return self.func_data.get('code_encrypt_kms_key_id', "")
 
+    @property
+    def func_tags(self):
+        return self.func_data.get('func_tags', None)
+
     def get_events(self, session_factory):
         return self.func_data.get('events', ())
 
@@ -764,12 +859,16 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
         is_safety_support_region = ["sa-brazil-1"]
         func_vpc = self.policy.data['mode'].get('func_vpc')
         if func_vpc:
-            vpc_id, subnet_id = self.get_vpc_and_subnet_id_by_name(
-                vpc_name=func_vpc["vpc_name"],
-                subnet_name=func_vpc["subnet_name"],
-            )
-            func_vpc["vpc_id"] = vpc_id
-            func_vpc["subnet_id"] = subnet_id
+            if func_vpc.get('vpc_id') and func_vpc.get('subnet_id'):
+                pass
+            else:
+                vpc_id, subnet_id = self.get_vpc_and_subnet_id_by_name(
+                    vpc_name=func_vpc["vpc_name"],
+                    subnet_name=func_vpc["subnet_name"],
+                    cidr=func_vpc["cidr"],
+                )
+                func_vpc["vpc_id"] = vpc_id
+                func_vpc["subnet_id"] = subnet_id
             # 设置安全访问默认值，函数服务部分只支持部分局点开启安全访问
             if not func_vpc.get('is_safety'):
                 func_vpc["is_safety"] = self.session.region in is_safety_support_region
@@ -817,6 +916,10 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
     def code_encrypt_kms_key_id(self):
         return self.policy.data['mode'].get('code_encrypt_kms_key_id', None)
 
+    @property
+    def func_tags(self):
+        return self.policy.data['mode'].get('func_tags', None)
+
     def get_events(self, session_factory):
         events = []
         if self.policy.data['mode']['type'] == 'cloudtrace':
@@ -829,7 +932,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
                     self.policy.data['mode'], session_factory))
         return events
 
-    def get_vpc_and_subnet_id_by_name(self, vpc_name, subnet_name):
+    def get_vpc_and_subnet_id_by_name(self, vpc_name, subnet_name, cidr):
         vpc_client_v3 = self.session.client('vpc')
         get_vpcs_request = ListVpcsRequest(
             name=[vpc_name],
@@ -863,7 +966,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
         subnet_id = ""
         for subnet in subnets:
-            if subnet.name == subnet_name:
+            if subnet.name == subnet_name and subnet.cidr == cidr:
                 subnet_id = subnet.id
                 break
         if subnet_id == "":

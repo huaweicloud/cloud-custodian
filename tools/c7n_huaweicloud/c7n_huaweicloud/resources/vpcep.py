@@ -35,7 +35,13 @@ class VpcEndpoint(QueryResourceManager):
         filter_name = 'endpoint_service_name'
         filter_type = 'scalar'
         taggable = True
-        tag_resource_type = 'vpcep-ep'
+        tag_resource_type = 'endpoint'
+
+    def augment(self, resources):
+        if not resources:
+            # Return a fake resource
+            return [{"fake-resource": True}]
+        return resources
 
 
 @VpcEndpoint.filter_registry.register('by-service-and-vpc-check')

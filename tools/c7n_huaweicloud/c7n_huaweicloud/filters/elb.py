@@ -5,7 +5,8 @@ import logging
 
 from dateutil.parser import parse
 
-from huaweicloudsdkelb.v3 import ListAllMembersRequest
+from huaweicloudsdkelb.v3 import ListAllMembersRequest, ListL7PoliciesRequest, ShowListenerRequest
+
 
 from c7n.filters import ValueFilter, AgeFilter, OPERATORS, Filter
 from huaweicloudsdkcore.exceptions import exceptions
@@ -25,97 +26,108 @@ class LoadbalancerBackendServerCountFilter(Filter):
     .. code-block:: yaml
 
         policies:
-          - name: delete-no-backend-loadbalancer
+          - name: check-no-backend-loadbalancer
             resource: huaweicloud.elb-loadbalancer
             filters:
               - type: backend-server-count
                 count: 0
                 op: le
-            actions:
-              - type: delete
     """
-    schema = type_schema('backend-server-count',
-                         op={'enum': list(OPERATORS.keys())},
-                         count={'type': 'integer', 'minimum': 0})
+
+    schema = type_schema(
+        "backend-server-count",
+        op={"enum": list(OPERATORS.keys()), "default": "gte"},
+        count={"type": "integer", "minimum": 0, "default": 0},
+    )
 
     def __call__(self, resource):
-        count = self.data.get('count', 0)
-        op_name = self.data.get('op', 'gte')
+        count = self.data.get("count")
+        op_name = self.data.get("op")
         op = OPERATORS.get(op_name)
 
         client = self.manager.get_client()
         backend_count = 0
-        request = ListAllMembersRequest(loadbalancer_id=[resource["id"]])
+        request = ListAllMembersRequest(
+            loadbalancer_id=[resource["id"]],
+            enterprise_project_id=["all_granted_eps"],
+        )
         members_response = client.list_all_members(request)
-        if members_response.members:
-            backend_count = len(members_response.members)
+        check_response(members_response)
+        backend_count = len(members_response.members)
         return op(backend_count, count)
 
 
 class LoadbalancerPublicipCountFilter(Filter):
-    """Allows filtering on ELB public IP counts.
+    """Allows filtering on ELB public IP counts. Includes EIP, IPv6 bandwidth, and global EIP.
 
     :example:
 
     .. code-block:: yaml
         policies:
-          - name: delete-loadbalancer-has-eip
+          - name: check-loadbalancer-has-eip
             resource: huaweicloud.elb-loadbalancer
             filters:
               - type: publicip-count
                 count: 0
                 op: gt
-            actions:
-              - type: delete
     """
-    schema = type_schema('publicip-count',
-                         op={'enum': list(OPERATORS.keys())},
-                         count={'type': 'integer', 'minimum': 0})
+
+    schema = type_schema(
+        "publicip-count",
+        op={"enum": list(OPERATORS.keys()), "default": "gte"},
+        count={"type": "integer", "minimum": 0, "default": 0},
+    )
 
     def __call__(self, resource):
-        count = self.data.get('count', 0)
-        op_name = self.data.get('op', 'gte')
+        count = self.data.get("count")
+        op_name = self.data.get("op")
         op = OPERATORS.get(op_name)
 
-        eip_count = len(resource['eips']) if resource['eips'] else 0
-        ipv6bandwidth_count = len(resource['ipv6_bandwidth']) \
-            if 'ipv6_bandwidth' in resource and resource['ipv6_bandwidth'] else 0
-        geip_count = len(resource['global_eips']) \
-            if 'global_eips' in resource and resource['global_eips'] else 0
+        eip_count = len(resource["eips"]) if resource["eips"] else 0
+        ipv6bandwidth_count = (
+            len(resource["ipv6_bandwidth"])
+            if "ipv6_bandwidth" in resource and resource["ipv6_bandwidth"]
+            else 0
+        )
+        geip_count = (
+            len(resource["global_eips"])
+            if "global_eips" in resource and resource["global_eips"]
+            else 0
+        )
 
         return op(eip_count + ipv6bandwidth_count + geip_count, count)
 
 
 class LoadbalancerIsLoggingFilter(Filter):
-    """Check if logging enable on ELB.
+    """Allows filtering on checking if logging is enabled on ELB.
 
     :example:
 
     .. code-block:: yaml
 
         policies:
-          - name: enable-logging-for-loadbalancer
+          - name: is-logging-on-loadbalancer
             filters:
-              - not:
-                - type: is-logging
-            actions:
-              - type: enable-logging
-                log_group_id: "c5c89263-cfce-45cf-ac08-78cf537ba6c5"
-                log_topic_id: "328abfed-ab1a-4484-b2c1-031c0d06ea66"
+              - type: is-logging
     """
-    schema = type_schema('is-logging')
+
+    schema = type_schema("is-logging")
 
     def __call__(self, resource):
-        log_group_id = resource['log_group_id'] if 'log_group_id' in resource else None
-        log_topic_id = resource['log_topic_id'] if 'log_topic_id' in resource else None
-        if (log_group_id is None or log_group_id.strip() == ""
-                or log_topic_id is None or log_topic_id.strip() == ""):
+        log_group_id = resource["log_group_id"] if "log_group_id" in resource else None
+        log_topic_id = resource["log_topic_id"] if "log_topic_id" in resource else None
+        if (
+            log_group_id is None
+            or log_group_id.strip() == ""
+            or log_topic_id is None
+            or log_topic_id.strip() == ""
+        ):
             return False
         return True
 
 
-class LoadbalancerIsNotLoggingFilter(Filter):
-    """Check if logging not enable on ELB.
+class LoadbalancerIsNotLoggingFilter(LoadbalancerIsLoggingFilter):
+    """Allows filtering on checking if logging is not enabled on ELB.
 
     :example:
 
@@ -125,40 +137,34 @@ class LoadbalancerIsNotLoggingFilter(Filter):
           - name: enable-logging-for-loadbalancer
             filters:
               - type: is-not-logging
-            actions:
-              - type: enable-logging
-                log_group_id: "c5c89263-cfce-45cf-ac08-78cf537ba6c5"
-                log_topic_id: "328abfed-ab1a-4484-b2c1-031c0d06ea66"
     """
-    schema = type_schema('is-not-logging')
+
+    schema = type_schema("is-not-logging")
 
     def __call__(self, resource):
-        log_group_id = resource['log_group_id'] if 'log_group_id' in resource else None
-        log_topic_id = resource['log_topic_id'] if 'log_topic_id' in resource else None
-        if (log_group_id is None or log_group_id.strip() == ""
-                or log_topic_id is None or log_topic_id.strip() == ""):
-            return True
-        return False
+        return not super().__call__(resource)
 
 
 class LoadbalancerIsLTSLogTransferFilter(Filter):
-    """Check if logging transfer on ELB.
+    """
+    Filters ELB resources to check if their logging is transferred to OBS.
+
+    This filter returns ELB resources that have logging enabled and whose logging is configured
+    for transfer to OBS.
 
     :example:
 
     .. code-block:: yaml
 
         policies:
-          - name: elb-policy-4
+          - name: filter-elb-has-log-transfer
             resource: huaweicloud.elb-loadbalancer
             filters:
-              - type: attributes
-                key: id
-                value: "147476c5-1fa5-4743-b4e0-d52ae39e1142"
               - type: is-logging
               - type: is-lts-log-transfer
     """
-    schema = type_schema('is-lts-log-transfer', rinherit=LtsTransferLogGroupStreamFilter.schema)
+
+    schema = type_schema("is-lts-log-transfer", rinherit=LtsTransferLogGroupStreamFilter.schema)
 
     def process(self, resources, event=None):
         if len(resources) == 0:
@@ -166,69 +172,61 @@ class LoadbalancerIsLTSLogTransferFilter(Filter):
 
         transfer_log_topic_id_set = None
         filter_resources = []
-        i = 0
-        while i < len(resources):
-            resource = resources[i]
-            i += 1
-            log_group_id = resource['log_group_id'] if 'log_group_id' in resource else None
-            log_topic_id = resource['log_topic_id'] if 'log_topic_id' in resource else None
-            if (log_group_id is None or log_group_id.strip() == ""
-                    or log_topic_id is None or log_topic_id.strip() == ""):
+        for resource in resources:
+            log_group_id = resource["log_group_id"] if "log_group_id" in resource else None
+            log_topic_id = resource["log_topic_id"] if "log_topic_id" in resource else None
+            if (
+                log_group_id is None
+                or log_group_id.strip() == ""
+                or log_topic_id is None
+                or log_topic_id.strip() == ""
+            ):
                 continue
             if transfer_log_topic_id_set is None:
                 transfer_log_topic_id_set = self.get_all_transfer_log_topic_ids()
             if log_topic_id in transfer_log_topic_id_set:
                 filter_resources.append(resource)
-                continue
 
         return filter_resources
 
     def get_all_transfer_log_topic_ids(self):
         # get all log transfer
-        lts_client = local_session(self.manager.session_factory).client('lts-transfer')
+        lts_client = local_session(self.manager.session_factory).client("lts-transfer")
         lts_request = ListTransfersRequest()
-        lts_request.limit = limit = 100
-        offset = 0
+
+        lts_response = lts_client.list_transfers(lts_request)
+        check_response(lts_response, service_name="LTS")
+
+        log_transfers = lts_response.log_transfers
         log_transfer_stream_ids = []
-        while 1:
-            lts_request.offset = offset
-            lts_response = lts_client.list_transfers(lts_request)
-            if lts_response.status_code != 200:
-                log.error(lts_response.status_code, lts_response.request_id,
-                          lts_response.error_code, lts_response.error_msg)
-                raise exceptions.ClientRequestException()
+        for log_transfer in log_transfers:
+            for log_stream in log_transfer.log_streams:
+                log_transfer_stream_ids.append(log_stream.log_stream_id)
 
-            log_transfers = lts_response.log_transfers
-            for log_transfer in log_transfers:
-                for log_stream in log_transfer.log_streams:
-                    log_transfer_stream_ids.append(log_stream.log_stream_id)
-
-            if len(lts_response.log_transfers) == limit:
-                offset += limit
-            else:
-                break
         return log_transfer_stream_ids
 
 
 class LoadbalancerIsNotLTSLogTransferFilter(LoadbalancerIsLTSLogTransferFilter):
-    """Check if logging transfer on ELB.
+    """Filters ELB resources to check if their logging is not transferred to OBS.
+
+    This filter returns ELB resources that have logging enabled and whose logging is not configured
+    for transfer to OBS.
 
     :example:
 
     .. code-block:: yaml
 
         policies:
-          - name: elb-policy-4
+          - name: filter-elb-not-lts-log-transfer
             resource: huaweicloud.elb-loadbalancer
             filters:
-              - type: attributes
-                key: id
-                value: "147476c5-1fa5-4743-b4e0-d52ae39e1142"
               - type: is-logging
               - type: is-not-lts-log-transfer
     """
-    schema = type_schema('is-not-lts-log-transfer',
-                         rinherit=LoadbalancerIsLTSLogTransferFilter.schema)
+
+    schema = type_schema(
+        "is-not-lts-log-transfer", rinherit=LoadbalancerIsLTSLogTransferFilter.schema
+    )
 
     def process(self, resources, event=None):
         transfer_resources = super().process(resources, event)
@@ -236,23 +234,100 @@ class LoadbalancerIsNotLTSLogTransferFilter(LoadbalancerIsLTSLogTransferFilter):
         return diff
 
 
+class ListenerRedirectListenerFilter(Filter):
+    """Allows filtering on checking if https listener has been redirected to https listener.
+    Note: This filter only works for HTTP listeners.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: has-redirect-to-https-listener
+            resource: huaweicloud.elb-listener
+            filters:
+              - type: attributes
+                key: protocol
+                value: HTTP
+              - not:
+                - type: is-redirect-to-https-listener
+    """
+
+    schema = type_schema(
+        "is-redirect-to-https-listener",
+        id={"type": "string"},
+        name={"type": "string"},
+        port={"type": "number", "minimum": 0},
+    )
+
+    def __call__(self, resource):
+        if resource["protocol"] != "HTTP":
+            # This filter only applies to HTTP listeners
+            return False
+        id = self.data.get("id", None)
+        name = self.data.get("name", None)
+        port = self.data.get("port", None)
+        listener_id = resource["id"]
+        # Get the policy information for the listener
+        client = self.manager.get_client()
+        request = ListL7PoliciesRequest(
+            enterprise_project_id=["all_granted_eps"],
+            listener_id=[listener_id],
+            action=["REDIRECT_TO_LISTENER"],
+            redirect_listener_id=[id] if id else None,
+        )
+        response = client.list_l7_policies(request)
+        check_response(response)
+
+        for policy in response.l7policies:
+            if policy.redirect_listener_id is None:
+                continue
+            # Get the listener information for the redirect listener
+            request = ShowListenerRequest(listener_id=policy.redirect_listener_id)
+            response = client.show_listener(request)
+            check_response(response)
+
+            listener = response.listener
+            if (
+                (listener.protocol != 'HTTPS')
+                or (name and listener.name != name)
+                or (port and listener.protocol_port != port)
+            ):
+                continue
+            return True
+        return False
+
+
 class ELBAttributesFilter(ValueFilter):
-    """Filter by ELB resources attributes
+    """
+    Allows filtering on checking by ELB resources attributes.
+    Supports both `huaweicloud.elb-loadbalancer` and `huaweicloud.elb-listener` resources.
+    Note: The set of available attributes may differ between
+    `huaweicloud.elb-loadbalancer` and `huaweicloud.elb-listener` resources;
+    ensure you reference attributes supported by the specific resource type you are targeting.
+
+    :example:
+    'description', 'status', or nested keys like 'autoscaling.enable' or 'tags.key'.
+
+    To filter on nested attributes, use dot notation in the 'key' field
+    (e.g., 'autoscaling.enable').
+    The filter supports all standard value filter operations.
 
     :example:
 
     .. code-block:: yaml
         policies:
           - name: list-autoscaling-loadbalancer
-            resource: huaweicloud.elb-loadbalancer or huaweicloud.elb-listener
+            resource: huaweicloud.elb-loadbalancer
             filters:
               - type: attributes
                 key: autoscaling.enable
                 value: true
 
     """
+
     annotate = False  # no annotation from value filter
-    schema = type_schema('attributes', rinherit=ValueFilter.schema)
+    schema = type_schema("attributes", rinherit=ValueFilter.schema)
     schema_alias = False
 
     def process(self, resources, event=None):
@@ -263,7 +338,10 @@ class ELBAttributesFilter(ValueFilter):
 
 
 class ELBAgeFilter(AgeFilter):
-    """Filter elb resources by age.
+    """
+    Allows filtering ELB resources by age.
+
+    Supports both `huaweicloud.elb-loadbalancer` and `huaweicloud.elb-listener` resources.
 
     :example:
 
@@ -279,12 +357,34 @@ class ELBAgeFilter(AgeFilter):
     """
 
     date_attribute = "created_at"
-    schema = type_schema('age',
-                         op={'$ref': '#/definitions/filters_common/comparison_operators'},
-                         days={'type': 'number'},
-                         hours={'type': 'number'},
-                         minutes={'type': 'number'})
+    schema = type_schema(
+        "age",
+        op={"$ref": "#/definitions/filters_common/comparison_operators"},
+        days={"type": "number"},
+        hours={"type": "number"},
+        minutes={"type": "number"},
+    )
 
-    def get_resource_date(self, resource):
-        return parse(resource.get(
-            self.date_attribute, "2000-01-01T01:01:01.000Z"))
+    def get_resource_date(self, i):
+        return parse(i.get(self.date_attribute, "2000-01-01T01:01:01.000Z"))
+
+
+def check_response(response, service_name="ELB", params=None):
+    if response is None:
+        log.error(f"Failed to get response from {service_name} service.")
+        if params:
+            log.error(f"Parameters: {params}")
+        raise exceptions.SdkException(
+            f"Failed to get response from {service_name} service."
+        )
+    if response.status_code != 200 and response.status_code != 201 and response.status_code != 204:
+        log.error(
+            f"Response failed from {service_name} service: {response.status_code}, "
+            f"{response.request_id}, {response.error_code}, {response.error_msg}"
+        )
+        if params:
+            log.error(f"Parameters: {params}")
+        raise exceptions.ServiceResponseException(
+            f"Get response from {service_name} service failed: {response.error_msg}. ",
+            response.error_code
+        )
