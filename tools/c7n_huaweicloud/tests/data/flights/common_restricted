@@ -1,0 +1,61 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - workspace.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250603T114345Z
+    method: GET
+    uri: https://workspace.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/desktops/detail?limit=100&offset=0
+  response:
+    body:
+      string: '{"desktops":[{"desktop_id":"test-desktop-id","computer_name":"test-desktop","status":"ACTIVE","login_status":"UNRE
+GISTER","user_name":"test-user","created":"2025-04-27T11:45:55Z","tags":[{"key":"k1","value":"testing"}],"security_group
+s":[{"id":"sg-12345678","name":"default"}],"product":{"product_id":"product-123","flavor_id":"flavor-123","type":"DEDICATED","cpu
+":"4","memory":"8GB"}},{"desktop_id":"test-desktop-id1","computer_name":"test-desktop1","status":"ACTIVE","login_status":"UNRE
+GISTER","user_name":"test-user","created":"2025-04-27T11:45:55Z","tags":[{"key":"k3","value":"testing"}],"security_group
+s":[{"id":"sg-12345678","name":"default"}],"product":{"product_id":"product-123","flavor_id":"flavor-123","type":"DEDICATED","cpu
+":"4","memory":"8GB"}}],"total_count":2}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Jun 2025 11:43:45 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=93278790e463c27b0a; path=/
+      - HWWAFSESTIME=1748951022290; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - acb384075524d564e751091999f116bb
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

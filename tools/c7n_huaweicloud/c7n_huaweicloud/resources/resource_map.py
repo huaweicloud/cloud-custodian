@@ -49,12 +49,13 @@ ResourceMap = {
     "huaweicloud.org-unit": "c7n_huaweicloud.resources.organizations.OrgUnit",
     "huaweicloud.ram-shared-principals": "c7n_huaweicloud.resources.ram.RAMSharedPrincipals",
     "huaweicloud.antiddos-eip": "c7n_huaweicloud.resources.antiddos.Eip",
-    "huaweicloud.kafka": "c7n_huaweicloud.resources.kafka.Kafka",
+    "huaweicloud.dms-kafka": "c7n_huaweicloud.resources.kafka.Kafka",
     "huaweicloud.apig-api": "c7n_huaweicloud.resources.apig.ApiResource",
     "huaweicloud.apig-stage": "c7n_huaweicloud.resources.apig.StageResource",
     "huaweicloud.apig-api-groups": "c7n_huaweicloud.resources.apig.ApiGroupResource",
-    "huaweicloud.reliability": "c7n_huaweicloud.resources.rocketmq.RocketMQ",
+    "huaweicloud.dms-rocketmq": "c7n_huaweicloud.resources.rocketmq.RocketMQ",
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
+    "huaweicloud.dc-vif": "c7n_huaweicloud.resources.dc.Vif",
     "huaweicloud.ccm-ssl-certificate": "c7n_huaweicloud.resources.scm.Scm",
     "huaweicloud.swr": "c7n_huaweicloud.resources.swr.Swr",
     "huaweicloud.swr-image": "c7n_huaweicloud.resources.swr.SwrImage",
@@ -71,4 +72,5 @@ ResourceMap = {
     "huaweicloud.cci_pod": "c7n_huaweicloud.resources.cci.CCIPod",
     "huaweicloud.cci_configmap": "c7n_huaweicloud.resources.cci.CCIConfigMap",
     "huaweicloud.cci_secret": "c7n_huaweicloud.resources.cci.CCISecret"
+    "huaweicloud.vpcep-ep": "c7n_huaweicloud.resources.vpcep.VpcEndpoint",
 }

@@ -1,0 +1,314 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - elb.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/listeners?enterprise_project_id=all_granted_eps&limit=100
+  response:
+    body:
+      string: '{ "request_id": "f5c5e4db55d2ec8c085f058e52f7d0ea", "listeners": [
+        { "name": "listener-56d5", "id": "3e5ed14e-ebd3-4097-9cc3-ffb0bc76c332", "description":
+        "", "protocol_port": 443, "protocol": "HTTPS", "default_tls_container_ref":
+        "32940486038346ae9fac576ffb80f6cf", "admin_state_up": true, "loadbalancers":
+        [ { "id": "a04b9375-b8eb-4da2-a91c-a2c7f947a7ae" } ], "client_ca_tls_container_ref":
+        null, "project_id": "04dd36f98a000fe22f9cc00bade6d0da", "sni_container_refs":
+        [ ], "sni_match_algo": "wildcard", "connection_limit": -1, "default_pool_id":
+        "e4e39cf7-3e1c-4c61-8ca8-4ca0ec69dedb", "tls_ciphers_policy": "tls-1-2", "security_policy_id":
+        null, "tags": [ ], "created_at": "2025-03-24T11:26:16Z", "updated_at": "2025-03-24T11:26:17Z",
+        "http2_enable": false, "enterprise_project_id": "0", "insert_headers": { "X-Forwarded-ELB-IP":
+        false, "X-Forwarded-Proto": true, "X-Forwarded-Host": true, "X-Forwarded-For-Port":
+        false, "X-Forwarded-Port": false, "X-Real-IP": true, "X-Forwarded-TLS-Certificate-ID":
+        false, "X-Forwarded-TLS-Protocol": false, "X-Forwarded-ELB-ID": false, "X-Forwarded-TLS-Cipher":
+        false }, "member_timeout": 60, "client_timeout": 60, "keepalive_timeout":
+        60, "ipgroup": null, "enable_member_retry": true, "transparent_client_ip_enable":
+        true, "cps": null, "connection": null, "protection_status": "nonProtection",
+        "protection_reason": "", "port_ranges": null, "gzip_enable": false, "proxy_protocol_enable":
+        false, "enhance_l7policy_enable": true, "quic_config": null, "ssl_early_data_enable":
+        false, "nat64_enable": false }, { "name": "listener-537c", "id": "f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3",
+        "description": "", "protocol_port": 443, "protocol": "HTTP", "default_tls_container_ref":
+        null, "admin_state_up": true, "loadbalancers": [ { "id": "47aaf70c-08d0-4d7a-a800-97e1e1766dbb"
+        } ], "client_ca_tls_container_ref": null, "project_id": "04dd36f98a000fe22f9cc00bade6d0da",
+        "sni_container_refs": [ ], "sni_match_algo": null, "connection_limit": -1,
+        "default_pool_id": "d59d25ff-43bf-48ec-acff-f13626fc7694", "tls_ciphers_policy":
+        null, "security_policy_id": null, "tags": [ ], "created_at": "2025-03-24T08:57:35Z",
+        "updated_at": "2025-03-24T08:57:36Z", "http2_enable": false, "enterprise_project_id":
+        "0", "insert_headers": { "X-Forwarded-ELB-IP": false, "X-Forwarded-Host":
+        true, "X-Forwarded-Proto": true, "X-Forwarded-For-Port": false, "X-Forwarded-Port":
+        false, "X-Real-IP": true, "X-Forwarded-TLS-Certificate-ID": false, "X-Forwarded-TLS-Protocol":
+        false, "X-Forwarded-ELB-ID": false, "X-Forwarded-TLS-Cipher": false }, "member_timeout":
+        null, "client_timeout": null, "keepalive_timeout": 10, "ipgroup": null, "enable_member_retry":
+        true, "transparent_client_ip_enable": true, "cps": null, "connection": null,
+        "protection_status": "nonProtection", "protection_reason": "", "port_ranges":
+        null, "gzip_enable": false, "proxy_protocol_enable": false, "enhance_l7policy_enable":
+        false, "quic_config": null, "ssl_early_data_enable": false, "nat64_enable":
+        false } ], "page_info": { "previous_marker": "3e5ed14e-ebd3-4097-9cc3-ffb0bc76c332",
+        "current_count": 2 }}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - f5c5e4db55d2ec8c085f058e52f7d0ea
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - elb.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/l7policies?action=REDIRECT_TO_LISTENER&enterprise_project_id=all_granted_eps&listener_id=f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3
+  response:
+    body:
+      string: '{ "request_id": "f5c5e4db55d2ec8c085f058e52f7d0ea", "page_info": {"current_count":
+        0}, "l7policies": []}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - f5c5e4db55d2ec8c085f058e52f7d0ea
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - elb.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: GET
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/listeners?enterprise_project_id=all_granted_eps&protocol=HTTPS
+  response:
+    body:
+      string: '{ "request_id": "f5c5e4db55d2ec8c085f058e52f7d0ea", "listeners": [
+        { "name": "listener-537c", "id": "f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3", "description":
+        "", "protocol_port": 443, "protocol": "HTTP", "default_tls_container_ref":
+        null, "admin_state_up": true, "loadbalancers": [ { "id": "47aaf70c-08d0-4d7a-a800-97e1e1766dbb"
+        } ], "client_ca_tls_container_ref": null, "project_id": "04dd36f98a000fe22f9cc00bade6d0da",
+        "sni_container_refs": [ ], "sni_match_algo": null, "connection_limit": -1,
+        "default_pool_id": "d59d25ff-43bf-48ec-acff-f13626fc7694", "tls_ciphers_policy":
+        null, "security_policy_id": null, "tags": [ ], "created_at": "2025-03-24T08:57:35Z",
+        "updated_at": "2025-03-24T08:57:36Z", "http2_enable": false, "enterprise_project_id":
+        "0", "insert_headers": { "X-Forwarded-ELB-IP": false, "X-Forwarded-Host":
+        true, "X-Forwarded-Proto": true, "X-Forwarded-For-Port": false, "X-Forwarded-Port":
+        false, "X-Real-IP": true, "X-Forwarded-TLS-Certificate-ID": false, "X-Forwarded-TLS-Protocol":
+        false, "X-Forwarded-ELB-ID": false, "X-Forwarded-TLS-Cipher": false }, "member_timeout":
+        null, "client_timeout": null, "keepalive_timeout": 10, "ipgroup": null, "enable_member_retry":
+        true, "transparent_client_ip_enable": true, "cps": null, "connection": null,
+        "protection_status": "nonProtection", "protection_reason": "", "port_ranges":
+        null, "gzip_enable": false, "proxy_protocol_enable": false, "enhance_l7policy_enable":
+        false, "quic_config": null, "ssl_early_data_enable": false, "nat64_enable":
+        false } ], "page_info": { "previous_marker": "3e5ed14e-ebd3-4097-9cc3-ffb0bc76c332",
+        "current_count": 2 }}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - f5c5e4db55d2ec8c085f058e52f7d0ea
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body:
+      string: '{"body": {"l7policy": {"action": "REDIRECT_TO_LISTENER", "listener_id":
+        "f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3", "redirect_listener_id": "3e5ed14e-ebd3-4097-9cc3-ffb0bc76c332"}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - elb.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250320T063810Z
+    method: POST
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/l7policies
+  response:
+    body:
+      string: '{"request_id": "f5c5e4db55d2ec8c085f058e52f7d0ea", "l7policy": {"action":
+        "REDIRECT_TO_LISTENER", "admin_state_up": true, "description": "", "id": "a0f6e88d-05d1-4cd0-b50b-9b1453629159",
+        "listener_id": "f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3", "name": "", "position":
+        100, "priority": 0, "project_id": "08a87329db00f2d12f45c00b382b4020", "provisioning_status":
+        "ACTIVE", "redirect_listener_id": "3e5ed14e-ebd3-4097-9cc3-ffb0bc76c332",
+        "rules": [], "redirect_pools_config": [], "created_at": "2025-06-14T10:41:49Z",
+        "updated_at": "2025-06-14T10:41:49Z", "enterprise_project_id": "0"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 20 Mar 2025 06:38:10 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - f5c5e4db55d2ec8c085f058e52f7d0ea
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - elb.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250617T095045Z
+    method: GET
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/elb/listeners?enterprise_project_id=all_granted_eps&protocol=HTTPS
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"9170f73c688b9e6c1a830ea53e8fde10"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Jun 2025 09:50:45 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 9170f73c688b9e6c1a830ea53e8fde10
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+version: 1
