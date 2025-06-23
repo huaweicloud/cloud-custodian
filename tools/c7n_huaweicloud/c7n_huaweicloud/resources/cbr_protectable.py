@@ -185,7 +185,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 protect_type=vault_billing['protect_type'],
                 size=vault_billing['size'],
                 charging_mode=vault_billing['charging_mode'],
-                is_multi_az = vault_billing['is_multi_az']
+                is_multi_az=vault_billing['is_multi_az']
             )
             vault_body = VaultCreate(
                 backup_policy_id=policy_id,
