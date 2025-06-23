@@ -85,11 +85,23 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
         # Whether to delete cluster-associated EVS disks
         delete_evs={"type": "boolean", "default": False},
         # Whether to delete cluster-associated ENI
-        delete_eni={"type": "boolean", "default": False},
+        delete_eni={"type": "boolean", "default": True},
         # Whether to delete cluster-associated network resources
-        delete_net={"type": "boolean", "default": False},
+        delete_net={"type": "boolean", "default": True},
         # Whether to delete cluster-associated OBS storage
-        delete_obs={"type": "boolean", "default": False}
+        delete_obs={"type": "boolean", "default": False},
+        # Whether to delete cluster-associated sfs turbo storage
+        delete_efs={"type": "boolean", "default": False},
+        # Whether to delete cluster-associated sfs storage
+        delete_sfs={"type": "boolean", "default": False},
+        # Whether to delete cluster-associated sfs3.0 storage
+        delete_sfs30={"type": "boolean", "default": False},
+        # Whether to delete cluster-associated lts resources
+        lts_reclaim_policy={"type": "string", "default": 'Delete_Master_Log_Stream'},
+        # Whether to delete cluster-associated evs resources
+        ondemand_node_policy={"type": "string", "default": 'delete'},
+        # Whether to delete cluster-associated evs resources
+        periodic_node_policy={"type": "string", "default": 'retain'},
     )
 
     permissions = ('cce:deleteCluster',)
@@ -112,10 +124,16 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
             request.cluster_id = cluster_id
 
             # Set delete options
+            request.delete_eni = self.data.get('delete_eni', True)
+            request.delete_net = self.data.get('delete_net', True)
+            request.delete_efs = self.data.get('delete_evs', False)
             request.delete_evs = self.data.get('delete_evs', False)
-            request.delete_eni = self.data.get('delete_eni', False)
-            request.delete_net = self.data.get('delete_net', False)
             request.delete_obs = self.data.get('delete_obs', False)
+            request.delete_sfs = self.data.get('delete_evs', False)
+            request.delete_sfs30 = self.data.get('delete_evs', False)
+            request.lts_reclaim_policy = self.data.get('lts_reclaim_policy', "Delete_Master_Log_Stream")
+            request.ondemand_node_policy = self.data.get('ondemand_node_policy', "delete")
+            request.periodic_node_policy = self.data.get('periodic_node_policy', "retain")
 
             # Execute delete operation
             response = client.delete_cluster(request)
