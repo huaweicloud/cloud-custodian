@@ -294,7 +294,7 @@ class SwrEeImage(QueryResourceManager):
         limit = 100
         client = self.get_client()
 
-        artifacts = _pagination_limit_offset(
+        artifacts = _pagination_limit_marker(
             client,
             "list_instance_all_artifacts",
             "artifacts",
@@ -1407,4 +1407,41 @@ def _pagination_limit_offset(client, enum_op, path, request):
             offset += limit
         else:
             return resources
+    return resources
+
+
+def _pagination_limit_marker(client, enum_op, path, request):
+    """Handle pagination for API requests with limit and marker.
+
+    Args:
+        client: API client instance
+        enum_op: API operation name
+        path: JMESPath expression to extract data
+        request: Request object with limit parameter
+
+    Returns:
+        List of resources from all pages
+    """
+    marker = 1
+    limit = 100
+    resources = []
+    while True:
+        request.limit = request.limit or limit
+        request.marker = request.marker or marker
+        response = _invoke_client_enum(client, enum_op, request)
+        res = jmespath.search(
+            path,
+            eval(
+                str(response)
+                .replace("null", "None")
+                .replace("false", "False")
+                .replace("true", "True")
+            ),
+        )
+
+        resources.extend(res)
+        if "next_marker" not in response or not response["next_marker"]:
+            return resources
+        marker = response["next_marker"]
+
     return resources
