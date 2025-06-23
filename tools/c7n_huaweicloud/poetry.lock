@@ -661,12 +661,12 @@ huaweicloudsdkcore = ">=3.1.153"
 
 [[package]]
 name = "huaweicloudsdkscm"
-version = "3.1.153"
+version = "3.1.152"
 description = "SCM"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkscm-3.1.153-py2.py3-none-any.whl", hash = "sha256:23e99fcb790793a705fa324bf797b837c61bfb63b0b6e3743c638fa99c8f830e"},
+    {file = "huaweicloudsdkscm-3.1.152-py2.py3-none-any.whl", hash = "sha256:23e99fcb790793a705fa324bf797b837c61bfb63b0b6e3743c638fa99c8f830e"},
 ]
 
 [package.dependencies]
