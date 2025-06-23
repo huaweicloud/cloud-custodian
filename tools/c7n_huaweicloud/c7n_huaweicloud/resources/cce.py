@@ -131,7 +131,8 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
             request.delete_obs = self.data.get('delete_obs', False)
             request.delete_sfs = self.data.get('delete_evs', False)
             request.delete_sfs30 = self.data.get('delete_evs', False)
-            request.lts_reclaim_policy = self.data.get('lts_reclaim_policy', "Delete_Master_Log_Stream")
+            request.lts_reclaim_policy = self.data.get('lts_reclaim_policy', 
+                                                       "Delete_Master_Log_Stream")
             request.ondemand_node_policy = self.data.get('ondemand_node_policy', "delete")
             request.periodic_node_policy = self.data.get('periodic_node_policy', "retain")
 
