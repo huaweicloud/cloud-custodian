@@ -151,7 +151,7 @@ class CcmCertificateAuthorityTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_certificate_authority_crl_bucket_filter", 
+        with self.myvcr.use_cassette("ccm_certificate_authority_crl_bucket_filter",
         record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -175,7 +175,7 @@ class CcmCertificateAuthorityTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_certificate_authority_crl_bucket_filter", 
+        with self.myvcr.use_cassette("ccm_certificate_authority_crl_bucket_filter",
         record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -214,7 +214,7 @@ class CcmCertificateAuthorityTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_certificate_authority_crl_bucket_filter", 
+        with self.myvcr.use_cassette("ccm_certificate_authority_crl_bucket_filter",
         record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 0)
@@ -236,7 +236,7 @@ class CcmCertificateAuthorityTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_certificate_authority_key_algorithm_filter", 
+        with self.myvcr.use_cassette("ccm_certificate_authority_key_algorithm_filter",
         record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -259,7 +259,7 @@ class CcmCertificateAuthorityTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_certificate_authority_signature_algorithm_filter", 
+        with self.myvcr.use_cassette("ccm_certificate_authority_signature_algorithm_filter",
         record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -326,7 +326,7 @@ class CcmPrivateCertificateTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_private_certificate_key_algorithm_filter", 
+        with self.myvcr.use_cassette("ccm_private_certificate_key_algorithm_filter",
         record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -349,7 +349,7 @@ class CcmPrivateCertificateTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_private_certificate_signature_algorithm_filter", 
+        with self.myvcr.use_cassette("ccm_private_certificate_signature_algorithm_filter",
         record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -373,7 +373,7 @@ class CcmPrivateCertificateTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_private_certificate_create_time_filter", 
+        with self.myvcr.use_cassette("ccm_private_certificate_create_time_filter",
         record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -405,7 +405,7 @@ class ReusableFeaturesTest(BaseTest):
         with self.myvcr.use_cassette("ccm_ca_filter_value", record_mode='none'):
             resources = p.run()
 
-       # 验证结果
+        # 验证结果
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['ca_id'], target_id)
 
