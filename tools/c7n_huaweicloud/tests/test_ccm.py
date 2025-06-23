@@ -1,8 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 from unittest.mock import patch
-import os
-
 from huaweicloud_common import BaseTest
 
 
@@ -153,7 +151,8 @@ class CcmCertificateAuthorityTest(BaseTest):
             },
             session_factory=factory,
         )
-        with self.myvcr.use_cassette("ccm_certificate_authority_crl_bucket_filter", record_mode='none'):
+        with self.myvcr.use_cassette("ccm_certificate_authority_crl_bucket_filter", 
+        record_mode='none'):
             resources = p.run()
         self.assertEqual(len(resources), 1)
 
