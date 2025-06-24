@@ -140,7 +140,6 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                     f"RequestId: {e.request_id},"
                     f" Reason: {e.error_msg}"
                 )
-                raise
             vault_num += 1
         vault_billing = {}
         if len(vaults) > 0:
