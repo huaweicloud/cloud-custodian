@@ -212,7 +212,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         """根据输入的前缀，生成下一个存储库的名称"""
         vault_prefix = self.data.get('name')
         if vault_prefix is None or vault_prefix == '':
-            vault_prefix = 'new_vault'
+            vault_prefix = 'vault'
         new_index = 0
         for vault in vaults:
             if str(vault['name']).startswith(vault_prefix):
