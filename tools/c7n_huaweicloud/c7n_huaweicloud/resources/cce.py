@@ -877,7 +877,6 @@ class CceNode(QueryResourceManager):
         enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
-        tag_resource_type = "cce"
 
     def get_resources(self, resource_ids):
         # Get all nodes
