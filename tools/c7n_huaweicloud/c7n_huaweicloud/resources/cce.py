@@ -53,7 +53,7 @@ class CceCluster(QueryResourceManager):
         id = "metadata.uid"
         name = "metadata.name"
         taggable = True
-        tag_resource_type = "cce"
+        tag_resource_type = "cce-cluster"
 
 
 @CceCluster.action_registry.register("delete")
@@ -465,7 +465,6 @@ class CceNodePool(QueryResourceManager):
         enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
-        tag_resource_type = "cce"
 
     def get_resources(self, resource_ids):
         # Get all node pools
