@@ -3,6 +3,7 @@
 
 import logging
 import json
+import netaddr
 import os
 
 from huaweicloudsdkcore.exceptions import exceptions
@@ -208,6 +209,56 @@ class SecurityGroupUnAttached(Filter):
         unattached = [r for r in resources if r['id'] not in port_sgs and r['name'] != 'default']
 
         return unattached
+
+
+@SecurityGroup.filter_registry.register('without_specific_tags')
+class SecurityGroupWithoutSpecificTags(Filter):
+    """Filter vpc security groups unassociated with specific tags.
+
+    If `associate_type` is `any`, it means that security groups that
+    do not have any of the tags in `keys` are filtered out.
+
+    And `associate_type` is `all`, it means that security groups that
+    do not have all of the tags in `keys` are filtered out.
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: security-groups-without-specific-tags
+                resource: huaweicloud.vpc-security-group
+                filters:
+                  - type: without_specific_tags
+                    keys: ['key1', 'key2']
+                    associate_type: any
+    """
+
+    schema = type_schema('without_specific_tags',
+                        keys={'type': 'array',
+                              'items': {'type': 'string'}},
+                        associate_type={'type': 'string',
+                                        'enum': ['any', 'all']},
+                        required=['keys'])
+
+    def process(self, resources, event=None):
+        results = []
+        keys = self.data.get('keys')
+        associate_type = self.data.get('associate_type', 'any')
+        num_key = len(keys)
+
+        for r in resources:
+            count = 0
+            tags = r['tags']
+            for tag in tags:
+                if tag['key'] in keys:
+                    count += 1
+            if 'all' == associate_type and count != num_key:
+                results.append(r)
+            elif 'any' == associate_type and count == 0:
+                results.append(r)
+
+        return results
 
 
 @resources.register('vpc-security-group-rule')
@@ -434,9 +485,13 @@ class SecurityGroupRuleFilter(Filter):
 
     def process_ports(self, rule):
         all_ports = self.data['AllPorts'] if 'AllPorts' in self.data else False
-        # rule matches when allows all ports
+        # rule matches when allows all ports(1-65535)
         if all_ports is True:
-            return 'multiport' not in rule
+            if 'multiport' not in rule:
+                return True
+            else:
+                multiport = self._extend_ports(rule.get('multiport').split(','))
+                return len(multiport) == 65535
 
         any_in_ports = self.data['AnyInPorts'] if 'AnyInPorts' in self.data else []
         all_in_ports = self.data['AllInPorts'] if 'AllInPorts' in self.data else []
@@ -906,35 +961,43 @@ class SecurityGroupRuleAllowRiskPort(Filter):
              - type: rule-allow-risk-ports
                direction: ingress
                risk_ports_path: ""
-               trust_map_path: ""
+               trust_sg_path: ""
+               trust_ip_path: ""
     """
 
     schema = type_schema("rule-allow-risk-ports",
                          direction={'enum': ['ingress', 'egress']},
                          risk_ports_path={'type': 'string'},
-                         trust_map_path={'type': 'string'},
-                         required=['direction', 'risk_ports_path', 'trust_map_path'])
+                         trust_sg_path={'type': 'string'},
+                         trust_ip_path={'type': 'string'},
+                         required=['direction', 'risk_ports_path'])
 
     def process(self, resources, event=None):
         results = []
         risk_ports_path = self.data.get('risk_ports_path')
-        trust_map_path = self.data.get('trust_map_path')
+        trust_sg_path = self.data.get('trust_sg_path')
+        trust_ip_path = self.data.get('trust_ip_path')
         direction = self.data.get('direction')
-        if not risk_ports_path or not trust_map_path:
-            log.error("risk-ports-path and trust-map-path are required")
+        if not risk_ports_path:
+            log.error("risk-ports-path is required")
             return []
         risk_ports_obj = self.get_file_content(risk_ports_path)
-        trust_map_obj = self.get_file_content(trust_map_path)
+        trust_sg_obj = self.get_file_content(trust_sg_path)
+        trust_ip_obj = self.get_file_content(trust_ip_path)
         # {sg_id : deny_rules}
         deny_rule_map = {}
-        if risk_ports_obj and trust_map_obj:
-            risk_ports = self._extend_ports(risk_ports_obj)
+        extend_trust_ip_obj = {}
+        if risk_ports_obj:
+            if trust_ip_obj:
+                extend_trust_ip_obj = self._extend_ip_map(trust_ip_obj)
             for rule in resources:
-                if rule.get('direction') != direction:
+                if rule.get('direction') != direction or rule.get('action') != 'allow':
                     continue
-                ip = rule.get('remote_ip_prefix')
-                if ip and ip not in ('0.0.0.0/0', '::/0'):
+                protocol = rule.get('protocol')
+                if not protocol:
+                    results.append(rule)
                     continue
+                risk_ports = self._extend_ports(risk_ports_obj.get(protocol))
                 ports = rule.get('multiport')
                 port_list = []
                 if ports:
@@ -951,7 +1014,6 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     new_sg = {sg: deny_rules}
                     deny_rule_map.update(new_sg)
                 deny_rules = deny_rule_map.get(sg)
-                protocol = rule.get('protocol')
                 ethertype = rule.get('ethertype')
                 for deny_rule in deny_rules:
                     if protocol == deny_rule.get('protocol') and \
@@ -962,25 +1024,41 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                             break
                         deny_ports = self._extend_ports(deny_ports.split(','))
                         risk_rule_ports = [p for p in risk_rule_ports if p not in deny_ports]
-                if sg in trust_map_obj:
-                    trust_sg = trust_map_obj.get(sg)
-                    trust_port = trust_sg.get('port')
-                    if trust_port:
-                        trust_protocol = trust_sg.get('protocol')
-                        if (trust_protocol and protocol in trust_protocol) or not trust_protocol:
-                            trust_port = self._extend_ports([trust_port])
-                            risk_rule_ports = [p for p in risk_rule_ports if p not in trust_port]
-
+                # trust sg
+                risk_rule_ports = self._handle_trust_port(trust_sg_obj,
+                                                          protocol,
+                                                          sg,
+                                                          risk_rule_ports)
+                # trust ip
+                rule_ip = rule.get('remote_ip_prefix')
+                if rule_ip and rule_ip != '0.0.0.0/0' and rule_ip.endswith('/32'):
+                    rule_ip_int = int(netaddr.IPAddress(rule_ip[:-3]))
+                    risk_rule_ports = self._handle_trust_port(extend_trust_ip_obj,
+                                                              protocol,
+                                                              rule_ip_int,
+                                                              risk_rule_ports)
                 if risk_rule_ports:
-                    if len(port_list) == len(risk_rule_ports):
-                        risk_rule_ports = risk_ports
-                    new_ports = self.get_multiport(risk_rule_ports)
-                    rule['multiport'] = new_ports
                     results.append(rule)
 
         return results
 
+    def _handle_trust_port(self, trust_obj, protocol, key, risk_rule_ports):
+        if key not in trust_obj:
+            return risk_rule_ports
+        trust_map = trust_obj.get(key)
+        trust_port = []
+        if protocol in trust_map:
+            trust_port = trust_map.get(protocol)
+        elif 'all' in trust_map:
+            trust_port = trust_map.get('all')
+        if trust_port:
+            trust_port = self._extend_ports(trust_port)
+            return [p for p in risk_rule_ports if p not in trust_port]
+        return risk_rule_ports
+
     def get_file_content(self, obs_url):
+        if not obs_url:
+            return {}
         obs_client = local_session(self.manager.session_factory).client("obs")
         protocol_end = len("https://")
         path_without_protocol = obs_url[protocol_end:]
@@ -1023,7 +1101,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         if len(risk_ports) == 1:
             multiport = str(risk_ports[0])
             return multiport
-        order_ports = risk_ports.sort()
+        order_ports = risk_ports
+        order_ports.sort()
         start = order_ports[0]
         end = order_ports[0]
         port_len = len(order_ports)
@@ -1090,6 +1169,34 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 continue
         return list(set(int_port_list))
 
+    def _extend_ip_map(self, ip_obj):
+        extended_ip_obj = {}
+        for key, value in ip_obj.items():
+            int_ips = []
+            if ',' in key:
+                ips = key.split(',')
+                for ip in ips:
+                    ip = ip.strip()
+                    if '-' in ip:
+                        ip_range = ip.split('-')
+                        if ip_range[0] < ip_range[1]:
+                            ip_start = int(netaddr.IPAddress(ip_range[0]))
+                            ip_end = int(netaddr.IPAddress(ip_range[1]))
+                            int_ips.extend([i for i in range(ip_start, ip_end + 1)])
+                    else:
+                        int_ips.append(int(netaddr.IPAddress(ip)))
+            elif '-' in key:
+                ip_range = key.split('-')
+                if ip_range[0] < ip_range[1]:
+                    ip_start = int(netaddr.IPAddress(ip_range[0]))
+                    ip_end = int(netaddr.IPAddress(ip_range[1]))
+                    int_ips.extend([i for i in range(ip_start, ip_end + 1)])
+            else:
+                int_ips.append(int(netaddr.IPAddress(key)))
+            for int_ip in int_ips:
+                extended_ip_obj[int_ip] = value
+        return extended_ip_obj
+
 
 @SecurityGroupRule.action_registry.register("deny-risk-ports")
 class SecurityGroupRuleDenyRiskPorts(HuaweiCloudBaseAction):
@@ -1106,7 +1213,8 @@ class SecurityGroupRuleDenyRiskPorts(HuaweiCloudBaseAction):
               - type: rule-allow-risk-ports
                 direction: ingress
                 risk_ports_path: ""
-                trust_map_path: ""
+                trust_sg_path: ""
+                trust_ip_path: ""
             actions:
               - deny-risk-ports
     """

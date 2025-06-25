@@ -42,16 +42,6 @@ class CbrProtectableTest(BaseTest):
                "actions": [
                    {
                        "type": "associate_server_with_vault",
-                       "backup_policy_id": "bc715c62-f4ed-4fc0-9e78-ce43b9409a39",
-                       "consistent_level": "crash_consistent",
-                       "object_type": "server",
-                       "protect_type": "backup",
-                       "size": 100,
-                       "charging_mode": "post_paid",
-                       "period_type": "year",
-                       "period_num": 1,
-                       "is_auto_renew": True,
-                       "is_auto_pay": True,
                        "name": "new_vault"
                    }
                ]
@@ -67,16 +57,6 @@ class CbrProtectableTest(BaseTest):
                 'name': 'cbr_associate_server_with_inadequate_vault',
                 'resource': 'huaweicloud.cbr-protectable',
                 'actions': [{'type': 'associate_server_with_vault',
-                             'backup_policy_id': "a88a3421-f57e-49a4-b0ab-0ba334313b48",
-                             'consistent_level': "crash_consistent",
-                             'object_type': "server",
-                             'protect_type': "backup",
-                             'size': 100,
-                             'charging_mode': "post_paid",
-                             'period_type': "year",
-                             'period_num': 1,
-                             'is_auto_renew': True,
-                             'is_auto_pay': True,
                              'name': "new_vault",
                              }],
             },

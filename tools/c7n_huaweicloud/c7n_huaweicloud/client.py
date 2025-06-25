@@ -533,7 +533,7 @@ class Session:
             client = (
                 CcmClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(CcmRegion.value_of("ap-southeast-3"))
+                .with_region(CcmRegion.value_of("sa-brazil-1"))
                 .build()
             )
         elif service == 'vpcep-ep':

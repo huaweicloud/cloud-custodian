@@ -42,6 +42,13 @@ class rotationKey(HuaweiCloudBaseAction):
 policies:
   - name: enable_key_rotation
     resource: huaweicloud.kms
+    mode:
+      type: huaweicloud-periodic
+      xrole: fgs_admin
+      enable_lts_log: true
+      log_level: INFO
+      schedule: '1m'
+      schedule_type: Rate
     filters:
         - type: value
           key: key_rotation_enabled
@@ -58,10 +65,9 @@ policies:
     def perform_action(self, resource):
         session = local_session(self.manager.session_factory)
         domain = session.domain_id
-        notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
-                          "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
+        supportList = {"AES_256", "SM4"}
         if (resource["default_key_flag"] == "0" and resource["key_spec"]
-                not in notSupportList and resource["keystore_id"] == "0"
+                in supportList and resource["keystore_id"] == "0"
                 and resource["key_state"] in {"2"}):
             client = self.manager.get_client()
             request = EnableKeyRotationRequest()
@@ -103,7 +109,7 @@ policies:
           value: "False"
         - type: value
           key: domain_id
-          value: "aaaaaaa"
+          value: "537f650fb2be4ca3a511f25d8defd3b0"
     actions:
       - disable_key_rotation
     """
@@ -113,6 +119,7 @@ policies:
     def perform_action(self, resource):
         notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
                           "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
+
         if (resource["default_key_flag"] == "0" and resource["key_spec"]
                 not in notSupportList and resource["keystore_id"] == "0"
                 and resource["key_state"] in {"2", "3", "4"}):
@@ -210,11 +217,18 @@ class createKey(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
 policies:
-  - name: create-key
+  - name: create-key-with-alias
     resource: huaweicloud.kms
+    mode:
+      type: huaweicloud-periodic
+      xrole: fgs_admin
+      enable_lts_log: true
+      log_level: INFO
+      schedule: '1m'
+      schedule_type: Rate
     actions:
-      - type: create-key
-        key_aliases: ["dd"]
+      - type: create-key-with-alias
+        key_aliases: ["test"]
         obs_url: "https://custodian0527.obs.sa-brazil-1.myhuaweicloud.com/kms.txt"
 
     """
