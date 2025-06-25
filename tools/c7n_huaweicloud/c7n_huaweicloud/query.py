@@ -265,7 +265,7 @@ class ResourceQuery:
                         data["id"] = value
                 else:
                     data["id"] = data[manager.id]
-        if "tag_resource_type" not in resources[0] and manager.service == 'ccm-ssl-certificate':
+        if "tag_resource_type" not in resources[0] and manager.service in ['ccm-ssl-certificate', 'cce-cluster']:
             for data in resources:
                 data["tag_resource_type"] = manager.tag_resource_type
 
@@ -501,7 +501,7 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
 
     def get_resources(self, resource_ids):
         resources = (
-            self.augment(self.source.get_resources(self.get_resource_query())) or []
+                self.augment(self.source.get_resources(self.get_resource_query())) or []
         )
         result = []
         for resource in resources:

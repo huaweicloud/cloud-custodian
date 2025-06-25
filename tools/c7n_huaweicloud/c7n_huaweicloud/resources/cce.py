@@ -499,7 +499,7 @@ class CceNodePool(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = "cce-cluster"  # Use cluster service
+        service = "cce-nodepool"  # Use cluster service
         enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
@@ -929,7 +929,7 @@ class CceNode(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = "cce-cluster"  # Use cluster service
+        service = "cce-node"  # Use cluster service
         enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
@@ -1076,7 +1076,7 @@ class CceAddonInstance(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = "cce-cluster"  # Use cluster service
+        service = "cce-addoninstance"  # Use cluster service
         enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
@@ -1310,7 +1310,7 @@ class CceRelease(QueryResourceManager):
     """
 
     class resource_type(TypeInfo):
-        service = "cce-cluster"  # Use cluster service
+        service = "cce-release"  # Use cluster service
         enum_spec = ("list_clusters", "items", None)  # Query clusters first
         id = "metadata.uid"
         name = "metadata.name"
