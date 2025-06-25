@@ -1,0 +1,197 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T071711Z
+    method: GET
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults?limit=100&offset=0
+  response:
+    body:
+      string: '{"vaults":[{"id":"ce53b3c5-3b84-4cdc-b749-12f28f73aafa","name":"new_vault002","description":null,"resources":[{"id":"42dc19e5-11d5-4b87-8546-a5f843fb4e6a","type":"OS::Nova::Server","name":"ecs-illegally-tagged","auto_protect":true,"size":40,"backup_size":0,"backup_count":0,"protect_status":"available","extra_info":{}}],"provider_id":"0daac4c5-6707-4851-97ba-169e36266b66","created_at":"2025-05-27T09:14:56.780854","project_id":"0d8df128318091f52ff1c0069c340775","enterprise_project_id":"0","auto_bind":false,"bind_rules":{},"auto_expand":false,"smn_notify":true,"threshold":80,"user_id":"052924fd3c314062ad34a9cc4a9974b9","billing":{"allocated":40,"cloud_type":"public","consistent_level":"crash_consistent","frozen_scene":null,"charging_mode":"post_paid","order_id":null,"product_id":null,"protect_type":"backup","object_type":"server","spec_code":"vault.backup.server.normal","is_multi_az":false,"is_double_az":false,"used":0,"storage_unit":null,"status":"available","size":100,"partner_bp_id":null},"tags":[{"key":"owner-team-email","value":"12345_123_com"}],"backup_name_prefix":null,"demand_billing":false,"cbc_delete_count":0,"frozen":false,"availability_zone":"","sys_lock_source_service":"","supplier":"","locked":false,"cross_account":false,"cross_account_urn":""},{"id":"67bf88e9-0aad-4c55-a481-f7c93e726a3c","name":"new_vault001","description":null,"resources":[{"id":"bf114c19-b4e6-4a28-b9b5-6ad7fde8f2be","type":"OS::Nova::Server","name":"ecs-legally-tagged","auto_protect":true,"size":40,"backup_size":0,"backup_count":0,"protect_status":"available","extra_info":{}},{"id":"83417a6a-23bf-4e3b-9a7b-731593a280d4","type":"OS::Nova::Server","name":"ecs-custodian-01","auto_protect":true,"size":40,"backup_size":0,"backup_count":0,"protect_status":"available","extra_info":{}}],"provider_id":"0daac4c5-6707-4851-97ba-169e36266b66","created_at":"2025-05-27T09:14:56.403905","project_id":"0d8df128318091f52ff1c0069c340775","enterprise_project_id":"0","auto_bind":false,"bind_rules":{},"auto_expand":false,"smn_notify":true,"threshold":80,"user_id":"052924fd3c314062ad34a9cc4a9974b9","billing":{"allocated":80,"cloud_type":"public","consistent_level":"crash_consistent","frozen_scene":null,"charging_mode":"post_paid","order_id":null,"product_id":null,"protect_type":"backup","object_type":"server","spec_code":"vault.backup.server.normal","is_multi_az":false,"is_double_az":false,"used":0,"storage_unit":null,"status":"available","size":100,"partner_bp_id":null},"tags":[{"key":"owner-team-email","value":"12345_123_com"}],"backup_name_prefix":null,"demand_billing":false,"cbc_delete_count":0,"frozen":false,"availability_zone":"","sys_lock_source_service":"","supplier":"","locked":false,"cross_account":false,"cross_account_urn":""},{"id":"ac86638d-be14-4906-a992-437f889b66e9","name":"new_vault000","description":null,"resources":[{"id":"b587dbc9-4937-4802-a025-b07dfe710716","type":"OS::Nova::Server","name":"ecs-untagged","auto_protect":true,"size":40,"backup_size":0,"backup_count":0,"protect_status":"available","extra_info":{}},{"id":"fa0f0734-fd76-4a7d-b684-7f08baeadb4a","type":"OS::Nova::Server","name":"ecs-with-vault","auto_protect":true,"size":40,"backup_size":0,"backup_count":0,"protect_status":"available","extra_info":{}}],"provider_id":"0daac4c5-6707-4851-97ba-169e36266b66","created_at":"2025-05-27T09:14:55.948181","project_id":"0d8df128318091f52ff1c0069c340775","enterprise_project_id":"0","auto_bind":false,"bind_rules":{},"auto_expand":false,"smn_notify":true,"threshold":80,"user_id":"052924fd3c314062ad34a9cc4a9974b9","billing":{"allocated":80,"cloud_type":"public","consistent_level":"crash_consistent","frozen_scene":null,"charging_mode":"post_paid","order_id":null,"product_id":null,"protect_type":"backup","object_type":"server","spec_code":"vault.backup.server.normal","is_multi_az":false,"is_double_az":false,"used":0,"storage_unit":null,"status":"available","size":100,"partner_bp_id":null},"tags":[{"key":"owner-team-email","value":"12345_123_com"},{"key":"tech-team-email","value":"23456_123_com"}],"backup_name_prefix":null,"demand_billing":false,"cbc_delete_count":0,"frozen":false,"availability_zone":"","sys_lock_source_service":"","supplier":"","locked":true,"cross_account":false,"cross_account_urn":""}],"count":3,"offset":0,"limit":100}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 07:17:12 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ba19b3c904245590387f313b49d63f42
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: '{"vault": {"locked": True}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T024914Z
+    method: PUT
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults/ce53b3c5-3b84-4cdc-b749-12f28f73aafa
+  response:
+    body:
+      string: '{}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 02:49:15 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e4560ae95e4d718ab84a98eb90e6e325
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: '{"vault": {"locked": True}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T024914Z
+    method: PUT
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults/67bf88e9-0aad-4c55-a481-f7c93e726a3c
+  response:
+    body:
+      string: '{}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 02:49:15 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e4560ae95e4d718ab84a98eb90e6e325
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+
+- request:
+    body: '{"vault": {"locked": True}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cbr.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250325T024914Z
+    method: PUT
+    uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults/ac86638d-be14-4906-a992-437f889b66e9
+  response:
+    body:
+      string: '{}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Mar 2025 02:49:15 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e4560ae95e4d718ab84a98eb90e6e325
+      X-XSS-Protection:
+      - 1; mode=block;
+    status: {code: 200, message: OK}
+version: 1
