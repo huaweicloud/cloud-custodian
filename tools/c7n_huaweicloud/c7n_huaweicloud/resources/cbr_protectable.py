@@ -186,14 +186,14 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                         type="OS::Nova::Server"
                     )
                 )
-            #prioritize existing repositories
-            if  vault_billing:
-                consistent_level=vault_billing['consistent_level']
-                object_type=vault_billing['object_type']
-                protect_type=vault_billing['protect_type']
-                size=vault_billing['size']
-                charging_mode=vault_billing['charging_mode']
-                is_multi_az=vault_billing['is_multi_az']
+            # prioritize existing repositories
+            if vault_billing:
+                consistent_level = vault_billing['consistent_level']
+                object_type = vault_billing['object_type']
+                protect_type = vault_billing['protect_type']
+                size = vault_billing['size']
+                charging_mode = vault_billing['charging_mode']
+                is_multi_az = vault_billing['is_multi_az']
             else:
                 consistent_level = self.data.get('consistent_level', 'crash_consistent')
                 object_type = self.data.get('object_type', 'server')
