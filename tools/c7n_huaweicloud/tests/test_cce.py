@@ -22,7 +22,7 @@ class CceClusterTest(BaseTest):
         # Verify resource ID field
         self.assertIn('metadata', resources[0])
         self.assertIn('uid', resources[0]['metadata'])
-    
+
     def test_cluster_tag_filters(self):
         """Test CCE cluster tag filtering functionality"""
         factory = self.replay_flight_data('cce_cluster_with_tags')
@@ -47,7 +47,6 @@ class CceClusterTest(BaseTest):
             ]
         }, session_factory=factory)
         resources = p.run()
-        
         # Verify that resources were found and have the expected structure
         self.assertEqual(len(resources), 1)
 
