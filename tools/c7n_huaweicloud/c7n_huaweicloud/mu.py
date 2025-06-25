@@ -119,7 +119,11 @@ class FunctionGraphManager:
         functions = []
 
         while 1:
-            request = ListFunctionsRequest(marker=str(market), maxitems=str(maxitems))
+            request = ListFunctionsRequest(
+                marker=str(market),
+                maxitems=str(maxitems),
+                func_name=prefix,
+            )
             try:
                 response = self.client.list_functions(request)
             except exceptions.ClientRequestException as e:
@@ -130,7 +134,7 @@ class FunctionGraphManager:
                 return functions
             count = response.count
             next_marker = response.next_marker
-            functions += eval(str(response).
+            functions += eval(str(response.functions).
                               replace('null', 'None').
                               replace('false', 'False').
                               replace('true', 'True'))
@@ -571,7 +575,11 @@ class FunctionGraphManager:
 
         return sha512.hexdigest()
 
-    def remove(self, func_urn):
+    def remove(self, func):
+        func_urn = func.func_urn
+        if not func_urn:
+            log.error('No func_urn for delete function.')
+            return
         request = DeleteFunctionRequest(function_urn=func_urn)
         try:
             log.warning(f'Removing function[{func_urn}]...')
@@ -591,6 +599,11 @@ class FunctionGraphManager:
 class AbstractFunctionGraph:
     """Abstract base class for lambda functions."""
     __metaclass__ = abc.ABCMeta
+
+    @property
+    @abc.abstractmethod
+    def func_urn(self):
+        """Urn for the FunctionGraph function"""
 
     @property
     @abc.abstractmethod
@@ -718,7 +731,7 @@ class AbstractFunctionGraph:
 
 class FunctionGraph(AbstractFunctionGraph):
 
-    def __int__(self, func_data, archive):
+    def __init__(self, func_data, archive):
         self.func_data = func_data
         required = {
             'func_name', 'package', 'runtime',
@@ -729,6 +742,10 @@ class FunctionGraph(AbstractFunctionGraph):
         if missing:
             raise ValueError("Missing required keys %s" % " ".join(missing))
         self.archive = archive
+
+    @property
+    def func_urn(self):
+        return self.func_data['func_urn']
 
     @property
     def func_name(self):
@@ -822,6 +839,15 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
         self.policy = policy
         self.session = self.policy.session_factory()
         self.archive = custodian_archive(packages=self.packages)
+        self._func_urn = None
+
+    @property
+    def func_urn(self):
+        return self._func_urn
+
+    @func_urn.setter
+    def func_urn(self, urn):
+        self._func_urn = urn
 
     @property
     def func_name(self):
