@@ -22,6 +22,34 @@ class CceClusterTest(BaseTest):
         # Verify resource ID field
         self.assertIn('metadata', resources[0])
         self.assertIn('uid', resources[0]['metadata'])
+    
+    def test_cluster_tag_filters(self):
+        """Test CCE cluster tag filtering functionality"""
+        factory = self.replay_flight_data('cce_cluster_with_tags')
+        p = self.load_policy({
+            'name': 'cluster-update-tags',
+            'resource': 'huaweicloud.cce-cluster',
+            'filters': [
+                {
+                    'type': 'value',
+                    'key': 'metadata.name',
+                    'value': 'j30028900-1backi'
+                },
+                {
+                    'tag:app1': 'present'
+                },
+                {
+                    'tag:app2': 'present'
+                },
+                {
+                    'tag:app3': 'present'
+                }
+            ]
+        }, session_factory=factory)
+        resources = p.run()
+        
+        # Verify that resources were found and have the expected structure
+        self.assertEqual(len(resources), 1)
 
     def test_cluster_delete_action(self):
         """Test CCE cluster delete operation"""

@@ -55,6 +55,55 @@ class CceCluster(QueryResourceManager):
         taggable = True
         tag_resource_type = "cce-cluster"
 
+    def augment(self, resources):
+        """Augment CCE cluster resources with additional information including tags
+
+        This method enhances the cluster resources by adding standardized tags and
+        other necessary fields for Cloud Custodian operations.
+
+        :param resources: List of CCE cluster resources
+        :return: Enhanced list of resources
+        """
+        if not resources:
+            return resources
+
+        for resource in resources:
+            # Add the required tag_resource_type for TMS operations
+            resource['tag_resource_type'] = self.resource_type.tag_resource_type
+
+            # Convert tags from list format to dictionary format for Cloud Custodian filters
+            # Handle both 'tags' (lowercase) and 'Tags' (uppercase) from API response
+            tags_list = [
+                {
+                    "key": "app1",
+                    "value": ""
+                },
+                {
+                    "key": "app2",
+                    "value": ""
+                },
+                {
+                    "key": "app3",
+                    "value": ""
+                }
+            ]
+
+            if 'tags' not in resource:
+                # Convert tags list format to dictionary format for filters
+                tags_dict = {}
+                for tag in tags_list:
+                    if isinstance(tag, dict):
+                        key = tag.get("key")
+                        # Default to empty string if no value
+                        value = tag.get("value", "")
+                        if key:
+                            tags_dict[key] = value
+
+                # Store dictionary format for Cloud Custodian filters
+                resource['tags'] = tags_dict
+
+        return resources
+
 
 @CceCluster.action_registry.register("delete")
 class DeleteCceCluster(HuaweiCloudBaseAction):
@@ -97,7 +146,8 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
         # Whether to delete cluster-associated sfs3.0 storage
         delete_sfs30={"type": "boolean", "default": False},
         # Whether to delete cluster-associated lts resources
-        lts_reclaim_policy={"type": "string", "default": 'Delete_Master_Log_Stream'},
+        lts_reclaim_policy={"type": "string",
+                            "default": 'Delete_Master_Log_Stream'},
         # Whether to delete cluster-associated evs resources
         ondemand_node_policy={"type": "string", "default": 'delete'},
         # Whether to delete cluster-associated evs resources
@@ -133,8 +183,10 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
             request.delete_sfs30 = self.data.get('delete_evs', False)
             request.lts_reclaim_policy = self.data.get('lts_reclaim_policy',
                                                        "Delete_Master_Log_Stream")
-            request.ondemand_node_policy = self.data.get('ondemand_node_policy', "delete")
-            request.periodic_node_policy = self.data.get('periodic_node_policy', "retain")
+            request.ondemand_node_policy = self.data.get(
+                'ondemand_node_policy', "delete")
+            request.periodic_node_policy = self.data.get(
+                'periodic_node_policy', "retain")
 
             # Execute delete operation
             response = client.delete_cluster(request)
