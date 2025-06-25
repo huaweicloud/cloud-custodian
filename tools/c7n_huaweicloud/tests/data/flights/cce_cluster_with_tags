@@ -27,9 +27,10 @@ interactions:
         "creationTimestamp":"2025-06-18T08:02:29Z","updateTimestamp":"2025-06-18T08:02:29Z"},
         "spec":{"type":"VirtualMachine","flavor":"cce.s1.small","version":"v1.19.8-r0",
         "hostNetwork":{"vpc":"2a0a0c6d-a3f2-4b9c-9c31-8317a9e8b5b6","subnet":
-        "3a8a0c6d-a3f2-4b9c-9c31-8317a9e8b5b7"},"containerNetwork":{"mode":"overlay_l2"}},
+        "3a8a0c6d-a3f2-4b9c-9c31-8317a9e8b5b7"},"containerNetwork":{"mode":"overlay_l2"},
+        "clusterTags":[{"key":"app1","value":""},{"key":"app2","value":""},{"key":"app3","value":""}]},
         "status":{"phase":"Available","endpoints":{"internal":"192.168.0.68:5443",
-        "external":"49.0.0.1:5443"}},"tags":[{"key":"app1","value":""},{"key":"app2","value":""},{"key":"app3","value":""}]}]}'
+        "external":"49.0.0.1:5443"}}}]}'
     headers:
       Connection:
       - keep-alive

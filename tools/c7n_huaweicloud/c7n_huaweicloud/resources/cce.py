@@ -68,30 +68,13 @@ class CceCluster(QueryResourceManager):
             return resources
 
         for resource in resources:
-            # Add the required tag_resource_type for TMS operations
-            resource['tag_resource_type'] = self.resource_type.tag_resource_type
-
-            # Convert tags from list format to dictionary format for Cloud Custodian filters
-            # Handle both 'tags' (lowercase) and 'Tags' (uppercase) from API response
-            tags_list = [
-                {
-                    "key": "app1",
-                    "value": ""
-                },
-                {
-                    "key": "app2",
-                    "value": ""
-                },
-                {
-                    "key": "app3",
-                    "value": ""
-                }
-            ]
-
-            if 'tags' not in resource:
-                # Convert tags list format to dictionary format for filters
+            # Extract clusterTags from spec and convert to tags dictionary format
+            # According to CCE API documentation, clusterTags are located in spec.clusterTags
+            cluster_tags = resource.get('spec', {}).get('clusterTags', [])
+            if cluster_tags and isinstance(cluster_tags, list):
+                # Convert clusterTags list format to dictionary format for Cloud Custodian filters
                 tags_dict = {}
-                for tag in tags_list:
+                for tag in cluster_tags:
                     if isinstance(tag, dict):
                         key = tag.get("key")
                         # Default to empty string if no value
@@ -99,8 +82,11 @@ class CceCluster(QueryResourceManager):
                         if key:
                             tags_dict[key] = value
 
-                # Store dictionary format for Cloud Custodian filters
+                # Store dictionary format for Cloud Custodian filters at metadata level
                 resource['tags'] = tags_dict
+            elif 'tags' not in resource:
+                # If no clusterTags found, initialize empty tags dict
+                resource['tags'] = {}
 
         return resources
 
