@@ -265,7 +265,9 @@ class ResourceQuery:
                         data["id"] = value
                 else:
                     data["id"] = data[manager.id]
-        if "tag_resource_type" not in resources[0] and manager.service in ['ccm-ssl-certificate', 'cce-cluster']:
+        if ("tag_resource_type" not in resources[0] and
+              manager.service in ['ccm-ssl-certificate', 'cce-cluster']):
+
             for data in resources:
                 data["tag_resource_type"] = manager.tag_resource_type
 

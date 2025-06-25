@@ -396,3 +396,39 @@ class EcsTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
+
+    def test_instance_imds_token(self):
+        factory = self.replay_flight_data("ecs_instance_imds_token")
+        p = self.load_policy(
+            {
+                "name": "ecs_instance_imds_token",
+                "resource": "huaweicloud.ecs",
+                "filters": [
+                    {
+                        "type": "instance-imds-token",
+                        "http_tokens": "optional"
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+    def test_instance_update_imds_token(self):
+        factory = self.replay_flight_data("ecs_instance_update_imds_token")
+        p = self.load_policy(
+            {
+                "name": "ecs_instance_update_imds_token",
+                "resource": "huaweicloud.ecs",
+                "actions": [
+                    {
+                        "type": "instance-update-imds-token",
+                        "http_tokens": "required"
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
