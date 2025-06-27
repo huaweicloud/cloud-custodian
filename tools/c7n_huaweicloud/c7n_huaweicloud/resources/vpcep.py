@@ -3,7 +3,6 @@
 
 import logging
 
-from c7n.policy import execution
 from c7n.utils import type_schema, local_session
 from c7n.filters import Filter
 from c7n_huaweicloud.provider import resources
@@ -14,6 +13,7 @@ from huaweicloudsdksmn.v2 import (
     PublishMessageRequestBody,
 )
 from huaweicloudsdkvpc.v3 import ListVpcsRequest
+from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger('custodian.huaweicloud.resources.vpcep')
 
