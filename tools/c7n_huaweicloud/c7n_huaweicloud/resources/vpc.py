@@ -1048,7 +1048,6 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         request = ShowAddressGroupRequest(address_group_id=rule_ag_id)
                         response = client.show_address_group(request)
                         ag = response.address_group.to_dict()
-                        print(ag)
                         ips = ag['ip_set']
                     except exceptions.ClientRequestException as ex:
                         log.exception("Unable to show remote address group in security group "
