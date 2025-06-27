@@ -5,7 +5,7 @@ import logging
 import sys
 
 import click
-from huaweicloudsdkcore.auth.internal import Iam
+from huaweicloudsdkcore.auth import endpoint
 from huaweicloudsdkcore.auth.provider import MetadataCredentialProvider
 from huaweicloudsdkorganizations.v1 import ListAccountsRequest, OrganizationsClient, \
     ListTagResourcesRequest
@@ -96,7 +96,8 @@ def main(output, agency_name, name, exclude_name, ou_ids, status, duration_secon
         )
         globalCredentials = (global_provider.get_credentials()
                              .with_domain_id(domain_id)
-                             .with_iam_endpoint(Iam.DEFAULT_ENDPOINT))
+                             .with_iam_endpoint(endpoint.get_iam_endpoint_by_id(regions[0])))
+
         client = (
             OrganizationsClient.new_builder()
             .with_credentials(globalCredentials)
