@@ -127,11 +127,16 @@ class FunctionGraphManager:
             try:
                 response = self.client.list_functions(request)
             except exceptions.ClientRequestException as e:
-                log.error(f'List functions failed, request id:[{e.request_id}], '
+                log.error(f'List functions failed, '
+                          f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
-                return functions
+                raise PolicyExecutionError(f'List functions failed, '
+                                           f'request id:[{e.request_id}], '
+                                           f'status code:[{e.status_code}], '
+                                           f'error code:[{e.error_code}], '
+                                           f'error message:[{e.error_msg}].')
             count = response.count
             next_marker = response.next_marker
             functions += eval(str(response.functions).
@@ -156,25 +161,35 @@ class FunctionGraphManager:
         try:
             response = self.client.create_function(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Create function failed, request id:[{e.request_id}], '
+            log.error(f'Create function failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            return None
+            raise PolicyExecutionError(f'Create function failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
         return response
 
-    def get_custodian_depend_version_id(self, runtime="Python3.10"):
+    def get_custodian_depend_version_id(self, runtime="Python3.20"):
         depend_name = f'custodian-huaweicloud-{runtime}'
         list_dependencies_request = ListDependenciesRequest(runtime=runtime, name=depend_name)
         try:
             dependencies = self.client.list_dependencies(list_dependencies_request).dependencies
         except exceptions.ClientRequestException as e:
-            log.error(f'List dependencies failed, request id:[{e.request_id}], '
+            log.error(f'List dependencies failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            return []
+            raise PolicyExecutionError(f'List dependencies failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
         dependency_versions = []
         dependency_version_map = {}
@@ -186,7 +201,8 @@ class FunctionGraphManager:
             try:
                 dependency_version = self.client.show_dependency_version(show_dependency_version_request)  # noqa: E501
             except exceptions.ClientRequestException as e:
-                log.error(f'Show dependency version failed, request id:[{e.request_id}], '
+                log.error(f'Show dependency version failed, '
+                          f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
@@ -207,9 +223,7 @@ class FunctionGraphManager:
                 dependency_versions += dependency_version_list
 
         if len(dependency_versions) == 0:
-            log.error(
-                f'Not find any dependency named: {depend_name}, please add dependencies manually')
-            return dependency_versions
+            raise PolicyExecutionError(f'Not find any dependency named: {depend_name}')
 
         log.info(
             f'Can not find public dependency, using private dependency {dependency_versions}')
@@ -222,12 +236,18 @@ class FunctionGraphManager:
         except exceptions.ClientRequestException as e:
             if is_public and e.status_code == 404:
                 log.warning(f'Can not find function[{func_name}], will create.')
+                return None
             else:
-                log.error(f'Show function config failed, request id:[{e.request_id}], '
+                log.error(f'Show function config failed, '
+                          f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
-            return None
+            raise PolicyExecutionError(f'Show function config failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
         return response
 
@@ -262,11 +282,16 @@ class FunctionGraphManager:
         try:
             response = self.client.update_function_config(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Update function config failed, request id:[{e.request_id}], '
+            log.error(f'Update function config failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            return None
+            raise PolicyExecutionError(f'Update function config failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
         return response
 
@@ -285,11 +310,16 @@ class FunctionGraphManager:
         try:
             response = self.client.update_function_code(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Update function code failed, request id:[{e.request_id}], '
+            log.error(f'Update function code failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            return None
+            raise PolicyExecutionError(f'Update function code failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
         return response
 
@@ -298,11 +328,16 @@ class FunctionGraphManager:
         try:
             response = self.client.list_function_triggers(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'List function triggers failed, request id:[{e.request_id}], '
+            log.error(f'List function triggers failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            return []
+            raise PolicyExecutionError(f'List function triggers failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
         return response.body
 
@@ -310,7 +345,7 @@ class FunctionGraphManager:
         try:
             result, changed, _ = self._create_or_update(func, role)
         except PolicyExecutionError:
-            return
+            raise
         func.func_urn = result.func_urn
 
         if changed:
@@ -424,11 +459,16 @@ class FunctionGraphManager:
             if int(e.status_code) == 404:
                 old_config = None
             else:
-                log.error(f'Show function async config failed, request id:[{e.request_id}], '
+                log.error(f'Show function async config failed, '
+                          f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
-                return
+                raise PolicyExecutionError(f'Show function async config failed, '
+                                           f'request id:[{e.request_id}], '
+                                           f'status code:[{e.status_code}], '
+                                           f'error code:[{e.error_code}], '
+                                           f'error message:[{e.error_msg}].')
 
         new_config = func.async_invoke_config
         if new_config:
@@ -466,11 +506,16 @@ class FunctionGraphManager:
                     update_async_config_request
                 )
             except exceptions.ClientRequestException as e:
-                log.error(f'Update function async config failed, request id:[{e.request_id}], '
+                log.error(f'Update function async config failed, '
+                          f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
-                return
+                raise PolicyExecutionError(f'Update function async config failed, '
+                                           f'request id:[{e.request_id}], '
+                                           f'status code:[{e.status_code}], '
+                                           f'error code:[{e.error_code}], '
+                                           f'error message:[{e.error_msg}].')
         elif old_config and not new_config:
             delete_async_config_request = DeleteFunctionAsyncInvokeConfigRequest(
                 function_urn=func_urn
@@ -479,11 +524,16 @@ class FunctionGraphManager:
                 log.info('Delete function async config')
                 _ = self.client.delete_function_async_invoke_config(delete_async_config_request)
             except exceptions.ClientRequestException as e:
-                log.error(f'Delete function async config failed, request id:[{e.request_id}], '
+                log.error(f'Delete function async config failed, '
+                          f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
-                return
+                raise PolicyExecutionError(f'Delete function async config failed, '
+                                           f'request id:[{e.request_id}], '
+                                           f'status code:[{e.status_code}], '
+                                           f'error code:[{e.error_code}], '
+                                           f'error message:[{e.error_msg}].')
 
     def process_function_tags(self, func_tags, func_urn):
         new_tags = func_tags
@@ -497,11 +547,16 @@ class FunctionGraphManager:
         try:
             old_tags = self.client.list_function_tags(list_function_tags_request).tags
         except exceptions.ClientRequestException as e:
-            log.error(f'List function tags failed, request id:[{e.request_id}], '
+            log.error(f'List function tags failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            return
+            raise PolicyExecutionError(f'List function tags failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
         need_delete_tags = []
         if old_tags is None or len(old_tags) == 0:
             pass
@@ -526,11 +581,16 @@ class FunctionGraphManager:
                 log.warning(f'Delete function tags{need_delete_tags}...')
                 _ = self.client.delete_tags(delete_tags_request)
             except exceptions.ClientRequestException as e:
-                log.error(f'Delete function tags failed, request id:[{e.request_id}], '
+                log.error(f'Delete function tags failed, '
+                          f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
-                return
+                raise PolicyExecutionError(f'Delete function tags failed, '
+                                           f'request id:[{e.request_id}], '
+                                           f'status code:[{e.status_code}], '
+                                           f'error code:[{e.error_code}], '
+                                           f'error message:[{e.error_msg}].')
 
         create_tags = []
         for key, value in new_tags_map.items():
@@ -555,11 +615,16 @@ class FunctionGraphManager:
             log.warning(f'Create function tags{create_tags}...')
             _ = self.client.create_tags(create_tags_request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Create function tags failed, request id:[{e.request_id}], '
+            log.error(f'Create function tags failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            return
+            raise PolicyExecutionError(f'Create function tags failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
     @staticmethod
     def calculate_sha512(archive, buffer_size=65536) -> str:
@@ -585,11 +650,16 @@ class FunctionGraphManager:
             log.warning(f'Removing function[{func_urn}]...')
             _ = self.client.delete_function(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Delete function failed, request id:[{e.request_id}], '
+            log.error(f'Delete function failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            return
+            raise PolicyExecutionError(f'Delete function failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
         log.info(f'Remove function[{func_urn}] success.')
 
@@ -966,7 +1036,8 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
         try:
             vpcs = vpc_client_v3.list_vpcs(get_vpcs_request).vpcs
         except exceptions.ClientRequestException as e:
-            log.error(f'Get vpc_id by vpc_name failed, request id:[{e.request_id}], '
+            log.error(f'Get vpc_id by vpc_name failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
@@ -984,7 +1055,8 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
         try:
             subnets = vpc_client_v2.list_subnets(get_subnets_request).subnets
         except exceptions.ClientRequestException as e:
-            log.error(f'Get subnet_id by subnet_name failed, request id:[{e.request_id}], '
+            log.error(f'Get subnet_id by subnet_name failed, '
+                      f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
@@ -1046,10 +1118,16 @@ class FunctionGraphTriggerBase:
         try:
             _ = self.client.delete_function_trigger(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
-                      f'error_code[{e.error_code}], '
-                      f'error_msg[{e.error_msg}]')
-            return False
+            log.error(f'Delete function trigger failed, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError(f'Delete function trigger failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
         return True
 
@@ -1073,10 +1151,16 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
                      f'trigger status: [{create_trigger_response.trigger_status}].')
             return create_trigger_response
         except exceptions.ClientRequestException as e:
-            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
-                      f'error_code[{e.error_code}], '
-                      f'error_msg[{e.error_msg}]')
-            return False
+            log.error(f'Create function trigger failed, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError(f'Create function trigger failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
     def build_create_cts_trigger_request_body(self):
         request_body = CreateFunctionTriggerRequestBody(
@@ -1136,10 +1220,16 @@ class TimerServiceSource(FunctionGraphTriggerBase):
                      f'trigger status: [{create_trigger_response.trigger_status}].')
             return create_trigger_response
         except exceptions.ClientRequestException as e:
-            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
-                      f'error_code[{e.error_code}], '
-                      f'error_msg[{e.error_msg}]')
-            return False
+            log.error(f'Create function trigger failed, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError(f'Create function trigger failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
     def build_create_timer_trigger_request_body(self):
         request_body = CreateFunctionTriggerRequestBody(
@@ -1188,10 +1278,16 @@ class EventGridServiceSource:
         try:
             list_channels_response = self.client.list_channels(list_channels_request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
-                      f'error_code[{e.error_code}], '
-                      f'error_msg[{e.error_msg}]')
-            return False
+            log.error(f'List channels failed, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError(f'List channels failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
         if list_channels_response.size == 0:
             log.error("EventGrid no OFFICIAL channels.")
             return False
@@ -1208,10 +1304,16 @@ class EventGridServiceSource:
                      f'trigger status: [{create_subscription_response.status}].')
             return create_subscription_response
         except exceptions.ClientRequestException as e:
-            log.error(f'Request[{e.request_id}] failed[{e.status_code}], '
-                      f'error_code[{e.error_code}], '
-                      f'error_msg[{e.error_msg}]')
-            return False
+            log.error(f'Create subscription failed, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError(f'Create subscription failed, '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
 
     def build_create_subscription_request_body(self, channel_id, func_urn):
         target_transform = TransForm(
