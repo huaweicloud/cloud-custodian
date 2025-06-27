@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+
+from c7n.policy import execution
 from c7n.utils import type_schema, local_session
 from c7n.filters import Filter
 from c7n_huaweicloud.provider import resources
@@ -11,6 +13,7 @@ from huaweicloudsdksmn.v2 import (
     PublishMessageRequest,
     PublishMessageRequestBody,
 )
+from huaweicloudsdkvpc.v3 import ListVpcsRequest
 
 log = logging.getLogger('custodian.huaweicloud.resources.vpcep')
 
@@ -66,20 +69,39 @@ class VpcEndpointServiceAndVpcFilter(Filter):
             filters:
               - type: by-service-and-vpc-check
                 endpoint_service_name: "com.huaweicloud.service.test"
-                vpc_ids:
-                  - vpc-12345678
-                  - vpc-87654321
+                vpc_ids: ['vpc-12345678', 'vpc-87654321']
+                all_vpc: True, take effect only when vpc_ids is not configured, default false.
     """
     schema = type_schema(
         'by-service-and-vpc-check',
         endpoint_service_name={'type': 'string'},
         vpc_ids={'type': 'array', 'items': {'type': 'string'}},
+        all_vpc={'type': 'boolean'},
         required=['endpoint_service_name']
     )
 
     def process(self, resources, event=None):
         endpoint_service_name = self.data.get('endpoint_service_name')
         vpc_ids = self.data.get('vpc_ids', [])
+        all_vpc = self.data.get('all_vpc', False)
+
+        # need check all vpcs are configured with EP
+        if len(vpc_ids) <= 0 and all_vpc:
+            client = local_session(self.manager.session_factory).client('vpc')
+            request = ListVpcsRequest()
+            try:
+                vpcs = client.list_vpcs(request).vpcs
+                if vpcs:
+                    vpc_ids = [v.id for v in vpcs]
+                self.log.info(f"get all vpcs vpc_ids:{vpc_ids}")
+            except exceptions.ClientRequestException as e:
+                self.log.error(
+                    f"List vpc failed, request id:{e.request_id}, "
+                    f"status code:{e.status_code}, "
+                    f"error code:{e.error_code}, "
+                    f"error message:{e.error_msg}."
+                )
+                raise
 
         # Validate if endpoint_service_name is valid
         if not endpoint_service_name:
