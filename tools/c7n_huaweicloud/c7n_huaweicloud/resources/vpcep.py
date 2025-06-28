@@ -161,6 +161,7 @@ class VpcEndpointServiceAndVpcFilter(Filter):
         # get the last vpc_id as marker
         return vpcs[limit - 1].id
 
+
 @VpcEndpoint.action_registry.register('eps-check-ep-msg')
 class VpcEndpointSendMsg(HuaweiCloudBaseAction):
     """VPC Endpoint message notification action.
