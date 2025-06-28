@@ -1,0 +1,123 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - as.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250609T055317Z
+    method: GET
+    uri: https://as.ap-southeast-1.myhwclouds.com/autoscaling-api/v1/ap-southeat-1/scaling_group?limit=100&start_number=0
+  response:
+    body:
+      string: '{ "limit": 20, "scaling_groups": [ { "networks": [ { "id": "a8327883-6b07-4497-9c61-68d03ee193a",
+        "ipv6_enable": true, "ipv6_bandwidth": { "id": "076ee2ff-f23e-4338-b8ac-1bc7278532d5"
+        } } ], "available_zones": [ "XXXa", "XXXb" ], "detail": null, "scaling_group_name":
+        "as-group-test", "scaling_group_id": "test-scaling-group-id", "scaling_group_status":
+        "INSERVICE", "scaling_configuration_id": "1d281494-6085-4579-b817-c1f813be835f",
+        "scaling_configuration_name": "healthCheck", "current_instance_number": 0,
+        "desire_instance_number": 1, "min_instance_number": 0, "max_instance_number":
+        500, "cool_down_time": 300, "lb_listener_id": "f06c0112570743b51c0e8fbe1f235bab",
+        "security_groups": [ { "id": "8a4b1d5b-0054-419f-84b1-5c8a59ebc829" } ], "create_time":
+        "2015-07-23T02:46:29Z", "vpc_id": "863ccae2-ee85-4d27-bc5b-3ba2a198a9e2",
+        "health_periodic_audit_method": "ELB_AUDIT", "health_periodic_audit_time":
+        5, "health_periodic_audit_grace_period": 600, "instance_terminate_policy":
+        "OLD_CONFIG_OLD_INSTANCE", "is_scaling": false, "delete_publicip": false,
+        "enterprise_project_id": "c92b1a5d-6f20-43f2-b1b7-7ce35e58e413", "multi_az_priority_policy":
+        "PICK_FIRST", "iam_agency_name":"test" } ], "total_number": 1, "start_number":
+        0 }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 05:53:18 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=dd991735735e143a81; path=/
+      - HWWAFSESTIME=1749448398127; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - bacc46399f14901f617074b7bb5d92b7
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - as.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250609T064341Z
+    method: POST
+    uri: https://as.ap-southeast-1.myhwclouds.com/autoscaling-api/v1/ap-southeat-1/scaling_group/test-scaling-group-id/action
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 06:43:41 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=abc0d733e28ec4da6d; path=/
+      - HWWAFSESTIME=1749451421431; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 563fdb55ee02d96d0af8a948b972f346
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

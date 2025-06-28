@@ -1,0 +1,180 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - as.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250609T073701Z
+    method: GET
+    uri: https://as.ap-southeast-1.myhwclouds.com/autoscaling-api/v1/ap-southeat-1/scaling_group?limit=100&start_number=0
+  response:
+    body:
+      string: '{ "scaling_groups": [ { "scaling_group_id": "test-scaling-group-id",
+        "scaling_group_name": "test-scaling-group", "scaling_configuration_id": "test-scaling-config-id",
+        "networks": [ { "id": "invalid-subnet-id" } ], "lbaas_listeners": [ { "pool_id":
+        "invalid-pool-id" } ], "scaling_group_status": "INSERVICE" } ] }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 07:37:02 GMT
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250609T073702Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/subnets/invalid-subnet-id
+  response:
+    body:
+      string: '{"error_msg":"Subnet invalid-subnet-id could not be found","error_code":"VPC.0501"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 07:37:03 GMT
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - elb.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250609T073703Z
+    method: GET
+    uri: https://elb.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/elb/pools/invalid-pool-id
+  response:
+    body:
+      string: '{"NeutronError": {"message": "Pool invalid-pool-id could not be found.",
+        "type": "PoolNotFound", "detail": ""}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 07:37:04 GMT
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - as.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250609T073705Z
+    method: GET
+    uri: https://as.ap-southeast-1.myhwclouds.com/autoscaling-api/v1/ap-southeat-1/scaling_configuration
+  response:
+    body:
+      string: '{ "scaling_configurations": [ { "scaling_configuration_id": "test-scaling-config-id",
+        "scaling_configuration_name": "test-scaling-config", "instance_config": {
+        "disk": [ {"size": 40, "volume_type": "SATA", "disk_type": "SYS"} ], "flavorRef":
+        "c3.large.2", "imageRef": "test-image-id", "security_groups": [ {"id": "invalid-security-group-id"}
+        ] }, "create_time": "2025-05-01T10:00:00Z" } ] }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 07:37:06 GMT
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpc.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250609T073707Z
+    method: GET
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v2.0/security-groups/invalid-security-group-id
+  response:
+    body:
+      string: '{"error_msg":"Security Group invalid-security-group-id could not be found","error_code":"VPC.0501"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 07:37:08 GMT
+    status:
+      code: 404
+      message: Not Found
+version: 1
