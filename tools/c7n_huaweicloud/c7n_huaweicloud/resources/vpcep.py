@@ -88,11 +88,21 @@ class VpcEndpointServiceAndVpcFilter(Filter):
         # need check all vpcs are configured with EP
         if len(vpc_ids) <= 0 and all_vpc:
             client = local_session(self.manager.session_factory).client('vpc')
-            request = ListVpcsRequest()
             try:
-                vpcs = client.list_vpcs(request).vpcs
-                if vpcs:
-                    vpc_ids = [v.id for v in vpcs]
+                marker = None
+                limit = 200
+                while True:
+                    request = ListVpcsRequest()
+                    request.limit = limit
+                    if marker:
+                        request.marker = marker
+                    vpcs = client.list_vpcs(request).vpcs
+                    if vpcs:
+                        vpc_ids.extend([v.id for v in vpcs])
+                    marker = self.get_next_marker(vpcs, limit)
+                    self.log.debug(f"get all vpcs vpc_ids:{vpc_ids}, marker:{marker}")
+                    if marker is None:
+                        break
                 self.log.info(f"get all vpcs vpc_ids:{vpc_ids}")
             except exceptions.ClientRequestException as e:
                 self.log.error(
@@ -144,6 +154,12 @@ class VpcEndpointServiceAndVpcFilter(Filter):
         # If all vpc_ids exist, return empty list (no issues found)
         return []
 
+    def get_next_marker(self, vpcs, limit):
+        '''get the marker for pargination'''
+        if len(vpcs) < limit:
+            return None
+        # get the last vpc_id as marker
+        return vpcs[limit - 1].id
 
 @VpcEndpoint.action_registry.register('eps-check-ep-msg')
 class VpcEndpointSendMsg(HuaweiCloudBaseAction):
