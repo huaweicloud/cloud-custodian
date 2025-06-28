@@ -101,7 +101,7 @@ class VpcEndpointServiceAndVpcFilter(Filter):
                     f"error code:{e.error_code}, "
                     f"error message:{e.error_msg}."
                 )
-                raise
+                raise Exception('get all vpc failed')
 
         # Validate if endpoint_service_name is valid
         if not endpoint_service_name:
