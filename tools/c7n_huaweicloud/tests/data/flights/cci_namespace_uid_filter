@@ -1,0 +1,91 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250609T081500Z
+      content-length:
+      - '0'
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: GET
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces
+  response:
+    body:
+      string: '{
+  "apiVersion" : "v1",
+  "items" : [ {
+    "metadata" : {
+      "creationTimestamp" : "2017-06-24T02:05:16Z",
+      "name" : "default",
+      "resourceVersion" : "6",
+      "selfLink" : "/apis/cci/v2/namespaces/default",
+      "uid" : "test-uid-123"
+    },
+    "spec" : {
+      "finalizers" : [ "kubernetes" ]
+    },
+    "status" : {
+      "phase" : "Active"
+    }
+  }, {
+    "metadata" : {
+      "creationTimestamp" : "2017-06-24T02:05:17Z",
+      "name" : "kube-system",
+      "resourceVersion" : "25",
+      "selfLink" : "/apis/cci/v2/namespaces/kube-system",
+      "uid" : "9178fce6-5881-11e7-b5d7-fa163e08a2fd"
+    },
+    "spec" : {
+      "finalizers" : [ "kubernetes" ]
+    },
+    "status" : {
+      "phase" : "Active"
+    }
+  } ],
+  "kind" : "NamespaceList",
+  "metadata" : {
+    "resourceVersion" : "594181",
+    "selfLink" : "/apis/cci/v2/namespaces"
+  }
+}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 08:15:00 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=238c27cdc018d5e43a; path=/
+      - HWWAFSESTIME=1749456898063; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - b74fe03fd63afeb0eca18bfe0e499bb7
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
