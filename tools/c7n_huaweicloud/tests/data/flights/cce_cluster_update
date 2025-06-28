@@ -1,0 +1,156 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T085723Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+  response:
+    body:
+      string: "{\"kind\": \"Cluster\", \"apiVersion\": \"v3\", \"items\": [{\"kind\":
+        \"Cluster\", \"apiVersion\": \"v3\", \"metadata\": {\"name\": \"test-cluster-to-update\",
+        \"uid\": \"cluster-update-test-id-101\", \"creationTimestamp\": \"2023-01-15T08:00:00Z\",
+        \"updateTimestamp\": \"2023-01-16T10:30:00Z\"}, \"spec\": {\"type\": \"VirtualMachine\",
+        \"flavor\": \"cce.s1.small\", \"version\": \"v1.21.5-r0\", \"platformVersion\":
+        \"3.1.0\", \"description\": \"\u96C6\u7FA4\u66F4\u65B0\u6D4B\u8BD5\", \"customSan\":
+        [\"example.com\"], \"enableMasterVolumeEncryption\": false}, \"status\": {\"phase\":
+        \"Available\", \"jobID\": \"\", \"reason\": \"\", \"message\": \"\", \"endpoints\":
+        []}}]}"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 08:57:23 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1750323442513; path=/
+      - HWWAFSESID=a5ccd792336fc772c9; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7e72ee17c70601a8df821bf5f7262e5c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"spec": {"description": "updated_description", "customSan": ["example.com",
+      "test.example.com"], "deletionProtection": true}, "metadata": {"alias": "updated-cluster-alias"}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '174'
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250620T011332Z
+    method: PUT
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters/cluster-update-test-id-101
+  response:
+    body:
+      string: '{
+        "kind" : "Cluster",
+        "apiVersion" : "v3",
+        "metadata" : {
+          "alias" : "updated-cluster-alias",
+          "name" : "test-cluster-to-update",
+          "uid" : "4d1ecb2c-229a-11e8-9c75-0255ac100ceb",
+          "creationTimestamp" : "2018-08-02 03:48:58.968214406 +0000 UTC",
+          "updateTimestamp" : "2018-08-02 06:39:36.844676088 +0000 UTC"
+        },
+        "spec" : {
+          "type" : "VirtualMachine",
+          "flavor" : "cce.s1.small",
+          "version" : "v1.7.3-r13",
+          "description" : "updated_description",
+          "customSan" : [ "example.com", "test.example.com" ],
+          "deletion_protection": True
+          "hostNetwork" : {
+            "vpc" : "4d1ecb2c-229a-11e8-9c75-0255ac100ceb",
+            "subnet" : "4d1ecb2c-229a-11e8-9c75-0255ac100ceb",
+            "SecurityGroup" : "6ee29825-8f49-4796-b33a-fc76f84a59ae"
+          },
+          "containerNetwork" : {
+            "mode" : "overlay_l2",
+            "cidr" : "172.17.0.0/16"
+          },
+          "authentication" : {
+            "mode" : "x509",
+            "authenticatingProxy" : { }
+          },
+          "billingMode" : 0
+        },
+        "status" : {
+          "phase" : "Available",
+          "endpoints" : [ {
+            "url" : "https://192.168.0.11:5443",
+            "type" : "Internal"
+          } ]
+        }
+      }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 01:13:32 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=5d88773bda03036cd8; path=/
+      - HWWAFSESTIME=1750382012402; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6c1ea8681bb4541746db0d36fb7d26fb
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1
