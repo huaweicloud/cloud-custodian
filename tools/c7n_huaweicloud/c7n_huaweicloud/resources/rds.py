@@ -139,7 +139,6 @@ class DiskAutoExpansionFilter(Filter):
                 if auto_expansion_enabled == enabled:
                     matched_resources.append(resource)
             except Exception as e:
-                print(e)
                 self.log.error(
                     f"Failed to get auto-expansion policy for RDS instance {resource['name']} "
                     f"(ID: {instance_id}): {e}")

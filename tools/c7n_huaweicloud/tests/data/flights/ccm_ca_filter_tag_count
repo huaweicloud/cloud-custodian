@@ -9,13 +9,13 @@ interactions:
       Connection:
       - keep-alive
       Host:
-      - iam.ap-southeast-3.myhuaweicloud.com
+      - iam.sa-brazil-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Sdk-Date:
       - 20250521T094204Z
     method: GET
-    uri: https://iam.ap-southeast-3.myhuaweicloud.com/v3/auth/domains
+    uri: https://iam.sa-brazil-1.myhuaweicloud.com/v3/auth/domains
   response:
     body:
       string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
@@ -58,7 +58,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -66,7 +66,7 @@ interactions:
       X-Sdk-Date:
       - 20250523T080014Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
   response:
     body:
       string: '{ "total" : 1, "certificate_authorities" : [ { "signature_algorithm"
@@ -118,7 +118,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -126,7 +126,7 @@ interactions:
       X-Sdk-Date:
       - 20250523T080249Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
   response:
     body:
       string: '{ "tags" : [ { "key" : "key1", "value" : "value1" }, { "key" : "key2",
@@ -170,7 +170,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -178,7 +178,7 @@ interactions:
       X-Sdk-Date:
       - 20250527T023627Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/ca-tagged-id/tags
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities/ca-tagged-id/tags
   response:
     body:
       string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"0e56a89d5dac069e4c9a424a0e3853ad"}
@@ -208,6 +208,59 @@ interactions:
       - SAMEORIGIN
       X-Request-Id:
       - 0e56a89d5dac069e4c9a424a0e3853ad
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.sa-brazil-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250623T071256Z
+    method: GET
+    uri: https://iam.sa-brazil-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"df611d810cf6b8b59c0992df918444c5"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 23 Jun 2025 07:12:56 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=31ef685f2340840090; path=/
+      - HWWAFSESTIME=1750662773431; path=/
+      - HWWAFSESTIME=1750662772532; path=/
+      - HWWAFSESID=c299ad3d38d58a5f4c; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - df611d810cf6b8b59c0992df918444c5
       X-XSS-Protection:
       - 1; mode=block;
     status:

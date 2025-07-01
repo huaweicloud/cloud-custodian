@@ -9,13 +9,13 @@ interactions:
       Connection:
       - keep-alive
       Host:
-      - iam.ap-southeast-3.myhuaweicloud.com
+      - iam.sa-brazil-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Sdk-Date:
       - 20250521T094204Z
     method: GET
-    uri: https://iam.ap-southeast-3.myhuaweicloud.com/v3/auth/domains
+    uri: https://iam.sa-brazil-1.myhuaweicloud.com/v3/auth/domains
   response:
     body:
       string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
@@ -58,7 +58,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -66,7 +66,7 @@ interactions:
       X-Sdk-Date:
       - 20250523T080014Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
   response:
     body:
       string: '{ "total" : 1, "certificate_authorities" : [ { "signature_algorithm"
@@ -118,7 +118,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -126,7 +126,7 @@ interactions:
       X-Sdk-Date:
       - 20250523T080249Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
   response:
     body:
       string: '{ "tags" : [ { "key" : "key1", "value" : "value1" }, { "key" : "key2",
@@ -172,7 +172,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -180,7 +180,7 @@ interactions:
       X-Sdk-Date:
       - 20250527T022632Z
     method: POST
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/ca-test-id/disable
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities/ca-test-id/disable
   response:
     body:
       string: ''
@@ -223,7 +223,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -231,7 +231,7 @@ interactions:
       X-Sdk-Date:
       - 20250527T022753Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/ca-test-id/tags
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities/ca-test-id/tags
   response:
     body:
       string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"e510704def98fcdd203bfeb56df1a79c"}
@@ -261,6 +261,59 @@ interactions:
       - SAMEORIGIN
       X-Request-Id:
       - e510704def98fcdd203bfeb56df1a79c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - iam.sa-brazil-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Sdk-Date:
+      - 20250623T071206Z
+    method: GET
+    uri: https://iam.sa-brazil-1.myhuaweicloud.com/v3/auth/domains
+  response:
+    body:
+      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"0c90c309100056c9cbd6fdb8f01cc705"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 23 Jun 2025 07:12:07 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=c311f7620431465a8e; path=/
+      - HWWAFSESTIME=1750662727766; path=/
+      - HWWAFSESTIME=1750662726866; path=/
+      - HWWAFSESID=5cee09a42e08ac991c; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 0c90c309100056c9cbd6fdb8f01cc705
       X-XSS-Protection:
       - 1; mode=block;
     status:

@@ -12,9 +12,9 @@ log = logging.getLogger('custodian.huaweicloud.filters.vpc')
 
 
 class MatchResourceValidator:
-    """验证匹配资源的过滤器参数
+    """Verify the filter parameters for matching resources.
 
-    用于验证带有 match-resource 参数的过滤器配置
+    Used to verify filter configuration with match-resource parameter.
     """
 
     def validate(self):
@@ -24,10 +24,10 @@ class MatchResourceValidator:
 
 
 class SecurityGroupFilter(MatchResourceValidator, RelatedResourceFilter):
-    """根据关联的安全组过滤资源
+    """Filter resources based on associated security groups attributes.
 
-    此过滤器允许根据关联的安全组属性筛选资源，
-    比如根据安全组名称、ID或标签等。
+    This filter allows filtering resources based on associated security group attributes,
+    such as security group name, ID, or tags.
 
     :example:
 
@@ -47,16 +47,18 @@ class SecurityGroupFilter(MatchResourceValidator, RelatedResourceFilter):
            'operator': {'enum': ['and', 'or']}})
     schema_alias = True
 
-    # 关联的资源类型为华为云安全组
+    # The associated resource type is huaweicloud.vpc-security-group
     RelatedResource = "c7n_huaweicloud.resources.vpc.SecurityGroup"
     AnnotationKey = "matched-security-groups"
 
 
 class SubnetFilter(MatchResourceValidator, RelatedResourceFilter):
-    """根据关联的子网属性过滤资源
+    """Filter resources based on associated subnet attributes.
 
-    此过滤器用于网络附加的资源，可根据子网的属性进行过滤。
-    比如查找连接到特定子网的资源，或者查找连接到公共子网的资源。
+    This filter is used for network attached resources and can be filtered
+    based on the attributes of subnets.
+    For example, searching for resources connected to a specific subnet,
+    or searching for resources connected to a public subnet.
 
     :example:
 
@@ -129,17 +131,17 @@ class SubnetFilter(MatchResourceValidator, RelatedResourceFilter):
             return False
 
         if self.check_igw:
-            # 如果需要公共子网，则检查VPC是否有到互联网的路由
+            # If a public subnet is required, check whether the VPC has a route to the Internet
             return bool(self.route_tables.get(vpc_id))
         else:
-            # 如果需要私有子网，则检查VPC是否没有到互联网的路由
+            # If a private subnet is required, check whether the VPC has no route to the Internet
             return not bool(self.route_tables.get(vpc_id))
 
 
 class VpcFilter(MatchResourceValidator, RelatedResourceFilter):
-    """根据关联的VPC过滤资源
+    """Filter resources based on associated vpc attributes.
 
-    此过滤器允许根据VPC的属性筛选资源。
+    This filter allows filtering resources based on VPC attributes.
 
     :example:
 
@@ -164,9 +166,9 @@ class VpcFilter(MatchResourceValidator, RelatedResourceFilter):
 
 
 class DefaultVpcBase(Filter):
-    """过滤默认VPC中的资源
+    """Filter resources in the default VPC
 
-    用于识别位于默认VPC中的资源。
+    Used to filter resources in the default VPC.
 
     :example:
 
@@ -184,7 +186,7 @@ class DefaultVpcBase(Filter):
 
     def match(self, vpc_id):
         if self.default_vpc is None:
-            self.log.debug("查询默认VPC %s" % vpc_id)
+            self.log.debug("Query default VPC %s" % vpc_id)
             client = local_session(self.manager.session_factory).client('vpc')
             vpcs = []
             for vpc in client.list_vpcs().vpcs:
@@ -196,11 +198,14 @@ class DefaultVpcBase(Filter):
 
 
 class NetworkLocation(Filter):
-    """检查网络附加资源的安全组、子网和资源属性的交集
+    """Check the intersection of security groups, subnets,
+    and resource attributes of network attached resources
 
-    此过滤器用于专门的用例，对于大多数用例使用 `subnet` 和
-    `security-group` 过滤器就足够了。例如，要验证ECS实例是否仅使用
-    具有给定标签值的子网和安全组，并且该标签在资源上不存在。
+    This filter is designed for specific cases, and for most use cases,
+    using the 'subnet' and 'security group' filters is sufficient.
+    For example, to verify whether an ECS instance only uses subnets
+    and security groups with a given tag value,
+    and that the tag does not exist on the resource.
 
     :example:
 
@@ -227,20 +232,20 @@ class NetworkLocation(Filter):
             'type': 'boolean',
             'default': False,
             'description': (
-                "如何处理元素上的缺失键，默认情况下这会导致"
-                "资源被视为不相等")},
+                "How to deal with missing keys on elements, "
+                "which by default can cause resources to be treated as unequal")},
             'match': {'type': 'string', 'enum': ['equal', 'not-equal', 'in'],
                       'default': 'non-equal'},
             'compare': {
                 'type': 'array',
                 'description': (
-                    '比较网络位置时应考虑的元素。'),
+                    'Elements to consider when comparing network locations.'),
                 'default': ['resource', 'subnet', 'security-group'],
                 'items': {
                     'enum': ['resource', 'subnet', 'security-group']}},
             'key': {
                 'type': 'string',
-                'description': '应匹配的属性表达式'},
+                'description': 'The attribute expression that should be matched.'},
             'max-cardinality': {
                 'type': 'integer', 'default': 1,
                 'title': ''},
@@ -255,12 +260,12 @@ class NetworkLocation(Filter):
         rfilters = self.manager.filter_registry.keys()
         if 'subnet' not in rfilters:
             raise PolicyValidationError(
-                "network-location 要求资源子网过滤器在 %s 上可用" % (
+                "network-location requires subnet filters to be available on %s" % (
                     self.manager.data))
 
         if 'security-group' not in rfilters:
             raise PolicyValidationError(
-                "network-location 要求资源安全组过滤器在 %s 上可用" % (
+                "network-location requires security-group filters to be available on %s" % (
                     self.manager.data))
         return self
 
@@ -275,7 +280,7 @@ class NetworkLocation(Filter):
         self.subnet_model = self.manager.get_resource_manager('subnet').get_model()
         self.vf = self.manager.filter_registry.get('value')({}, self.manager)
 
-        # 过滤选项
+        # filter options
         key = self.data.get('key')
         self.compare = self.data.get('compare', ['subnet', 'security-group', 'resource'])
         self.max_cardinality = self.data.get('max-cardinality', 1)

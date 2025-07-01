@@ -68,3 +68,28 @@ class AlarmNameSpaceAndMetricFilter(Filter):
                 return False
 
         return True
+
+
+class AlarmNotificationFilter(Filter):
+    schema = type_schema(
+        'alarm-notification',
+        required=['notification_list'],
+        notification_list={'type': 'array', 'items': {'type': 'string'}},
+    )
+
+    def process(self, resources, event=None):
+        target_set = set(self.data['notification_list'])  # 参数列表转为集合
+        matched = []
+        for alarm in resources:
+            if not alarm.get('notification_enabled'):
+                matched.append(alarm)
+                continue
+
+            policies = alarm.get('alarm_notifications', [])
+            if not any(self._is_target_contained(policy, target_set) for policy in policies):
+                matched.append(alarm)
+        return matched
+
+    def _is_target_contained(self, policy, target_set):
+        policy_list = set(policy.get('notification_list', []))
+        return target_set.issubset(policy_list)  # 参数列表是否为policy子集

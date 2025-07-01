@@ -9,13 +9,13 @@ interactions:
       Connection:
       - keep-alive
       Host:
-      - iam.ap-southeast-3.myhuaweicloud.com
+      - iam.sa-brazil-1..myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Sdk-Date:
       - 20250521T094204Z
     method: GET
-    uri: https://iam.ap-southeast-3.myhuaweicloud.com/v3/auth/domains
+    uri: https://iam.sa-brazil-1.myhuaweicloud.com/v3/auth/domains
   response:
     body:
       string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
@@ -58,7 +58,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -66,7 +66,7 @@ interactions:
       X-Sdk-Date:
       - 20250523T080014Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
   response:
     body:
       string: '{ "total" : 1, "certificate_authorities" : [ { "signature_algorithm"
@@ -118,7 +118,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -126,7 +126,7 @@ interactions:
       X-Sdk-Date:
       - 20250523T080249Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
   response:
     body:
       string: '{ "tags" : [ { "key" : "key1", "value" : "value1" }, { "key" : "key2",
@@ -170,7 +170,7 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.sa-brazil-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
@@ -178,7 +178,7 @@ interactions:
       X-Sdk-Date:
       - 20250527T023324Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/ca-tagged-id/tags
+    uri: https://ccm.sa-brazil-1.myhuaweicloud.com/v1/private-certificate-authorities/ca-tagged-id/tags
   response:
     body:
       string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"a0cd333b546cb7b9f80c914a639f9960"}

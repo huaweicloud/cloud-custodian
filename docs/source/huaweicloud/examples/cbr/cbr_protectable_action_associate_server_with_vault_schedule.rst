@@ -20,14 +20,13 @@ policies:
           value: empty
     actions:
       - type: associate_server_with_vault
-        backup_policy_id: "bc715c62-f4ed-4fc0-9e78-ce43b9409a39"
+        backup_policy: ""
         consistent_level: "crash_consistent"
         object_type: "server"
         protect_type: "backup"
+        is_multi_az: false
         size: 100
         charging_mode: "post_paid"
-        period_type: "year"
-        period_num: 1
-        is_auto_renew: true
-        is_auto_pay: true
-        name: "new_vault"
+        is_auto_renew: True
+        is_auto_pay: True  
+        name: "vault"
