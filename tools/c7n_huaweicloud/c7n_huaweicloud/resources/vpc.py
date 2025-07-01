@@ -31,7 +31,8 @@ from huaweicloudsdkvpc.v3 import (
     DeleteSecurityGroupRuleRequest,
     BatchCreateSecurityGroupRulesRequest,
     BatchCreateSecurityGroupRulesRequestBody,
-    BatchCreateSecurityGroupRulesOption
+    BatchCreateSecurityGroupRulesOption,
+    ShowAddressGroupRequest
 )
 
 from c7n.exceptions import PolicyValidationError
@@ -1029,14 +1030,43 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                                                           protocol,
                                                           sg,
                                                           risk_rule_ports)
+                if not risk_rule_ports:
+                    continue
                 # trust ip
                 rule_ip = rule.get('remote_ip_prefix')
+                rule_ag_id = rule.get('remote_address_group_id')
                 if rule_ip and rule_ip != '0.0.0.0/0' and rule_ip.endswith('/32'):
                     rule_ip_int = int(netaddr.IPAddress(rule_ip[:-3]))
                     risk_rule_ports = self._handle_trust_port(extend_trust_ip_obj,
                                                               protocol,
                                                               rule_ip_int,
                                                               risk_rule_ports)
+                elif rule_ag_id:
+                    client = self.manager.get_client()
+                    ips = []
+                    try:
+                        request = ShowAddressGroupRequest(address_group_id=rule_ag_id)
+                        response = client.show_address_group(request)
+                        ag = response.address_group.to_dict()
+                        ips = ag['ip_set']
+                    except exceptions.ClientRequestException as ex:
+                        log.exception("Unable to show remote address group in security group "
+                                      "rule %s RequestId: %s, Reason: %s." %
+                                      (rule_ag_id, ex.request_id, ex.error_msg))
+                    trust_all_ips = True
+                    for ip in ips:
+                        if '/' in ip and not ip.endswith('/32'):
+                            trust_all_ips = False
+                            break
+                        ip = ip[:-3] if ip.endswith('/32') else ip
+                        ip_int = int(netaddr.IPAddress(ip))
+                        if self._handle_trust_port(extend_trust_ip_obj, protocol,
+                                                   ip_int, risk_rule_ports):
+                            trust_all_ips = False
+                            break
+                    if trust_all_ips:
+                        risk_rule_ports = []
+
                 if risk_rule_ports:
                     results.append(rule)
 
