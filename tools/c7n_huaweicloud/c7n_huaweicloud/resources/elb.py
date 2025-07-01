@@ -1,7 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from c7n_huaweicloud.actions.elb import (LoadbalancerDeleteAction,
+from c7n_huaweicloud.actions.elb import (ListenerRedirectAction, LoadbalancerDeleteAction,
                                          LoadbalancerEnableLoggingAction,
                                          LoadbalancerUnbindPublicipsAction,
                                          LoadbalancerCreateLTSLogTransferAction,
@@ -14,7 +14,8 @@ from c7n_huaweicloud.filters.elb import (ELBAgeFilter,
                                          LoadbalancerIsLoggingFilter,
                                          LoadbalancerPublicipCountFilter,
                                          LoadbalancerIsLTSLogTransferFilter,
-                                         LoadbalancerIsNotLTSLogTransferFilter)
+                                         LoadbalancerIsNotLTSLogTransferFilter,
+                                         ListenerRedirectListenerFilter)
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
@@ -58,6 +59,8 @@ class Listener(QueryResourceManager):
 
 Listener.action_registry.register('delete', ListenerDeleteAction)
 Listener.action_registry.register('set-acl-ipgroup', ListenerSetAclIpgroupAction)
+Listener.action_registry.register('redirect-to-https-listener', ListenerRedirectAction)
 
 Listener.filter_registry.register('attributes', ELBAttributesFilter)
 Listener.filter_registry.register('age', ELBAgeFilter)
+Listener.filter_registry.register('is-redirect-to-https-listener', ListenerRedirectListenerFilter)

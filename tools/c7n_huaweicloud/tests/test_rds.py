@@ -170,7 +170,6 @@ class RDSTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        print(resources)
         self.assertGreater(len(resources), 0,
                            "Test VCR file should contain RDS instances with audit logs disabled")
         # The VCR file for testing should contain calls and responses to

@@ -17,7 +17,7 @@ class KafkaInstanceTest(BaseTest):
         factory = self.replay_flight_data('kafka_query')
         p = self.load_policy({
             'name': 'kafka-query-test',
-            'resource': 'huaweicloud.kafka'},
+            'resource': 'huaweicloud.dms-kafka'},
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)  # 假设录像带中有1个实例
@@ -41,7 +41,7 @@ class KafkaInstanceTest(BaseTest):
         factory = self.replay_flight_data('kafka_filter_sg')
         p = self.load_policy({
             'name': 'kafka-filter-sg-test',
-            'resource': 'huaweicloud.kafka',
+            'resource': 'huaweicloud.dms-kafka',
             'filters': [{
                 'type': 'security-group',
                 'key': 'id',  # 或 name
@@ -58,7 +58,7 @@ class KafkaInstanceTest(BaseTest):
         # 测试创建时间大于等于1天的实例
         p_ge = self.load_policy({
             'name': 'kafka-filter-age-ge-test',
-            'resource': 'huaweicloud.kafka',
+            'resource': 'huaweicloud.dms-kafka',
             'filters': [{'type': 'age', 'days': 1, 'op': 'gt'}]},  # 大于等于
             session_factory=factory)
         resources_ge = p_ge.run()
@@ -67,7 +67,7 @@ class KafkaInstanceTest(BaseTest):
         # 测试创建时间小于1000天的实例 (假设实例满足)
         p_lt = self.load_policy({
             'name': 'kafka-filter-age-lt-test',
-            'resource': 'huaweicloud.kafka',
+            'resource': 'huaweicloud.dms-kafka',
             'filters': [{'type': 'age', 'days': 2000, 'op': 'lt'}]},  # 小于
             session_factory=factory)
         resources_lt = p_lt.run()
@@ -78,7 +78,7 @@ class KafkaInstanceTest(BaseTest):
         # 测试配置项等于期望值 (假设 auto.create.topics.enable 为 true)
         p_eq_true = self.load_policy({
             'name': 'kafka-filter-config-eq-true-test',
-            'resource': 'huaweicloud.kafka',
+            'resource': 'huaweicloud.dms-kafka',
             'filters': [{
                 'type': 'config-compliance',
                 'key': 'auto.create.groups.enable',
@@ -91,7 +91,7 @@ class KafkaInstanceTest(BaseTest):
 
         p_ne = self.load_policy({
             'name': 'kafka-filter-config-ne-test',
-            'resource': 'huaweicloud.kafka',
+            'resource': 'huaweicloud.dms-kafka',
             'filters': [{
                 'type': 'config-compliance',
                 'key': 'message.max.bytes',
@@ -104,7 +104,7 @@ class KafkaInstanceTest(BaseTest):
 
         p_ne = self.load_policy({
             'name': 'kafka-filter-config-ne-test',
-            'resource': 'huaweicloud.kafka',
+            'resource': 'huaweicloud.dms-kafka',
             'filters': [{
                 'type': 'config-compliance',
                 'key': 'message.max.bytes',
@@ -135,7 +135,7 @@ class KafkaInstanceTest(BaseTest):
         factory = self.replay_flight_data('kafka_action_set_config')
         p = self.load_policy({
             'name': 'kafka-action-set-config-test',
-            'resource': 'huaweicloud.kafka',
+            'resource': 'huaweicloud.dms-kafka',
             'filters': [{  # 假设找到需要修改配置的实例
                 'type': 'config-compliance',
                 'key': 'enable.log.collection',

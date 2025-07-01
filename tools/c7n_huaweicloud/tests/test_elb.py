@@ -24,3 +24,24 @@ class ElbTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['id'], "f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3")
         self.assertEqual(resources[0]['protocol'], "UDP")
+
+    def test_redirect_listener(self):
+        factory = self.replay_flight_data('elb_redirect_listener_request')
+        p = self.load_policy({
+            "name": "redirect-listener",
+            "resource": "huaweicloud.elb-listener",
+            "filters": [{
+                "type": "attributes",
+                "key": "protocol",
+                "value": "HTTP"
+            }, {"not": [{
+                "type": "is-redirect-to-https-listener"
+            }]}],
+            "actions": [{
+                "type": "redirect-to-https-listener"
+            }]
+        }, session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['id'], "f2a4ffc4-3121-46f6-8a2d-ba6ccd7258a3")
+        self.assertEqual(resources[0]['protocol'], "HTTP")

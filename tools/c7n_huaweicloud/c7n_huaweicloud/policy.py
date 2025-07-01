@@ -37,11 +37,44 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'handler': {'type': 'string'},
             'memory_size': {'type': 'number'},
             'xrole': {'type': 'string'},
-            'func_vpc': {'type': 'object', 'required': ['vpc_id', 'subnet_id']},
+            'func_vpc': {
+                'oneOf': [
+                    {
+                        'type': 'object',
+                        'required': ['vpc_name', 'subnet_name', 'cidr'],
+                        'properties': {
+                            'vpc_name': {'type': 'string'},
+                            'subnet_name': {'type': 'string'},
+                            'cidr': {'type': 'string'},
+                            'is_safety': {'type': 'boolean'},
+                        },
+                    },
+                    {
+                        'type': 'object',
+                        'required': ['vpc_id', 'subnet_id'],
+                        'properties': {
+                            'vpc_id': {'type': 'string'},
+                            'subnet_id': {'type': 'string'},
+                            'is_safety': {'type': 'boolean'},
+                        },
+                    },
+                ],
+            },
             'description': {'type': 'string'},
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},
             'log_config': {'type': 'object'},
+            'func_tags': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'required': ['key', 'value'],
+                    'properties': {
+                        'key': {'type': 'string'},
+                        'value': {'type': 'string'},
+                    }
+                }
+            },
             'async_invoke_config': {
                 'type': "object",
                 'additionalProperties': False,
@@ -206,7 +239,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
 
     def validate(self):
         super(FunctionGraphMode, self).validate()
-        prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
+        prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
         MAX_FUNCTIONGRAPH_NAME_LENGTH = 64
         if len(prefix + self.policy.name) > MAX_FUNCTIONGRAPH_NAME_LENGTH:
             raise PolicyValidationError(
@@ -294,7 +327,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         # auto tag with schedule name and group to link function to
         # EventBridge schedule when using schedule mode
         if self.policy.data['mode']['type'] == 'schedule':
-            prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
+            prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
             name = self.policy.data['name']
             group = self.policy.data['mode'].get('group-name', 'default')
             tags['custodian-schedule'] = f'name={prefix + name}:group={group}'

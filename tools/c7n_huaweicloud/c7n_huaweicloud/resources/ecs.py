@@ -36,7 +36,10 @@ from huaweicloudsdkecs.v2 import (
     UpdateServerMetadataRequest,
     DeleteServersRequestBody,
     DeleteServersRequest,
-    DeleteServerMetadataRequest
+    DeleteServerMetadataRequest,
+    ShowServerMetadataOptionsRequest,
+    UpdateServerMetadataOptionsRequest,
+    UpdateServerMetadataOptionsRequestBody
 )
 from huaweicloudsdkims.v2 import (
     CreateWholeImageRequestBody,
@@ -880,6 +883,51 @@ class InstanceDeleteMetadataKey(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         pass
+
+
+@Ecs.action_registry.register("instance-update-imds-token")
+class InstancUpdateMetadataOptions(HuaweiCloudBaseAction):
+    """Update Instance imds version
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+        - name: instance-update-imds-token
+            resource: huaweicloud.ecs
+            filters:
+            - type: instance-imds-token
+                http_tokens: optional
+            actions:
+            - type: instance-update-imds-token
+                http_tokens: required
+
+    """
+
+    schema = type_schema("instance-update-imds-token",
+                         http_tokens={"enum": ["optional", "required"]})
+
+    def process(self, resources):
+        results = []
+        http_tokens = self.data.get("http_tokens")
+        if http_tokens is None:
+            self.log.error("http_tokens should not be None")
+            return results
+        client = self.manager.get_client()
+        for resource in resources:
+            body = UpdateServerMetadataOptionsRequestBody(http_tokens=http_tokens)
+            request = UpdateServerMetadataOptionsRequest(server_id=resource["id"], body=body)
+            try:
+                response = client.update_server_metadata_options(request)
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                continue
+            results.append(json.dumps(response.to_dict()))
+        return results
+
+    def perform_action(self, resource):
+        pass
 # ---------------------------ECS Filter-------------------------------------#
 
 
@@ -983,7 +1031,7 @@ class InstanceAttributeFilter(ValueFilter):
         for resource in resources:
             userData = resource.get("OS-EXT-SRV-ATTR:user_data", "")
             flavorId = resource["flavor"]["id"]
-            rootDeviceName = ["OS-EXT-SRV-ATTR:root_device_name"]
+            rootDeviceName = resource.get("OS-EXT-SRV-ATTR:root_device_name", "")
             attributes = {
                 "OS-EXT-SRV-ATTR:user_data": {"Value": deserialize_user_data(userData)},
                 "flavorId": {"Value": flavorId},
@@ -1458,4 +1506,68 @@ class InstanceTag(ValueFilter):
             else:
                 if self.match(resource):
                     results.append(resource)
+        return results
+
+
+@Ecs.filter_registry.register("instance-imds-token")
+class InstanceMetadataOptionsToken(Filter):
+    """ECS instance imds filter.
+
+    :Example:
+
+    .. code-block:: yaml
+
+       policies:
+         - name: instance-imds-version
+           resource: huaweicloud.ecs
+           filters:
+             - type: instance-imds-version
+               http_tokens: optional
+    """
+
+    schema = type_schema("instance-imds-token",
+                         http_tokens={"enum": ["optional", "required"]})
+    schema_alias = False
+    batch_size = 50
+
+    def process(self, resources, event=None):
+        results = []
+        http_tokens = self.data.get("http_tokens")
+        if http_tokens is None:
+            self.log.error("http_tokens should not be None")
+            return results
+        client = self.manager.get_client()
+        instance_metadata_options_map = {}
+        index_dict = {r['id']: r for r in resources}
+        with self.executor_factory(max_workers=10) as w:
+            futures = {}
+            for instence_set in utils.chunks(resources, self.batch_size):
+                futures[w.submit(self.show_server_metadata_options, instence_set, client)] = (
+                    instence_set
+                )
+            for f in as_completed(futures):
+                if f.exception():
+                    self.log.error(
+                        "Error show server metadata-options on instance set %s", f.exception()
+                    )
+                instance_metadata_options_map.update(f.result())
+        for key, value in instance_metadata_options_map.items():
+            if value.http_tokens == http_tokens:
+                results.append(index_dict.get(key))
+            # 特殊处理http_tokens为null的场景
+            elif value.http_tokens is None and http_tokens == "optional":
+                self.log.info("server %s http_tokens is null", key)
+                results.append(index_dict.get(key))
+        return results
+
+    def show_server_metadata_options(self, instence_set, ecs_client):
+        results = {}
+        for r in instence_set:
+            req = ShowServerMetadataOptionsRequest(server_id=r["id"])
+            try:
+                resp = ecs_client.show_server_metadata_options(req)
+            except exceptions.ClientRequestException as e:
+                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                continue
+            results.setdefault(r["id"], resp)
         return results

@@ -66,7 +66,7 @@ from huaweicloudsdkims.v2 import ImsClient, ListImagesRequest
 from huaweicloudsdkcbr.v1.region.cbr_region import CbrRegion
 from huaweicloudsdkcbr.v1 import CbrClient
 from huaweicloudsdksmn.v2.region.smn_region import SmnRegion
-from huaweicloudsdksmn.v2 import SmnClient, ListTopicsRequest
+from huaweicloudsdksmn.v2 import SmnClient as SmnSdkClient, ListTopicsRequest
 from huaweicloudsdknat.v2.region.nat_region import NatRegion
 from huaweicloudsdknat.v2 import (
     ListNatGatewaysRequest,
@@ -139,6 +139,9 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
+from huaweicloudsdkvpcep.v1 import VpcepClient
+from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
+from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -152,14 +155,15 @@ class Session:
         self.region = None
         self.ak = None
         self.sk = None
-
         if options is not None:
             self.ak = options.get("access_key_id")
             self.sk = options.get("secret_access_key")
             self.token = options.get("security_token")
             self.domain_id = options.get("domain_id")
             self.region = options.get("region")
-
+            self.domain_name = options.get("name")
+            self.status = options.get("status")
+            self.tags = options.get("tags")
         self.ak = self.ak or os.getenv("HUAWEI_ACCESS_KEY_ID")
         self.sk = self.sk or os.getenv("HUAWEI_SECRET_ACCESS_KEY")
         self.region = self.region or os.getenv("HUAWEI_DEFAULT_REGION")
@@ -362,13 +366,6 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region))
                 .build()
             )
-        elif service == "smn":
-            client = (
-                SmnClient.new_builder()
-                .with_credentials(credentials)
-                .with_region(SmnRegion.value_of(self.region))
-                .build()
-            )
         elif service in ["nat_gateway", "nat_snat_rule", "nat_dnat_rule"]:
             client = (
                 NatClient.new_builder()
@@ -535,7 +532,14 @@ class Session:
             client = (
                 CcmClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(CcmRegion.value_of("ap-southeast-3"))
+                .with_region(CcmRegion.value_of("sa-brazil-1"))
+                .build()
+            )
+        elif service == 'vpcep-ep':
+            client = (
+                VpcepClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(VpcepRegion.value_of(self.region))
                 .build()
             )
         return client
@@ -607,9 +611,9 @@ class Session:
         elif service == "functiongraph":
             request = ListFunctionsRequest()
         elif service == "elb_loadbalancer":
-            request = ListLoadBalancersRequest()
+            request = ListLoadBalancersRequest(enterprise_project_id=["all_granted_eps"])
         elif service == "elb_listener":
-            request = ListListenersRequest()
+            request = ListListenersRequest(enterprise_project_id=["all_granted_eps"])
         elif service == "eip":
             request = ListPublicipsRequest()
         elif service == "ims":
@@ -688,4 +692,35 @@ class Session:
             request = ListCertificateAuthorityRequest()
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
+        elif service == 'vpcep-ep':
+            request = ListEndpointsRequest()
         return request
+
+
+class SmnClient(SmnSdkClient):
+    def publish_message(self, request):
+        """消息发布 - 支持跨租户
+
+        将消息发送给Topic的所有订阅端点。当返回消息ID时，该消息已被保存并开始尝试将其推送给Topic的订阅者。为确保您的消息能够成功推送到各个订阅者，请确保您的消息内容符合当地法律法规要求。
+        三种消息发送方式
+
+        message
+
+        message_structure
+
+        message_template_name
+
+        只需要设置其中一个，如果同时设置，生效的优先级为
+        message_structure &gt; message_template_name &gt; message。
+
+        Please refer to HUAWEI cloud API Explorer for details.
+
+        :param request: Request instance for PublishMessage
+        :type request: :class:`huaweicloudsdksmn.v2.PublishMessageRequest`
+        :rtype: :class:`huaweicloudsdksmn.v2.PublishMessageResponse`
+        """
+        http_info = self._publish_message_http_info(request)
+        project_id = request.topic_urn.split(":")[3]
+        if project_id:
+            http_info["path_params"]["project_id"] = project_id
+        return self._call_api(**http_info)
