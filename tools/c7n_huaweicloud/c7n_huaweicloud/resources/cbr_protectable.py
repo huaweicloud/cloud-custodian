@@ -246,7 +246,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         '''get the backup policy to be inherited based on the queried vaults'''
         policy_id = None
         if vaults and len(vaults) > 0:
-            sort_vault = sorted(vaults, key=lambda x: datetime.strptime(x['created_at'], "%Y-%m-%dT%H:%M:%S.%f"))
+            sort_vault = sorted(vaults, key=lambda x: datetime.strptime(x['created_at'],
+                                                                        "%Y-%m-%dT%H:%M:%S.%f"))
             for valut in sort_vault:
                 log.debug(f"vault:{valut['name']}, created_at:{valut['created_at']}")
             client = self.manager.get_client()
