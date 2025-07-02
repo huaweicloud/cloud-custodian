@@ -244,31 +244,29 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
 
     def get_policy_for_new_valut(self, vaults):
         '''get the backup policy to be inherited based on the queried vaults'''
-        if not vaults or len(vaults) <= 0:
-            log.info(f"imput vault is None")
-            return None
-        sorted_vault = sorted(vaults, key=lambda x: datetime.strptime(x['created_at'], "%Y-%m-%dT%H:%M:%S.%f"))
-        for valut in sorted_vault:
-            log.info(f"vault:{valut['name']}, created_at:{valut['created_at']}")
         policy_id = None
-        client = self.manager.get_client()
-        for vault_item in sorted_vault:
-            try:
-                request = ListPoliciesRequest()
-                request.operation_type = "backup"
-                request.vault_id = vault_item['id']
-                response = client.list_policies(request)
-                if response.to_dict()['policies'] and len(response.to_dict()['policies']) > 0:
-                    policy_id = response.to_dict()['policies'][0]['id']
-                    log.info(f"success to inherit policy:{policy_id}")
-                    break
-            except exceptions.ClientRequestException as e:
-                log.exception(
-                    f"Unable to list policies. RequestId: {e.request_id}, Reason: {e.error_msg}"
-                )
+        if vaults and len(vaults) > 0:
+            sort_vault = sorted(vaults, key=lambda x: datetime.strptime(x['created_at'], "%Y-%m-%dT%H:%M:%S.%f"))
+            for valut in sort_vault:
+                log.debug(f"vault:{valut['name']}, created_at:{valut['created_at']}")
+            client = self.manager.get_client()
+            for vault_item in sort_vault:
+                try:
+                    request = ListPoliciesRequest()
+                    request.operation_type = "backup"
+                    request.vault_id = vault_item['id']
+                    response = client.list_policies(request)
+                    if response.to_dict()['policies'] and len(response.to_dict()['policies']) > 0:
+                        policy_id = response.to_dict()['policies'][0]['id']
+                        log.info(f"success to inherit policy:{policy_id}")
+                        break
+                except exceptions.ClientRequestException as e:
+                    log.exception(
+                        f"Unable to list policies. RequestId: {e.request_id}, Reason: {e.error_msg}"
+                    )
         if not policy_id:
             # if inherit policy failed, list exists policy
-            log.info(f"inherit policy from exist vault failed, list policy.")
+            log.info("inherit policy from exist vault failed, list policy.....")
             try:
                 request = ListPoliciesRequest()
                 request.operation_type = "backup"
