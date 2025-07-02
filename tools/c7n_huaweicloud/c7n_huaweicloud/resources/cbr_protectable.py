@@ -89,8 +89,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         self.failed_resources.extend(resources)
 
     def perform_action(self, resources):
-        random_time = random.randint(0, 6)
-        time.sleep(random_time * 30)
+        random_time = random.randint(0, 12)
+        time.sleep(random_time * 5)
         client = self.manager.get_client()
         try:
             request = ListVaultRequest()
