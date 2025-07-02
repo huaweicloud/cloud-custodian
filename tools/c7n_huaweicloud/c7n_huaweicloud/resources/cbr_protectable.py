@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+from datetime import datetime
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkcbr.v1 import (
     CreateVaultRequest, BillingCreate,
@@ -101,22 +102,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
             log.exception(
                 f"Unable to list vaults. RequestId: {e.request_id}, Reason: {e.error_msg}"
             )
-
-        try:
-            request = ListPoliciesRequest()
-            request.operation_type = "backup"
-            if len(vaults) > 0:
-                request.vault_id = vaults[0]['id']
-            response = client.list_policies(request)
-            if response.to_dict()['policies'] and len(response.to_dict()['policies']) > 0:
-                policy_id = response.to_dict()['policies'][0]['id']
-            else:
-                policy_id = self.data.get('backup_policy', None)
-        except exceptions.ClientRequestException as e:
-            log.exception(
-                f"Unable to list policies. RequestId: {e.request_id}, Reason: {e.error_msg}"
-            )
-            raise
+        policy_id = self.get_policy_for_new_valut(vaults)
 
         vault_num = 0
         while resources and vault_num < len(vaults):
@@ -214,24 +200,18 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 is_auto_renew=is_auto_renew,
                 is_auto_pay=is_auto_pay
             )
-            if vault_name is None or vault_name == '':
+            if vault_name is None or vault_name == '' or policy_id is None or policy_id == '':
                 error_msg = "param error, policy_id:{}, vault_name:{}, billing_vault:{}".format(
                         policy_id, vault_name, billing_vault)
                 log.error(error_msg)
                 raise Exception(error_msg)
-            if not policy_id:
-                vault_body = VaultCreate(
-                    billing=billing_vault,
-                    name=vault_name,
-                    resources=listResourcesVault
-                )
-            else:
-                vault_body = VaultCreate(
-                    backup_policy_id=policy_id,
-                    billing=billing_vault,
-                    name=vault_name,
-                    resources=listResourcesVault
-                )
+
+            vault_body = VaultCreate(
+                backup_policy_id=policy_id,
+                billing=billing_vault,
+                name=vault_name,
+                resources=listResourcesVault
+            )
             request.body = VaultCreateReq(
                 vault=vault_body
             )
@@ -261,3 +241,46 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         vault_name = f"{vault_prefix}{new_index:04d}"
         log.info(f"create new vault name {vault_name}")
         return vault_name
+
+    def get_policy_for_new_valut(self, vaults):
+        '''get the backup policy to be inherited based on the queried vaults'''
+        if not vaults or len(vaults) <= 0:
+            log.info(f"imput vault is None")
+            return None
+        sorted_vault = sorted(vaults, key=lambda x: datetime.strptime(x['created_at'], "%Y-%m-%dT%H:%M:%S.%f"))
+        for valut in sorted_vault:
+            log.info(f"vault:{valut['name']}, created_at:{valut['created_at']}")
+        policy_id = None
+        client = self.manager.get_client()
+        for vault_item in sorted_vault:
+            try:
+                request = ListPoliciesRequest()
+                request.operation_type = "backup"
+                request.vault_id = vault_item['id']
+                response = client.list_policies(request)
+                if response.to_dict()['policies'] and len(response.to_dict()['policies']) > 0:
+                    policy_id = response.to_dict()['policies'][0]['id']
+                    log.info(f"success to inherit policy:{policy_id}")
+                    break
+            except exceptions.ClientRequestException as e:
+                log.exception(
+                    f"Unable to list policies. RequestId: {e.request_id}, Reason: {e.error_msg}"
+                )
+        if not policy_id:
+            # if inherit policy failed, list exists policy
+            log.info(f"inherit policy from exist vault failed, list policy.")
+            try:
+                request = ListPoliciesRequest()
+                request.operation_type = "backup"
+                response = client.list_policies(request)
+                if response.to_dict()['policies'] and len(response.to_dict()['policies']) > 0:
+                    policy_id = response.to_dict()['policies'][0]['id']
+                    log.info(f"use policy:{policy_id}")
+                else:
+                    policy_id = self.data.get('backup_policy', None)
+                    log.info(f"use config policy:{policy_id}")
+            except exceptions.ClientRequestException as e:
+                log.exception(
+                    f"Unable to list policies. RequestId: {e.request_id}, Reason: {e.error_msg}"
+                )
+        return policy_id
