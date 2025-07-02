@@ -1,0 +1,62 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250618T080229Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+  response:
+    body:
+      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"Cluster","apiVersion":"v3",
+        "metadata":{"uid":"4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6","name":"test-cluster",
+        "creationTimestamp":"2025-06-18T08:02:29Z","updateTimestamp":"2025-06-18T08:02:29Z"},
+        "spec":{"type":"VirtualMachine","flavor":"cce.s1.small","version":"v1.19.8-r0",
+        "hostNetwork":{"vpc":"2a0a0c6d-a3f2-4b9c-9c31-8317a9e8b5b6","subnet":
+        "3a8a0c6d-a3f2-4b9c-9c31-8317a9e8b5b7"},"containerNetwork":{"mode":"overlay_l2"}},
+        "status":{"phase":"Available","endpoints":{"internal":"192.168.0.68:5443",
+        "external":"49.0.0.1:5443"}}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 18 Jun 2025 08:02:29 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=14092734de94b7c294; path=/
+      - HWWAFSESTIME=1750233749782; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - bffd2c46b7aeb464776df23feb848ce6
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

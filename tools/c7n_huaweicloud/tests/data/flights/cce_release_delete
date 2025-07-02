@@ -1,0 +1,167 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T085724Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+  response:
+    body:
+      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"Cluster","apiVersion":"v3",
+        "metadata":{"uid":"4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6","name":"test-cluster",
+        "creationTimestamp":"2025-06-18T08:02:29Z","updateTimestamp":"2025-06-18T08:02:29Z"},
+        "spec":{"type":"VirtualMachine","flavor":"cce.s1.small","version":"v1.19.8-r0",
+        "hostNetwork":{"vpc":"2a0a0c6d-a3f2-4b9c-9c31-8317a9e8b5b6","subnet": "3a8a0c6d-a3f2-4b9c-9c31-8317a9e8b5b7"},"containerNetwork":{"mode":"overlay_l2"}},
+        "status":{"phase":"Available","endpoints":{"internal":"192.168.0.68:5443",
+        "external":"49.0.0.1:5443"}}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 08:57:24 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1750323443777; path=/
+      - HWWAFSESID=56174769ddbf77c4a0; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - f586d34a7a93f2c863888cfce531cd0d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T111318Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/cce/cam/v3/clusters/4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6/releases
+  response:
+    body:
+      string: '{"body":[{"name":"test-release","chart_name":"test-chart","cluster_id":"4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6","namespace":"default",
+        "version":1,"updated":"2025-06-18T08:02:30Z","status":"deployed", "description":"Test
+        release description","config":{"raw":"{\"global\":{}}"}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 11:13:18 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=2d97d7387f91ad0646; path=/
+      - HWWAFSESTIME=1750331598379; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 19f1626ab4d879c48f843df3a38d9d0f
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T111544Z
+    method: DELETE
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/cce/cam/v3/clusters/4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6/namespace/default/releases/test-release
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 11:15:44 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=e692773adf98e2d33c; path=/
+      - HWWAFSESTIME=1750331744694; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - b6f806582a2147ffe5c433d21032cda1
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

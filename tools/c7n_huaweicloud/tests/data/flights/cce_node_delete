@@ -1,0 +1,170 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T085723Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+  response:
+    body:
+      string: '{"kind": "Node", "apiVersion": "v3", "items": [{"kind": "Node", "apiVersion":
+        "v3", "metadata": {"name": "test-node-for-delete", "uid": "node-delete-test-id-401",
+        "creationTimestamp": "2023-01-15T08:00:00Z"}, "spec": {"flavor": "s6.large.2",
+        "az": "ap-southeast-1a", "os": "EulerOS 2.5", "login": {}}, "status": {"phase":
+        "Active", "serverId": "server-12345", "privateIP": "192.168.1.100", "publicIP":
+        ""}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 08:57:23 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1750323443265; path=/
+      - HWWAFSESID=171e573d90fd54811f; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6e28b050a6717a0ef8120422313ca223
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T114431Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters/node-delete-test-id-401/nodes
+  response:
+    body:
+      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"Node","apiVersion":"v3",
+        "metadata":{"uid":"6ca46d8a-8f8e-11eb-b5b7-0255ac1001a8","name":"test-node",
+        "creationTimestamp":"2025-06-18T08:02:30Z","updateTimestamp":"2025-06-18T08:02:30Z"},
+        "spec":{"flavor":"s6.large.2","az":"cn-north-4a","os":"CentOS 7.6", "login":{"sshKey":"KeyPair-test"},"rootVolume":{"volumetype":"SATA","size":40},
+        "dataVolumes":[{"volumetype":"SATA","size":100}],"publicIP":{"eip":{"bandwidth":{}}},
+        "nodeNicSpec":{"primaryNic":{}}}, "status":{"phase":"Error","serverId":"5ca46d8a-8f8e-11eb-b5b7-0255ac1001a7",
+        "privateIP":"192.168.0.100"}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 11:44:31 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=24ac773f9d17c970de; path=/
+      - HWWAFSESTIME=1750333471838; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 70a8a52f8bb440a62481b26dd5f57d4c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T114524Z
+    method: DELETE
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters/node-delete-test-id-401/nodes/6ca46d8a-8f8e-11eb-b5b7-0255ac1001a8
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 11:45:24 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=0f4a1736de83c90272; path=/
+      - HWWAFSESTIME=1750333524624; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 463ce9c0869784563fdb6a15e66a357f
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

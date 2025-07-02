@@ -1,0 +1,60 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250618T080230Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addontemplates
+  response:
+    body:
+      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"AddonTemplate","apiVersion":"v3",
+        "metadata":{"uid":"7ca46d8a-8f8e-11eb-b5b7-0255ac1001a9","name":"test-addon-template",
+        "creationTimestamp":"2025-06-18T08:02:30Z","updateTimestamp":"2025-06-18T08:02:30Z"},
+        "spec":{"type":"helm","version":"1.0.0","description":"Test addon template",
+        "values":{"basic":{"addonTemplateName":"test-addon-template","addonTemplateType":"helm",
+        "addonTemplateVersion":"1.0.0"}}}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 18 Jun 2025 08:02:30 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=854787377a9c450dd5; path=/
+      - HWWAFSESTIME=1750233750266; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 68e5cd435301df5f399d743d22dcdf3b
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
