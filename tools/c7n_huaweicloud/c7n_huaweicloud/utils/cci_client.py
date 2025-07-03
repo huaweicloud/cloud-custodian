@@ -97,7 +97,7 @@ class HuaweiCloudSigner:
     HeaderContentSHA256 = "x-sdk-content-sha256"
     HeaderSecurityToken = "X-Security-Token"
 
-    def __init__(self, access_key, secret_key,security_token):
+    def __init__(self, access_key, secret_key, security_token):
         self.access_key = access_key
         self.secret_key = secret_key
         self.security_token = security_token
@@ -263,8 +263,10 @@ class CCIClient:
         self.api_version = "v2"
 
         # Initialize signer
-        if hasattr(credentials, 'ak') and hasattr(credentials, 'sk') and hasattr(credentials, 'security_token'):
-            self.signer = HuaweiCloudSigner(credentials.ak, credentials.sk, credentials.security_token)
+        if (hasattr(credentials, 'ak') and hasattr(credentials, 'sk')
+                and hasattr(credentials, 'security_token')):
+            self.signer = HuaweiCloudSigner(credentials.ak, credentials.sk,
+                                            credentials.security_token)
         else:
             self.signer = None
             log.warning("CCI client initialized without valid credentials")
