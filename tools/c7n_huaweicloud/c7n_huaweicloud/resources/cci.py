@@ -265,13 +265,6 @@ class CCINamespace(CCIQueryResourceManager):
     CCI namespace is a logical isolation unit for container instances, used to organize and
     manage container instances, configurations, secrets and other resources.
 
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: list-cci-namespaces
-            resource: huaweicloud.cci_namespace
     """
 
     class resource_type(TypeInfo):
@@ -292,13 +285,6 @@ class CCIPod(CCINamespacedResourceManager):
     CCI Pod is the basic unit for running container applications, containing one or more
     tightly coupled containers.
 
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: list-cci-pods
-            resource: huaweicloud.cci_pod
     """
 
     class resource_type(TypeInfo):
@@ -320,13 +306,6 @@ class CCIConfigMap(CCINamespacedResourceManager):
     CCI ConfigMap is used to store configuration data, providing configuration information
     to Pods.
 
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: list-cci-configmaps
-            resource: huaweicloud.cci_configmap
     """
 
     class resource_type(TypeInfo):
@@ -347,13 +326,6 @@ class CCISecret(CCINamespacedResourceManager):
 
     CCI Secret is used to store sensitive data such as passwords, OAuth tokens, SSH keys, etc.
 
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: list-cci-secrets
-            resource: huaweicloud.cci_secret
     """
 
     class resource_type(TypeInfo):
