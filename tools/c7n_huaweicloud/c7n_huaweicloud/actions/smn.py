@@ -55,29 +55,33 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
     })
 
     def process(self, resources):
+        resource_type = self.manager.resource_type.service
+        ids = ','.join(data['id'] for data in resources)
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
-                message=self.build_message(resources)
+                message=self.build_message(resource_type, ids)
             )
 
             for topic_urn in self.data.get('topic_urn_list', []):
                 publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
                 publish_message_response = smn_client.publish_message(publish_message_request)
                 self.log.info(
+                    f"[actions]-The resource:{resource_type} with id:[{ids}] "
                     f"Publish message success, request: {publish_message_request}, "
                     f"response: {publish_message_response}")
         except exceptions.ClientRequestException as e:
-            self.log.error(f"Publish message to SMN Topics failed, exceptions:{e}")
+            self.log.error(
+                f"[actions]-The resource:{resource_type} with id:[{ids}] "
+                f"Publish message to SMN Topics is failed, exceptions:{e}")
         return self.process_result(resources)
 
-    def build_message(self, resources):
+    def build_message(self, resource_type, ids):
         message = self.data.get('message')
         if '{resource_details}' not in message:
             return message
-        resource_details = get_resource_details(self.manager.resource_type.service,
-                                                resources)
+        resource_details = get_resource_details(resource_type, ids)
         return message.replace('{resource_details}', resource_details)
 
     def perform_action(self, resource):
@@ -124,29 +128,33 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
     })
 
     def process(self, resources):
+        resource_type = self.manager.resource_type.service
+        ids = ','.join(data['id'] for data in resources)
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
-                message_structure=self.build_message(resources)
+                message_structure=self.build_message(resource_type, ids)
             )
 
             for topic_urn in self.data.get('topic_urn_list', []):
                 publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
                 publish_message_response = smn_client.publish_message(publish_message_request)
                 self.log.info(
+                    f"[actions]-The resource:{resource_type} with id:[{ids}] "
                     f"Publish message structure success, request: {publish_message_request}, "
                     f"response: {publish_message_response}")
         except exceptions.ClientRequestException as e:
-            self.log.error(f"Publish message structure to SMN Topics failed, exceptions:{e}")
+            self.log.error(
+                f"[actions]-The resource:{resource_type} with id:[{ids}] "
+                f"Publish message structure to SMN Topics failed, exceptions:{e}")
         return self.process_result(resources)
 
-    def build_message(self, resources):
+    def build_message(self, resource_type, ids):
         message_structure = self.data.get('message_structure')
         if '{resource_details}' not in message_structure:
             return message_structure
-        resource_details = get_resource_details(self.manager.resource_type.service,
-                                                resources)
+        resource_details = get_resource_details(resource_type, ids)
         return message_structure.replace('{resource_details}', resource_details)
 
     def perform_action(self, resource):
@@ -198,30 +206,34 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
     })
 
     def process(self, resources):
+        resource_type = self.manager.resource_type.service
+        ids = ','.join(data['id'] for data in resources)
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
                 message_template_name=self.data.get('message_template_name'),
-                tags=self.build_message(resources)
+                tags=self.build_message(resource_type, ids)
             )
 
             for topic_urn in self.data.get('topic_urn_list', []):
                 publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
                 publish_message_response = smn_client.publish_message(publish_message_request)
                 self.log.info(
+                    f"[actions]-The resource:{resource_type} with id:[{ids}] "
                     f"Publish message template success, request: {publish_message_request}, "
                     f"response: {publish_message_response}")
         except exceptions.ClientRequestException as e:
-            self.log.error(f"Publish message template to SMN Topics failed, exceptions:{e}")
+            self.log.error(
+                f"[actions]-The resource:{resource_type} with id:[{ids}] "
+                f"Publish message template to SMN Topics failed, exceptions:{e}")
         return self.process_result(resources)
 
-    def build_message(self, resources):
+    def build_message(self, resource_type, ids):
         message_template_variables = self.data.get('message_template_variables')
         for k, v in message_template_variables.items():
             if '{resource_details}' in v:
-                resource_details = get_resource_details(self.manager.resource_type.service,
-                                                        resources)
+                resource_details = get_resource_details(resource_type, ids)
                 message_template_variables[k] = v.replace('{resource_details}', resource_details)
         return message_template_variables
 
@@ -229,5 +241,5 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
         pass
 
 
-def get_resource_details(service, resources):
-    return '{service}:{ids}'.format(service=service, ids=','.join(data['id'] for data in resources))
+def get_resource_details(resource_type, ids):
+    return '{resource_type}:{ids}'.format(resource_type=resource_type, ids=ids)
