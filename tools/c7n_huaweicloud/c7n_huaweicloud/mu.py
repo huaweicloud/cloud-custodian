@@ -158,6 +158,11 @@ class FunctionGraphManager:
         # 配置公共依赖
         dep_ids = self.get_custodian_depend_version_id(params["runtime"])
         request_body.depend_version_list = dep_ids
+        # 配置标签
+        if params.get('func_tags'):
+            tags = json.dumps(params.get('func_tags'))
+            log.info(f'Create function with tags: {tags}')
+            request_body.tags = tags
         request.body = request_body
         try:
             response = self.client.create_function(request)
@@ -387,6 +392,8 @@ class FunctionGraphManager:
             if need_update:
                 log.info(f'Updating function[{func.func_name}] config: [{need_update}]...')
                 result = self.update_function_config(old_config, need_update)
+            if func.func_tags:
+                self.process_function_tags(func.func_tags, result.func_urn)
         else:
             log.info(f'Creating custodian policy FunctionGraph function[{func.func_name}]...')
             params = func.get_config()
@@ -402,8 +409,6 @@ class FunctionGraphManager:
 
         if result:
             self.process_async_invoke_config(func, result.func_urn)
-            if func.func_tags:
-                self.process_function_tags(func.func_tags, result.func_urn)
         else:
             raise PolicyExecutionError("Create or update failed.")
 
