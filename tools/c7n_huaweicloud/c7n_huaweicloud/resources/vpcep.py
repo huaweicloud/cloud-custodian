@@ -275,10 +275,12 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
         return results
 
 
-class VpcEndpointUtils(object):
+class VpcEndpointUtils():
+    """Provide utils
+    """
     def __init__(self, manager):
         self.manager = manager
-    
+
     def get_account(self, account_path, my_account=None):
         results = []
         if my_account:
@@ -297,7 +299,7 @@ class VpcEndpointUtils(object):
         domain_ids = self.get_account(account_path, my_account)
         results = []
         for d in domain_ids:
-            results.append("domain/%s:root" % d)
+            results.append(f"domain/{d}:root")
         return results
 
     def get_file_content(self, obs_url):
@@ -321,8 +323,12 @@ class VpcEndpointUtils(object):
                 log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
                 return {}
         except exceptions.ClientRequestException as e:
-            log.error(f"get obs object from {obs_url} exception: {e}")
-            raise Exception("get obs object exception: %s" % e)
+            log.error(f'get obs object from {obs_url} error, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise e
 
     def get_obs_name(self, obs_url):
         last_obs_index = obs_url.rfind(".obs")
@@ -354,12 +360,12 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
     .. code-block:: yaml
 
         policies:
-          - name: is-non-default-org-policy
+            - name: is-non-default-org-policy
             resource: huaweicloud.vpcep-ep
             filters:
-              - type: is-non-default-org-policy
-                my_account: "com.huaweicloud.service.test"
-                org_accounts_obs_url: https://custodian.vpcep.obs.sa-brazil-1.myhuaweicloud.com/all_accounts.json
+                - type: is-non-default-org-policy
+                  my_account: "com.huaweicloud.service.test"
+                  org_accounts_obs_url: https://test/all_accounts.json
     """
 
     schema = type_schema(
@@ -370,14 +376,14 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
 
     def process(self, resources, event=None):
         if not self.data.get('org_accounts_obs_url'):
-           self.log.error("org_accounts_obs_url is a required parameter and cannot be empty")
-           return []
+            self.log.error("org_accounts_obs_url is a required parameter and cannot be empty")
+            return []
         if not resources:
             return []
 
         results = []
         ep_util = VpcEndpointUtils(self.manager)
-        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'), 
+        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'),
                                                      self.data.get('my_account'))
 
         for res in resources:
@@ -386,7 +392,8 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
 
             if self._check_policy(res.get('policy_statement', []), new_accounts):
                 continue
-            log.info(f"ep {res.get('id')} policy is changed, current: {res.get('policy_statement')}, expect: {new_accounts}")
+            log.info(f"ep {res.get('id')} policy is changed, "
+                     f"current: {res.get('policy_statement')}, expect: {new_accounts}")
             results.append(res)
         return results
 
@@ -395,15 +402,16 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
             return False
         if len(policy_statement) != 1:
             return False
-        
-        current_accounts = policy_statement[0].get('Condition', {}).get('StringEquals', {}).get('ResourceOwner', [])
+
+        current_accounts = policy_statement[0].get('Condition', {}).get(
+            'StringEquals', {}).get('ResourceOwner', [])
         if not current_accounts:
             return False
-        
+
         current_accounts.sort()
         new_accounts.sort()
         return current_accounts == new_accounts
-            
+
 
 @VpcEndpoint.action_registry.register('update-default-org-policy')
 class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
@@ -419,7 +427,7 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
             resource: huaweicloud.vpcep-ep
             actions:
               - type: update-default-org-policy
-                org_accounts_obs_url: https://custodian.vpcep.obs.sa-brazil-1.myhuaweicloud.com/all_accounts.json
+                org_accounts_obs_url: https://test/all_accounts.json
                 
     """
 
@@ -432,25 +440,29 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         if not resources:
             return []
         ep_util = VpcEndpointUtils(self.manager)
-        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'), 
+        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'),
                                                      self.data.get('my_account'))
         for resource in resources:
-            self.perform_action(resource, new_accounts)
+            self.process_resource(resource, new_accounts)
 
         return resources
 
-    def perform_action(self, resource, new_accounts):
+    def process_resource(self, resource, new_accounts):
         """Execute update policy for a single resource"""
         if resource.get('service_type', '') not in ['gateway', 'cvs_gateway']:
             return
-        
+
         ep_id = resource.get("id", "")
         log.info(f"endpoint {ep_id} policy is invalid, update it.")
         self._update_policy(ep_id, new_accounts)
-    
+
+    def perform_action(self, resource):
+        return None
+
     def _update_policy(self, ep_id, resource_owner):
-        policy_statement = PolicyStatement(effect="Allow", action=["*"], resource=["*", "*/*"],
-                                           condition={"StringEquals": {"ResourceOwner": resource_owner}})
+        policy_statement = PolicyStatement(
+            effect="Allow", action=["*"], resource=["*", "*/*"],
+            condition={"StringEquals": {"ResourceOwner": resource_owner}})
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
         body = UpdateEndpointPolicyRequestBody(policy_statement=[policy_statement])
         request.body = body
@@ -461,6 +473,9 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
             resp = client.update_endpoint_policy(request)
             log.debug(f"update policy response: {resp}")
         except exceptions.ClientRequestException as e:
-            log.error(f"update {ep_id} policy error: {e}")
-            raise Exception('update endpoint policy error: %s' % e)
-
+            log.error(f'update {ep_id} policy error, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise e
