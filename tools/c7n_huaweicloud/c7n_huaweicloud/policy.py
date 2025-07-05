@@ -63,7 +63,16 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'description': {'type': 'string'},
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},
-            'log_config': {'type': 'object'},
+            'log_config': {
+                'type': 'object',
+                'required': ['group_name', 'stream_name'],
+                'properties': {
+                    'group_name': {'type': 'string'},
+                    'stream_name': {'type': 'string'},
+                    'group_id': {'type': 'string'},
+                    'stream_id': {'type': 'string'},
+                },
+            },
             'func_tags': {
                 'type': 'array',
                 'items': {
