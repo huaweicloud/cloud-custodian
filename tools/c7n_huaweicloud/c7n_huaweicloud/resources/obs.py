@@ -794,7 +794,7 @@ class FilterPublicBlock(Filter):
                 config = resp.body
             else:
                 error_code = resp.reason
-                if  error_code == 'Method Not Allowed' or 'Not Found' == resp.reason:
+                if error_code == 'Method Not Allowed' or 'Not Found' == resp.reason:
                     log.error('unsupport operate [BucketPublicAccessBlock]')
                     return None
                 raise_exception(resp, 'BucketPublicAccessBlock', bucket)
@@ -1131,9 +1131,13 @@ class OBSMissingTagFilter(Filter):
                 expected_tags.append((key, value))
 
         with self.executor_factory(max_workers=5) as executor:
-            process_func = lambda bucket: self.process_bucket(bucket, expected_tags)
-            results = list(filter(None, executor.map(process_func, filtered_buckets)))
+            results = list(filter(None, executor.map(
+                process_bucket_wrapper,filtered_buckets)))
             return results
+
+        def process_bucket_wrapper(bucket):
+            """Wrapper function to process a single bucket with expected_tags."""
+            return self.process_bucket(bucket, expected_tags)
 
     def process_bucket(self, bucket, expected_tags):
         match_mode = self.data.get('match', 'missing-any')
@@ -1158,7 +1162,8 @@ class OBSMissingTagFilter(Filter):
     def _is_match(self, expected_tags, actual_tags, match_mode):
         """
         Verify if actual tags meet expectations
-        :param expected_tags: List of (key, value) tuples, where value can be None/string/regex object
+        :param expected_tags: List of (key, value) tuples,
+        where value can be None/string/regex object
         :param actual_tags: Set of (key, value) tuples from the bucket
         :param match_mode: Matching mode ('missing-all' or 'missing-any')
         :return: Boolean indicating match status
