@@ -427,8 +427,7 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
             resource: huaweicloud.vpcep-ep
             actions:
               - type: update-default-org-policy
-                org_accounts_obs_url: https://test/all_accounts.json
-                
+                org_accounts_obs_url: https://test/all_accounts.json  
     """
 
     schema = type_schema('update-default-org-policy',
