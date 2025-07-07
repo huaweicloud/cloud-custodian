@@ -793,10 +793,6 @@ class FilterPublicBlock(Filter):
             if resp.status < 300:
                 config = resp.body
             else:
-                error_code = resp.reason
-                if error_code == 'Method Not Allowed' or 'Not Found' == resp.reason:
-                    log.error('unsupport operate [BucketPublicAccessBlock]')
-                    return None
                 raise_exception(resp, 'BucketPublicAccessBlock', bucket)
 
             bucket[self.annotation_key] = config
