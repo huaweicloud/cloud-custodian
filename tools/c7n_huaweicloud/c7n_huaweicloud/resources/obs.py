@@ -1112,32 +1112,33 @@ class OBSMissingTagFilter(Filter):
         match={'type': 'string', 'enum': ['missing-all', 'missing-any']}
     )
 
+    expected_tags = []
+
     def process(self, buckets, event=None):
         filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
         log.debug(filtered_buckets)
 
-        expected_tags = []
         for t in self.data.get('tags', []):
             key = t.get('key')
             value = t.get('value')
             if isinstance(value, str) and value.startswith('^') and value.endswith('$'):
                 try:
                     pattern = re.compile(value)
-                    expected_tags.append((key, pattern))
+                    self.expected_tags.append((key, pattern))
                 except re.error:
                     self.log.info('failed to compile the regular exception [%s].' % value)
-                    expected_tags.append((key, value))
+                    self.expected_tags.append((key, value))
             else:
-                expected_tags.append((key, value))
+                self.expected_tags.append((key, value))
 
         with self.executor_factory(max_workers=5) as executor:
             results = list(filter(None, executor.map(
-                process_bucket_wrapper,filtered_buckets)))
+                self.process_bucket_wrapper, filtered_buckets)))
             return results
 
-        def process_bucket_wrapper(bucket):
-            """Wrapper function to process a single bucket with expected_tags."""
-            return self.process_bucket(bucket, expected_tags)
+    def process_bucket_wrapper(self, bucket):
+        """Wrapper function to process a single bucket with expected_tags."""
+        return self.process_bucket(bucket, self.expected_tags)
 
     def process_bucket(self, bucket, expected_tags):
         match_mode = self.data.get('match', 'missing-any')
