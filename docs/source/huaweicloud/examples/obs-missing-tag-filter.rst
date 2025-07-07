@@ -12,7 +12,7 @@ OBS - Find Obs Bucket That missing Some Tags
             - key: owner-team-email
               value: ^[a-zA-Z0-9._%+-]+@gmail.com$
             - key: data_classification
-              value: ^(restrita|internal|pablical)$
+              value: ^(Restricted|Internal|Public|Confidential)$
             - key: bucket-type
               value: log-bucket
             - key: team
@@ -27,7 +27,7 @@ OBS - Find Obs Bucket That missing Some Tags
             - key: owner-team-email
               value: ^[a-zA-Z0-9._%+-]+@gmail.com$
             - key: data_classification
-              value: ^(restrita|internal|pablical)$
+              value: ^(Restricted|Internal|Public|Confidential)$
             - key: bucket-type
               value: log-bucket
             - key: team
