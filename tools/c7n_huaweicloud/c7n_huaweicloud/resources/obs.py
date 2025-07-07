@@ -107,7 +107,7 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
         for statement in bucket_statements:
             prinicipal_user = statement.get('Principal', {}).get("ID", [])
             action = statement.get('Action', [])
-            if "*" in prinicipal_user or "*" in action:
+            if any("*" in s for s in prinicipal_user + action):
                 continue
 
             new_statements.append(statement)
