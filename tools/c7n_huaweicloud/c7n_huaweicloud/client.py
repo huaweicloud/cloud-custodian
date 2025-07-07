@@ -139,6 +139,7 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
+from c7n_huaweicloud.utils.cci_client import CCIClient
 from huaweicloudsdkvpcep.v1 import VpcepClient
 from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
 from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
@@ -535,6 +536,8 @@ class Session:
                 .with_region(CcmRegion.value_of("sa-brazil-1"))
                 .build()
             )
+        elif service == "cci":
+            client = CCIClient(self.region, credentials)
         elif service == 'vpcep-ep':
             client = (
                 VpcepClient.new_builder()
@@ -692,6 +695,10 @@ class Session:
             request = ListCertificateAuthorityRequest()
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
+        elif service == "cci":
+            # CCI service uses special processing,
+            # returns True indicating no need to preconstruct request object
+            request = True
         elif service == 'vpcep-ep':
             request = ListEndpointsRequest()
         return request

@@ -68,5 +68,9 @@ ResourceMap = {
     "huaweicloud.workspace-desktop": "c7n_huaweicloud.resources.workspace.Workspace",
     "huaweicloud.ccm-private-ca": "c7n_huaweicloud.resources.ccm.CertificateAuthority",
     "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate",
-    "huaweicloud.vpcep-ep": "c7n_huaweicloud.resources.vpcep.VpcEndpoint",
+    "huaweicloud.cci_namespace": "c7n_huaweicloud.resources.cci.CCINamespace",
+    "huaweicloud.cci_pod": "c7n_huaweicloud.resources.cci.CCIPod",
+    "huaweicloud.cci_configmap": "c7n_huaweicloud.resources.cci.CCIConfigMap",
+    "huaweicloud.cci_secret": "c7n_huaweicloud.resources.cci.CCISecret",
+    "huaweicloud.vpcep-ep": "c7n_huaweicloud.resources.vpcep.VpcEndpoint"
 }

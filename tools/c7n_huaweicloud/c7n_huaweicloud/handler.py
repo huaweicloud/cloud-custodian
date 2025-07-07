@@ -53,7 +53,9 @@ def run(event, context=None):
     policies = PolicyCollection.from_data(policy_config, options)
     if policies:
         for p in policies:
-            log.info("running policy %s", p.name)
+            log.info(f'[{p.execution_mode}]-User with account_id: '
+                     f'[{context.getUserData("DOMAIN_ID")}] influenced the [{p.resource_type}], '
+                     f'and triggered the policy [{p.name}].')
             p.validate()
             p.push(event, context)
 
