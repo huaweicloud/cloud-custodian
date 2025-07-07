@@ -3,7 +3,7 @@ import logging
 
 from c7n import utils
 from c7n.filters import Filter
-from c7n.exceptions import PolicyValidationError
+from c7n.exceptions import PolicyValidationError, PolicyExecutionError
 from huaweicloudsdkcore.exceptions import exceptions
 from requests.exceptions import HTTPError
 
@@ -12,7 +12,6 @@ log = logging.getLogger("custodian.huaweicloud.filters.exempted")
 
 def register_exempted_filters(filters):
     filters.register('exempted', ExemptedFilter)
-    filters.register('restricted', RestrictedFilter)
 
 
 def get_obs_name(obs_url):
@@ -44,17 +43,14 @@ def get_values_from_resource(resource, field):
         value = resource[field]
         if isinstance(value, (str, int)):
             return [value]
-        log.error(f"{field} type error in resource {resource['id']}")
-        raise TypeError(f"{field} type error in resource {resource['id']}")
+        raise TypeError(f"{field} type not support in resource [{resource['id']}]")
     else:
-        log.error(f"{field} is required in resource {resource['id']}")
-        raise KeyError(f"{field} is required in resource {resource['id']}")
+        raise KeyError(f"{field} is required in resource [{resource['id']}]")
 
 
 def get_tags_from_resource(resource):
     if "tags" not in resource:
-        log.error(f"tags is required in resource {resource['id']}")
-        raise KeyError(f"tags is required in resource {resource['id']}")
+        raise KeyError(f"tags is required in resource [{resource['id']}]")
     try:
         tags = resource["tags"]
         if isinstance(tags, dict):
@@ -78,13 +74,13 @@ def get_tags_from_resource(resource):
                      tags):
                 # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
                 return {item['key']: item['value'] for item in tags}
-        raise PolicyValidationError(f"tags:{tags} type error "
+        raise PolicyExecutionError(f"tags:{tags} type not support "
                                     f"in resource {resource['id']}")
     except Exception:
-        log.error(f"tags:{tags} type error "
-                  f"in resource {resource['id']}")
-        raise PolicyValidationError(f"tags:{tags} type error "
-                                    f"in resource {resource['id']}")
+        log.info(f"tags:{tags} type not support "
+                  f"in resource [{resource['id']}]")
+        raise PolicyExecutionError(f"tags:{tags} type not support "
+                                    f"in resource [{resource['id']}]")
 
 
 class ExemptedFilter(Filter):
@@ -129,7 +125,7 @@ class ExemptedFilter(Filter):
     def validate(self):
         field = self.data.get('field', None)
         if field is None or field == '':
-            self.log.error("field is required in filter exempted")
+            self.log.warning("field is required in filter exempted")
             raise PolicyValidationError("field is required in filter exempted")
 
         exempted_values = self.data.get('exempted_values', [])
@@ -159,18 +155,22 @@ class ExemptedFilter(Filter):
         try:
             resource_values = get_values_from_resource(i, field)
         except TypeError:
-            self.log.warning(f"{field} type error in resource {i['id']}, "
-                             f"only support int or string, not filter the resource")
+            self.log.info(f"{field} type not support in resource [{i['id']}], "
+                             f"only support int or string, not exempted the resource")
             return True
         except KeyError:
-            self.log.warning(f"{field} not in resource {i['id']}, not filter the resource")
+            self.log.info(f"{field} not in resource [{i['id']}], not exempted the resource")
             return True
         except Exception:
-            self.log.warning(f"get {field} in resource {i['id']} failed, not filter the resource")
+            self.log.info(f"get {field} in resource [{i['id']}] failed, not exempted the resource")
             return True
         resource_values = set(resource_values)
         exempted_values = set(exempted_values)
-        return len(resource_values & exempted_values) == 0
+        intersection = list(resource_values & exempted_values)
+        if len(intersection) > 0:
+            self.log.info(f"c7n_huaweicloud.filter:Resource [{i['id']}] is exempted, "
+                          f"exempted values: {intersection}")
+        return len(intersection) == 0
 
     def get_exempted_values_from_obs(self, obs_url, group_key):
         try:
@@ -190,14 +190,14 @@ class ExemptedFilter(Filter):
                 exempted_values_obs = json.loads(resp.body.buffer)[group_key]
                 return exempted_values_obs
             else:
-                self.log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
+                self.log.warning(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
                 raise HTTPError(resp.status, resp.body)
         except exceptions.ClientRequestException as e:
-            self.log.error("get obs object failed, ", e.status_code, e.request_id,
+            self.log.warning("get obs object failed, ", e.status_code, e.request_id,
                            e.error_code, e.error_msg)
             raise
         except Exception:
-            self.log.error("get_exempted_values_from_obs occur error")
+            self.log.warning("get_exempted_values_from_obs occur exception")
             raise
 
 
@@ -243,7 +243,7 @@ class RestrictedFilter(Filter):
     def validate(self):
         field = self.data.get('field', None)
         if field is None or field == '':
-            self.log.error("field is required in filter restricted")
+            self.log.warning("field is required in filter restricted")
             raise PolicyValidationError("field is required in filter restricted")
 
         restricted_values = self.data.get('restricted_values', [])
@@ -274,18 +274,22 @@ class RestrictedFilter(Filter):
         try:
             resource_values = get_values_from_resource(i, field)
         except TypeError:
-            self.log.warning(f"{field} type error in resource {i['id']}, "
+            self.log.info(f"{field} type not support in resource [{i['id']}], "
                              f"only support int or string, not filter the resource")
             return True
         except KeyError:
-            self.log.warning(f"{field} not in resource {i['id']}, not filter the resource")
+            self.log.info(f"{field} not in resource [{i['id']}], not filter the resource")
             return True
         except Exception:
-            self.log.warning(f"get {field} in resource {i['id']} failed, not filter the resource")
+            self.log.info(f"get {field} in resource [{i['id']}] failed, not filter the resource")
             return True
         resource_values = set(resource_values)
         restricted_values = set(restricted_values)
-        return len(resource_values & restricted_values) > 0
+        intersection = list(resource_values & restricted_values)
+        if len(intersection) > 0:
+            self.log.info(f"c7n_huaweicloud.filter:Resource [{i['id']}] is restricted, "
+                          f"restricted values: {intersection}")
+        return len(intersection) > 0
 
     def get_restricted_values_from_obs(self, obs_url, group_key):
         try:
@@ -305,12 +309,12 @@ class RestrictedFilter(Filter):
                 restricted_values_obs = json.loads(resp.body.buffer)[group_key]
                 return restricted_values_obs
             else:
-                self.log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
+                self.log.warning(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
                 raise HTTPError(resp.status, resp.body)
         except exceptions.ClientRequestException as e:
-            self.log.error("get obs object failed, ", e.status_code, e.request_id,
+            self.log.warning("get obs object failed, ", e.status_code, e.request_id,
                            e.error_code, e.error_msg)
             raise
         except Exception:
-            self.log.error("get_restricted_values_from_obs occur error")
+            self.log.warning("get_restricted_values_from_obs occur exception")
             raise
