@@ -51,11 +51,14 @@ class FunctionGraph(QueryResourceManager):
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
-                raise PolicyExecutionError(f'Show function config[{resource_id}] failed, '
-                                           f'request id:[{e.request_id}], '
-                                           f'status code:[{e.status_code}], '
-                                           f'error code:[{e.error_code}], '
-                                           f'error message:[{e.error_msg}].')
+                if e.status_code == 404:
+                    continue
+                else:
+                    raise PolicyExecutionError(f'Show function config[{resource_id}] failed, '
+                                               f'request id:[{e.request_id}], '
+                                               f'status code:[{e.status_code}], '
+                                               f'error code:[{e.error_code}], '
+                                               f'error message:[{e.error_msg}].')
 
             func_config = eval(str(response).
                                replace('null', 'None').

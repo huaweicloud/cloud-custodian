@@ -265,13 +265,20 @@ class FunctionGraphMode(ServerlessExecutionMode):
         resource_ids = CloudTraceServiceEvents.get_ids(event, mode)
         if resource_ids is None:
             raise ValueError("Unknown push event mode %s", self.data)
-        log.info(f'Found resource ids:{resource_ids}')
+        log.info(f'[{self.policy.execution_mode}]-The resources ID list is: {resource_ids}')
         if not resource_ids:
             log.warning("Could not find resource ids")
             return []
         resources = self.policy.resource_manager.get_resources(resource_ids)
         if 'debug' in event:
             log.info("Resources %s", resources)
+        events_in_mode = []
+        sources_in_mode = []
+        for e in mode.get('events'):
+            events_in_mode.append(e['event'])
+            sources_in_mode.append(e['source'])
+        log.info(f'[{self.policy.execution_mode}]-The event occurred by {events_in_mode}, '
+                 f'There are [{len(resources)}] resources in total.')
         return resources
 
     def run(self, event, context):
@@ -279,17 +286,19 @@ class FunctionGraphMode(ServerlessExecutionMode):
             return
         resources = self.resolve_resources(event)
         if not resources:
+            # 根据resource_ids未获取到资源
             return resources
-        rcount = len(resources)
         resources = self.policy.resource_manager.filter_resources(resources, event)
-
-        if 'debug' in event:
-            log.info("Filtered resources %d of %d", len(resources), rcount)
-
+        log.info(f'[{self.policy.execution_mode}]-The filtered resources '
+                 f'has [{len(resources)}] in total.')
         if not resources:
-            log.info("policy%s resources:%s no resources matched" % (
-                self.policy.name, self.policy.resource_type))
+            # 根据filter未获取到资源
             return
+        resources_list = []
+        for resource in resources:
+            resources_list.append(resource['id'])
+        log.info(f'[{self.policy.execution_mode}]-The filtered resources ID list is: '
+                 f'{resources_list}')
 
         return self.run_resource_set(event, resources)
 
