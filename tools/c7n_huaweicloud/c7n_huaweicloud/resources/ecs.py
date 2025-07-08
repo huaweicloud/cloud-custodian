@@ -1571,3 +1571,4 @@ class InstanceMetadataOptionsToken(Filter):
                 continue
             results.setdefault(r["id"], resp)
         return results
+
