@@ -509,7 +509,7 @@ class CceNodePool(QueryResourceManager):
         all_nodepools = self._fetch_resources({})
         result = []
         for nodepool in all_nodepools:
-            if nodepool["id"] in resource_ids:
+            if nodepool["metadata"]["uid"] in resource_ids:
                 result.append(nodepool)
         return result
 
@@ -939,7 +939,7 @@ class CceNode(QueryResourceManager):
         all_nodes = self._fetch_resources({})
         result = []
         for node in all_nodes:
-            if node["id"] in resource_ids:
+            if node["metadata"]["uid"] in resource_ids:
                 result.append(node)
         return result
 
@@ -1087,7 +1087,7 @@ class CceAddonInstance(QueryResourceManager):
         all_addon_instances = self._fetch_resources({})
         result = []
         for addon_instance in all_addon_instances:
-            if addon_instance["id"] in resource_ids:
+            if addon_instance["metadata"]["uid"] in resource_ids:
                 result.append(addon_instance)
         return result
 
