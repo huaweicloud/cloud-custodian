@@ -37,8 +37,8 @@ from huaweicloudsdkecs.v2 import (
     DeleteServersRequestBody,
     DeleteServersRequest,
     DeleteServerMetadataRequest,
-    ShowServerMetadataOptionsRequest,
-    UpdateServerMetadataOptionsRequest,
+    ShowMetadataOptionsRequest,
+    UpdateMetadataOptionsRequest,
     UpdateServerMetadataOptionsRequestBody
 )
 from huaweicloudsdkims.v2 import (
@@ -917,9 +917,9 @@ class InstancUpdateMetadataOptions(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         for resource in resources:
             body = UpdateServerMetadataOptionsRequestBody(http_tokens=http_tokens)
-            request = UpdateServerMetadataOptionsRequest(server_id=resource["id"], body=body)
+            request = UpdateMetadataOptionsRequest(server_id=resource["id"], body=body)
             try:
-                response = client.update_server_metadata_options(request)
+                response = client.update_metadata_options(request)
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
                 continue
@@ -1563,9 +1563,9 @@ class InstanceMetadataOptionsToken(Filter):
     def show_server_metadata_options(self, instence_set, ecs_client):
         results = {}
         for r in instence_set:
-            req = ShowServerMetadataOptionsRequest(server_id=r["id"])
+            req = ShowMetadataOptionsRequest(server_id=r["id"])
             try:
-                resp = ecs_client.show_server_metadata_options(req)
+                resp = ecs_client.show_metadata_options(req)
             except exceptions.ClientRequestException as e:
                 log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
                 continue
