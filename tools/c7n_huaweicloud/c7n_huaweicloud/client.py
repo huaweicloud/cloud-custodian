@@ -139,6 +139,10 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
+from c7n_huaweicloud.utils.cci_client import CCIClient
+from huaweicloudsdkvpcep.v1 import VpcepClient
+from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
+from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -161,7 +165,6 @@ class Session:
             self.domain_name = options.get("name")
             self.status = options.get("status")
             self.tags = options.get("tags")
-
         self.ak = self.ak or os.getenv("HUAWEI_ACCESS_KEY_ID")
         self.sk = self.sk or os.getenv("HUAWEI_SECRET_ACCESS_KEY")
         self.region = self.region or os.getenv("HUAWEI_DEFAULT_REGION")
@@ -530,7 +533,16 @@ class Session:
             client = (
                 CcmClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(CcmRegion.value_of("ap-southeast-3"))
+                .with_region(CcmRegion.value_of("sa-brazil-1"))
+                .build()
+            )
+        elif service == "cci":
+            client = CCIClient(self.region, credentials)
+        elif service == 'vpcep-ep':
+            client = (
+                VpcepClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(VpcepRegion.value_of(self.region))
                 .build()
             )
         return client
@@ -602,9 +614,9 @@ class Session:
         elif service == "functiongraph":
             request = ListFunctionsRequest()
         elif service == "elb_loadbalancer":
-            request = ListLoadBalancersRequest()
+            request = ListLoadBalancersRequest(enterprise_project_id=["all_granted_eps"])
         elif service == "elb_listener":
-            request = ListListenersRequest()
+            request = ListListenersRequest(enterprise_project_id=["all_granted_eps"])
         elif service == "eip":
             request = ListPublicipsRequest()
         elif service == "ims":
@@ -683,6 +695,12 @@ class Session:
             request = ListCertificateAuthorityRequest()
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
+        elif service == "cci":
+            # CCI service uses special processing,
+            # returns True indicating no need to preconstruct request object
+            request = True
+        elif service == 'vpcep-ep':
+            request = ListEndpointsRequest()
         return request
 
 

@@ -39,6 +39,18 @@ class SecurityGroupTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['name'], 'sg-test')
 
+    def test_security_group_without_specific_tags(self):
+        factory = self.replay_flight_data('vpc_security_group_without_specific_tags')
+        p = self.load_policy({
+                'name': 'security-groups-without-specific-tags',
+                'resource': 'huaweicloud.vpc-security-group',
+                'filters': [{'type': 'without_specific_tags',
+                             'keys': ['owner-team-email', 'tech-team-email'],
+                             'associate_type': 'any'}]},
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
     def test_security_group_rule_ingress_filter(self):
         factory = self.replay_flight_data('vpc_security_group_rule_ingress')
         p = self.load_policy({

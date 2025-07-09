@@ -109,3 +109,28 @@ class CbrVaultTest(BaseTest):
             session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 2)
+
+    def test_filter_vault_without_worm(self):
+        factory = self.replay_flight_data('cbr_vault_filter_without_worm')
+        p = self.load_policy(
+            {
+                'name': 'cbr_vault_action_check_worm_schedule',
+                'resource': 'huaweicloud.cbr-vault',
+                'filters': [{'type': 'vault_without_worm'}]
+            },
+            session_factory=factory)
+        resources = p.run()
+        print(resources)
+        self.assertEqual(len(resources), 2)
+
+    def test_action_vault_enable_worm(self):
+        factory = self.replay_flight_data('cbr_vault_action_enable_worm')
+        p = self.load_policy(
+            {
+                'name': 'cbr_associate_vault_with_policy',
+                'resource': 'huaweicloud.cbr-vault',
+                'actions': [{'type': 'enable_vault_worm'}]
+            },
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 3)

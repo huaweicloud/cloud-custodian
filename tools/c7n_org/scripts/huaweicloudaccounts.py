@@ -1,5 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import time
 
 import click
 from huaweicloudsdkcore.auth.provider import MetadataCredentialProvider
@@ -120,6 +121,8 @@ def main(output, agency_name, name, exclude_name, ou_ids, status, duration_secon
 
             if not marker:
                 break
+            else:
+                time.sleep(0.02)
 
         acc_info = {
             'name': account.name,

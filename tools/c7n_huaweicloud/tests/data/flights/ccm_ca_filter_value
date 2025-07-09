@@ -9,13 +9,13 @@ interactions:
       Connection:
       - keep-alive
       Host:
-      - iam.ap-southeast-3.myhuaweicloud.com
+      - iam.sa-brazil-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Sdk-Date:
-      - 20250521T094204Z
+      - 20250623T062635Z
     method: GET
-    uri: https://iam.ap-southeast-3.myhuaweicloud.com/v3/auth/domains
+    uri: https://iam.sa-brazil-1.myhuaweicloud.com/v3/auth/domains
   response:
     body:
       string: '{"domains":[{"name":"huaweicloud-test","id":"mock-domain-id","enabled":true}]}'
@@ -25,14 +25,18 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 21 May 2025 09:42:04 GMT
+      - Mon, 23 Jun 2025 06:26:36 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=ea5a297d481ff8ae30; path=/
-      - HWWAFSESTIME=1747820520879; path=/
+      - HWWAFSESID=74f567f87c9a7189c3; path=/
+      - HWWAFSESTIME=1750659994495; path=/
+      - HWWAFSESTIME=1750659993319; path=/
+      - HWWAFSESID=770fdb251eb9d17921; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -40,12 +44,12 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 94063fc0a9ad943369eccb09c18c1bf8
+      - bb2bac04efa6d525698b857232694776
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
-      message: ok
+      message: OK
 - request:
     body: null
     headers:
@@ -58,15 +62,15 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
       - mock-domain-id
       X-Sdk-Date:
-      - 20250523T080014Z
+      - 20250623T070014Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities?limit=100&offset=0
   response:
     body:
       string: '{ "total" : 1, "certificate_authorities" : [ { "signature_algorithm"
@@ -86,12 +90,12 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 May 2025 08:00:14 GMT
+      - Mon, 23 Jun 2025 07:00:14 GMT
       Server:
       - CloudWAF
       Set-Cookie:
       - HWWAFSESID=bc67273835f91aa425; path=/
-      - HWWAFSESTIME=1747987214303; path=/
+      - HWWAFSESTIME=1750658414303; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       X-Content-Type-Options:
@@ -119,38 +123,31 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - ccm.ap-southeast-3.myhuaweicloud.com
+      - ccm.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Domain-Id:
       - mock-domain-id
       X-Sdk-Date:
-      - 20250523T080249Z
+      - 20250623T070025Z
     method: GET
-    uri: https://ccm.ap-southeast-3.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
+    uri: https://ccm.myhuaweicloud.com/v1/private-certificate-authorities/a6bbf0be-79f3-4f66-858a-0fdcb96dfcbe/tags
   response:
     body:
-      string: '{
-        "tags" : [ {
-          "key" : "key1",
-          "value" : "value1"
-        }, {
-          "key" : "key2",
-          "value" : "value2"
-        } ]
-      }'
+      string: '{ "tags" : [ { "key" : "key1", "value" : "value1" }, { "key" : "key2",
+        "value" : "value2" } ] }'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 May 2025 08:02:49 GMT
+      - Mon, 23 Jun 2025 07:00:25 GMT
       Server:
       - CloudWAF
       Set-Cookie:
       - HWWAFSESID=00bb67375188eb9899; path=/
-      - HWWAFSESTIME=1747987369820; path=/
+      - HWWAFSESTIME=1750658425820; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       X-Content-Type-Options:

@@ -4,6 +4,7 @@
 import logging
 import json
 import copy
+import re
 
 from huaweicloudsdkcore.exceptions import exceptions
 
@@ -106,7 +107,7 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
         for statement in bucket_statements:
             prinicipal_user = statement.get('Principal', {}).get("ID", [])
             action = statement.get('Action', [])
-            if "*" in prinicipal_user or "*" in action:
+            if any("*" in s for s in prinicipal_user + action):
                 continue
 
             new_statements.append(statement)
@@ -549,7 +550,7 @@ class WildcardStatementFilter(Filter):
         for statement in bucket_statements:
             prinicipal_user = statement.get('Principal', {}).get("ID", [])
             action = statement.get('Action', [])
-            if "*" in prinicipal_user or "*" in action:
+            if any("*" in s for s in prinicipal_user + action):
                 result.append(statement)
 
         if result:
@@ -792,11 +793,6 @@ class FilterPublicBlock(Filter):
             if resp.status < 300:
                 config = resp.body
             else:
-                error_code = resp.reason
-                if error_code == 'Forbidden' or error_code == 'Method Not Allowed'\
-                or 'Not Found' == resp.reason:
-                    log.error('unsupport operate [BucketPublicAccessBlock]')
-                    return None
                 raise_exception(resp, 'BucketPublicAccessBlock', bucket)
 
             bucket[self.annotation_key] = config
@@ -1105,26 +1101,47 @@ class OBSMissingTagFilter(Filter):
                 'required': ['key'],
                 'properties': {
                     'key': {'type': 'string', 'minLength': 1, 'maxLength': 35},
-                    'value': {'type': 'string', 'minLength': 1, 'maxLength': 42}
+                    'value': {'type': 'string'}
                 }
             }
         },
         match={'type': 'string', 'enum': ['missing-all', 'missing-any']}
     )
 
+    expected_tags = []
+
     def process(self, buckets, event=None):
         filtered_buckets = filter_region_bucket(self.manager.session_factory, buckets)
-        with self.executor_factory(max_workers=5) as w:
-            results = w.map(self.process_bucket, filtered_buckets)
-            results = list(filter(None, list(results)))
+        log.debug(filtered_buckets)
+
+        for t in self.data.get('tags', []):
+            key = t.get('key')
+            value = t.get('value')
+            if isinstance(value, str) and value.startswith('^') and value.endswith('$'):
+                try:
+                    pattern = re.compile(value)
+                    self.expected_tags.append((key, pattern))
+                except re.error:
+                    self.log.info('failed to compile the regular exception [%s].' % value)
+                    self.expected_tags.append((key, value))
+            else:
+                self.expected_tags.append((key, value))
+
+        with self.executor_factory(max_workers=5) as executor:
+            results = list(filter(None, executor.map(
+                self.process_bucket_wrapper, filtered_buckets)))
             return results
 
-    def process_bucket(self, bucket):
-        expected_tags = {(t.get('key'), t.get('value')) for t in self.data.get('tags', [])}
+    def process_bucket_wrapper(self, bucket):
+        """Wrapper function to process a single bucket with expected_tags."""
+        return self.process_bucket(bucket, self.expected_tags)
+
+    def process_bucket(self, bucket, expected_tags):
         match_mode = self.data.get('match', 'missing-any')
 
         bucket_tags = self.get_bucket_tags(bucket)
         if self._is_match(expected_tags, bucket_tags, match_mode):
+            self.log.info('the bucket [%s] missing some tags' % (bucket['name']))
             return bucket
         else:
             return None
@@ -1139,9 +1156,43 @@ class OBSMissingTagFilter(Filter):
                 return set()
             raise_exception(resp, 'getBucketTagging', bucket)
 
-    def _is_match(self, expected, actual, match_mode):
+    def _is_match(self, expected_tags, actual_tags, match_mode):
+        """
+        Verify if actual tags meet expectations
+        :param expected_tags: List of (key, value) tuples,
+        where value can be None/string/regex object
+        :param actual_tags: Set of (key, value) tuples from the bucket
+        :param match_mode: Matching mode ('missing-all' or 'missing-any')
+        :return: Boolean indicating match status
+        """
+        actual_dict = {k: v for k, v in actual_tags}
+
+        results = []
+        for key, exp_value in expected_tags:
+            actual_value = actual_dict.get(key)
+
+            # Case 1: Expected None
+            if exp_value is None:
+                if key in actual_dict and actual_value is None:
+                    results.append(True)
+                else:
+                    results.append(False)
+            # Case 2: Regex pattern (key must exist and value must match pattern)
+            elif isinstance(exp_value, re.Pattern):
+                if actual_value is None:
+                    results.append(False)
+                else:
+                    results.append(bool(exp_value.match(actual_value)))
+            # Case 3: Literal string (key must exist and values must match exactly)
+            else:
+                results.append(actual_value == exp_value)
+
+            log.debug('check tag (%s, %s) result is [%s]' % (key, actual_value, results[-1]))
+
         if match_mode == 'missing-all':
-            return expected.isdisjoint(actual)
+            # all expected tags to NOT match
+            return not any(results)
         elif match_mode == 'missing-any':
-            return not actual.issuperset(expected)
+            # Require at least one expected tag to NOT match
+            return not all(results)
         return False

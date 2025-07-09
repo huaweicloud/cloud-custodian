@@ -9,10 +9,13 @@ OBS - Find Obs Bucket That missing Some Tags
         filters:
         - type: obs-missing-tag-filter
             tags:
-            - key: key1
-              value: value1
-            - key: key2
-              value: value2
+            - key: owner-team-email
+              value: ^[a-zA-Z0-9._%+-]+@gmail.com$
+            - key: data_classification
+              value: ^(Restricted|Internal|Public|Confidential)$
+            - key: bucket-type
+              value: log-bucket
+            - key: team
             match: missing-any
 
   policies:
@@ -21,10 +24,13 @@ OBS - Find Obs Bucket That missing Some Tags
         filters:
         - type: obs-missing-tag-filter
             tags:
-            - key: key1
-              value: value1
-            - key: key2
-              value: value2
+            - key: owner-team-email
+              value: ^[a-zA-Z0-9._%+-]+@gmail.com$
+            - key: data_classification
+              value: ^(Restricted|Internal|Public|Confidential)$
+            - key: bucket-type
+              value: log-bucket
+            - key: team
             match: missing-all
 
   policies:
