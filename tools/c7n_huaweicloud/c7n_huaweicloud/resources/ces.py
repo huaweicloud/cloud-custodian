@@ -256,7 +256,8 @@ class BatchStartStoppedAlarmRules(BaseAction):
                      f"with id:[{list_alarm_ids}]  {doSomeThing}  is success. ")
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
-                      f"with id:[{list_alarm_ids}]  {doSomeThing}  is failed. cause: {e.error_msg} ")
+                      f"with id:[{list_alarm_ids}]  {doSomeThing}  is failed. "
+                      f"cause: {e.error_msg} ")
             raise e
         return response
 
@@ -700,7 +701,8 @@ class NotifyBySMN(BaseAction):
                          f"with id:[{list_alarm_ids}]  {doSomeThing}  is success. ")
             except exceptions.ClientRequestException as e:
                 log.error(f"[actions]- {actionName}- The resource:{resourceType} "
-                          f"with id:[{list_alarm_ids}]  {doSomeThing}  is failed. cause: {e.error_msg} ")
+                          f"with id:[{list_alarm_ids}]  {doSomeThing}  is failed. "
+                          f"cause: {e.error_msg} ")
                 raise e
 
 
