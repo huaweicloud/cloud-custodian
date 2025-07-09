@@ -55,9 +55,9 @@ class Alarm(QueryResourceManager):
                 )
                 resources = resources + resource
             except exceptions.ClientRequestException as e:
-                log.error(
-                    f"Failed to query API list: {str(e)}")
-                break
+                log.error(f"[actions]- list_alarm_rules - The resource:ces-alarm "
+                          f"with id:[] query alarm rules is failed. cause: {e.error_msg} ")
+                raise e
 
             offset += limit
             if not response.count or offset >= len(response.alarms):
@@ -122,6 +122,9 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
     )
 
     def perform_action(self, resource):
+        actionName = "alarm-update-notification"
+        resourceType = "ces-alarm"
+        doSomeThing = "Update alarm notification"
         params = self.data.get('parameters', {})
         action_type = params.get('action_type', 'notification')
         response = None
@@ -142,8 +145,10 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
             alarm_topic_urns = notification_list
             ok_topic_urns = notification_list
         else:
-            log.error("Update alarm notification need setting notification_name, "
-                      "notification_list param")
+            log.error(f"[actions]- {actionName}- The resource:{resourceType} "
+                      f"with id:[{resource.ID}]  {doSomeThing}  is failed. cause: "
+                      f"Update alarm notification need setting notification_name, "
+                      f"notification_list param")
             raise RuntimeError("missing notification_name, notification_list param")
         alarm_notifications = resource["alarm_notifications"]
         for item in alarm_notifications:
@@ -197,9 +202,12 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         try:
             client = local_session(self.manager.session_factory).client('ces')
             response = client.update_alarm_notifications(request)
-            log.info(f"Update alarm notification {response}")
+            log.info(f"[actions]- {actionName} The resource:{resourceType} "
+                     f"with id:[{resource.ID}]  {doSomeThing}  is success. ")
         except exceptions.ClientRequestException as e:
-            log.error(f"Update alarm notification failed: {e.error_msg}")
+            log.error(f"[actions]- {actionName}- The resource:{resourceType} "
+                      f"with id:[{resource.ID}]  {doSomeThing}  is failed. cause: {e.error_msg} ")
+            raise e
         return response
 
 
@@ -232,6 +240,9 @@ class BatchStartStoppedAlarmRules(BaseAction):
         if len(resources) == 0:
             return
         response = None
+        actionName = "batch-start-alarm-rules"
+        resourceType = "ces-alarm"
+        doSomeThing = "Batch start alarm rules"
         batch_enable_alarm_rule_request = BatchEnableAlarmRulesRequest()
         list_alarm_ids = [str(item["alarm_id"]) for item in resources if "alarm_id" in item]
         batch_enable_alarm_rule_request.body = BatchEnableAlarmsRequestBody(
@@ -240,10 +251,13 @@ class BatchStartStoppedAlarmRules(BaseAction):
         )
         try:
             client = local_session(self.manager.session_factory).client('ces')
-            update_response = client.batch_enable_alarm_rules(batch_enable_alarm_rule_request)
-            log.info(f"Batch start alarm, response: {update_response}")
+            client.batch_enable_alarm_rules(batch_enable_alarm_rule_request)
+            log.info(f"[actions]- {actionName} The resource:{resourceType} "
+                     f"with id:[{list_alarm_ids}]  {doSomeThing}  is success. ")
         except exceptions.ClientRequestException as e:
-            log.error(f"Batch start alarm failed: {e.error_msg}")
+            log.error(f"[actions]- {actionName}- The resource:{resourceType} "
+                      f"with id:[{list_alarm_ids}]  {doSomeThing}  is failed. cause: {e.error_msg} ")
+            raise e
         return response
 
 
@@ -340,6 +354,9 @@ class CreateKmsEventAlarmRule(BaseAction):
     )
 
     def process(self, resources):
+        actionName = "create-kms-event-alarm-rule"
+        resourceType = "ces-alarm"
+        doSomeThing = "Create KMS event alarm rule"
         params = self.data.get('parameters', {})
         action_type = params.get('action_type', 'notification')
         client = local_session(self.manager.session_factory).client('ces')
@@ -420,9 +437,12 @@ class CreateKmsEventAlarmRule(BaseAction):
         )
         try:
             response = client.create_alarm_rules(request)
-            log.info(f"Create alarm {response}")
+            log.info(f"[actions]- {actionName} The resource:{resourceType} "
+                     f"with id:[{response.alarm_id}]  {doSomeThing}  is success. ")
         except exceptions.ClientRequestException as e:
-            log.error(f"Create alarm failed: {e.error_msg}")
+            log.error(f"[actions]- {actionName}- The resource:{resourceType} "
+                      f"with id:alarm-kms-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
+            raise e
 
 
 @Alarm.action_registry.register("create-obs-event-alarm-rule")
@@ -509,6 +529,9 @@ class CreateObsEventAlarmRule(BaseAction):
     )
 
     def process(self, resources):
+        actionName = "create-obs-event-alarm-rule"
+        resourceType = "ces-alarm"
+        doSomeThing = "Create OBS event alarm rule"
         params = self.data.get('parameters', {})
         action_type = params.get('action_type', 'notification')
         client = local_session(self.manager.session_factory).client('ces')
@@ -589,9 +612,12 @@ class CreateObsEventAlarmRule(BaseAction):
         )
         try:
             response = client.create_alarm_rules(request)
-            log.info(f"Create alarm {response}")
+            log.info(f"[actions]- {actionName} The resource:{resourceType} "
+                     f"with id:[{response.alarm_id}]  {doSomeThing}  is success. ")
         except exceptions.ClientRequestException as e:
-            log.error(f"Create alarm failed: {e.error_msg}")
+            log.error(f"[actions]- {actionName}- The resource:{resourceType} "
+                      f"with id:alarm-obs-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
+            raise e
 
 
 @Alarm.action_registry.register("notify-by-smn")
@@ -650,6 +676,9 @@ class NotifyBySMN(BaseAction):
     )
 
     def process(self, resources):
+        actionName = "notify-by-smn"
+        resourceType = "ces-alarm"
+        doSomeThing = "Notify by SMN"
         params = self.data.get('parameters', {})
         subject = params.get('subject', 'subject')
         message = params.get('message', 'message')
@@ -664,13 +693,15 @@ class NotifyBySMN(BaseAction):
         )
         for topic_urn in params['notification_list']:
             publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
-            log.info(f"Message send, request: {publish_message_request}")
             try:
                 client = local_session(self.manager.session_factory).client('smn')
-                publish_message_response = client.publish_message(publish_message_request)
-                log.info(f"Message send, response: {publish_message_response}")
+                client.publish_message(publish_message_request)
+                log.info(f"[actions]- {actionName} The resource:{resourceType} "
+                         f"with id:[{list_alarm_ids}]  {doSomeThing}  is success. ")
             except exceptions.ClientRequestException as e:
-                log.error(f"Message send, failed: {e.error_msg}")
+                log.error(f"[actions]- {actionName}- The resource:{resourceType} "
+                          f"with id:[{list_alarm_ids}]  {doSomeThing}  is failed. cause: {e.error_msg} ")
+                raise e
 
 
 @Alarm.action_registry.register("create-vpc-event-alarm-rule")
@@ -769,6 +800,9 @@ class CreateVpcEventAlarmRule(BaseAction):
     )
 
     def process(self, resources):
+        actionName = "create-vpc-event-alarm-rule"
+        resourceType = "ces-alarm"
+        doSomeThing = "Create VPC event alarm rule"
         params = self.data.get('parameters', {})
         action_type = params.get('action_type', 'notification')
         client = local_session(self.manager.session_factory).client('ces')
@@ -882,6 +916,9 @@ class CreateVpcEventAlarmRule(BaseAction):
         )
         try:
             response = client.create_alarm_rules(request)
-            log.info(f"Create alarm {response}")
+            log.info(f"[actions]- {actionName} The resource:{resourceType} "
+                     f"with id:[{response.alarm_id}]  {doSomeThing}  is success. ")
         except exceptions.ClientRequestException as e:
-            log.error(f"Create alarm failed: {e.error_msg}")
+            log.error(f"[actions]- {actionName}- The resource:{resourceType} "
+                      f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
+            raise e
