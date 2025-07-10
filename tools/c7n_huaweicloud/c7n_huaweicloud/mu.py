@@ -54,6 +54,7 @@ from huaweicloudsdkeg.v1 import (
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkvpc.v2 import ListSubnetsRequest
 from huaweicloudsdkvpc.v3 import ListVpcsRequest
+from huaweicloudsdklts.v2 import ListLogGroupsRequest, ListLogStreamsRequest
 
 log = logging.getLogger('c7n_huaweicloud.mu')
 
@@ -157,6 +158,11 @@ class FunctionGraphManager:
         # 配置公共依赖
         dep_ids = self.get_custodian_depend_version_id(params["runtime"])
         request_body.depend_version_list = dep_ids
+        # 配置标签
+        if params.get('func_tags'):
+            tags = json.dumps(params.get('func_tags'))
+            log.info(f'Create function with tags: {tags}')
+            request_body.tags = tags
         request.body = request_body
         try:
             response = self.client.create_function(request)
@@ -386,6 +392,8 @@ class FunctionGraphManager:
             if need_update:
                 log.info(f'Updating function[{func.func_name}] config: [{need_update}]...')
                 result = self.update_function_config(old_config, need_update)
+            if func.func_tags:
+                self.process_function_tags(func.func_tags, result.func_urn)
         else:
             log.info(f'Creating custodian policy FunctionGraph function[{func.func_name}]...')
             params = func.get_config()
@@ -401,8 +409,6 @@ class FunctionGraphManager:
 
         if result:
             self.process_async_invoke_config(func, result.func_urn)
-            if func.func_tags:
-                self.process_function_tags(func.func_tags, result.func_urn)
         else:
             raise PolicyExecutionError("Create or update failed.")
 
@@ -420,9 +426,9 @@ class FunctionGraphManager:
         if old_config.get('user_data', ""):
             old_user_data = json.loads(old_config['user_data'])
         for param in params:
-            # 跳过异步配置、环境变量、vpc配置、网络控制配置、func_tags
+            # 跳过异步配置、环境变量、vpc配置、网络控制配置、func_tags、日志配置
             if param in ["async_invoke_config", "user_data", "func_vpc", "network_controller",
-                         "func_tags"]:
+                         "func_tags", "log_config"]:
                 continue
             if params[param] != old_config.get(param):
                 need_update_params[param] = params[param]
@@ -431,13 +437,21 @@ class FunctionGraphManager:
         if new_user_data != old_user_data:
             need_update_params['user_data'] = json.dumps(new_user_data)
         # 单独比较func_vpc:
-        if (old_config['func_vpc'] is None) or (params['func_vpc'] is None):
-            need_update_params['func_vpc'] = params['func_vpc']
+        if not old_config['func_vpc']:
+            if params['func_vpc']:
+                # 开启vpc
+                need_update_params['func_vpc'] = params['func_vpc']
+            else:
+                pass
         else:
-            vpc_fields = ['vpc_id', 'subnet_id', 'is_safety']
-            for field in vpc_fields:
-                if old_config['func_vpc'][field] != params['func_vpc'][field]:
-                    need_update_params['func_vpc'] = params['func_vpc']
+            if params['func_vpc']:
+                vpc_fields = ['vpc_id', 'subnet_id', 'is_safety']
+                for field in vpc_fields:
+                    if old_config['func_vpc'][field] != params['func_vpc'][field]:
+                        need_update_params['func_vpc'] = params['func_vpc']
+            else:
+                # 关闭vpc
+                need_update_params['func_vpc'] = params['func_vpc']
         # 单独比较network_controller:
         if (old_config['network_controller'] is None) or (params['network_controller'] is None):
             need_update_params['network_controller'] = params['network_controller']
@@ -445,6 +459,13 @@ class FunctionGraphManager:
             if old_config['network_controller']['disable_public_network'] != \
                     params['network_controller']['disable_public_network']:
                 need_update_params['network_controller'] = params['network_controller']
+        # 单独比较日志配置:
+        if params['log_config']:
+            if old_config.get('log_group_id') == params['log_config']['group_id'] and \
+                    old_config.get('log_stream_id') == params['log_config']['stream_id']:
+                pass
+            else:
+                need_update_params['log_config'] = params['log_config']
 
         return need_update_params
 
@@ -991,7 +1012,17 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
 
     @property
     def log_config(self):
-        return self.policy.data['mode'].get('log_config', None)
+        log_config = self.policy.data['mode'].get('log_config', None)
+        if log_config:
+            if log_config.get('group_id') and log_config.get('stream_id'):
+                return log_config
+            log_config["group_id"], log_config["stream_id"] = \
+                self.get_group_and_stream_id_by_name(
+                    group_name=log_config.get('group_name', ""),
+                    stream_name=log_config.get('stream_name', ""),
+                )
+
+        return log_config
 
     def eg_agency(self):
         return self.policy.data['mode'].get('eg_agency')
@@ -1043,10 +1074,11 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError("Get vpc_id by vpc_name failed")
 
-        if len(vpcs) != 1:
-            log.error(f'The count of vpc[{vpc_name}] is not 1.')
-            raise PolicyExecutionError("Get vpc_id by vpc_name failed")
-        vpc_id = vpcs[0].id
+        vpc_id = ""
+        for vpc in vpcs:
+            vpc_id = vpc.id
+        if not vpc_id:
+            raise PolicyExecutionError(f'Get vpc_id by vpc_name[{vpc_name}] failed')
 
         vpc_client_v2 = self.session.client('vpc_v2')
         get_subnets_request = ListSubnetsRequest(
@@ -1067,11 +1099,52 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
             if subnet.name == subnet_name and subnet.cidr == cidr:
                 subnet_id = subnet.id
                 break
-        if subnet_id == "":
-            log.error(f'Get subnet_id by subnet_name[{subnet_name}] failed')
-            raise PolicyExecutionError("Get subnet_id by subnet_name failed")
+        if not subnet_id:
+            raise PolicyExecutionError(f'Get subnet_id by subnet_name[{subnet_name}] failed')
 
         return vpc_id, subnet_id
+
+    def get_group_and_stream_id_by_name(self, group_name, stream_name):
+        lts_client_v2 = self.session.client('lts-stream')
+        list_groups_request = ListLogGroupsRequest()
+        try:
+            log_groups = lts_client_v2.list_log_groups(list_groups_request).log_groups
+        except exceptions.ClientRequestException as e:
+            log.error(f'Get group_id by group_name failed, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError("Get group_id by group_name failed")
+        group_id = ""
+        for log_group in log_groups:
+            if log_group.log_group_name == group_name or \
+                    log_group.log_group_name_alias == group_name:
+                group_id = log_group.log_group_id
+                break
+        if not group_id:
+            raise PolicyExecutionError(f'Get group_id by group_name[{group_name}] failed')
+
+        list_streams_request = ListLogStreamsRequest(
+            log_group_name=group_name,
+            log_stream_name=stream_name,
+        )
+        try:
+            log_streams = lts_client_v2.list_log_streams(list_streams_request).log_streams
+        except exceptions.ClientRequestException as e:
+            log.error(f'Get stream_id by stream_name failed, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError("Get stream_id by stream_name failed")
+        stream_id = ""
+        for log_stream in log_streams:
+            stream_id = log_stream.log_stream_id
+        if not stream_id:
+            raise PolicyExecutionError(f'Get stream_id by stream_name[{stream_name}] failed')
+
+        return group_id, stream_id
 
     def get_archive(self):
         self.archive.add_contents(

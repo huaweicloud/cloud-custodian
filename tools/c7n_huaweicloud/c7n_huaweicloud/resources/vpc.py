@@ -16,7 +16,7 @@ from huaweicloudsdkvpc.v2 import (
     CreateFlowLogRequest,
     CreateFlowLogReq,
     CreateFlowLogReqBody,
-    AllowedAddressPair,
+    AllowedAddressPair as AllowedAddressPairV2,
     UpdatePortOption,
     UpdatePortRequest,
     UpdatePortRequestBody,
@@ -32,7 +32,11 @@ from huaweicloudsdkvpc.v3 import (
     BatchCreateSecurityGroupRulesRequest,
     BatchCreateSecurityGroupRulesRequestBody,
     BatchCreateSecurityGroupRulesOption,
-    ShowAddressGroupRequest
+    ShowAddressGroupRequest,
+    AllowedAddressPair as AllowedAddressPairV3,
+    UpdateSubNetworkInterfaceOption,
+    UpdateSubNetworkInterfaceRequest,
+    UpdateSubNetworkInterfaceRequestBody
 )
 
 from c7n.exceptions import PolicyValidationError
@@ -113,7 +117,10 @@ class PortDisablePortForwarding(HuaweiCloudBaseAction):
     schema = type_schema("disable-port-forwarding")
 
     def perform_action(self, resource):
-        client = self.manager.get_client()
+        device_owner = resource.get('device_owner', '')
+        is_subeni = ('compute:subeni' == device_owner)
+        client = self.manager.get_resource_manager('vpc-security-group').get_client() \
+            if is_subeni else self.manager.get_client()
         raw_pairs = resource.get('allowed_address_pairs')
         new_pairs = []
         if raw_pairs:
@@ -122,13 +129,24 @@ class PortDisablePortForwarding(HuaweiCloudBaseAction):
                 if pair_ip == '1.1.1.1/0':
                     continue
                 pair_mac = pair.get('mac_address')
-                new_pair = AllowedAddressPair(ip_address=pair_ip, mac_address=pair_mac)
+                if not is_subeni:
+                    new_pair = AllowedAddressPairV2(ip_address=pair_ip, mac_address=pair_mac)
+                else:
+                    new_pair = AllowedAddressPairV3(ip_address=pair_ip, mac_address=pair_mac)
                 new_pairs.append(new_pair)
-        port_body = UpdatePortOption(allowed_address_pairs=new_pairs)
-        request = UpdatePortRequest()
-        request.port_id = resource['id']
-        request.body = UpdatePortRequestBody(port=port_body)
-        response = client.update_port(request)
+        if not is_subeni:
+            port_body = UpdatePortOption(allowed_address_pairs=new_pairs)
+            request = UpdatePortRequest()
+            request.port_id = resource['id']
+            request.body = UpdatePortRequestBody(port=port_body)
+            response = client.update_port(request)
+        else:
+            request = UpdateSubNetworkInterfaceRequest()
+            request.sub_network_interface_id = resource['id']
+            subeni_body = UpdateSubNetworkInterfaceOption(allowed_address_pairs=new_pairs)
+            request.body = UpdateSubNetworkInterfaceRequestBody(
+                sub_network_interface=subeni_body)
+            response = client.update_sub_network_interface(request)
         return response
 
 
