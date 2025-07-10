@@ -125,6 +125,7 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
         actionName = "alarm-update-notification"
         resourceType = "ces-alarm"
         doSomeThing = "Update alarm notification"
+        alarm_id = resource["alarm_id"]
         params = self.data.get('parameters', {})
         action_type = params.get('action_type', 'notification')
         response = None
@@ -146,7 +147,7 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
             ok_topic_urns = notification_list
         else:
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
-                      f"with id:[{resource.ID}]  {doSomeThing}  is failed. cause: "
+                      f"with id:[{alarm_id}]  {doSomeThing}  is failed. cause: "
                       f"Update alarm notification need setting notification_name, "
                       f"notification_list param")
             raise RuntimeError("missing notification_name, notification_list param")
@@ -203,10 +204,10 @@ class AlarmUpdateNotification(HuaweiCloudBaseAction):
             client = local_session(self.manager.session_factory).client('ces')
             response = client.update_alarm_notifications(request)
             log.info(f"[actions]- {actionName} The resource:{resourceType} "
-                     f"with id:[{resource.ID}]  {doSomeThing}  is success. ")
+                     f"with id:[{alarm_id}]  {doSomeThing}  is success. ")
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
-                      f"with id:[{resource.ID}]  {doSomeThing}  is failed. cause: {e.error_msg} ")
+                      f"with id:[{alarm_id}]  {doSomeThing}  is failed. cause: {e.error_msg} ")
             raise e
         return response
 
