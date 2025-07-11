@@ -1687,7 +1687,7 @@ class InstanceMetadataOptionsToken(Filter):
             req = ShowMetadataOptionsRequest(server_id=r["id"])
             try:
                 resp = ecs_client.show_metadata_options(req)
-                log.debug("[filters]-{instance-imds-token} "
+                log.info("[filters]-{instance-imds-token} "
                           "The resource:[ecs] with request:[%s] "
                           "query server metadata options is success.", req)
             except exceptions.ClientRequestException as e:
