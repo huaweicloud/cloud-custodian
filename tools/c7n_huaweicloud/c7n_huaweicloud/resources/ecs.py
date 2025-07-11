@@ -147,7 +147,7 @@ class EcsStart(HuaweiCloudBaseAction):
             log.warning("[actions]-{instance-start} No instance need start: "
                         "all instances status is active.")
             return None
-        if len(resources) > 1000:
+        if len(instances) > 1000:
             log.error("[actions]-{instance-start} The resource:[ecs] is failed, "
                       "cause: Up to 1000 instances can be processed within one minute.")
             return
@@ -207,7 +207,7 @@ class EcsStop(HuaweiCloudBaseAction):
             log.warning("[actions]-{instance-stop} No instance need stop: "
                         "all instances status is stopped.")
             return None
-        if len(resources) > 1000:
+        if len(instances) > 1000:
             log.error("[actions]-{instance-stop} The resource:[ecs] is failed, "
                       "cause: Up to 1000 instances can be processed within one minute.")
             return
@@ -267,7 +267,7 @@ class EcsReboot(HuaweiCloudBaseAction):
             log.warning("[actions]-{instance-reboot} No instance need stop: "
                         "all instances status is stopped.")
             return None
-        if len(resources) > 1000:
+        if len(instances) > 1000:
             log.error("[actions]-{instance-reboot} The resource:[ecs] is failed, "
                       "cause: Up to 1000 instances can be processed within one minute.")
             return
