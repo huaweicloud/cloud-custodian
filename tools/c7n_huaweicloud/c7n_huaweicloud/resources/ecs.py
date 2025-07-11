@@ -145,7 +145,7 @@ class EcsStart(HuaweiCloudBaseAction):
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("[actions]-{instance-start} No instance need start: "
-                        "all instances status is active.")
+                        "All instances status are active.")
             return None
         if len(instances) > 1000:
             log.error("[actions]-{instance-start} The resource:[ecs] is failed, "
@@ -205,7 +205,7 @@ class EcsStop(HuaweiCloudBaseAction):
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("[actions]-{instance-stop} No instance need stop: "
-                        "all instances status is stopped.")
+                        "All instances status are stopped.")
             return None
         if len(instances) > 1000:
             log.error("[actions]-{instance-stop} The resource:[ecs] is failed, "
@@ -265,7 +265,7 @@ class EcsReboot(HuaweiCloudBaseAction):
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("[actions]-{instance-reboot} No instance need stop: "
-                        "all instances status is stopped.")
+                        "All instances status are stopped.")
             return None
         if len(instances) > 1000:
             log.error("[actions]-{instance-reboot} The resource:[ecs] is failed, "
