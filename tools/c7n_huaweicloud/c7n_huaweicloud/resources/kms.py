@@ -9,7 +9,8 @@ from huaweicloudsdkkms.v2 import (EnableKeyRotationRequest, OperateKeyRequestBod
                                   DisableKeyRotationRequest, EnableKeyRequest,
                                   DisableKeyRequest, CreateKeyRequest, CreateKeyRequestBody,
                                   ListAliasesRequest, CreateAliasRequest,
-                                  CreateAliasRequestBody)
+                                  CreateAliasRequestBody, ListKeysRequest, ListKmsByTagsRequest,
+                                  ListKmsByTagsRequestBody)
 
 from c7n import exceptions
 from c7n.filters import ValueFilter
@@ -30,6 +31,66 @@ class Kms(QueryResourceManager):
         tag_resource_type = 'kms'
         config_resource_support = True
 
+    def get_resources(self, resource_ids):
+        allResources = self.get_api_resources(resource_ids)
+        resources = []
+        for resource in allResources:
+            if resource["key_id"] in resource_ids:
+                resources.append(resource)
+        return resources
+
+    def _fetch_resources(self, query):
+        return self.get_api_resources(query)
+
+    def get_api_resources(self, resource_ids):
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+        resources = []
+        resourceTagDict = {}
+        offset, limit = 0, 1000
+        while True:
+
+            requestTag = ListKmsByTagsRequest()
+            requestTag.resource_instances = "resource_instances"
+            requestTag.body = ListKmsByTagsRequestBody(
+                action="filter",
+                offset=str(offset),
+                limit=str(limit)
+            )
+
+            try:
+                responseTag = client.list_kms_by_tags(requestTag)
+                tagResources = responseTag.resources
+                for tagResource in tagResources:
+                    resourceTagDict[tagResource.resource_id] = tagResource.to_dict().get('tags')
+
+            except Exception as e:
+                log.error(
+                    f"Failed to query API list: {str(e)}")
+                break
+
+            offset += limit
+
+            if not responseTag.total_count or offset >= len(responseTag.resources):
+                break
+
+        request = ListKeysRequest()
+        request.key_spec = "ALL"
+        try:
+            response = client.list_keys(request)
+            details = response.key_details
+            default = []
+            for detail in details:
+                dict = detail.to_dict()
+                dict["tags"] = resourceTagDict.get(detail.key_id, default)
+                dict["id"] = detail.key_id
+                resources.append(dict)
+        except Exception as e:
+            log.error(
+                f"Failed to query API list: {str(e)}")
+            raise e
+        return resources
+
 
 @Kms.action_registry.register("enable_key_rotation")
 class rotationKey(HuaweiCloudBaseAction):
@@ -49,6 +110,15 @@ policies:
         - type: value
           key: domain_id
           value: "537f650fb2be4ca3a511f25d8defd3b0"
+        - type: value
+          key: default_key_flag
+          value: "0"
+        - type: value
+          key: keystore_id
+          value: "0"
+        - type: value
+          key: key_state
+          value: "2"
     actions:
       - enable_key_rotation
     """
@@ -56,34 +126,37 @@ policies:
     schema = type_schema("enable_key_rotation")
 
     def perform_action(self, resource):
-        session = local_session(self.manager.session_factory)
-        domain = session.domain_id
-        notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
-                          "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
+        supportList = {"AES_256", "SM4"}
+        resourceId = resource["key_id"]
         if (resource["default_key_flag"] == "0" and resource["key_spec"]
-                not in notSupportList and resource["keystore_id"] == "0"
+                in supportList and resource["keystore_id"] == "0"
                 and resource["key_state"] in {"2"}):
             client = self.manager.get_client()
             request = EnableKeyRotationRequest()
-            if domain is None:
-                request.body = OperateKeyRequestBody(
-                    key_id=resource["key_id"],
-                    sequence=uuid.uuid4().hex
-                )
-                try:
-                    client.enable_key_rotation(request)
-                except Exception as e:
-                    raise e
-            else:
-                if domain == resource["domain_id"]:
-                    request.body = OperateKeyRequestBody(
-                        key_id=resource["key_id"],
-                        sequence=uuid.uuid4().hex
-                    )
-                    try:
-                        client.enable_key_rotation(request)
-                    except Exception as e:
-                        raise e
+            request.body = OperateKeyRequestBody(
+                key_id=resource["key_id"],
+                sequence=uuid.uuid4().hex
+            )
+            try:
+                client.enable_key_rotation(request)
+                log.info("enable_key_rotation the resourceType:KMS resourceId={},success"
+                         .format(resourceId))
+            except Exception as e:
+                if e.status_code == 400:
+                    log.info(
+                        "the key rotation is already enabled or the key is not supported "
+                        "for rotation, resourceId={},msg={}".format(
+                            resourceId, e.error_msg))
+                else:
+                    log.error("enable_key_rotation the resourceType:KMS resourceId={} is failed"
+                              .format(resourceId))
+
+        else:
+            log.info("skip enable_key_rotation the resourceType:KMS resourceId={},"
+                     "The key does not meet the conditions for "
+                     "enabling rotation.The conditions for ending the key are:"
+                     "the key is not the default key,is not a shared "
+                     "key,and the algorithm is SM4 or AES_256".format(resourceId))
 
 
 @Kms.action_registry.register("disable_key_rotation")
@@ -103,7 +176,7 @@ policies:
           value: "False"
         - type: value
           key: domain_id
-          value: "aaaaaaa"
+          value: "537f650fb2be4ca3a511f25d8defd3b0"
     actions:
       - disable_key_rotation
     """
@@ -113,6 +186,7 @@ policies:
     def perform_action(self, resource):
         notSupportList = {"RSA_2048", "RSA_3072", "RSA_4096", "EC_P256", "EC_P384",
                           "SM2", "ML_DSA_44", "ML_DSA_65", "ML_DSA_87"}
+
         if (resource["default_key_flag"] == "0" and resource["key_spec"]
                 not in notSupportList and resource["keystore_id"] == "0"
                 and resource["key_state"] in {"2", "3", "4"}):
@@ -210,11 +284,18 @@ class createKey(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
 policies:
-  - name: create-key
+  - name: create-key-with-alias
     resource: huaweicloud.kms
+    mode:
+      type: huaweicloud-periodic
+      xrole: fgs_admin
+      enable_lts_log: true
+      log_level: INFO
+      schedule: '1m'
+      schedule_type: Rate
     actions:
-      - type: create-key
-        key_aliases: ["dd"]
+      - type: create-key-with-alias
+        key_aliases: ["test"]
         obs_url: "https://custodian0527.obs.sa-brazil-1.myhuaweicloud.com/kms.txt"
 
     """

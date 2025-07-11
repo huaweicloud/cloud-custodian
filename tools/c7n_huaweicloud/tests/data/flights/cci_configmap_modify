@@ -1,0 +1,240 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250609T081459Z
+      content-length:
+      - '0'
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: GET
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/default/configmaps
+  response:
+    body:
+      string: '{ "apiVersion": "v1", "items": [ { "data": { "property_1": "test" },
+        "metadata": { "creationTimestamp": "2017-12-13T03:15:57Z", "name": "test-12130306",
+        "namespace": "ns-12130306-s", "resourceVersion": "419081", "selfLink": "/apis/cci/v2/namespaces/ns-12130306-s/configmaps/test-12130306",
+        "uid": "efd6d9e0-dfb3-11e7-9c19-fa163e2d897b" } } ], "kind": "ConfigMapList",
+        "metadata": { "resourceVersion": "419140", "selfLink": "/apis/cci/v2/namespaces/ns-12130306-s/configmaps"
+        } }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 08:14:59 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=cf9927932f6baea23f; path=/
+      - HWWAFSESTIME=1749456898689; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 4c3d09eb06a8c52c222b35f6b755611b
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250609T113749Z
+      content-length:
+      - '0'
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: GET
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces
+  response:
+    body:
+      string: '{ "apiVersion" : "v1", "items" : [ { "metadata" : { "creationTimestamp"
+        : "2017-06-24T02:05:16Z", "name" : "default", "resourceVersion" : "6", "selfLink"
+        : "/apis/cci/v2/namespaces/default", "uid" : "90dd5244-5881-11e7-b5d7-fa163e08a2fd"
+        }, "spec" : { "finalizers" : [ "kubernetes" ] }, "status" : { "phase" : "Active"
+        } }, { "metadata" : { "creationTimestamp" : "2017-06-24T02:05:17Z", "name"
+        : "kube-system", "resourceVersion" : "25", "selfLink" : "/apis/cci/v2/namespaces/kube-system",
+        "uid" : "9178fce6-5881-11e7-b5d7-fa163e08a2fd" }, "spec" : { "finalizers"
+        : [ "kubernetes" ] }, "status" : { "phase" : "Active" } } ], "kind" : "NamespaceList",
+        "metadata" : { "resourceVersion" : "594181", "selfLink" : "/apis/cci/v2/namespaces"
+        } }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 11:37:49 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=40db573a2720d9ddf8; path=/
+      - HWWAFSESTIME=1749469069974; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - a0f91932a6df11811617a12591ba72a9
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250609T114929Z
+      content-length:
+      - '0'
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: GET
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/kube-system/configmaps
+  response:
+    body:
+      string: '{ "apiVersion": "v1", "items": [ { "data": { "property_1": "test" },
+        "metadata": { "creationTimestamp": "2017-12-13T03:15:57Z", "name": "test-12130306",
+        "namespace": "ns-12130306-s", "resourceVersion": "419081", "selfLink": "/apis/cci/v2/namespaces/ns-12130306-s/configmaps/test-12130306",
+        "uid": "efd6d9e0-dfb3-11e7-9c19-fa163e2d897b" } } ], "kind": "ConfigMapList",
+        "metadata": { "resourceVersion": "419140", "selfLink": "/apis/cci/v2/namespaces/ns-12130306-s/configmaps"
+        } }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 09 Jun 2025 11:49:29 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=b685f730d3540512ca; path=/
+      - HWWAFSESTIME=1749469769221; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 903a85685f32b8a18c841089aa99f1a5
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"data": {"config.yaml": "new-config-value"}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '45'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - cloud-custodian-huaweicloud/1.0
+      X-Sdk-Date:
+      - 20250610T005428Z
+      host:
+      - cci.ap-southeast-1.myhuaweicloud.com
+    method: PATCH
+    uri: https://cci.ap-southeast-1.myhuaweicloud.com/apis/cci/v2/namespaces/ns-12130306-s/configmaps/test-12130306
+  response:
+    body:
+      string: '{
+  "apiVersion" : "v1",
+  "data" : {
+    "property_1" : "test",
+    "property_2" : "test"
+  },
+  "kind" : "ConfigMap",
+  "metadata" : {
+    "creationTimestamp" : "2018-09-04T03:11:29Z",
+    "name" : "configmap-test",
+    "namespace" : "namespace-test",
+    "resourceVersion" : "5171481",
+    "selfLink" : "/apis/cci/v2/namespaces/namespace-test/configmaps/configmap-test",
+    "uid" : "379519a3-aff0-11e8-8f17-c81fbe371a17"
+  }
+}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 10 Jun 2025 00:54:28 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=f877a73f06f29fc7fb; path=/
+      - HWWAFSESTIME=1749516868193; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e7e4b44e6f51dd58eb1979a563be1b6c
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
