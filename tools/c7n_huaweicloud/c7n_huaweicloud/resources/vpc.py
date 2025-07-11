@@ -45,6 +45,7 @@ from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
+from requests.exceptions import HTTPError
 
 log = logging.getLogger("custodian.huaweicloud.resources.vpc")
 
