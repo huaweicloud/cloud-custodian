@@ -142,16 +142,16 @@ class EcsStart(HuaweiCloudBaseAction):
     schema = type_schema("instance-start")
 
     def process(self, resources):
-        if len(resources) > 1000:
-            log.error("[actions]-{instance-start} The resource:[ecs] is failed, "
-                      "cause: Up to 1000 instances can be processed within one minute.")
-            return
-        client = self.manager.get_client()
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("[actions]-{instance-start} No instance need start: "
                         "all instances status is active.")
             return None
+        if len(resources) > 1000:
+            log.error("[actions]-{instance-start} The resource:[ecs] is failed, "
+                      "cause: Up to 1000 instances can be processed within one minute.")
+            return
+        client = self.manager.get_client()
         request = self.init_request(instances)
         try:
             response = client.batch_start_servers(request)
@@ -202,16 +202,16 @@ class EcsStop(HuaweiCloudBaseAction):
     schema = type_schema("instance-stop", mode={"type": "string"})
 
     def process(self, resources):
-        if len(resources) > 1000:
-            log.error("[actions]-{instance-stop} The resource:[ecs] is failed, "
-                      "cause: Up to 1000 instances can be processed within one minute.")
-            return
-        client = self.manager.get_client()
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("[actions]-{instance-stop} No instance need stop: "
                         "all instances status is stopped.")
             return None
+        if len(resources) > 1000:
+            log.error("[actions]-{instance-stop} The resource:[ecs] is failed, "
+                      "cause: Up to 1000 instances can be processed within one minute.")
+            return
+        client = self.manager.get_client()
         request = self.init_request(instances)
         try:
             response = client.batch_stop_servers(request)
@@ -262,16 +262,16 @@ class EcsReboot(HuaweiCloudBaseAction):
     schema = type_schema("instance-reboot", mode={"type": "string"})
 
     def process(self, resources):
-        if len(resources) > 1000:
-            log.error("[actions]-{instance-reboot} The resource:[ecs] is failed, "
-                      "cause: Up to 1000 instances can be processed within one minute.")
-            return
-        client = self.manager.get_client()
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
             log.warning("[actions]-{instance-reboot} No instance need stop: "
                         "all instances status is stopped.")
             return None
+        if len(resources) > 1000:
+            log.error("[actions]-{instance-reboot} The resource:[ecs] is failed, "
+                      "cause: Up to 1000 instances can be processed within one minute.")
+            return
+        client = self.manager.get_client()
         request = self.init_request(instances)
         try:
             response = client.batch_reboot_servers(request)
@@ -314,7 +314,9 @@ class EcsTerminate(HuaweiCloudBaseAction):
                 key: id
                 value: "your instance id"
             actions:
-              - instance-terminate
+              - type: instance-terminate
+                delete_publicip: True
+                delete_volume: True
     """
 
     schema = type_schema("instance-terminate", delete_publicip={'type': 'boolean'},
