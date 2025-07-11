@@ -630,7 +630,7 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
                       "instance whole image is failed, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       request, e.status_code, e.request_id, e.error_code, e.error_msg)
-            return False
+            raise
 
     def wait_backup(self, job_id, ims_client):
         while True:
