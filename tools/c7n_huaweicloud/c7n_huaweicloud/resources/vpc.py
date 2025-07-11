@@ -1053,12 +1053,30 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 # trust ip
                 rule_ip = rule.get('remote_ip_prefix')
                 rule_ag_id = rule.get('remote_address_group_id')
-                if rule_ip and rule_ip != '0.0.0.0/0' and rule_ip.endswith('/32'):
-                    rule_ip_int = int(netaddr.IPAddress(rule_ip[:-3]))
-                    risk_rule_ports = self._handle_trust_port(extend_trust_ip_obj,
-                                                              protocol,
-                                                              rule_ip_int,
-                                                              risk_rule_ports)
+                if rule_ip and rule_ip != '0.0.0.0/0':
+                    # rule_ip is a specific ip
+                    if rule_ip.endswith('/32'):
+                        rule_ip_int = int(netaddr.IPAddress(rule_ip[:-3]))
+                        risk_rule_ports = self._handle_trust_port(extend_trust_ip_obj,
+                                                                  protocol,
+                                                                  rule_ip_int,
+                                                                  risk_rule_ports)
+                    # rule_ip is a cidr
+                    else:
+                        try:
+                            network = netaddr.IPNetwork(rule_ip)
+                            for ip in network:
+                                ip_int = int(ip)
+                                tmp_risk_ports = self._handle_trust_port(extend_trust_ip_obj,
+                                                                         protocol,
+                                                                         ip_int,
+                                                                         risk_rule_ports)
+                                if tmp_risk_ports:
+                                    break
+                            risk_rule_ports = tmp_risk_ports
+                        except Exception as ex:
+                            log.error(f"Invalid Cidr: {ex}")
+                            raise ex
                 elif rule_ag_id:
                     client = self.manager.get_client()
                     ips = []
@@ -1123,10 +1141,10 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 return content
             else:
                 log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
-                return None
+                raise HTTPError(resp.status, resp.body)
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-            raise
+            raise e
 
     def get_obs_name(self, obs_url):
         last_obs_index = obs_url.rfind(".obs")
