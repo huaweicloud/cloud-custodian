@@ -1,0 +1,113 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T111035Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/v2/charts
+  response:
+    body:
+      string: '{"body":[ { "id" : "1abd3bd6-0258-11ec-b8b0-0255ac100b05", "name" :
+        "unused-chart", "values" : "{\"basic\":{\"admin_password\":\"******\",\"admin_username\":\"username\",\"app_name\":\"magento\",\"mysql_database\":\"magento\",\"mysql_name\":\"mysql\",\"mysql_password\":\"******\",\"mysql_port\":3306,\"mysql_root_password\":\"******\",\"mysql_user\":\"magento\",\"storage_class\":\"csi-nas\",\"storage_mode\":\"ReadWriteMany\",\"storage_size\":\"10G\"},\"global\":{\"magento_EIP\":\"100.100.100.100\",\"magento_EPORT\":32080,\"namespace\":\"default\"},\"image\":{\"magento_image\":\"example.com/everest/magento:latest\",\"mysql_image\":\"example.com/everest/mysql:5.7.14\"}}",
+        "translate" : "", "instruction" : "", "version" : "1.0.0", "description" :
+        "chart description", "source" : "", "icon_url" : "https://example.com/magento-stack-110x117.png",
+        "public" : false, "chart_url" : "magento-mysql-1.0.0.tgz", "create_at" : "2021-08-20T08:00:29Z",
+        "update_at" : "2021-08-20T08:00:29Z" } ]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 11:10:35 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=9055a73dd772ba54b9; path=/
+      - HWWAFSESTIME=1750331435711; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 0b3d63eb29290d05b589a8dfb3786472
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250620T014336Z
+    method: DELETE
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/v2/charts/1abd3bd6-0258-11ec-b8b0-0255ac100b05
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 01:43:36 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=73b9073d02a5c2421c; path=/
+      - HWWAFSESTIME=1750383816967; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 073fc381d4454f8103fd57e464afcd9f
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

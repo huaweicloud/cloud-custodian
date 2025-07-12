@@ -1,0 +1,48 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - vpcep.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250612T011951Z
+    method: GET
+    uri: https://vpcep.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/vpc-endpoints?limit=100&offset=0
+  response:
+    body:
+      string: '{"endpoints": [{"id": "endpoint-12345678", "service_type": "interface", 
+        "status": "accepted", "active_status": ["active"], 
+        "endpoint_service_name": "com.huaweicloud.service.test", "marker_id": 1234, 
+        "endpoint_service_id": "endpoint-service-12345678", "enable_dns": true, 
+        "dns_names": ["test.example.com"], "vpc_id": "vpc-12345678", 
+        "network_id": "network-12345678", "subnet_id": "subnet-12345678", 
+        "created_at": "2025-06-01T00:00:00Z"}], "total_count": 1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 12 Jun 2025 01:19:52 GMT
+      Server:
+      - CloudWAF
+      Transfer-Encoding:
+      - chunked
+      X-Request-Id:
+      - 6443aefee244439dd053d8d29c746801
+    status:
+      code: 200
+      message: success
+version: 1
