@@ -57,6 +57,8 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = ','.join(data['id'] for data in resources)
+        request = None
+        response = None
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
@@ -65,16 +67,19 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
             )
 
             for topic_urn in self.data.get('topic_urn_list', []):
-                publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
-                publish_message_response = smn_client.publish_message(publish_message_request)
+                request = PublishMessageRequest(topic_urn=topic_urn, body=body)
+                response = smn_client.publish_message(request)
+                self.log.debug(
+                    f"[actions]-[notify-message] query the service:[POST /v2/{{project_id}}"
+                    f"/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
-                    f"[actions]-The resource:{resource_type} with id:[{ids}] "
-                    f"Publish message success, request: {publish_message_request}, "
-                    f"response: {publish_message_response}")
+                    f"[actions]-[notify-message] The resource:{resource_type} with id:[{ids}] "
+                    f"Publish message is success, request: {request}, response: {response}")
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"[actions]-The resource:{resource_type} with id:[{ids}] "
-                f"Publish message to SMN Topics is failed, exceptions:{e}")
+                f"[actions]-[notify-message] The resource:{resource_type} with id:[{ids}] "
+                f"Publish message to SMN Topics is failed, cause:{e}, "
+                f"request: {request}, response: {response}")
         return self.process_result(resources)
 
     def build_message(self, resource_type, ids):
@@ -130,6 +135,8 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = ','.join(data['id'] for data in resources)
+        request = None
+        response = None
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
@@ -138,16 +145,20 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
             )
 
             for topic_urn in self.data.get('topic_urn_list', []):
-                publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
-                publish_message_response = smn_client.publish_message(publish_message_request)
+                request = PublishMessageRequest(topic_urn=topic_urn, body=body)
+                response = smn_client.publish_message(request)
+                self.log.debug(
+                    f"[actions]-[notify-message-structure] query the service:[POST "
+                    f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
-                    f"[actions]-The resource:{resource_type} with id:[{ids}] "
-                    f"Publish message structure success, request: {publish_message_request}, "
-                    f"response: {publish_message_response}")
+                    f"[actions]-[notify-message-structure] The resource:{resource_type} with id:"
+                    f"[{ids}]  Publish message structure success, "
+                    f"request: {request}, response: {response}")
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"[actions]-The resource:{resource_type} with id:[{ids}] "
-                f"Publish message structure to SMN Topics failed, exceptions:{e}")
+                f"[actions]-[notify-message-structure] The resource:{resource_type} with id:[{ids}] "
+                f"Publish message structure to SMN Topics failed, cause:{e}, "
+                f"request: {request}, response: {response}")
         return self.process_result(resources)
 
     def build_message(self, resource_type, ids):
@@ -208,6 +219,8 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = ','.join(data['id'] for data in resources)
+        request = None
+        response = None
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
@@ -217,16 +230,20 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
             )
 
             for topic_urn in self.data.get('topic_urn_list', []):
-                publish_message_request = PublishMessageRequest(topic_urn=topic_urn, body=body)
-                publish_message_response = smn_client.publish_message(publish_message_request)
+                request = PublishMessageRequest(topic_urn=topic_urn, body=body)
+                response = smn_client.publish_message(request)
+                self.log.debug(
+                    f"[actions]-[notify-message-template] query the service:[POST "
+                    f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
-                    f"[actions]-The resource:{resource_type} with id:[{ids}] "
-                    f"Publish message template success, request: {publish_message_request}, "
-                    f"response: {publish_message_response}")
+                    f"[actions]-[notify-message-template] The resource:{resource_type} with id:"
+                    f"[{ids}] Publish message template success, "
+                    f"request: {request}, response: {response}")
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"[actions]-The resource:{resource_type} with id:[{ids}] "
-                f"Publish message template to SMN Topics failed, exceptions:{e}")
+                f"[actions]-[notify-message-template] The resource:{resource_type} with id:[{ids}] "
+                f"Publish message template to SMN Topics failed, cause:{e}, "
+                f"request: {request}, response: {response}")
         return self.process_result(resources)
 
     def build_message(self, resource_type, ids):
