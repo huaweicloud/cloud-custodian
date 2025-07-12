@@ -16,7 +16,7 @@ from huaweicloudsdkvpc.v2 import (
     CreateFlowLogRequest,
     CreateFlowLogReq,
     CreateFlowLogReqBody,
-    AllowedAddressPair,
+    AllowedAddressPair as AllowedAddressPairV2,
     UpdatePortOption,
     UpdatePortRequest,
     UpdatePortRequestBody,
@@ -32,7 +32,11 @@ from huaweicloudsdkvpc.v3 import (
     BatchCreateSecurityGroupRulesRequest,
     BatchCreateSecurityGroupRulesRequestBody,
     BatchCreateSecurityGroupRulesOption,
-    ShowAddressGroupRequest
+    ShowAddressGroupRequest,
+    AllowedAddressPair as AllowedAddressPairV3,
+    UpdateSubNetworkInterfaceOption,
+    UpdateSubNetworkInterfaceRequest,
+    UpdateSubNetworkInterfaceRequestBody
 )
 
 from c7n.exceptions import PolicyValidationError
@@ -41,6 +45,7 @@ from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
+from requests.exceptions import HTTPError
 
 log = logging.getLogger("custodian.huaweicloud.resources.vpc")
 
@@ -113,7 +118,10 @@ class PortDisablePortForwarding(HuaweiCloudBaseAction):
     schema = type_schema("disable-port-forwarding")
 
     def perform_action(self, resource):
-        client = self.manager.get_client()
+        device_owner = resource.get('device_owner', '')
+        is_subeni = ('compute:subeni' == device_owner)
+        client = self.manager.get_resource_manager('vpc-security-group').get_client() \
+            if is_subeni else self.manager.get_client()
         raw_pairs = resource.get('allowed_address_pairs')
         new_pairs = []
         if raw_pairs:
@@ -122,13 +130,24 @@ class PortDisablePortForwarding(HuaweiCloudBaseAction):
                 if pair_ip == '1.1.1.1/0':
                     continue
                 pair_mac = pair.get('mac_address')
-                new_pair = AllowedAddressPair(ip_address=pair_ip, mac_address=pair_mac)
+                if not is_subeni:
+                    new_pair = AllowedAddressPairV2(ip_address=pair_ip, mac_address=pair_mac)
+                else:
+                    new_pair = AllowedAddressPairV3(ip_address=pair_ip, mac_address=pair_mac)
                 new_pairs.append(new_pair)
-        port_body = UpdatePortOption(allowed_address_pairs=new_pairs)
-        request = UpdatePortRequest()
-        request.port_id = resource['id']
-        request.body = UpdatePortRequestBody(port=port_body)
-        response = client.update_port(request)
+        if not is_subeni:
+            port_body = UpdatePortOption(allowed_address_pairs=new_pairs)
+            request = UpdatePortRequest()
+            request.port_id = resource['id']
+            request.body = UpdatePortRequestBody(port=port_body)
+            response = client.update_port(request)
+        else:
+            request = UpdateSubNetworkInterfaceRequest()
+            request.sub_network_interface_id = resource['id']
+            subeni_body = UpdateSubNetworkInterfaceOption(allowed_address_pairs=new_pairs)
+            request.body = UpdateSubNetworkInterfaceRequestBody(
+                sub_network_interface=subeni_body)
+            response = client.update_sub_network_interface(request)
         return response
 
 
@@ -1035,12 +1054,30 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 # trust ip
                 rule_ip = rule.get('remote_ip_prefix')
                 rule_ag_id = rule.get('remote_address_group_id')
-                if rule_ip and rule_ip != '0.0.0.0/0' and rule_ip.endswith('/32'):
-                    rule_ip_int = int(netaddr.IPAddress(rule_ip[:-3]))
-                    risk_rule_ports = self._handle_trust_port(extend_trust_ip_obj,
-                                                              protocol,
-                                                              rule_ip_int,
-                                                              risk_rule_ports)
+                if rule_ip and rule_ip != '0.0.0.0/0':
+                    # rule_ip is a specific ip
+                    if rule_ip.endswith('/32'):
+                        rule_ip_int = int(netaddr.IPAddress(rule_ip[:-3]))
+                        risk_rule_ports = self._handle_trust_port(extend_trust_ip_obj,
+                                                                  protocol,
+                                                                  rule_ip_int,
+                                                                  risk_rule_ports)
+                    # rule_ip is a cidr
+                    else:
+                        try:
+                            network = netaddr.IPNetwork(rule_ip)
+                            for ip in network:
+                                ip_int = int(ip)
+                                tmp_risk_ports = self._handle_trust_port(extend_trust_ip_obj,
+                                                                         protocol,
+                                                                         ip_int,
+                                                                         risk_rule_ports)
+                                if tmp_risk_ports:
+                                    break
+                            risk_rule_ports = tmp_risk_ports
+                        except Exception as ex:
+                            log.error(f"Invalid Cidr: {ex}")
+                            raise ex
                 elif rule_ag_id:
                     client = self.manager.get_client()
                     ips = []
@@ -1055,15 +1092,32 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                                       (rule_ag_id, ex.request_id, ex.error_msg))
                     trust_all_ips = True
                     for ip in ips:
+                        if '0.0.0.0/0' == ip:
+                            trust_all_ips = False
+                            break
                         if '/' in ip and not ip.endswith('/32'):
-                            trust_all_ips = False
-                            break
-                        ip = ip[:-3] if ip.endswith('/32') else ip
-                        ip_int = int(netaddr.IPAddress(ip))
-                        if self._handle_trust_port(extend_trust_ip_obj, protocol,
-                                                   ip_int, risk_rule_ports):
-                            trust_all_ips = False
-                            break
+                            try:
+                                network = netaddr.IPNetwork(ip)
+                                for ip_item in network:
+                                    ip_int = int(ip_item)
+                                    if self._handle_trust_port(extend_trust_ip_obj,
+                                                               protocol,
+                                                               ip_int,
+                                                               risk_rule_ports):
+                                        trust_all_ips = False
+                                        break
+                                if not trust_all_ips:
+                                    break
+                            except Exception as ex:
+                                log.error(f"Invalid Cidr: {ex}")
+                                raise ex
+                        else:
+                            ip = ip[:-3] if ip.endswith('/32') else ip
+                            ip_int = int(netaddr.IPAddress(ip))
+                            if self._handle_trust_port(extend_trust_ip_obj, protocol,
+                                                       ip_int, risk_rule_ports):
+                                trust_all_ips = False
+                                break
                     if trust_all_ips:
                         risk_rule_ports = []
 
@@ -1105,10 +1159,10 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 return content
             else:
                 log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
-                return None
+                raise HTTPError(resp.status, resp.body)
         except exceptions.ClientRequestException as e:
             log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-            raise
+            raise e
 
     def get_obs_name(self, obs_url):
         last_obs_index = obs_url.rfind(".obs")

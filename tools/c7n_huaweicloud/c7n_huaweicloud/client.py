@@ -139,9 +139,23 @@ from huaweicloudsdkworkspace.v2 import WorkspaceClient, ListDesktopsDetailReques
 from huaweicloudsdkworkspace.v2.region.workspace_region import WorkspaceRegion
 from huaweicloudsdkccm.v1 import CcmClient, ListCertificateAuthorityRequest, ListCertificateRequest
 from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
+from c7n_huaweicloud.utils.cci_client import CCIClient
 from huaweicloudsdkvpcep.v1 import VpcepClient
 from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
 from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
+
+# CCE相关导入
+from huaweicloudsdkcce.v3 import (
+    CceClient,
+    ListClustersRequest,
+    ListNodePoolsRequest,
+    ListNodesRequest,
+    ListAddonTemplatesRequest,
+    ListAddonInstancesRequest,
+    ListChartsRequest,
+    ListReleasesRequest
+)
+from huaweicloudsdkcce.v3.region.cce_region import CceRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -535,11 +549,22 @@ class Session:
                 .with_region(CcmRegion.value_of("sa-brazil-1"))
                 .build()
             )
+        elif service == "cci":
+            client = CCIClient(self.region, credentials)
         elif service == 'vpcep-ep':
             client = (
                 VpcepClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(VpcepRegion.value_of(self.region))
+                .build()
+            )
+        # CCE相关服务支持
+        elif service in ["cce-cluster", "cce-nodepool", "cce-node", "cce-addontemplate",
+                        "cce-addoninstance", "cce-chart", "cce-release"]:
+            client = (
+                CceClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CceRegion.value_of(self.region))
                 .build()
             )
         return client
@@ -692,8 +717,26 @@ class Session:
             request = ListCertificateAuthorityRequest()
         elif service == 'ccm-private-certificate':
             request = ListCertificateRequest()
+        elif service == "cci":
+            # CCI service uses special processing,
+            # returns True indicating no need to preconstruct request object
+            request = True
         elif service == 'vpcep-ep':
             request = ListEndpointsRequest()
+        elif service == "cce-cluster":
+            request = ListClustersRequest()
+        elif service == "cce-nodepool":
+            request = ListNodePoolsRequest()
+        elif service == "cce-node":
+            request = ListNodesRequest()
+        elif service == "cce-addontemplate":
+            request = ListAddonTemplatesRequest()
+        elif service == "cce-addoninstance":
+            request = ListAddonInstancesRequest()
+        elif service == "cce-chart":
+            request = ListChartsRequest()
+        elif service == "cce-release":
+            request = ListReleasesRequest()
         return request
 
 
