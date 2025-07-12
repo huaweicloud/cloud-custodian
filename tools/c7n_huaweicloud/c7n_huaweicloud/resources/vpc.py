@@ -1092,15 +1092,32 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                                       (rule_ag_id, ex.request_id, ex.error_msg))
                     trust_all_ips = True
                     for ip in ips:
+                        if '0.0.0.0/0' == ip:
+                            trust_all_ips = False
+                            break
                         if '/' in ip and not ip.endswith('/32'):
-                            trust_all_ips = False
-                            break
-                        ip = ip[:-3] if ip.endswith('/32') else ip
-                        ip_int = int(netaddr.IPAddress(ip))
-                        if self._handle_trust_port(extend_trust_ip_obj, protocol,
-                                                   ip_int, risk_rule_ports):
-                            trust_all_ips = False
-                            break
+                            try:
+                                network = netaddr.IPNetwork(ip)
+                                for ip_item in network:
+                                    ip_int = int(ip_item)
+                                    if self._handle_trust_port(extend_trust_ip_obj,
+                                                               protocol,
+                                                               ip_int,
+                                                               risk_rule_ports):
+                                        trust_all_ips = False
+                                        break
+                                if not trust_all_ips:
+                                    break
+                            except Exception as ex:
+                                log.error(f"Invalid Cidr: {ex}")
+                                raise ex
+                        else:
+                            ip = ip[:-3] if ip.endswith('/32') else ip
+                            ip_int = int(netaddr.IPAddress(ip))
+                            if self._handle_trust_port(extend_trust_ip_obj, protocol,
+                                                       ip_int, risk_rule_ports):
+                                trust_all_ips = False
+                                break
                     if trust_all_ips:
                         risk_rule_ports = []
 
