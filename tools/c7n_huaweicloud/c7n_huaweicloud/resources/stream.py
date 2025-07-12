@@ -23,11 +23,10 @@ class Stream(QueryResourceManager):
         service = 'lts-stream'
         enum_spec = ("list_log_groups", 'log_groups', 'offset')
         id = 'log_group_id'
-        tag = True
+        tags = "tag"
         tag_resource_type = 'lts-stream'
 
     def get_resources(self, resource_ids):
-        log.info("after listen get all groups")
         client = self.get_client()
         streams = []
         request = ListLogGroupsRequest()
@@ -47,15 +46,17 @@ class Stream(QueryResourceManager):
                         streamDict["log_group_id"] = group.log_group_id
                         streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
+                        streamDict["tags"] = stream.tag
                         streams.append(streamDict)
                         should_break = True
                         break
             except Exception as e:
-                log.error(e)
+                log.error("[query-storage-enabled-streams]- [query-streams] The resource:"
+                          "[lts-stream] find stroage-enabled streams is failed."
+                          " cause: {}".format(e))
                 raise
             if should_break:
                 break
-        log.info("The number of streams to disable storage is " + str(len(streams)))
         return streams
 
 
@@ -77,6 +78,7 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
         request.body = UpdateLogStreamParams(
             whether_log_storage=False
         )
-        log.info("disable storage: " + resource["log_stream_id"])
+        log.info("[actions]-[disable-stream-storage]: The resource:[stream] with\
+                 id:[{}] modify storage is success".format(resource["log_stream_id"]))
         response = client.update_log_stream(request)
         return response
