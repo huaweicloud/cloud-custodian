@@ -48,48 +48,63 @@ class Kms(QueryResourceManager):
         resources = []
         resourceTagDict = {}
         offset, limit = 0, 1000
-        while True:
-
-            requestTag = ListKmsByTagsRequest()
-            requestTag.resource_instances = "resource_instances"
-            requestTag.body = ListKmsByTagsRequestBody(
-                action="filter",
-                offset=str(offset),
-                limit=str(limit)
-            )
-
-            try:
-                responseTag = client.list_kms_by_tags(requestTag)
-                tagResources = responseTag.resources
-                for tagResource in tagResources:
-                    resourceTagDict[tagResource.resource_id] = tagResource.to_dict().get('tags')
-
-            except Exception as e:
-                log.error(
-                    f"Failed to query API list: {str(e)}")
-                break
-
-            offset += limit
-
-            if not responseTag.total_count or offset >= len(responseTag.resources):
-                break
+        isQueryTags = True
 
         request = ListKeysRequest()
         request.key_spec = "ALL"
         try:
             response = client.list_keys(request)
             details = response.key_details
+            if len(details) == 0 or hasattr(details[0], "tags"):
+                log.debug("[action]-fileter the resource:resourceType:KMS "
+                         "list_keys tags is empty")
+                isQueryTags = False
+        except Exception as e:
+            isQueryTags = False
+            log.error(
+                "[action]-fileter the resource:resourceType:KMS "
+                "list_keys is failed,"
+                " cause={}".format(e.error_msg))
+
+        if isQueryTags:
+            while True:
+                requestTag = ListKmsByTagsRequest()
+                requestTag.resource_instances = "resource_instances"
+                requestTag.body = ListKmsByTagsRequestBody(
+                    action="filter",
+                    offset=str(offset),
+                    limit=str(limit)
+                )
+
+                try:
+                    responseTag = client.list_kms_by_tags(requestTag)
+                    tagResources = responseTag.resources
+                    if len(tagResources) == 0:
+                        log.debug("[action]-fileter the resource:resourceType:KMS "
+                                 "list_kms_by_tags response is empty")
+                    for tagResource in tagResources:
+                        resourceTagDict[tagResource.resource_id] = tagResource.to_dict().get('tags')
+
+                except Exception as e:
+                    log.error(
+                        "[action]-fileter the resource:resourceType:KMS "
+                        "list_kms_by_tags is failed,"
+                        " cause={}".format(e.error_msg))
+                    break
+
+                offset += limit
+
+                if not responseTag.total_count or offset >= len(responseTag.resources):
+                    break
             default = []
             for detail in details:
                 dict = detail.to_dict()
                 dict["tags"] = resourceTagDict.get(detail.key_id, default)
                 dict["id"] = detail.key_id
                 resources.append(dict)
-        except Exception as e:
-            log.error(
-                f"Failed to query API list: {str(e)}")
-            raise e
-        return resources
+            return resources
+        else:
+            return details
 
 
 @Kms.action_registry.register("enable_key_rotation")
@@ -103,6 +118,13 @@ class rotationKey(HuaweiCloudBaseAction):
 policies:
   - name: enable_key_rotation
     resource: huaweicloud.kms
+    mode:
+      type: huaweicloud-periodic
+      xrole: fgs_admin
+      enable_lts_log: true
+      log_level: INFO
+      schedule: '1m'
+      schedule_type: Rate
     filters:
         - type: value
           key: key_rotation_enabled
@@ -139,17 +161,21 @@ policies:
             )
             try:
                 client.enable_key_rotation(request)
-                log.info("enable_key_rotation the resourceType:KMS resourceId={},success"
+                log.info("[action]-enable_key_rotation the resource:resourceType:KMS "
+                         "with resourceId={},"
+                         "success"
                          .format(resourceId))
             except Exception as e:
                 if e.status_code == 400:
                     log.info(
-                        "the key rotation is already enabled or the key is not supported "
-                        "for rotation, resourceId={},msg={}".format(
-                            resourceId, e.error_msg))
+                        "[action]-enable_key_rotation the resource:resourceType:KMS with "
+                        "resourceId={} "
+                        "is failed, cause={}".format(resourceId, e.error_msg))
                 else:
-                    log.error("enable_key_rotation the resourceType:KMS resourceId={} is failed"
-                              .format(resourceId))
+                    log.error(
+                        "[action]-enable_key_rotation the resource:resourceType:KMS "
+                        "with resourceId={} "
+                        "is failed, cause={}".format(resourceId, e.error_msg))
 
         else:
             log.info("skip enable_key_rotation the resourceType:KMS resourceId={},"
@@ -311,9 +337,12 @@ policies:
         key_aliases = self.data.get("key_aliases", [])
         all_key_aliases.update(key_aliases)
         obs_url = self.data.get("obs_url", None)
+        resourceId = resource["key_id"]
         obs_client = local_session(self.manager.session_factory).client("obs")
         if not key_aliases and obs_url is None:
-            log.error("key_aliases or obs_url is required")
+            log.info(
+                "[action]-create-key-with-alias the resource:resourceType:KMS with resourceId={} "
+                "is failed, cause=key_aliases or obs_url is required".format(resourceId))
             return []
         if obs_url is not None and obs_url != '':
             # 1. 提取第一个变量：从 "https://" 到最后一个 "obs" 的部分
@@ -329,20 +358,28 @@ policies:
                                             objectKey=obs_file,
                                             loadStreamInMemory=True)
                 if resp.status < 300:
+                    log.debug("[action]-create-key-with-alias:query obs url getobject success")
                     all_key_aliases.update(json.loads(resp.body.buffer)['obs_key_aliases'])
                 else:
-                    log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
+                    log.error(f"[action]-create-key-with-alias failed: {resp.errorCode}, "
+                              f"{resp.errorMessage}")
                     return []
             except exceptions.ClientRequestException as e:
-                log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+                log.error("[action]-create-key-with-alias:query obs url getobject failded,msg={}"
+                          .format(e.error_msg))
                 raise
 
-        listAliasesRequest = ListAliasesRequest()
-        listAliasResponse = client.list_aliases(listAliasesRequest)
-        arr = set()
-        for realAlias in listAliasResponse.body[0].aliases:
-            arr.add(realAlias.alias.replace('alias/', ''))
-
+        try:
+            listAliasesRequest = ListAliasesRequest()
+            listAliasResponse = client.list_aliases(listAliasesRequest)
+            log.debug("[action]-create-key-with-alias:query list_aliases success")
+            arr = set()
+            for realAlias in listAliasResponse.body[0].aliases:
+                arr.add(realAlias.alias.replace('alias/', ''))
+        except exceptions.ClientRequestException as e:
+            log.error("[action]-create-key-with-alias:query obs url list_aliases failded,msg={}"
+                      .format(e.error_msg))
+            raise
         if len(all_key_aliases) != 0:
             for alias in all_key_aliases:
                 if alias not in arr:
@@ -354,6 +391,7 @@ policies:
                     )
                     try:
                         createKeyResponse = client.create_key(createKeyRequest)
+                        log.debug("[action]-create-key-with-alias:query create_key success")
                         createKeyId = createKeyResponse.key_info.key_id
                         createAliasRequest = CreateAliasRequest()
                         createAliasRequest.body = CreateAliasRequestBody(
@@ -361,8 +399,12 @@ policies:
                             alias="alias/" + alias
                         )
                         client.create_alias(createAliasRequest)
+                        log.debug("[action]-create-key-with-alias:query create_alias success")
                         time.sleep(1)
                     except Exception as e:
+                        log.error("[action]-create-key-with-alias:query obs url "
+                                  "create_alias failded,msg={}"
+                                  .format(e.error_msg))
                         raise e
 
     def perform_action(self, resource):
