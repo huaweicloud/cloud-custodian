@@ -79,7 +79,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
             self.perform_action(resources)
         except exceptions.ClientRequestException as ex:
             resource_ids = [f.get('id') for f in resources]
-            log_error(f"[actions]-[{self.action_name}] the resource:[{self.resource_type}]"
+            log.error(f"[actions]-[{self.action_name}] the resource:[{self.resource_type}]"
                       f" with id:[{resource_ids}] associate to vault failed,"
                       f" cause:request id:{ex.request_id}, msg: {ex.error_msg}")
             self.handle_exception(resources)
@@ -115,8 +115,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 if space <= 0:
                     log.debug(f"[actions]-[{self.action_name}] "
                               f"unable to add resource to {vaults[vault_num]['id']},"
-                              f"because the number of instances in the vault {vaults[vault_num]['id']}"
-                              "has reached the upper limit.")
+                              "because the number of instances in the vault"
+                              f" {vaults[vault_num]['id']} has reached the upper limit.")
                 else:
                     listResourcesbody = []
                     server_ids = []
@@ -204,8 +204,10 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 is_auto_pay=is_auto_pay
             )
             if vault_name is None or vault_name == '' or policy_id is None or policy_id == '':
+                error_msg = "param error, policy_id:{}, vault_name:{}, billing_vault:{}".format(
+                    policy_id, vault_name, billing_vault)
                 log.error(f"[actions]-[{self.action_name}] failed to create vault to "
-                          f"associate cbr_protectable resource, cause policy_id:{policy_id}"
+                          f"associate {self.resource_type} resource, cause policy_id:{policy_id}"
                           f"vault_name:{vault_name}, billing_vault:{billing_vault}")
                 raise Exception(error_msg)
 
@@ -222,8 +224,6 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]-[{self.action_name}] create vault failed, cause "
                       f"request id:{e.request_id}, status code:{e.status_code}, msg:{e.error_msg}")
-            raise
-        except Exception as e:
             raise
         return response
 

@@ -227,7 +227,7 @@ class CbrAssociateVaultPolicy(HuaweiCloudBaseAction):
             response = client.create_policy(request)
             log.debug(f"[actions]-[{self.action_name}] create policy success.")
         except exceptions.ClientRequestException as e:
-            log_error(f"[actions]-[{self.action_name}] create policy failed,"
+            log.error(f"[actions]-[{self.action_name}] create policy failed,"
                       f" cause request id:{e.request_id}, status code:{e.status_code}"
                       f" msg:{e.error_msg}")
             raise
@@ -268,10 +268,10 @@ class CbrVaultEnableWorm(HuaweiCloudBaseAction):
                 vault=vaultbody
             )
             response = client.update_vault(request)
-            log_debug(f"[actions]-[{self.action_name}] the resource:{self.resource_type}"
+            log.debug(f"[actions]-[{self.action_name}] the resource:{self.resource_type}"
                       f" with id:{resource['id']} enable the worm success.")
         except exceptions.ClientRequestException as e:
-            log_error(f"[actions]-[{self.action_name}] the resource:{self.resource_type}"
+            log.error(f"[actions]-[{self.action_name}] the resource:{self.resource_type}"
                       f" with id:{resource['id']} enable the worm failed,"
                       f" cause request id:{e.request_id}, status code:{e.status_code}"
                       f" msg:{e.error_msg}")
