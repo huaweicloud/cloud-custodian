@@ -7,6 +7,7 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 from c7n.filters.core import AgeFilter
+from c7n.filters import Filter
 from c7n.utils import type_schema
 
 log = logging.getLogger("custodian.huaweicloud.resources.dc")
@@ -35,6 +36,16 @@ class DC(QueryResourceManager):
         id = 'id'
         name = 'name'
         tag_resource_type = 'dc-directconnect'
+
+
+@resources.register('dc-vif')
+class Vif(QueryResourceManager):
+    class resource_type(TypeInfo):
+        service = 'dc'
+        enum_spec = ('list_virtual_interfaces', 'virtual_interfaces', 'marker')
+        id = 'id'
+        name = 'name'
+        tag_resource_type = 'dc-vif'
 
 
 @DC.filter_registry.register('age')
@@ -71,3 +82,33 @@ class DCAgeFilter(AgeFilter):
 
     # Specify the field name representing creation time in the resource dictionary
     date_attribute = "create_time"
+
+
+@Vif.filter_registry.register('not-bgp-md5')
+class VifNotBgpMd5Filter(Filter):
+    """Filter to virtual interfaces that not encrypt with bgp md5.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: vif-not-encrypt-with-bgp-md5
+            resource: huaweicloud.dc-vif
+            filters:
+              - not-bgp-md5
+
+    """
+    schema = type_schema('not-bgp-md5')
+
+    def process(self, resources, event=None):
+        vif_not_bgp_md5 = []
+        for r in resources:
+            vif_peers = r['vif_peers']
+            for vif_peer in vif_peers:
+                bgp_md5 = vif_peer.get('bgp_md5')
+                if bgp_md5 is None or len(bgp_md5) == 0 or bgp_md5 == 'null':
+                    vif_not_bgp_md5.append(r)
+                    break
+
+        return vif_not_bgp_md5

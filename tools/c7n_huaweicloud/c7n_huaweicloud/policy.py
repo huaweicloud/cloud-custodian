@@ -37,11 +37,53 @@ class FunctionGraphMode(ServerlessExecutionMode):
             'handler': {'type': 'string'},
             'memory_size': {'type': 'number'},
             'xrole': {'type': 'string'},
-            'func_vpc': {'type': 'object', 'required': ['vpc_id', 'subnet_id']},
+            'func_vpc': {
+                'oneOf': [
+                    {
+                        'type': 'object',
+                        'required': ['vpc_name', 'subnet_name', 'cidr'],
+                        'properties': {
+                            'vpc_name': {'type': 'string'},
+                            'subnet_name': {'type': 'string'},
+                            'cidr': {'type': 'string'},
+                            'is_safety': {'type': 'boolean'},
+                        },
+                    },
+                    {
+                        'type': 'object',
+                        'required': ['vpc_id', 'subnet_id'],
+                        'properties': {
+                            'vpc_id': {'type': 'string'},
+                            'subnet_id': {'type': 'string'},
+                            'is_safety': {'type': 'boolean'},
+                        },
+                    },
+                ],
+            },
             'description': {'type': 'string'},
             'eg_agency': {'type': 'string'},
             'enable_lts_log': {'type': 'boolean'},
-            'log_config': {'type': 'object'},
+            'log_config': {
+                'type': 'object',
+                'required': ['group_name', 'stream_name'],
+                'properties': {
+                    'group_name': {'type': 'string'},
+                    'stream_name': {'type': 'string'},
+                    'group_id': {'type': 'string'},
+                    'stream_id': {'type': 'string'},
+                },
+            },
+            'func_tags': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'required': ['key', 'value'],
+                    'properties': {
+                        'key': {'type': 'string'},
+                        'value': {'type': 'string'},
+                    }
+                }
+            },
             'async_invoke_config': {
                 'type': "object",
                 'additionalProperties': False,
@@ -206,7 +248,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
 
     def validate(self):
         super(FunctionGraphMode, self).validate()
-        prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
+        prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
         MAX_FUNCTIONGRAPH_NAME_LENGTH = 64
         if len(prefix + self.policy.name) > MAX_FUNCTIONGRAPH_NAME_LENGTH:
             raise PolicyValidationError(
@@ -223,13 +265,20 @@ class FunctionGraphMode(ServerlessExecutionMode):
         resource_ids = CloudTraceServiceEvents.get_ids(event, mode)
         if resource_ids is None:
             raise ValueError("Unknown push event mode %s", self.data)
-        log.info(f'Found resource ids:{resource_ids}')
+        log.info(f'[{self.policy.execution_mode}]-The resources ID list is: {resource_ids}')
         if not resource_ids:
             log.warning("Could not find resource ids")
             return []
         resources = self.policy.resource_manager.get_resources(resource_ids)
         if 'debug' in event:
             log.info("Resources %s", resources)
+        events_in_mode = []
+        sources_in_mode = []
+        for e in mode.get('events'):
+            events_in_mode.append(e['event'])
+            sources_in_mode.append(e['source'])
+        log.info(f'[{self.policy.execution_mode}]-The event occurred by {events_in_mode}, '
+                 f'There are [{len(resources)}] resources in total.')
         return resources
 
     def run(self, event, context):
@@ -237,17 +286,19 @@ class FunctionGraphMode(ServerlessExecutionMode):
             return
         resources = self.resolve_resources(event)
         if not resources:
+            # 根据resource_ids未获取到资源
             return resources
-        rcount = len(resources)
         resources = self.policy.resource_manager.filter_resources(resources, event)
-
-        if 'debug' in event:
-            log.info("Filtered resources %d of %d", len(resources), rcount)
-
+        log.info(f'[{self.policy.execution_mode}]-The filtered resources '
+                 f'has [{len(resources)}] in total.')
         if not resources:
-            log.info("policy%s resources:%s no resources matched" % (
-                self.policy.name, self.policy.resource_type))
+            # 根据filter未获取到资源
             return
+        resources_list = []
+        for resource in resources:
+            resources_list.append(resource['id'])
+        log.info(f'[{self.policy.execution_mode}]-The filtered resources ID list is: '
+                 f'{resources_list}')
 
         return self.run_resource_set(event, resources)
 
@@ -294,7 +345,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         # auto tag with schedule name and group to link function to
         # EventBridge schedule when using schedule mode
         if self.policy.data['mode']['type'] == 'schedule':
-            prefix = self.policy.data['mode'].get('function-prefix', 'c7n-')
+            prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
             name = self.policy.data['name']
             group = self.policy.data['mode'].get('group-name', 'default')
             tags['custodian-schedule'] = f'name={prefix + name}:group={group}'
