@@ -318,7 +318,7 @@ class TopicDelete(HuaweiCloudBaseAction):
             request = DeleteTopicRequest(topic_urn=topic_urn)
             response = client.delete_topic(request)
             log.debug(
-                f"[resource]-[smn-topic] query the service:[DELETE /v2/{{project_id}}"
+                f"[actions]-[delete] query the service:[DELETE /v2/{{project_id}}"
                 f"/notifications/topics/{topic_urn}] is success.")
             log.info(
                 f"[actions]-[delete]-The resource:[smn-topic] with id:[{resource_id}] "
@@ -373,7 +373,7 @@ class TopicCreateLts(HuaweiCloudBaseAction):
                                                log_stream_id=self.data.get('log_stream_id')))
             response = client.create_logtank(request)
             log.debug(
-                f"[resource]-[smn-topic] query the service:[POST /v2/{{project_id}}"
+                f"[actions]-[create-lts] query the service:[POST /v2/{{project_id}}"
                 f"/notifications/topics/{topic_urn}/logtanks] is success.")
             log.info(
                 f"[actions]-[create-lts]-The resource:[smn-topic] with id:[{resource_id}] "
@@ -416,14 +416,14 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                 request = ListLogtankRequest(topic_urn=topic_urn)
                 lts = client.list_logtank(request).logtanks
                 log.debug(
-                    f"[resource]-[smn-topic] query the service:[GET /v2/{{project_id}}"
+                    f"[actions]-[delete-lts] query the service:[GET /v2/{{project_id}}"
                     f"/notifications/topics/{topic_urn}/logtanks] is success.")
             for logtanks in lts:
                 request = DeleteLogtankRequest(topic_urn=topic_urn,
                                                logtank_id=logtanks.id)
                 response = client.delete_logtank(request)
                 log.debug(
-                    f"[resource]-[smn-topic] query the service:[DELETE /v2/{{project_id}}"
+                    f"[actions]-[delete-lts] query the service:[DELETE /v2/{{project_id}}"
                     f"/notifications/topics/{topic_urn}/logtanks/{logtanks.id}] is "
                     f"success.")
             log.info(
@@ -492,9 +492,8 @@ class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
                                                       value=self.data.get('value')))
             response = client.update_topic_attribute(request)
             log.debug(
-                f"[resource]-[smn-topic] query the service:[PUT /v2/{{project_id}}"
-                f"/notifications/topics/{topic_urn}/attributes/access_policy] is "
-                f"success.")
+                f"[actions]-[update-access] query the service:[PUT /v2/{{project_id}}"
+                f"/notifications/topics/{topic_urn}/attributes/access_policy] is success.")
             log.info(
                 f"[actions]-[update-access] The resource:[smn-topic] with id:[{resource_id}] "
                 f"Update access policy to SMN Topics is success.")
@@ -539,9 +538,8 @@ class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
                                                      name='access_policy')
                 response = client.list_topic_attributes(request)
                 log.debug(
-                    f"[resource]-[smn-topic] query the service:[GET /v2/{{project_id}}"
-                    f"/notifications/topics/{topic_urn}/attributes] is "
-                    f"success.")
+                    f"[actions]-[delete-allow-all-user-access] query the service:[GET /v2/"
+                    f"{{project_id}}/notifications/topics/{topic_urn}/attributes] is  success.")
                 access_policy = response.attributes.access_policy
                 resource['access_policy'] = access_policy
             if access_policy is None or len(access_policy) == 0:
@@ -568,8 +566,8 @@ class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
                                                       value=value))
             response = client.update_topic_attribute(request)
             log.debug(
-                f"[resource]-[smn-topic] query the service:[PUT /v2/{{project_id}}"
-                f"/notifications/topics/{topic_urn}/attributes/access_policy] is "
+                f"[actions]-[delete-allow-all-user-access] query the service:[PUT /v2/"
+                f"{{project_id}}/notifications/topics/{topic_urn}/attributes/access_policy] is "
                 f"success.")
             log.info(
                 f"[actions]-[delete-allow-all-user-access] The resource:smn-topic with id:"
@@ -613,7 +611,7 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
             request = DeleteTopicAttributesRequest(topic_urn=topic_urn)
             response = client.delete_topic_attributes(request)
             log.debug(
-                f"[resource]-[smn-topic] query the service:[DELETE /v2/{{project_id}}"
+                f"[actions]-[delete-access] query the service:[DELETE /v2/{{project_id}}"
                 f"/notifications/topics/{topic_urn}/attributes] is success.")
             log.info(
                 f"[actions]-[delete-access] The resource:[smn-topic] with id:[{resource_id}] "
