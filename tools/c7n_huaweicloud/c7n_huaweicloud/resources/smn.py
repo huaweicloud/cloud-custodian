@@ -424,8 +424,7 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                 response = client.delete_logtank(request)
                 log.debug(
                     f"[actions]-[delete-lts] query the service:[DELETE /v2/{{project_id}}"
-                    f"/notifications/topics/{topic_urn}/logtanks/{logtanks.id}] is "
-                    f"success.")
+                    f"/notifications/topics/{topic_urn}/logtanks/{logtanks.id}] is success.")
             log.info(
                 f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
                 f"Delete LTS to SMN Topics is success.")
@@ -539,7 +538,7 @@ class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
                 response = client.list_topic_attributes(request)
                 log.debug(
                     f"[actions]-[delete-allow-all-user-access] query the service:[GET /v2/"
-                    f"{{project_id}}/notifications/topics/{topic_urn}/attributes] is  success.")
+                    f"{{project_id}}/notifications/topics/{topic_urn}/attributes] is success.")
                 access_policy = response.attributes.access_policy
                 resource['access_policy'] = access_policy
             if access_policy is None or len(access_policy) == 0:
