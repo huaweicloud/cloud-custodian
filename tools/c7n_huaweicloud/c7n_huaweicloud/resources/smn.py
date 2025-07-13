@@ -41,8 +41,6 @@ class Topic(QueryResourceManager):
 
         client = local_session(self.session_factory).client('smn')
         resource_type = 'smn_topic'
-        request = None
-        response = None
         for resource in resources:
             resource_id = resource["id"]
             try:
@@ -59,7 +57,7 @@ class Topic(QueryResourceManager):
             except Exception as e:
                 log.error(
                     f"[resource]-[smn-topic] query tags resource:[{resource_id}] is failed, "
-                    f"cause:{e}, request:{request}, response:{response}")
+                    f"cause:{e}")
         return resources
 
 
@@ -100,8 +98,6 @@ class TopicLtsFilter(Filter):
         client = self.manager.get_client()
         enabled = self.data.get('enabled')
         resources_valid = []
-        request = None
-        response = None
         for resource in resources:
             resource_id = resource["id"]
             topic_urn = resource["topic_urn"]
@@ -120,8 +116,7 @@ class TopicLtsFilter(Filter):
                 resources_valid.append(resource)
             except Exception as e:
                 log.error(
-                    f"[filters]-[topic-lts] get lts resource:[{resource_id}] is failed, cause:{e}, "
-                    f"request:{request}, response:{response}")
+                    f"[filters]-[topic-lts] get lts resource:[{resource_id}] is failed, cause:{e}")
         return resources_valid
 
     def check(self, enabled, lts):
@@ -189,8 +184,6 @@ class TopicAccessFilter(Filter):
 
     def process(self, resources, event=None):
         client = self.manager.get_client()
-        request = None
-        response = None
         resources_valid = []
         for resource in resources:
             resource_id = resource["id"]
@@ -211,8 +204,7 @@ class TopicAccessFilter(Filter):
                 resources_valid.append(resource)
             except Exception as e:
                 log.error(
-                    f"[filters]-[topic-access] resource:[{resource_id}] is failed, cause:{e}, "
-                    f"request:{request}, response:{response}")
+                    f"[filters]-[topic-access] resource:[{resource_id}] is failed, cause:{e}")
         return resources_valid
 
     def check(self, access_policy):
@@ -321,7 +313,6 @@ class TopicDelete(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         resource_id = resource["id"]
         topic_urn = resource["topic_urn"]
-        request = None
         response = None
         try:
             request = DeleteTopicRequest(topic_urn=topic_urn)
@@ -331,11 +322,11 @@ class TopicDelete(HuaweiCloudBaseAction):
                 f"/notifications/topics/{topic_urn}] is success.")
             log.info(
                 f"[actions]-[delete]-The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete SMN Topics is success. request:{request}, response:{response}")
+                f"Delete SMN Topics is success")
         except Exception as e:
             log.error(
                 f"[actions]-[delete]-The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete SMN Topics is failed, cause:{e}, request:{request}, response:{response}")
+                f"Delete SMN Topics is failed, cause:{e}")
         return response
 
 
@@ -374,7 +365,6 @@ class TopicCreateLts(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         resource_id = resource["id"]
         topic_urn = resource["topic_urn"]
-        request = None
         response = None
         try:
             request = CreateLogtankRequest(topic_urn=topic_urn,
@@ -387,12 +377,11 @@ class TopicCreateLts(HuaweiCloudBaseAction):
                 f"/notifications/topics/{topic_urn}/logtanks] is success.")
             log.info(
                 f"[actions]-[create-lts]-The resource:[smn-topic] with id:[{resource_id}] "
-                f"Create LTS to SMN Topics is success. request:{request}, response:{response}")
+                f"Create LTS to SMN Topics is success.")
         except Exception as e:
             log.error(
                 f"[actions]-[create-lts]-The resource:[smn-topic] with id:[{resource_id}] "
-                f"Create LTS to SMN Topics is failed, cause:{e}, "
-                f"request:{request}, response:{response}")
+                f"Create LTS to SMN Topics is failed, cause:{e}")
         return response
 
 
@@ -420,7 +409,6 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         resource_id = resource["id"]
         topic_urn = resource["topic_urn"]
-        request = None
         response = None
         try:
             lts = resource["lts"]
@@ -440,13 +428,12 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                     f"success.")
             log.info(
                 f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete LTS to SMN Topics is success. request:{request}, response:{response}")
+                f"Delete LTS to SMN Topics is success.")
             resource["lts"] = None
         except Exception as e:
             log.error(
                 f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete LTS to SMN Topics is failed, cause:{e}, "
-                f"request:{request}, response:{response}")
+                f"Delete LTS to SMN Topics is failed, cause:{e}")
         return response
 
 
@@ -497,7 +484,6 @@ class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         resource_id = resource["id"]
         topic_urn = resource["topic_urn"]
-        request = None
         response = None
         try:
             request = UpdateTopicAttributeRequest(topic_urn=topic_urn,
@@ -511,14 +497,12 @@ class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
                 f"success.")
             log.info(
                 f"[actions]-[update-access] The resource:[smn-topic] with id:[{resource_id}] "
-                f"Update access policy to SMN Topics is success. "
-                f"request:{request}, response:{response}")
+                f"Update access policy to SMN Topics is success.")
             resource['access_policy'] = self.data.get('value')
         except Exception as e:
             log.error(
                 f"[actions]-[update-access] The resource:[smn-topic] with id:[{resource_id}] "
-                f"Update access policy to SMN Topics is failed, cause:{e}, "
-                f"request:{request}, response:{response}")
+                f"Update access policy to SMN Topics is failed, cause:{e}")
         return response
 
 
@@ -547,7 +531,6 @@ class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         resource_id = resource["id"]
         topic_urn = resource["topic_urn"]
-        request = None
         response = None
         try:
             access_policy = resource.get('access_policy')
@@ -590,14 +573,13 @@ class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
                 f"success.")
             log.info(
                 f"[actions]-[delete-allow-all-user-access] The resource:smn-topic with id:"
-                f"[{resource_id}] Delete allow all user access policy to SMN Topics is success. "
-                f"request:{request}, response:{response}")
+                f"[{resource_id}] Delete allow all user access policy to SMN Topics is success.")
             resource['access_policy'] = value
         except Exception as e:
             log.error(
                 f"[actions]-[delete-allow-all-user-access] The resource:smn-topic with id:"
                 f"[{resource_id}] Delete allow all user access policy to SMN Topics is failed, "
-                f"cause:{e}, request:{request}, response:{response}")
+                f"cause:{e}")
         return response
 
 
@@ -626,7 +608,6 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         resource_id = resource["id"]
         topic_urn = resource["topic_urn"]
-        request = None
         response = None
         try:
             request = DeleteTopicAttributesRequest(topic_urn=topic_urn)
@@ -636,12 +617,10 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
                 f"/notifications/topics/{topic_urn}/attributes] is success.")
             log.info(
                 f"[actions]-[delete-access] The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete access policy to SMN Topics is success. "
-                f"request:{request}, response:{response}")
+                f"Delete access policy to SMN Topics is success.")
             resource['access_policy'] = None
         except Exception as e:
             log.error(
                 f"[actions]-[delete-access] The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete access policy to SMN Topics is failed, cause:{e}, "
-                f"request:{request}, response:{response}")
+                f"Delete access policy to SMN Topics is failed, cause:{e}")
         return response
