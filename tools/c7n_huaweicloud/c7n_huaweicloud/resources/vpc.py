@@ -1263,17 +1263,17 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     ip = ip.strip()
                     if '-' in ip:
                         ip_range = ip.split('-')
-                        if ip_range[0] < ip_range[1]:
-                            ip_start = int(netaddr.IPAddress(ip_range[0]))
-                            ip_end = int(netaddr.IPAddress(ip_range[1]))
+                        ip_start = int(netaddr.IPAddress(ip_range[0]))
+                        ip_end = int(netaddr.IPAddress(ip_range[1]))
+                        if ip_start <= ip_end:
                             int_ips.extend([i for i in range(ip_start, ip_end + 1)])
                     else:
                         int_ips.append(int(netaddr.IPAddress(ip)))
             elif '-' in key:
                 ip_range = key.split('-')
-                if ip_range[0] < ip_range[1]:
-                    ip_start = int(netaddr.IPAddress(ip_range[0]))
-                    ip_end = int(netaddr.IPAddress(ip_range[1]))
+                ip_start = int(netaddr.IPAddress(ip_range[0]))
+                ip_end = int(netaddr.IPAddress(ip_range[1]))
+                if ip_start <= ip_end:
                     int_ips.extend([i for i in range(ip_start, ip_end + 1)])
             else:
                 int_ips.append(int(netaddr.IPAddress(key)))
