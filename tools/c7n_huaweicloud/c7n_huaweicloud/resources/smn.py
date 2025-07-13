@@ -53,7 +53,7 @@ class Topic(QueryResourceManager):
                         f"[resource]-[smn-topic] query the service:[GET /v2/{{project_id}}"
                         f"/{resource_type}/{resource_id}/tags] is success.")
                     tags = response.to_dict().get('tags')
-                    resource['tags'] = tags
+                    resource['tags'] = {item['key']: item['value'] for item in tags}
             except Exception as e:
                 log.error(
                     f"[resource]-[smn-topic] query tags resource:[{resource_id}] is failed, "
