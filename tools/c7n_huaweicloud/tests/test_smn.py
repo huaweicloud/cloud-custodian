@@ -128,12 +128,7 @@ class SmnTest(BaseTest):
         factory = self.replay_flight_data('smn_topic_query')
         p = self.load_policy({
             "name": "test_topic_filter_tag",
-            "resource": "huaweicloud.smn-topic",
-            "filters": [
-                {
-                    "type": "topic-tag"
-                }
-            ]
+            "resource": "huaweicloud.smn-topic"
         }, session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 2)
