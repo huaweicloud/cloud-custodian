@@ -156,8 +156,8 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                     f"request: {request}, response: {response}")
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"[actions]-[notify-message-structure] The resource:{resource_type} with id:[{ids}] "
-                f"Publish message structure to SMN Topics failed, cause:{e}, "
+                f"[actions]-[notify-message-structure] The resource:{resource_type} with id:[{ids}]"
+                f" Publish message structure to SMN Topics failed, cause:{e}, "
                 f"request: {request}, response: {response}")
         return self.process_result(resources)
 
