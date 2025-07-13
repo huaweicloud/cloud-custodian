@@ -411,20 +411,22 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
         topic_urn = resource["topic_urn"]
         response = None
         try:
-            lts = resource["lts"]
+            lts = resource.get('lts')
             if lts is None:
                 request = ListLogtankRequest(topic_urn=topic_urn)
-                lts = client.list_logtank(request).logtanks
+                response = client.list_logtank(request)
                 log.debug(
                     f"[actions]-[delete-lts] query the service:[GET /v2/{{project_id}}"
                     f"/notifications/topics/{topic_urn}/logtanks] is success.")
+                lts = response.to_dict().get('logtanks')
             for logtanks in lts:
+                logtanks_id = logtanks["id"]
                 request = DeleteLogtankRequest(topic_urn=topic_urn,
-                                               logtank_id=logtanks.id)
+                                               logtank_id=logtanks_id)
                 response = client.delete_logtank(request)
                 log.debug(
                     f"[actions]-[delete-lts] query the service:[DELETE /v2/{{project_id}}"
-                    f"/notifications/topics/{topic_urn}/logtanks/{logtanks.id}] is success.")
+                    f"/notifications/topics/{topic_urn}/logtanks/{logtanks_id}] is success.")
             log.info(
                 f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
                 f"Delete LTS to SMN Topics is success.")
