@@ -1542,7 +1542,7 @@ class InstanceImageNotCompliance(Filter):
                               "get obs object is failed, cause: "
                               "error_code[%s] error_msg[%s]",
                               obs_url, resp.errorCode, resp.errorMessage)
-                    return []
+                    raise
             except exceptions.ClientRequestException as e:
                 log.error("[filters]-{instance-image-not-compliance} "
                           "The resource:[ecs] with obs_url:[%s] "
@@ -1698,6 +1698,6 @@ class InstanceMetadataOptionsToken(Filter):
                           "query server metadata options is failed, cause: "
                           "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                           req, e.status_code, e.request_id, e.error_code, e.error_msg)
-                continue
+                raise
             results.setdefault(r["id"], resp)
         return results
