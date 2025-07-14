@@ -34,15 +34,15 @@ class CbrProtectable(QueryResourceManager):
         )
         result = []
         for resource in resources:
-            if resource["id"] in resource_ids:
-                result.append(resource)
             add_tags = []
             if resource.get('detail'):
                 tags = resource.get('detail').get('tags')
                 for t in tags:
                     if '=' in t:
                         add_tags.append(t)
-            resources['tags'] = add_tags
+            resource['tags'] = add_tags
+            if resource["id"] in resource_ids:
+                result.append(resource)
         return result
 
     def _fetch_resources(self, query):
