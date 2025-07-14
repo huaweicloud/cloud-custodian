@@ -309,6 +309,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
             log.debug(f"[actions]-[{self.action_name}]"
                       f"inherit policy from vault failed, need inherit from exist policy")
             try:
+                client = self.manager.get_client()
                 request = ListPoliciesRequest()
                 request.operation_type = "backup"
                 response = client.list_policies(request)
