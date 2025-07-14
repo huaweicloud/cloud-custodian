@@ -47,13 +47,20 @@ class Alarm(QueryResourceManager):
             request.limit = limit
             try:
                 response = client.list_alarm_rules(request)
-                resource = eval(
+                current_resources = eval(
                     str(response.alarms)
                         .replace("null", "None")
                         .replace("false", "False")
                         .replace("true", "True")
                 )
-                resources = resources + resource
+                for resource in current_resources:
+                    if "id" not in resource:  # 检查是否缺少id字段
+                        if "alarm_id" in resource:  # 使用alarm_id填充
+                            resource["id"] = resource["alarm_id"]
+                        else:
+                            log.warning(f"Resource missing both id and alarm_id: {resource}")
+                            resource["id"] = f"generated_{hash(str(resource))}"
+                    resources.append(resource)
             except exceptions.ClientRequestException as e:
                 log.error(f"[actions]- list_alarm_rules - The resource:ces-alarm "
                           f"with id:[] query alarm rules is failed. cause: {e.error_msg} ")
