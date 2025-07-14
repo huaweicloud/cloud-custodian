@@ -1,0 +1,168 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T085723Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+  response:
+    body:
+      string: '{"kind": "NodePool", "apiVersion": "v3", "items": [{"kind": "NodePool",
+        "apiVersion": "v3", "metadata": {"name": "test-nodepool-empty", "uid": "nodepool-delete-test-id-201",
+        "creationTimestamp": "2023-01-15T08:00:00Z"}, "spec": {"type": "vm", "nodeTemplate":
+        {"flavor": "s6.large.2", "az": "ap-southeast-1a", "os": "EulerOS 2.5"}, "initialNodeCount":
+        0, "autoscaling": {"enable": false}}, "status": {"currentNode": 0, "phase":
+        "Synchronizing", "jobId": ""}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 08:57:23 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1750323443265; path=/
+      - HWWAFSESID=171e573d90fd54811f; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6e28b050a6717a0ef8120422313ca223
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T105238Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters/nodepool-delete-test-id-201/nodepools
+  response:
+    body:
+      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"NodePool","apiVersion":"v3",
+        "metadata":{"uid":"test-nodepool-uid","name":"test-nodepool", "creationTimestamp":"2025-06-18T08:02:29Z","updateTimestamp":"2025-06-18T08:02:29Z"},
+        "spec":{"type":"vm","nodeTemplate":{"flavor":"s6.large.2", "az":"cn-north-4a","os":"CentOS
+        7.6"},"initialNodeCount":2,"autoscaling": {"enable":true,"minNodeCount":1,"maxNodeCount":10,"scaleDownCooldownTime":10,
+        "priority":1},"nodeManagement":{"serverGroupReference":""}}, "status":{"currentNode":0,"phase":"Active"}}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 10:52:38 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=611e37332b53c419f8; path=/
+      - HWWAFSESTIME=1750330358386; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 40af87916c93e701dfe460847dc1c87b
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T114239Z
+    method: DELETE
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters/nodepool-delete-test-id-201/nodepools/test-nodepool-uid
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 11:42:40 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=ec1977393525eb08b4; path=/
+      - HWWAFSESTIME=1750333360073; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 56ac86343661e533cf9bc5323119dd90
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1
