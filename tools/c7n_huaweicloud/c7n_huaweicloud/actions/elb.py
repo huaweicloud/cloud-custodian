@@ -125,7 +125,7 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
                     elb_client.update_load_balancer(request)
                     log.info(
                         f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                        "The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
+                        f"The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
                         f"is unbinded ipv6 eip: {eip['eip_address']} successfully."
                     )
 
@@ -138,7 +138,7 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
                     eip_client.disassociate_publicips(request)
                     log.info(
                         f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                        "The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
+                        f"The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
                         f"is unbinded ipv4 eip: {eip['eip_address']} successfully."
                     )
 
@@ -150,7 +150,7 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
                 geip_client.disassociate_instance(request)
                 log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                    "The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
+                    f"The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
                     f"is unbinded global eip: {geip['eip_address']} successfully."
                 )
 
