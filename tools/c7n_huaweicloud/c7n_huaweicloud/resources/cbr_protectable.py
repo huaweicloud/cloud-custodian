@@ -11,6 +11,7 @@ from huaweicloudsdkcbr.v1 import (
     ListPoliciesRequest
 )
 
+from c7n.filters import Filter
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
@@ -27,6 +28,37 @@ class CbrProtectable(QueryResourceManager):
         enum_spec = ('list_protectable', 'instances', 'offset')
         id = 'id'
         tag_resource_type = ''
+
+    def get_resources(self, resource_ids):
+        resources = (
+                self.augment(self.source.get_resources(self.get_resource_query())) or []
+        )
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+            add_tags = []
+            if resource.get('detail'):
+                tags = resource.get('detail').get('tags')
+                for t in tags:
+                    if '=' in t:
+                        add_tags.append(t)
+            resources['tags'] = add_tags
+        return result
+
+    def _fetch_resources(self, query):
+        resources = (
+                self.augment(self.source.get_resources(query)) or []
+        )
+        for r in resources:
+            add_tags = []
+            if r.get('detail'):
+                tags = r.get('detail').get('tags')
+                for t in tags:
+                    if '=' in t:
+                        add_tags.append(t)
+            r['tags'] = add_tags
+        return resources
 
 
 @CbrProtectable.action_registry.register('associate_server_with_vault')
@@ -75,6 +107,9 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                         )
 
     def process(self, resources):
+        for s in resources:
+            log.debug(f"[actions-[{self.action_name}]] the resource:[{self.resource_type}] info:"
+                      f" resource id:{s.get('id')}, tags:{s.get('tags')}")
         try:
             self.perform_action(resources)
         except exceptions.ClientRequestException as ex:
