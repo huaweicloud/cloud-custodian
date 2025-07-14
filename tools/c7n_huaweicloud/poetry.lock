@@ -264,6 +264,19 @@ files = [
 huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
+name = "huaweicloudsdkcce"
+version = "3.1.153"
+description = "CCE"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "huaweicloudsdkcce-3.1.153-py2.py3-none-any.whl", hash = "sha256:867ac8061fc51d5856e6200e1032af9e76a56546f23ee483d12fe93455562d5f"},
+]
+
+[package.dependencies]
+huaweicloudsdkcore = ">=3.1.153"
+
+[[package]]
 name = "huaweicloudsdkccm"
 version = "3.1.155"
 description = "CCM"
