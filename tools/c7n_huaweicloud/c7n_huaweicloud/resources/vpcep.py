@@ -347,7 +347,7 @@ class VpcEndpointUtils():
         return split_res[1]
 
 
-@VpcEndpoint.filter_registry.register('is-non-default-org-policy')
+@VpcEndpoint.filter_registry.register('is-not-default-org-policy')
 class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
     """Check if then endpoint is configrured with default organization policy.
 
@@ -360,16 +360,16 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
     .. code-block:: yaml
 
         policies:
-            - name: is-non-default-org-policy
+            - name: is-not-default-org-policy
             resource: huaweicloud.vpcep-ep
             filters:
-                - type: is-non-default-org-policy
-                  my_account: "com.huaweicloud.service.test"
-                  org_accounts_obs_url: https://test/all_accounts.json
+                - type: is-not-default-org-policy
+                  my_account: "{my_account}"
+                  org_accounts_obs_url: {obs_url}
     """
 
     schema = type_schema(
-        'is-non-default-org-policy',
+        'is-not-default-org-policy',
         my_account={'type': 'string'},
         org_accounts_obs_url={'type': 'string'}
     )
@@ -427,7 +427,8 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
             resource: huaweicloud.vpcep-ep
             actions:
               - type: update-default-org-policy
-                org_accounts_obs_url: https://test/all_accounts.json  
+                my_account: "{my_account}"
+                org_accounts_obs_url: {obs_url}
     """
 
     schema = type_schema('update-default-org-policy',
