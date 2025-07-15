@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
 import logging
 import json
 import netaddr
@@ -1138,10 +1139,13 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         if risk_ports_obj:
             if trust_ip_obj:
                 extend_trust_ip_obj = self._extend_ip_map(trust_ip_obj)
+            if trust_sg_obj:
+                extend_trust_sg_obj = self._extend_sg_map(trust_sg_obj)
             for rule in resources:
                 if rule.get('direction') != direction or rule.get('action') != 'allow':
                     continue
                 protocol = rule.get('protocol')
+                # allow all protocol and ports, rule need to delete
                 if not protocol:
                     results.append(rule)
                     continue
@@ -1157,6 +1161,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 if not risk_rule_ports:
                     continue
                 sg = rule['security_group_id']
+                # deny rules high priority
                 if sg not in deny_rule_map:
                     deny_rules = self.get_deny_rules(sg, direction)
                     new_sg = {sg: deny_rules}
@@ -1173,7 +1178,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         deny_ports = self._extend_ports(deny_ports.split(','))
                         risk_rule_ports = [p for p in risk_rule_ports if p not in deny_ports]
                 # trust sg
-                risk_rule_ports = self._handle_trust_port(trust_sg_obj,
+                risk_rule_ports = self._handle_trust_port(extend_trust_sg_obj,
                                                           protocol,
                                                           sg,
                                                           risk_rule_ports)
@@ -1269,7 +1274,6 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         elif 'all' in trust_map:
             trust_port = trust_map.get('all')
         if trust_port:
-            trust_port = self._extend_ports(trust_port)
             return [p for p in risk_rule_ports if p not in trust_port]
         return risk_rule_ports
 
@@ -1404,8 +1408,11 @@ class SecurityGroupRuleAllowRiskPort(Filter):
 
     def _extend_ip_map(self, ip_obj):
         extended_ip_obj = {}
+        ip_num_limit = 100000
         for key, value in ip_obj.items():
             int_ips = []
+            value.pop("description", None)
+            # extend ip as key of ip_obj
             if ',' in key:
                 ips = key.split(',')
                 for ip in ips:
@@ -1426,9 +1433,43 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     int_ips.extend([i for i in range(ip_start, ip_end + 1)])
             else:
                 int_ips.append(int(netaddr.IPAddress(key)))
+            # set value of ip_obj
+            port_extended_value = {}
+            for protocol, ports in value.items():
+                extended_port = self._extend_ports(ports)
+                port_extended_value[protocol] = extended_port
             for int_ip in int_ips:
-                extended_ip_obj[int_ip] = value
+                if int_ip in extended_ip_obj:
+                    raw_value = extended_ip_obj[int_ip]
+                    new_value = {}
+                    for protocol, ports in port_extended_value.items():
+                        if protocol in raw_value:
+                            new_ports = copy.deepcopy(raw_value[protocol])
+                            new_ports.extend(ports)
+                            new_ports = list(set(new_ports))
+                            new_value[protocol] = new_ports
+                    extended_ip_obj[int_ip] = new_value
+                else:
+                    extended_ip_obj[int_ip] = port_extended_value
+            if len(extended_ip_obj.keys()) > ip_num_limit:
+                log.error("[filters]-The filter:[rule-allow-risk-ports] read trust ip config "
+                          "file failed, cause: the number of trust ip has exceeded "
+                          f"the upper limit {ip_num_limit}.")
+                raise PolicyExecutionError("Read trust ip config file failed, "
+                                           "error message:[The number of trust ip "
+                                           f"has exceeded the upper limit {ip_num_limit}].")
         return extended_ip_obj
+
+    def _extend_sg_map(self, sg_obj):
+        extended_sg_obj = {}
+        for key, value in sg_obj.items():
+            value.pop("description", None)
+            new_value = {}
+            for protocol, ports in value.items():
+                extend_ports = self._extend_ports(value[protocol])
+                new_value[protocol] = extend_ports
+            extended_sg_obj[key] = new_value
+        return extended_sg_obj
 
 
 @SecurityGroupRule.action_registry.register("deny-risk-ports")
