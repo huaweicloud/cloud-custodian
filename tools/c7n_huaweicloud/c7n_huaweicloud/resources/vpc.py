@@ -39,7 +39,7 @@ from huaweicloudsdkvpc.v3 import (
     UpdateSubNetworkInterfaceRequestBody
 )
 
-from c7n.exceptions import PolicyValidationError, PolicyExecutionError
+from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 from c7n.filters import Filter, ValueFilter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -867,7 +867,7 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
                          f"with id: [{r['id']}] delete security group rule succeed.")
             except exceptions.ServiceResponseException as ex:
                 log.error(f"[actions]-[{action}]-The resource:[vpc-security-group-rule] "
-                          f"with id: [{r["id"]}] delete security group rule failed, "
+                          f"with id: [{r['id']}] delete security group rule failed, "
                           f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
                 raise ex
 
