@@ -43,7 +43,7 @@ class VpcEndpoint(QueryResourceManager):
     def augment(self, resources):
         if not resources:
             # Return a fake resource
-            return [{"fake-resource": True}]
+            return [{"fake-resource": True, "id": "fake-id"}]
         return resources
 
 
