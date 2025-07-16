@@ -1399,12 +1399,23 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 elif len(port_range) == 2:
                     start = int(port_range[0])
                     end = int(port_range[1])
-                    if start >= end:
-                        continue
+                    if start > end:
+                        log.error("[filters]-[rule-allow-risk-ports] "
+                                  "Extend port failed, "
+                                  f"cause: the port range '{item}' is invalid.")
+                        raise PolicyExecutionError("Read port range failed, "
+                                                   "error message:[The port range "
+                                                   f"'{item}' is invalid].")
                     ports = [i for i in range(start, end + 1)]
                     int_port_list.extend(ports)
             else:
-                continue
+                log.error("[filters]-[rule-allow-risk-ports] "
+                          "Extend port failed, "
+                          f"cause: the port config '{item}' is invalid.")
+                raise PolicyExecutionError("Extend port failed, "
+                                           "error message:[The port config "
+                                           f"'{item}' is invalid, should be "
+                                           "an integer or a string].")
         return list(set(int_port_list))
 
     def _extend_ip_map(self, ip_obj):
@@ -1422,16 +1433,28 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         ip_range = ip.split('-')
                         ip_start = int(netaddr.IPAddress(ip_range[0]))
                         ip_end = int(netaddr.IPAddress(ip_range[1]))
-                        if ip_start <= ip_end:
-                            int_ips.extend([i for i in range(ip_start, ip_end + 1)])
+                        if ip_start > ip_end:
+                            log.error("[filters]-[rule-allow-risk-ports] "
+                                      "Read trust ip map failed, "
+                                      f"cause: the ip range '{ip}' is invalid.")
+                            raise PolicyExecutionError("Read trust ip map failed, "
+                                                       "error message:["
+                                                       f"The ip range '{ip}' is invalid].")
+                        int_ips.extend([i for i in range(ip_start, ip_end + 1)])
                     else:
                         int_ips.append(int(netaddr.IPAddress(ip)))
             elif '-' in key:
                 ip_range = key.split('-')
                 ip_start = int(netaddr.IPAddress(ip_range[0]))
                 ip_end = int(netaddr.IPAddress(ip_range[1]))
-                if ip_start <= ip_end:
-                    int_ips.extend([i for i in range(ip_start, ip_end + 1)])
+                if ip_start > ip_end:
+                    log.error("[filters]-[rule-allow-risk-ports] "
+                              "Read trust ip map failed, "
+                              f"cause: the ip range:[{ip}] is invalid.")
+                    raise PolicyExecutionError("Read trust ip map failed, "
+                                               "error message:["
+                                               f"The ip range '{ip}' is invalid].")
+                int_ips.extend([i for i in range(ip_start, ip_end + 1)])
             else:
                 int_ips.append(int(netaddr.IPAddress(key)))
             # set value of ip_obj
@@ -1458,7 +1481,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 log.error("[filters]-The filter:[rule-allow-risk-ports] read trust ip config "
                           "file failed, cause: the number of trust ip has exceeded "
                           f"the upper limit {ip_num_limit}.")
-                raise PolicyExecutionError("Read trust ip config file failed, "
+                raise PolicyExecutionError("Read trust ip map failed, "
                                            "error message:[The number of trust ip "
                                            f"has exceeded the upper limit {ip_num_limit}].")
         return extended_ip_obj
