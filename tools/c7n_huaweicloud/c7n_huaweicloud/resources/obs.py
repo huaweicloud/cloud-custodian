@@ -29,6 +29,34 @@ class Obs(QueryResourceManager):
         id = 'name'
         tag = False
 
+    def augment(self, resources):
+        resources = super().augment(resources)
+
+        log.debug('[obs resource manager]-filter resource in this region.')
+        current_region_buckets = filter_region_bucket(self.session_factory, resources)
+
+        log.info('[obs resource manager]-try to get bucket tags.')
+        with self.executor_factory(max_workers=5) as w:
+            buckets = w.map(self.get_bucket_tags, current_region_buckets)
+            buckets = list(filter(None, list(buckets)))
+            log.debug('[obs resource manager]: bucket resources: %s' % buckets)
+            return buckets
+
+    def get_bucket_tags(self, bucket):
+        client = get_obs_client(self.session_factory, bucket)
+        resp = client.getBucketTagging(bucket['name'])
+        if resp.status < 300:
+            bucket['tags'] = [{'key': tag.key, 'value': tag.value if tag.value is not None else ''}
+                               for tag in resp.body.get('tagSet', [])]
+            return bucket
+        else:
+            if 'NoSuchTagSet' == resp.errorCode:
+                bucket['tags'] = []
+                return bucket
+
+            log.error('[obs resource manager] query bucket:[%s] bucket tags is failed. cause: %s'
+                  % (bucket['name'], resp.reason))
+            raise_exception(resp, 'getBucketTagging', bucket)
 
 class ObsSdkError():
     def __init__(self, code, message, request_id):
@@ -639,7 +667,7 @@ class WildcardStatementFilter(Filter):
                 ' [%s] not set bucket policy.' % (bucket['name']))
             else:
                 log.error('[filters]-The filter:[wildcard-statements]' \
-                ' query bucket:[] bucket policy is failed. cause: %s'
+                ' query bucket:[%s] bucket policy is failed. cause: %s'
                   % (bucket['name'], resp.reason))
                 raise_exception(resp, 'getBucketPolicy', bucket)
 
@@ -723,7 +751,7 @@ class BucketEncryptionStateFilter(Filter):
                 return None
             else:
                 log.error('[filters]-The filter:[bucket-encryption]' \
-                ' query bucket:[] bucket encryption is failed. cause: %s'
+                ' query bucket:[%s] bucket encryption is failed. cause: %s'
                   % (bucket['name'], resp.reason))
                 raise_exception(resp, 'getBucketEncryption', bucket)
 
@@ -1295,7 +1323,7 @@ class OBSMissingTagFilter(Filter):
                 return set()
 
             self.log.error('[filters]-The filter:[obs-missing-tag-filter]' \
-                ' query bucket:[] bucket tags is failed. cause: %s'
+                ' query bucket:[%s] bucket tags is failed. cause: %s'
                   % (bucket['name'], resp.reason))
             raise_exception(resp, 'getBucketTagging', bucket)
 
