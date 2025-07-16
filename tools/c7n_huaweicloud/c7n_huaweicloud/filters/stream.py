@@ -18,6 +18,8 @@ class LtsStreamStorageEnabledFilter(Filter):
     )
 
     def process(self, resources, event=None):
+        log.info("[event/period]-The filtered resources has [{}]\
+        in total. ".format(str(len(resources))))
         return resources
 
 
@@ -29,7 +31,6 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
     def process(self, resources, event=None):
         client = self.manager.get_client()
         request = ListLogStreamRequest()
-        log.info("enter lts filter for schedule")
         streams = []
         for group in resources:
             if group["log_group_name"].startswith("functiongraph.log.group"):
@@ -45,9 +46,13 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                         streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
                         streamDict["id"] = stream.log_stream_id
+                        streamDict["tags"] = stream.tag
                         streams.append(streamDict)
             except Exception as e:
-                log.error(e)
+                log.error("[query-storage-enabled-streams]-[query-streams] The"
+                          "resource: [lts-stream] find stroage-enabled streams is failed. "
+                          "cause: {}".format(e))
                 raise
-        log.info("The number of streams to disable storage is " + str(len(streams)))
+        log.info("[event/period]-The filtered resources has [{}]"
+                 "in total. ".format(str(len(resources))))
         return streams
