@@ -9,6 +9,8 @@ import os
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkvpc.v2 import (
     ListPortsRequest,
+    ListSecurityGroupsByTagsRequest,
+    ListSecurityGroupsByTagsRequestBody,
     UpdateFlowLogReq,
     UpdateFlowLogRequest,
     UpdateFlowLogReqBody,
@@ -53,7 +55,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.vpc")
 @resources.register('vpc')
 class Vpc(QueryResourceManager):
     class resource_type(TypeInfo):
-        service = 'vpc_v2'
+        service = 'vpc'
         enum_spec = ('list_vpcs', 'vpcs', 'marker')
         id = 'id'
 
@@ -65,6 +67,42 @@ class Port(QueryResourceManager):
         enum_spec = ('list_ports', 'ports', 'marker')
         id = 'id'
         tag_resource_type = ''
+
+    def get_resources(self, resource_ids):
+        resources = self.get_api_resources()
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
+
+    def _fetch_resources(self, query):
+        return self.get_api_resources(query)
+
+    def get_api_resources(self, query=None):
+        ecs_list = []
+        resourceTagDict = {}
+        try:
+            ecs_list = self.get_resource_manager("huaweicloud.ecs").resources()
+        except exceptions.ClientRequestException as ex:
+            log.error(f"Failed to query ecs tags, "
+                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
+        for ecs in ecs_list:
+            tag = ecs.get("tags", [])
+            if tag:
+                resourceTagDict[ecs.get("id")] = tag
+
+        resource_ids_with_tag = resourceTagDict.keys()
+        q = query or self.get_resource_query()
+        resources = (
+            self.augment(self.source.get_resources(q)) or []
+        )
+        for resource in resources:
+            resource_id = resource.get("device_id", "")
+            resource_tag = resourceTagDict.get(resource_id) \
+                if resource_id in resource_ids_with_tag else []
+            resource["tags"] = resource_tag
+        return resources
 
 
 @Port.filter_registry.register("port-forwarding")
@@ -288,6 +326,58 @@ class SecurityGroupRule(QueryResourceManager):
         enum_spec = ('list_security_group_rules', 'security_group_rules', 'marker')
         id = 'id'
         tag_resource_type = ''
+
+    def get_resources(self, resource_ids):
+        resources = self.get_api_resources()
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
+
+    def _fetch_resources(self, query):
+        return self.get_api_resources(query)
+
+    def get_api_resources(self, query=None):
+        session = local_session(self.session_factory)
+        client = session.client("vpc_v2")
+        resourceTagDict = {}
+        offset, limit = 0, 1000
+        while True:
+            try:
+                requestTag = ListSecurityGroupsByTagsRequest()
+                requestTag.body = ListSecurityGroupsByTagsRequestBody(
+                    offset=offset,
+                    limit=limit,
+                    action="filter"
+                )
+                responseTag = client.list_security_groups_by_tags(requestTag)
+                tagResources = responseTag.resources
+                for tagResource in tagResources:
+                    tag = tagResource.to_dict().get("tags", [])
+                    if tag:
+                        resourceTagDict[tagResource.resource_id] = tag
+            except exceptions.ClientRequestException as ex:
+                log.error(f"Failed to query security group tags, "
+                          f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
+                break
+
+            offset += limit
+            if not responseTag.total_count or offset >= len(responseTag.resources):
+                break
+
+        resource_ids_with_tag = resourceTagDict.keys()
+        q = query or self.get_resource_query()
+        resources = (
+            self.augment(self.source.get_resources(q)) or []
+        )
+        for resource in resources:
+            parent_resource_id = resource.get("security_group_id", "")
+            resource_tag = resourceTagDict.get(parent_resource_id) \
+                if parent_resource_id in resource_ids_with_tag else []
+            resource["tags"] = resource_tag
+
+        return resources
 
 
 class SecurityGroupRuleFilter(Filter):
