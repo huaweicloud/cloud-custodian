@@ -58,6 +58,7 @@ class Obs(QueryResourceManager):
                   % (bucket['name'], resp.reason))
             raise_exception(resp, 'getBucketTagging', bucket)
 
+
 class ObsSdkError():
     def __init__(self, code, message, request_id):
         self.error_code = code
@@ -135,7 +136,8 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
         for statement in bucket_statements:
             if statement.get('Effect') == 'Deny':
                 log.debug('[filters]-[wildcard-statements] current bucket[%s] statement[%s]'
-                ' is Deny statment.[%s]' % (bucket_name, statement.get('Sid', ''), statement.get('Sisdsfsfsfd', 'dashab')))
+                ' is Deny statment.[%s]' % (bucket_name, statement.get('Sid', ''),
+                                             statement.get('Sisdsfsfsfd', 'dashab')))
                 new_statements.append(statement)
                 continue
 
@@ -153,21 +155,21 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
         client = get_obs_client(self.manager.session_factory, bucket)
 
         if not policy['Statement']:
-            log.info('[actions]-[delete-wildcard-statements] try to delete ' \
-            'bucket resource [%s] bucket policy.' % (bucket_name))
+            log.info('[actions]-[delete-wildcard-statements] try to delete ' + 
+                     'bucket resource [%s] bucket policy.' % (bucket_name))
             resp = client.deleteBucketPolicy(bucket_name)
         else:
-            log.info('[actions]-[delete-wildcard-statements] try to put ' \
+            log.info('[actions]-[delete-wildcard-statements] try to put ' +
             'bucket resource [%s] bucket policy.' % (bucket_name))
             resp = client.setBucketPolicy(bucket_name, json.dumps(policy))
 
         if resp.status > 300:
-            log.error('[actions]-[delete-wildcard-statements] The resource:[bucket]' \
-            ' with id:[%s] update bucket policy is failed. cause: '
+            log.error('[actions]-[delete-wildcard-statements] The resource:[bucket]' +
+            ' with id:[%s] update bucket policy is failed. cause: %s'
             % (bucket_name, resp.reason))
             raise_exception(resp, 'updateBucketPolicy', bucket)
         else:
-            log.info('[actions]-[delete-wildcard-statements] The resource:[bucket]' \
+            log.info('[actions]-[delete-wildcard-statements] The resource:[bucket]' +
             ' with id:[%s] update bucket policy is success.' % bucket_name)
 
 
@@ -231,11 +233,11 @@ class SetBucketEncryption(HuaweiCloudBaseAction):
 
         if resp.status < 300:
             bucket['State'] = 'set-bucket-encryption'
-            log.info('[actions]-[set-bucket-encryption] The resource:[bucket]' \
+            log.info('[actions]-[set-bucket-encryption] The resource:[bucket]' +
             ' with id:[%s] set bucket encryption is success.' % bucket_name)
         else:
-            log.error('[actions]-[set-bucket-encryption] The resource:[bucket]' \
-            ' with id:[%s] set bucket encryption is failed. cause: '
+            log.error('[actions]-[set-bucket-encryption] The resource:[bucket]' +
+            ' with id:[%s] set bucket encryption is failed. cause: %s'
             % (bucket_name, resp.reason))
             raise_exception(resp, 'setBucketEncryption', bucket)
 
@@ -296,11 +298,11 @@ class DeleteGlobalGrants(HuaweiCloudBaseAction):
         resp = client.setBucketAcl(bucket['name'], acl)
 
         if resp.status < 300:
-            log.info('[actions]-[delete-global-grants] The resource:[bucket]' \
+            log.info('[actions]-[delete-global-grants] The resource:[bucket]' +
             ' with id:[%s] set bucket acl is success.' % bucket['name'])
         else:
-            log.error('[actions]-[delete-global-grants] The resource:[bucket]' \
-            ' with id:[%s] set bucket acl is failed. cause: '
+            log.error('[actions]-[delete-global-grants] The resource:[bucket]' +
+            ' with id:[%s] set bucket acl is failed. cause: %s'
             % (bucket['name'], resp.reason))
             raise_exception(resp, 'setBucketAcl', bucket)
 
@@ -371,11 +373,11 @@ class SetPublicBlock(HuaweiCloudBaseAction):
             resp = client.getBucketPublicAccessBlock(bucket_name)
             if resp.status < 300:
                 config = resp.body
-                log.debug('[actions]-[set-public-block] The resource:[bucket]' \
+                log.debug('[actions]-[set-public-block] The resource:[bucket]' +
             ' with id:[%s] get bucket public access block is success.' % bucket_name)
             else:
-                log.error('[actions]-[set-public-block] The resource:[bucket]' \
-            ' with id:[%s] get bucket public access block is failed. cause: '
+                log.error('[actions]-[set-public-block] The resource:[bucket]' +
+            ' with id:[%s] get bucket public access block is failed. cause: %s'
             % (bucket_name, resp.reason))
                 raise_exception(resp, 'getBucketPublicAccessBlock', bucket)
 
@@ -396,11 +398,11 @@ class SetPublicBlock(HuaweiCloudBaseAction):
             restrictPublicBuckets=config['restrictPublicBuckets'])
 
         if resp.status < 300:
-            log.info('[actions]-[set-public-block] The resource:[bucket]' \
+            log.info('[actions]-[set-public-block] The resource:[bucket]' +
             ' with id:[%s] set bucket public access block is success.' % bucket_name)
         else:
-            log.error('[actions]-[set-public-block] The resource:[bucket]' \
-            ' with id:[%s] set bucket public access block is failed. cause: '
+            log.error('[actions]-[set-public-block] The resource:[bucket]' +
+            ' with id:[%s] set bucket public access block is failed. cause: %s'
             % (bucket_name, resp.reason))
             raise_exception(resp, 'putBucketPublicAccessBlosck', bucket)
 
@@ -493,11 +495,11 @@ class SetPolicyStatement(HuaweiCloudBaseAction):
         client = get_obs_client(self.manager.session_factory, bucket)
         resp = client.setBucketPolicy(bucket['name'], policy)
         if resp.status < 300:
-            log.info('[actions]-[set-statements] The resource:[bucket]' \
+            log.info('[actions]-[set-statements] The resource:[bucket]' +
             ' with id:[%s] set bucket policy is success.' % bucket['name'])
         else:
-            log.error('[actions]-[set-statements] The resource:[bucket]' \
-            ' with id:[%s] set bucket policy is failed. cause: '
+            log.error('[actions]-[set-statements] The resource:[bucket]' +
+            ' with id:[%s] set bucket policy is failed. cause: %s'
             % (bucket['name'], resp.reason))
             raise_exception(resp, 'setBucketPolicy', bucket)
 
@@ -544,27 +546,27 @@ class RemoveCrossAccountAccessConfig(HuaweiCloudBaseAction):
         bucket_name = bucket['name']
 
         if bucket.get(self.annotation_policy_key) is None:
-            log.info("[actions]-[remove-cross-account-config] bucket [%s] does "\
+            log.info("[actions]-[remove-cross-account-config] bucket [%s] does "+
             "not need update bucket policy" % bucket_name)
             return
 
         if not bucket[self.annotation_policy_key]:
-            log.info('[actions]-[remove-cross-account-config] try to delete ' \
+            log.info('[actions]-[remove-cross-account-config] try to delete ' +
             'bucket resource [%s] bucket policy.' % (bucket_name))
             resp = client.deleteBucketPolicy(bucket_name)
         else:
-            log.info('[actions]-[remove-cross-account-config] try to put ' \
+            log.info('[actions]-[remove-cross-account-config] try to put ' +
             'bucket resource [%s] bucket policy.' % (bucket_name))
             policy = {'Statement': bucket[self.annotation_policy_key]}
             resp = client.setBucketPolicy(bucket_name, json.dumps(policy))
 
         if resp.status > 300:
-            log.error('[actions]-[remove-cross-account-config] The resource:[bucket]' \
-            ' with id:[%s] update bucket policy is failed. cause: '
+            log.error('[actions]-[remove-cross-account-config] The resource:[bucket]' +
+            ' with id:[%s] update bucket policy is failed. cause: %s'
             % (bucket_name, resp.reason))
             raise_exception(resp, 'updateBucketPolicy', bucket)
         else:
-            log.info('[actions]-[remove-cross-account-config] The resource:[bucket]' \
+            log.info('[actions]-[remove-cross-account-config] The resource:[bucket]' +
             ' with id:[%s] update bucket policy is success.' % bucket_name)
 
     def update_acl(self, bucket, client):
@@ -578,12 +580,12 @@ class RemoveCrossAccountAccessConfig(HuaweiCloudBaseAction):
         resp = client.setBucketAcl(bucket_name, bucket[self.annotation_acl_key])
 
         if resp.status > 300:
-            log.error('[actions]-[remove-cross-account-config] The resource:[bucket]' \
-            ' with id:[%s] set bucket acl is failed. cause: '
+            log.error('[actions]-[remove-cross-account-config] The resource:[bucket]' +
+            ' with id:[%s] set bucket acl is failed. cause: %s'
             % (bucket_name, resp.reason))
             raise_exception(resp, 'setBucketAcl', bucket)
         else:
-            log.info('[actions]-[remove-cross-account-config] The resource:[bucket]' \
+            log.info('[actions]-[remove-cross-account-config] The resource:[bucket]' +
             ' with id:[%s] set bucket acl is success.' % bucket_name)
 
 
@@ -626,7 +628,7 @@ class WildcardStatementFilter(Filter):
     def filter_include_wildcard_statement_bucket_policy(self, bucket):
         policy = bucket.get('Policy') or '{}'
         if not policy:
-            log.info("[filters]-The filter:[wildcard-statements] " \
+            log.info("[filters]-The filter:[wildcard-statements] " +
             "bucket [%s] not config bucket policy" % (bucket['name']))
             return None
 
@@ -647,7 +649,7 @@ class WildcardStatementFilter(Filter):
 
         if result:
             set_annotation(bucket, self.annotation_key, result)
-            log.info("[filters]-[wildcard-statements] filter resource " \
+            log.info("[filters]-[wildcard-statements] filter resource " +
             "with id:[%s] success." % (bucket['name']))
             return bucket
 
@@ -666,7 +668,7 @@ class WildcardStatementFilter(Filter):
                 log.debug('[filters]-:[wildcard-statements]- bucket'
                 ' [%s] not set bucket policy.' % (bucket['name']))
             else:
-                log.error('[filters]-The filter:[wildcard-statements]' \
+                log.error('[filters]-The filter:[wildcard-statements]' +
                 ' query bucket:[%s] bucket policy is failed. cause: %s'
                   % (bucket['name'], resp.reason))
                 raise_exception(resp, 'getBucketPolicy', bucket)
@@ -714,23 +716,23 @@ class BucketEncryptionStateFilter(Filter):
 
         if not target_state:
             if target_crypto is None and current_crypto is None:
-                log.info("[filters]-[bucket-encryption] filter resource " \
+                log.info("[filters]-[bucket-encryption] filter resource " +
             "with id:[%s] success." % (bucket['name']))
                 return bucket
 
             if target_crypto is not None and target_crypto != current_crypto:
-                log.info("[filters]-[bucket-encryption] filter resource " \
+                log.info("[filters]-[bucket-encryption] filter resource " +
             "with id:[%s] success." % (bucket['name']))
                 return bucket
         else:
             if target_crypto is None and current_crypto is not None:
-                log.info("[filters]-[bucket-encryption] filter resource " \
+                log.info("[filters]-[bucket-encryption] filter resource " +
             "with id:[%s] success." % (bucket['name']))
                 return bucket
 
             if target_crypto is not None and current_crypto is not None \
             and target_crypto == current_crypto:
-                log.info("[filters]-[bucket-encryption] filter resource " \
+                log.info("[filters]-[bucket-encryption] filter resource " +
             "with id:[%s] success." % (bucket['name']))
                 return bucket
         return None
@@ -750,7 +752,7 @@ class BucketEncryptionStateFilter(Filter):
                 ' [%s]: not set bucket encryption.' % (bucket['name']))
                 return None
             else:
-                log.error('[filters]-The filter:[bucket-encryption]' \
+                log.error('[filters]-The filter:[bucket-encryption]' +
                 ' query bucket:[%s] bucket encryption is failed. cause: %s'
                   % (bucket['name'], resp.reason))
                 raise_exception(resp, 'getBucketEncryption', bucket)
@@ -824,7 +826,7 @@ class GlobalGrantsFilter(Filter):
 
         if results:
             set_annotation(bucket, 'globalPermissions', results)
-            log.info("[filters]-[global-grants] filter resource " \
+            log.info("[filters]-[global-grants] filter resource " +
             "with id:[%s] success." % (bucket['name']))
             return bucket
 
@@ -840,7 +842,7 @@ class GlobalGrantsFilter(Filter):
                 bucket['Acl'] = {'grants': []}
                 return
 
-            log.error('[filters]-The filter:[global-grants]' \
+            log.error('[filters]-The filter:[global-grants]' +
                 ' query bucket:[%s] bucket acl is failed. cause: %s'
                   % (bucket['name'], resp.reason))
             raise_exception(resp, 'getBucketWebsite', bucket)
@@ -860,7 +862,7 @@ class GlobalGrantsFilter(Filter):
                 bucket['website'] = False
                 return False
             else:
-                log.error('[filters]-The filter:[global-grants]' \
+                log.error('[filters]-The filter:[global-grants]' +
                 ' query bucket:[%s] bucket website config is failed. cause: %s'
                   % (bucket['name'], resp.reason))
                 raise_exception(resp, 'getBucketWebsite', bucket)
@@ -915,7 +917,7 @@ class FilterPublicBlock(Filter):
             if resp.status < 300:
                 config = resp.body
             else:
-                log.error('[filters]-The filter:[check-public-block]' \
+                log.error('[filters]-The filter:[check-public-block]' +
                 ' query bucket:[%s] bucket public access block is failed. cause: %s'
                   % (bucket['name'], resp.reason))
                 raise_exception(resp, 'BucketPublicAccessBlock', bucket)
@@ -925,7 +927,7 @@ class FilterPublicBlock(Filter):
         is_match = self.matches_filter(config)
 
         if is_match:
-            log.info("[filters]-[check-public-block] filter resource " \
+            log.info("[filters]-[check-public-block] filter resource " +
             "with id:[%s] success." % (bucket['name']))
             return bucket
         else:
@@ -992,7 +994,7 @@ class SecureTransportFilter(Filter):
         is_dany_http = self.is_http_deny_enhanced(bucket)
 
         if not is_dany_http:
-            log.info("[filters]-[support-https-request] filter resource " \
+            log.info("[filters]-[support-https-request] filter resource " +
             "with id:[%s] success." % (bucket['name']))
             return bucket
 
@@ -1023,7 +1025,7 @@ class SecureTransportFilter(Filter):
             if self.contain_all_elements(list(s.get('Resource', [])), resource_list):
                 return True
 
-        log.info('[filters]-[support-https-request]: bucket[%s] bucket policy missing ' \
+        log.info('[filters]-[support-https-request]: bucket[%s] bucket policy missing '+ 
         'deny http request statement.' % (bucket['name']))
         return False
 
@@ -1042,7 +1044,7 @@ class SecureTransportFilter(Filter):
                 bucket['Policy'] = {}
                 return
 
-            log.error('[filters]-The filter:[support-https-request]' \
+            log.error('[filters]-The filter:[support-https-request]' +
                 ' query bucket:[%s] bucket policy is failed. cause: %s'
                   % (bucket['name'], resp.reason))
             raise_exception(resp, 'getBucketPolicy', bucket)
@@ -1085,7 +1087,7 @@ class ObsCrossAccountFilter(Filter):
         acl_violating = self.check_is_cross_accout_by_acl(bucket)
 
         if policy_violating or acl_violating:
-            log.info("[filters]-[cross-account] filter resource " \
+            log.info("[filters]-[cross-account] filter resource " +
             "with id:[%s] success." % (bucket['name']))
             return bucket
 
@@ -1108,7 +1110,7 @@ class ObsCrossAccountFilter(Filter):
 
         if violating:
             bucket[RemoveCrossAccountAccessConfig.annotation_policy_key] = legal_statements
-            log.info("[filters]-[cross-account]: bucket[%s]: has cross account" \
+            log.info("[filters]-[cross-account]: bucket[%s]: has cross account" +
             " bucket policy." % (bucket['name']))
             return True
 
@@ -1160,7 +1162,7 @@ class ObsCrossAccountFilter(Filter):
             owner = acl['owner']
             new_acl = ACL(owner, legal_grants)
             bucket[RemoveCrossAccountAccessConfig.annotation_acl_key] = new_acl
-            log.info("[filters]-[cross-account]: bucket[%s]: has cross account" \
+            log.info("[filters]-[cross-account]: bucket[%s]: has cross account" +
             " bucket acl." % (bucket['name']))
 
         return violating
@@ -1176,7 +1178,7 @@ class ObsCrossAccountFilter(Filter):
                 bucket['Policy'] = {}
                 return
 
-            log.error('[filters]-The filter:[cross-account]' \
+            log.error('[filters]-The filter:[cross-account]' +
                 ' query bucket:[%s] bucket policy is failed. cause: %s'
                   % (bucket['name'], resp.reason))
             raise_exception(resp, 'getBucketPolicy', bucket)
@@ -1193,7 +1195,7 @@ class ObsCrossAccountFilter(Filter):
                 bucket['Acl'] = {'owner': {}, 'grants': []}
                 return
 
-            log.error('[filters]-The filter:[cross-account]' \
+            log.error('[filters]-The filter:[cross-account]' +
                 ' query bucket:[%s] bucket acl is failed. cause: %s'
                   % (bucket['name'], resp.reason))
             raise_exception(resp, 'getBucketAcl', bucket)
@@ -1224,7 +1226,7 @@ class ObsCrossAccountFilter(Filter):
                           % (bucket['name']))
                 return False
             else:
-                log.error('[filters]-The filter:[cross-account]' \
+                log.error('[filters]-The filter:[cross-account]' +
                 ' query bucket:[%s] bucket website config is failed. cause: %s'
                   % (bucket['name'], resp.reason))
                 raise_exception(resp, 'getBucketWebsite', bucket)
@@ -1281,7 +1283,7 @@ class OBSMissingTagFilter(Filter):
                     pattern = re.compile(value)
                     self.expected_tags.append((key, pattern))
                 except re.error:
-                    self.log.info('[filters]-[obs-missing-tag-filter]: failed to compile' \
+                    self.log.info('[filters]-[obs-missing-tag-filter]: failed to compile' +
                     ' the regular exception [%s].' % value)
                     self.expected_tags.append((key, value))
             else:
@@ -1303,7 +1305,7 @@ class OBSMissingTagFilter(Filter):
         if self._is_match(expected_tags, bucket_tags, match_mode, bucket['name']):
             self.log.info('[filters]-[obs-missing-tag-filter]: The bucket '
             '[%s] missing some tags' % (bucket['name']))
-            log.info("[filters]-[obs-missing-tag-filter] filter resource " \
+            log.info("[filters]-[obs-missing-tag-filter] filter resource " +
             "with id:[%s] success." % (bucket['name']))
             return bucket
         else:
@@ -1322,7 +1324,7 @@ class OBSMissingTagFilter(Filter):
             '[%s] has not set any tag.' % (bucket['name']))
                 return set()
 
-            self.log.error('[filters]-The filter:[obs-missing-tag-filter]' \
+            self.log.error('[filters]-The filter:[obs-missing-tag-filter]' +
                 ' query bucket:[%s] bucket tags is failed. cause: %s'
                   % (bucket['name'], resp.reason))
             raise_exception(resp, 'getBucketTagging', bucket)
