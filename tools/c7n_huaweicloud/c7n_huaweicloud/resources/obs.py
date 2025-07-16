@@ -155,7 +155,7 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
         client = get_obs_client(self.manager.session_factory, bucket)
 
         if not policy['Statement']:
-            log.info('[actions]-[delete-wildcard-statements] try to delete ' + 
+            log.info('[actions]-[delete-wildcard-statements] try to delete ' +
                      'bucket resource [%s] bucket policy.' % (bucket_name))
             resp = client.deleteBucketPolicy(bucket_name)
         else:
@@ -546,7 +546,7 @@ class RemoveCrossAccountAccessConfig(HuaweiCloudBaseAction):
         bucket_name = bucket['name']
 
         if bucket.get(self.annotation_policy_key) is None:
-            log.info("[actions]-[remove-cross-account-config] bucket [%s] does "+
+            log.info("[actions]-[remove-cross-account-config] bucket [%s] does " +
             "not need update bucket policy" % bucket_name)
             return
 
@@ -1025,7 +1025,7 @@ class SecureTransportFilter(Filter):
             if self.contain_all_elements(list(s.get('Resource', [])), resource_list):
                 return True
 
-        log.info('[filters]-[support-https-request]: bucket[%s] bucket policy missing '+ 
+        log.info('[filters]-[support-https-request]: bucket[%s] bucket policy missing ' +
         'deny http request statement.' % (bucket['name']))
         return False
 
