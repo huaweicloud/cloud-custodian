@@ -55,7 +55,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.vpc")
 @resources.register('vpc')
 class Vpc(QueryResourceManager):
     class resource_type(TypeInfo):
-        service = 'vpc'
+        service = 'vpc_v2'
         enum_spec = ('list_vpcs', 'vpcs', 'marker')
         id = 'id'
 

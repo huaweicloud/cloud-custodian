@@ -179,8 +179,6 @@ interactions:
       - api-gateway
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -229,8 +227,6 @@ interactions:
       - api-gateway
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -244,4 +240,59 @@ interactions:
     status:
       code: 204
       message: NO_CONTENT
+- request:
+    body: '{"action": "filter", "limit": 1000, "offset": 0}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '48'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250716T110119Z
+    method: POST
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v2.0/ap-southeat-1/security-groups/resource_instances/action
+  response:
+    body:
+      string: '{"resources":[{"resource_name":"sg-refer-test","resource_id":"bfb76404-e29b-4003-8d44-d503e9f9a04e","resource_detail":"","tags":[]},{"resource_name":"sg-exempted-test","resource_id":"9356e003-f9b1-407c-83a1-5b2bbe730125","resource_detail":"","tags":[{"key":"VPC_EXEMPTED","value":"VPC_EXEMPTED"}]}],"total_count":2}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 16 Jul 2025 11:01:20 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1752663679050; path=/
+      - HWWAFSESID=48441761e579d0587e; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - ca2f96f31716ddd533b7251053038fab
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
 version: 1
