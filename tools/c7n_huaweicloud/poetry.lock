@@ -2,13 +2,13 @@
 
 [[package]]
 name = "certifi"
-version = "2025.7.14"
+version = "2025.6.15"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "certifi-2025.7.14-py3-none-any.whl", hash = "sha256:6b31f564a415d79ee77df69d757bb49a5bb53bd9f756cbbe24394ffd6fc1f4b2"},
-    {file = "certifi-2025.7.14.tar.gz", hash = "sha256:8ea99dbdfaaf2ba2f9bac77b9249ef62ec5218e7c2b2e903378ed5fccf765995"},
+    {file = "certifi-2025.6.15-py3-none-any.whl", hash = "sha256:2e0c7ce7cb5d8f8634ca55d2ba7e6ec2689a2fd6537d8dec1296a477a4910057"},
+    {file = "certifi-2025.6.15.tar.gz", hash = "sha256:d747aa5a8b9bbbb1bb8c22bb13e22bd1f18e9796defa16bab421f7f7a317323b"},
 ]
 
 [[package]]
@@ -187,168 +187,168 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "huaweicloudsdkantiddos"
-version = "3.1.156"
+version = "3.1.155"
 description = "AntiDDoS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkantiddos-3.1.156-py2.py3-none-any.whl", hash = "sha256:4348bfe80001f4a56da4725e08b0084f49392511f4c9c23199246258df4698f0"},
+    {file = "huaweicloudsdkantiddos-3.1.155-py2.py3-none-any.whl", hash = "sha256:7020b136cf28285b6e3961dfe536ed362b185089e7430eef947d94be61a714c4"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkaom"
-version = "3.1.156"
+version = "3.1.155"
 description = "AOM"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkaom-3.1.156-py2.py3-none-any.whl", hash = "sha256:ef6021ed311d17c4171208d1226e38630d8d45d2f1a3d7b81d77b2b2cd191519"},
+    {file = "huaweicloudsdkaom-3.1.155-py2.py3-none-any.whl", hash = "sha256:4255b3428ecf9196eb98be827ae36bf0bab271828333fd4ce16554b9f697dfb6"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkapig"
-version = "3.1.156"
+version = "3.1.155"
 description = "APIG"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkapig-3.1.156-py2.py3-none-any.whl", hash = "sha256:1e4ac86d850c2a251636154a893a5377461ac5af7662c202a2c6bbb55db31d94"},
+    {file = "huaweicloudsdkapig-3.1.155-py2.py3-none-any.whl", hash = "sha256:e42e6d5ef0a982d027e52b8db1139a97b5298a946de3d2442ff889379c07f455"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkbms"
-version = "3.1.156"
+version = "3.1.155"
 description = "BMS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkbms-3.1.156-py2.py3-none-any.whl", hash = "sha256:5ce2bf7a6d2a30896cd8617adbf10e0d86734060266229a64945778a7a247dfb"},
+    {file = "huaweicloudsdkbms-3.1.155-py2.py3-none-any.whl", hash = "sha256:d969ddd9281153320ac86407916ca841d7be5f7604827b4767b22edfdb8a637c"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkcbr"
-version = "3.1.156"
+version = "3.1.155"
 description = "CBR"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkcbr-3.1.156-py2.py3-none-any.whl", hash = "sha256:91ae2e2a3b4587de75993be481059623c9cc30d673d8d83b49eea200ee45173b"},
+    {file = "huaweicloudsdkcbr-3.1.155-py2.py3-none-any.whl", hash = "sha256:2e05796cb5ed84ab84d7949f0c93b6ec94d8490d0aeb0d180a077eab0f93d2f4"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkcc"
-version = "3.1.156"
+version = "3.1.155"
 description = "CC"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkcc-3.1.156-py2.py3-none-any.whl", hash = "sha256:cd4f363ab2edc53143a8b1a30c266b385312c26b11bceb53e9abf5c3a6f2562a"},
+    {file = "huaweicloudsdkcc-3.1.155-py2.py3-none-any.whl", hash = "sha256:e8666c6b721bc5bf82c080982786a533152d0868fea3378eb821b3ae1ab1fa59"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkcce"
-version = "3.1.156"
+version = "3.1.153"
 description = "CCE"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkcce-3.1.156-py2.py3-none-any.whl", hash = "sha256:247bc0198efe33c960c3071e980b2f3ebf775023b65fc7e3e7a9900b424744a4"},
+    {file = "huaweicloudsdkcce-3.1.153-py2.py3-none-any.whl", hash = "sha256:867ac8061fc51d5856e6200e1032af9e76a56546f23ee483d12fe93455562d5f"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.153"
 
 [[package]]
 name = "huaweicloudsdkccm"
-version = "3.1.156"
+version = "3.1.155"
 description = "CCM"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkccm-3.1.156-py2.py3-none-any.whl", hash = "sha256:13eee7a212e9d4a448c761bfac77b066a3440625bfa5d993b6ae94e6e871329a"},
+    {file = "huaweicloudsdkccm-3.1.155-py2.py3-none-any.whl", hash = "sha256:3bc691e548fca83f9c7ec336f5b807c3ebd9c43e48fd99b9353caf36d6feaf9e"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkcdn"
-version = "3.1.156"
+version = "3.1.155"
 description = "CDN"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkcdn-3.1.156-py2.py3-none-any.whl", hash = "sha256:1bd0da423f832d334f09e76dbe7e434f80a005732a9af5e716531ded6fd4a411"},
+    {file = "huaweicloudsdkcdn-3.1.155-py2.py3-none-any.whl", hash = "sha256:3c5710221d2ffadeba13c56545f84a3dd6e347058a7433dafa87751124a087b0"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkces"
-version = "3.1.156"
+version = "3.1.155"
 description = "CES"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkces-3.1.156-py2.py3-none-any.whl", hash = "sha256:d09a8260c9c769162560b76df304b79b2f67ecda8c52766063c0f2c0ae03654e"},
+    {file = "huaweicloudsdkces-3.1.155-py2.py3-none-any.whl", hash = "sha256:951f60ccad513d83d38ca4af49ec82a737f54f9d20d6bd1380da3cb02fb6f5b2"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkcoc"
-version = "3.1.156"
+version = "3.1.155"
 description = "COC"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkcoc-3.1.156-py2.py3-none-any.whl", hash = "sha256:fbbeb95d8c134b83b771b056d6698c9f87c6217a8a5c5e6e001644ae2898be21"},
+    {file = "huaweicloudsdkcoc-3.1.155-py2.py3-none-any.whl", hash = "sha256:65c52324aaa621da1c64115283aa0ddd39725c37f607949673a7b32dcaa43caa"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkconfig"
-version = "3.1.156"
+version = "3.1.155"
 description = "Config"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkconfig-3.1.156-py2.py3-none-any.whl", hash = "sha256:06756745acf6601f0966e9f745f9d622df5aee3584a951aec02feb144da1ffc3"},
+    {file = "huaweicloudsdkconfig-3.1.155-py2.py3-none-any.whl", hash = "sha256:4eb49a109d2fb67844d4a7599a39e519d74357e518f32572846abce08df8002e"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkcore"
-version = "3.1.156"
+version = "3.1.155"
 description = "HuaweiCloud SDK Python Core"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkcore-3.1.156-py2.py3-none-any.whl", hash = "sha256:dd17660453afed06137ce10a081b6c0e7a0440117610529ed42cf92cc0c7838f"},
+    {file = "huaweicloudsdkcore-3.1.155-py2.py3-none-any.whl", hash = "sha256:3067d74c518b5997d845a323267c5759b83e4aa01d9b708ce0d058e8e67b578a"},
 ]
 
 [package.dependencies]
@@ -362,55 +362,55 @@ typing-extensions = "*"
 
 [[package]]
 name = "huaweicloudsdkcts"
-version = "3.1.156"
+version = "3.1.155"
 description = "CTS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkcts-3.1.156-py2.py3-none-any.whl", hash = "sha256:4090d8aefb7a5063d8bbc082816cfced083e329b056f9cc18f504aa607ff5984"},
+    {file = "huaweicloudsdkcts-3.1.155-py2.py3-none-any.whl", hash = "sha256:09f546582583bfbc48fa3cd40e199d30e370149ae43be9d343296cc5433e8253"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkdc"
-version = "3.1.156"
+version = "3.1.155"
 description = "DC"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkdc-3.1.156-py2.py3-none-any.whl", hash = "sha256:8c93eac296f8a8af02639e7cd59c59e4eea3f1d50602d7ae53891add72508f95"},
+    {file = "huaweicloudsdkdc-3.1.155-py2.py3-none-any.whl", hash = "sha256:d9cdcf242006aad1832b244f716ded2fde48a7aa636ba1a92fb83b25bb151a34"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkdeh"
-version = "3.1.156"
+version = "3.1.155"
 description = "DeH"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkdeh-3.1.156-py2.py3-none-any.whl", hash = "sha256:5cf10c9d8dd08a30cab957227e59fd08245959945197f0233a0074ad1c0c6506"},
+    {file = "huaweicloudsdkdeh-3.1.155-py2.py3-none-any.whl", hash = "sha256:eaa0709585dfc4feb488fbc88c47efa25870c476c323d36d3a26c8f3dc0379f7"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkdns"
-version = "3.1.156"
+version = "3.1.155"
 description = "DNS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkdns-3.1.156-py2.py3-none-any.whl", hash = "sha256:c5e8fad5de0b56f81f1ac2fc7f509ea3f6bc13fe73ccc35733bee85483d5ffb0"},
+    {file = "huaweicloudsdkdns-3.1.155-py2.py3-none-any.whl", hash = "sha256:54ec41d37033faf1b5e9c90efbfe073b20cde97d47ef2b9d27f03e5c33dc72a8"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkecs"
@@ -427,367 +427,367 @@ huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkeg"
-version = "3.1.156"
+version = "3.1.155"
 description = "EG"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkeg-3.1.156-py2.py3-none-any.whl", hash = "sha256:9ae18704817e75473a43651178bb267ead4aef0f4e0536ae73a9eae4480938c6"},
+    {file = "huaweicloudsdkeg-3.1.155-py2.py3-none-any.whl", hash = "sha256:12f38952eb939add1284f8de2d6707d0f40b77002883a6067fe676c2ca6b6541"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkeip"
-version = "3.1.156"
+version = "3.1.155"
 description = "EIP"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkeip-3.1.156-py2.py3-none-any.whl", hash = "sha256:b3dab29a08fad44f9d41e2319d8c90d4cda1e905849ae7fe7bfa0e59fd98e341"},
+    {file = "huaweicloudsdkeip-3.1.155-py2.py3-none-any.whl", hash = "sha256:2b19f587be31ac77f72444fcf7622fc39c3573e868ec54f0df253f539195b576"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkelb"
-version = "3.1.156"
+version = "3.1.155"
 description = "ELB"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkelb-3.1.156-py2.py3-none-any.whl", hash = "sha256:db8899f62678d78173963e920d1eaad4628c41fcfc621fc60198bcb4b207ef37"},
+    {file = "huaweicloudsdkelb-3.1.155-py2.py3-none-any.whl", hash = "sha256:85e28566784db2ec8975da6da6618ca4444824a76eca314ee6d2f0545fda302c"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdker"
-version = "3.1.156"
+version = "3.1.155"
 description = "ER"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdker-3.1.156-py2.py3-none-any.whl", hash = "sha256:1bf6cdae23cc15cef99055f996b00bda45e5473e7b3505245892cda657975201"},
+    {file = "huaweicloudsdker-3.1.155-py2.py3-none-any.whl", hash = "sha256:30af5b5ce5e9f5eed8c29f18fae3dd9229e79792286c78e701756192e1b44d05"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkevs"
-version = "3.1.156"
+version = "3.1.155"
 description = "EVS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkevs-3.1.156-py2.py3-none-any.whl", hash = "sha256:893c00e75ac7886f226932ece628e3537983f8309d6a3d145f525103cb6f1bd0"},
+    {file = "huaweicloudsdkevs-3.1.155-py2.py3-none-any.whl", hash = "sha256:c8cff9a41719ad2243a7d8ac15483248793ddb64714146d236d457461b0f2589"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkfunctiongraph"
-version = "3.1.156"
+version = "3.1.155"
 description = "FunctionGraph"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkfunctiongraph-3.1.156-py2.py3-none-any.whl", hash = "sha256:47414425fc1ddd04df3ded2dbafc95dd9180b29d9fa8d4a36d815227759ac178"},
+    {file = "huaweicloudsdkfunctiongraph-3.1.155-py2.py3-none-any.whl", hash = "sha256:0560e6c7c53952f8e31ea6be4ca42cf7026fff62618822113e9d1a870bbfad01"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkgeip"
-version = "3.1.156"
+version = "3.1.155"
 description = "GEIP"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkgeip-3.1.156-py2.py3-none-any.whl", hash = "sha256:9dd40600a255d3c8ee7465274d15b733734853b8a706e1f1914e75dd2e95ab42"},
+    {file = "huaweicloudsdkgeip-3.1.155-py2.py3-none-any.whl", hash = "sha256:8304d02f9e1ca45ea9a3e6abe77a574e803171ed7901405977946de0d9788493"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkhss"
-version = "3.1.156"
+version = "3.1.155"
 description = "HSS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkhss-3.1.156-py2.py3-none-any.whl", hash = "sha256:16f9d7be34d962c0cc6e29935f52fef7b4b01a678171ee1e6b41fa91cc8d0cea"},
+    {file = "huaweicloudsdkhss-3.1.155-py2.py3-none-any.whl", hash = "sha256:aaef5c5814a87a3b49ab0a98d7319e386368802584abd0daca10555cefa38f4c"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkiam"
-version = "3.1.156"
+version = "3.1.155"
 description = "IAM"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkiam-3.1.156-py2.py3-none-any.whl", hash = "sha256:4709a90d37cd3b96738cbfa1353024b9431e6aec817bdec0277664c4204bff83"},
+    {file = "huaweicloudsdkiam-3.1.155-py2.py3-none-any.whl", hash = "sha256:9a01040de640940759b1dc9bf30df742506c3f1573bf756a4c08749cf4766ea6"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkims"
-version = "3.1.156"
+version = "3.1.155"
 description = "IMS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkims-3.1.156-py2.py3-none-any.whl", hash = "sha256:45b5b839a545eaea243d14f7275d91d41c65c12661191d0e3ead72ed65beb895"},
+    {file = "huaweicloudsdkims-3.1.155-py2.py3-none-any.whl", hash = "sha256:09fc1653b6f3359ec299a502a46d747c26b436e3ec8477d8bc937831ad5b4d04"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkkafka"
-version = "3.1.156"
+version = "3.1.155"
 description = "Kafka"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkkafka-3.1.156-py2.py3-none-any.whl", hash = "sha256:0fb6c3e564ecd02e51c58efe2553cdc745d70b970eed51471950c04ef2a9efbf"},
+    {file = "huaweicloudsdkkafka-3.1.155-py2.py3-none-any.whl", hash = "sha256:f20df17f5acfed7ff43e142d8376a50571f40f106ed638e986711f9ccf508dba"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkkms"
-version = "3.1.156"
+version = "3.1.155"
 description = "KMS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkkms-3.1.156-py2.py3-none-any.whl", hash = "sha256:ffcf4fc8eba8bceb6a12cfa79faa6cff809eb2c72a12a0dfe64d9d3cdd7395d8"},
+    {file = "huaweicloudsdkkms-3.1.155-py2.py3-none-any.whl", hash = "sha256:6d1dd9df7700189ad17876f2b32fa287ee3f35bbf4f6da4b5410084f5ae3f81f"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdklts"
-version = "3.1.156"
+version = "3.1.155"
 description = "LTS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdklts-3.1.156-py2.py3-none-any.whl", hash = "sha256:cc9d8799518fee847c4be70cf39c5f4c7e1b1efc8f2eae754cc0cf44a837dc4b"},
+    {file = "huaweicloudsdklts-3.1.155-py2.py3-none-any.whl", hash = "sha256:98204e486fec85dc6f47aa996be08d625c0175d80c0ea9f228437e358c727c48"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdknat"
-version = "3.1.156"
+version = "3.1.155"
 description = "NAT"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdknat-3.1.156-py2.py3-none-any.whl", hash = "sha256:591c0d86d202cf11a05f626cab329276555e2bb634f8837cf929d91f80a91de1"},
+    {file = "huaweicloudsdknat-3.1.155-py2.py3-none-any.whl", hash = "sha256:4901acb785a661d64ee865101127753af3ee7b2552e0093158ab662e272901ee"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkobs"
-version = "3.1.156"
+version = "3.1.155"
 description = "OBS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkobs-3.1.156-py2.py3-none-any.whl", hash = "sha256:5549821939fdda3c83199719bc82ea6a6891a6c64e3f60a7260cf9acf7497e8a"},
+    {file = "huaweicloudsdkobs-3.1.155-py2.py3-none-any.whl", hash = "sha256:869f1706db7616333ad22879ead60b1d7b7ba99a93d8a8b49f73de86ed054fca"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkorganizations"
-version = "3.1.156"
+version = "3.1.155"
 description = "Organizations"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkorganizations-3.1.156-py2.py3-none-any.whl", hash = "sha256:7ffb2583775a9e21c89dcb853e7cfe21d587e900877dc9eafcc066ebe08d10ee"},
+    {file = "huaweicloudsdkorganizations-3.1.155-py2.py3-none-any.whl", hash = "sha256:f9d553b720cb63ab2fc63ec1791d7f4a5b29a3191da056473f90d87cf3e5f5b7"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkram"
-version = "3.1.156"
+version = "3.1.155"
 description = "RAM"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkram-3.1.156-py2.py3-none-any.whl", hash = "sha256:3d8cb5b44d86e442cbf16f6eb1dfab41debc906254829da129be0b5d9839aa6c"},
+    {file = "huaweicloudsdkram-3.1.155-py2.py3-none-any.whl", hash = "sha256:cdb3121112c0eddd8a3aaf5698b88dcf3783cf06d99a588f9a65c6713209496d"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkrds"
-version = "3.1.156"
+version = "3.1.155"
 description = "RDS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkrds-3.1.156-py2.py3-none-any.whl", hash = "sha256:f0ec94dd49236316f3782febdd5414e5fadf61b796a5d54d2aab96e8abf09608"},
+    {file = "huaweicloudsdkrds-3.1.155-py2.py3-none-any.whl", hash = "sha256:f1caab33334b897b3e03412d8713bc7a1922ec353d4403bf8706032714ea28e6"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkrocketmq"
-version = "3.1.156"
+version = "3.1.155"
 description = "RocketMQ"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkrocketmq-3.1.156-py2.py3-none-any.whl", hash = "sha256:d0bc049be8518922b1fc37daa5597843745c3edcc7170c8ee818521a084e9541"},
+    {file = "huaweicloudsdkrocketmq-3.1.155-py2.py3-none-any.whl", hash = "sha256:382a2e9547eed1118a7ed38a660e948e2687d705cbe1fd3eb057846a1c01ed5b"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkscm"
-version = "3.1.156"
+version = "3.1.155"
 description = "SCM"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkscm-3.1.156-py2.py3-none-any.whl", hash = "sha256:58efd20850cb5a1e477e2783f80baae1b7192038a7b7a0afc60cc7ee7680815d"},
+    {file = "huaweicloudsdkscm-3.1.155-py2.py3-none-any.whl", hash = "sha256:3341ea79cea33563b85f05972c7c5ab11556bf5fcd3f3eb27e2a6f0051e49b68"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdksecmaster"
-version = "3.1.156"
+version = "3.1.155"
 description = "SecMaster"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdksecmaster-3.1.156-py2.py3-none-any.whl", hash = "sha256:0dc27a55e10a599a0d1f95f42e7336838441b5d56b09f34214c5533b7476d911"},
+    {file = "huaweicloudsdksecmaster-3.1.155-py2.py3-none-any.whl", hash = "sha256:3ed168f1398dc6fa1253c8d80a9419f4963c28841e63bfb25e47efa03b8174ff"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdksfsturbo"
-version = "3.1.156"
+version = "3.1.155"
 description = "SFSTurbo"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdksfsturbo-3.1.156-py2.py3-none-any.whl", hash = "sha256:aed87fd3ea37b2406cf626c11fab10a7e08a4907d8dfb9aac4066b4c3a50632d"},
+    {file = "huaweicloudsdksfsturbo-3.1.155-py2.py3-none-any.whl", hash = "sha256:cf111071eb93c862369894c1754cd9998fc81f77b609eef2156107ea4e01fc2f"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdksmn"
-version = "3.1.156"
+version = "3.1.155"
 description = "SMN"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdksmn-3.1.156-py2.py3-none-any.whl", hash = "sha256:1f54bf64ffe49c8c86281b5cb476f94d0b0ba410207ec09854088b9e2065b393"},
+    {file = "huaweicloudsdksmn-3.1.155-py2.py3-none-any.whl", hash = "sha256:4f3218c700866c1f3d8c66b5d69bb04e93418325031ca0756025a9d21993f4c3"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkswr"
-version = "3.1.156"
+version = "3.1.155"
 description = "SWR"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkswr-3.1.156-py2.py3-none-any.whl", hash = "sha256:0a51014e4626d90ca1698d7af4af8ba3132fc69e86e9e6bdb7a80ca1cc0606d8"},
+    {file = "huaweicloudsdkswr-3.1.155-py2.py3-none-any.whl", hash = "sha256:f449769f282ee7a945229f2147a8c11ac006b38b29e21e477ca1f2019d312b28"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdktms"
-version = "3.1.156"
+version = "3.1.155"
 description = "TMS"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdktms-3.1.156-py2.py3-none-any.whl", hash = "sha256:8c823b94a414b334cfe867e9c6cc3cb0dd264f4e6b969774011481a2770e2a89"},
+    {file = "huaweicloudsdktms-3.1.155-py2.py3-none-any.whl", hash = "sha256:096439210d39f281f79bd3c825a4eb21a745ed7e7fd9d76d0c5c8066d1aae8a7"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkvpc"
-version = "3.1.156"
+version = "3.1.155"
 description = "VPC"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkvpc-3.1.156-py2.py3-none-any.whl", hash = "sha256:d646b592d11864ad89fa58a4856ac9145ce31500993cf48786327ef18b801ff7"},
+    {file = "huaweicloudsdkvpc-3.1.155-py2.py3-none-any.whl", hash = "sha256:d07fb3c8c2a358ca915af0a3cca5d0f082e5070a0d8116c7e4e83ed68e7f3188"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkvpcep"
-version = "3.1.156"
+version = "3.1.155"
 description = "VPCEP"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkvpcep-3.1.156-py2.py3-none-any.whl", hash = "sha256:e265ab5543f12b5a164a2a3bf780508f9bff59ac741129b365a40a625f1a99ce"},
+    {file = "huaweicloudsdkvpcep-3.1.155-py2.py3-none-any.whl", hash = "sha256:211a79c27bcd7adedd1674969656e5072414f06d6942d027f538712b13db0845"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "huaweicloudsdkworkspace"
-version = "3.1.156"
+version = "3.1.155"
 description = "Workspace"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 files = [
-    {file = "huaweicloudsdkworkspace-3.1.156-py2.py3-none-any.whl", hash = "sha256:ef5f9a66734b101f19af042523ffbc0117f199a6ab51be7ddbcdb2f62b1ffddd"},
+    {file = "huaweicloudsdkworkspace-3.1.155-py2.py3-none-any.whl", hash = "sha256:281b72b27ff870736e4da62bc5b986b00d36012b180436eb5e519c3792a3f76f"},
 ]
 
 [package.dependencies]
-huaweicloudsdkcore = ">=3.1.156"
+huaweicloudsdkcore = ">=3.1.155"
 
 [[package]]
 name = "idna"
@@ -1375,4 +1375,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "28add4c40970b16506f4f8958dea576bb3abcee69bbf8094373b553564e83e9d"
+content-hash = "f376158dd89ef8463303ef0e244c4a47547b159fae0a814c503c0e7b670dece1"
