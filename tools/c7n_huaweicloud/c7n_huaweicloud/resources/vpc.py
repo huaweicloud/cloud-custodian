@@ -1136,6 +1136,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         # {sg_id : deny_rules}
         deny_rule_map = {}
         extend_trust_ip_obj = {}
+        extend_trust_sg_obj = {}
         if risk_ports_obj:
             if trust_ip_obj:
                 extend_trust_ip_obj = self._extend_ip_map(trust_ip_obj)
@@ -1448,6 +1449,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                             new_ports.extend(ports)
                             new_ports = list(set(new_ports))
                             new_value[protocol] = new_ports
+                        else:
+                            new_value[protocol] = ports
                     extended_ip_obj[int_ip] = new_value
                 else:
                     extended_ip_obj[int_ip] = port_extended_value
