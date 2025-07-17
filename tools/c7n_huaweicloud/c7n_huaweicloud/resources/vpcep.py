@@ -302,7 +302,7 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
         if not statement:
             return False
         for item in statement:
-            principal = item.get('Principal', '').strip()
+            principal = item.get('Principal', '')
             if not principal:
                 return False
             if principal != '*':
