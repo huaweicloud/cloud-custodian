@@ -1188,6 +1188,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 # trust ip
                 rule_ip = rule.get('remote_ip_prefix')
                 rule_ag_id = rule.get('remote_address_group_id')
+                rule_remote_sg_id = rule.get('remote_group_id')
                 if rule_ip and rule_ip != '0.0.0.0/0':
                     # rule_ip is a specific ip
                     if rule_ip.endswith('/32'):
@@ -1257,6 +1258,46 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                                                        ip_int, risk_rule_ports):
                                 trust_all_ips = False
                                 break
+                    if trust_all_ips:
+                        risk_rule_ports = []
+                elif rule_remote_sg_id:
+                    sg_ids = [rule_remote_sg_id]
+                    client = self.manager.get_resource_manager('vpc-port').get_client()
+                    try:
+                        request = ListPortsRequest(security_groups=sg_ids)
+                        response = client.list_ports(request)
+                        log.debug("[filters]-[rule-allow-risk-ports] "
+                                  "query the service:[VPC:list_ports] succeed.")
+                    except exceptions.ServiceResponseException as ex:
+                        log.error("[filters]-[rule-allow-risk-ports]-"
+                                  "The resource:[vpc-security-group-rule] "
+                                  "filter unattached security groups failed, "
+                                  "cause: query ports associated to "
+                                  f"the security group [{rule_remote_sg_id}] failed, "
+                                  f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                        raise ex
+                    ports_object = response.ports
+                    ports = [p.to_dict() for p in ports_object]
+                    port_ips = []
+                    # get ip of ports
+                    for port in ports:
+                        fixed_ips = port.get("fixed_ips", [])
+                        if len(fixed_ips) == 1:
+                            port_ips.append(fixed_ips[0].get("ip_address"))
+                        elif len(fixed_ips) == 2:
+                            for fixed_ip in fixed_ips:
+                                ip_address = fixed_ip.get("ip_address")
+                                if (':' not in ip_address and "IPv4" == ethertype) or \
+                                    (':' in ip_address and "IPv6" == ethertype):
+                                    port_ips.append(ip_address)
+                    trust_all_ips = True
+                    # check port ips trust
+                    for ip in port_ips:
+                        ip_int = int(netaddr.IPAddress(ip))
+                        if self._handle_trust_port(extend_trust_ip_obj, protocol,
+                                                   ip_int, risk_rule_ports):
+                            trust_all_ips = False
+                            break
                     if trust_all_ips:
                         risk_rule_ports = []
 
