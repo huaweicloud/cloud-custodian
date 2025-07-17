@@ -292,13 +292,9 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
         for resource in resources:
             if not self._check_policy_document(resource.get('policy_document', {})):
                 result.append(resource)
-        if not result:
-            ids = [r.get('id') for r in result]
-            log.info(f"[filters]-[policy-principal-wildcards]-The resources:[vpcep-ep] "
-                     f"with ids:{ids} policy are invalid.")
-        else:
-            log.info("[filters]-[policy-principal-wildcards]-The resources:[vpcep-ep] "
-                     "all policy are valid.")
+        ids = [r.get('id') for r in result]
+        log.info(f"[filters]-[policy-principal-wildcards]-The resources:[vpcep-ep] "
+                 f"invalid policy list:{ids}")
         return result
 
     def _check_policy_document(self, policy_document):
