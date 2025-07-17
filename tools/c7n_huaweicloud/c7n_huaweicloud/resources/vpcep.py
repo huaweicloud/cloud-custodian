@@ -271,7 +271,7 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
 class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
     """Check if endpoint policy has explicitly principal or use '*' with conditions.
 
-    Filters ep us principal:'*' without conditions
+    Filters ep use principal:'*' without conditions
 
     :example:
 
