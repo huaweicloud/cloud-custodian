@@ -378,7 +378,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
 
     def process(self, resources, event=None):
         if not self.data.get('org_accounts_obs_url'):
-            log.error("[filters]-The filter[is-not-default-org-policy] " \
+            log.error("[filters]-The filter[is-not-default-org-policy] "
             "org_accounts_obs_url is a required parameter and cannot be empty")
             return []
         if not resources:
@@ -393,7 +393,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
             if res.get('service_type', '') not in ['gateway', 'cvs_gateway']:
                 continue
 
-            if self._check_policy(res.get('id'), 
+            if self._check_policy(res.get('id'),
                                   res.get('policy_statement', []), new_accounts):
                 continue
             results.append(res)
@@ -480,8 +480,12 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         try:
             resp = client.update_endpoint_policy(request)
-            log.info(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
-                 f"with id:[{ep_id}] updating the policy has succeeded.")
+            if resp.status == 200:
+                log.info(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
+                         f"with id:[{ep_id}] updating the policy has succeeded.")
+            else:
+                log.error(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
+                          f"with id:[{ep_id}] update policy is failed.cause:{resp}")
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
                       f"with id:[{ep_id}] update policy is failed.cause:{e}")
