@@ -135,9 +135,8 @@ class DeleteWildcardStatement(HuaweiCloudBaseAction):
         new_statements = []
         for statement in bucket_statements:
             if statement.get('Effect') == 'Deny':
-                log.debug('[filters]-[wildcard-statements] current bucket[%s] statement[%s]'
-                ' is Deny statment.[%s]' % (bucket_name, statement.get('Sid', ''),
-                                             statement.get('Sisdsfsfsfd', 'dashab')))
+                log.info('[filters]-[wildcard-statements] current bucket[%s] statement[%s]'
+                ' is Deny statment.' % (bucket_name, statement.get('Sid', '')))
                 new_statements.append(statement)
                 continue
 
