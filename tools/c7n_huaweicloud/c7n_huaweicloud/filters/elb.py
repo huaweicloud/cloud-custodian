@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from functools import wraps
 import logging
 
 from dateutil.parser import parse
@@ -16,6 +17,25 @@ from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.filters.transfer import LtsTransferLogGroupStreamFilter
 
 log = logging.getLogger("custodian.huaweicloud.resources.elb")
+
+
+def wrap_filter_log(resource_name, raise_exception=True):
+    """ Decorator to wrap filter methods with logging for ELB resources."""
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except exceptions.SdkException as e:
+                log.error(
+                    f"[filters]-[{args[0].data.get('type', 'UnknownFilter')}] "
+                    f"Failed to filter resource[{resource_name}]. Exception: {e}"
+                )
+                if raise_exception:
+                    raise
+        return wrapper
+    return decorator
 
 
 class LoadbalancerBackendServerCountFilter(Filter):
@@ -40,6 +60,7 @@ class LoadbalancerBackendServerCountFilter(Filter):
         count={"type": "integer", "minimum": 0, "default": 0},
     )
 
+    @wrap_filter_log("huaweicloud.elb-loadbalancer")
     def __call__(self, resource):
         count = self.data.get("count")
         op_name = self.data.get("op")
@@ -52,7 +73,10 @@ class LoadbalancerBackendServerCountFilter(Filter):
             enterprise_project_id=["all_granted_eps"],
         )
         members_response = client.list_all_members(request)
-        check_response(members_response)
+        log.debug(
+            f"[filter]-[{self.data.get('type', 'UnknownFilter')}] "
+            "Query the service:[ELB:list_all_members] is success."
+        )
         backend_count = len(members_response.members)
         return op(backend_count, count)
 
@@ -166,6 +190,7 @@ class LoadbalancerIsLTSLogTransferFilter(Filter):
 
     schema = type_schema("is-lts-log-transfer", rinherit=LtsTransferLogGroupStreamFilter.schema)
 
+    @wrap_filter_log("huaweicloud.elb-loadbalancer")
     def process(self, resources, event=None):
         if len(resources) == 0:
             return resources
@@ -193,10 +218,11 @@ class LoadbalancerIsLTSLogTransferFilter(Filter):
         # get all log transfer
         lts_client = local_session(self.manager.session_factory).client("lts-transfer")
         lts_request = ListTransfersRequest()
-
         lts_response = lts_client.list_transfers(lts_request)
-        check_response(lts_response, service_name="LTS")
-
+        log.debug(
+            f"[filter]-[{self.data.get('type', 'UnknownFilter')}] "
+            "Query the service:[LTS:list_transfers] is success."
+        )
         log_transfers = lts_response.log_transfers
         log_transfer_stream_ids = []
         for log_transfer in log_transfers:
@@ -228,6 +254,7 @@ class LoadbalancerIsNotLTSLogTransferFilter(LoadbalancerIsLTSLogTransferFilter):
         "is-not-lts-log-transfer", rinherit=LoadbalancerIsLTSLogTransferFilter.schema
     )
 
+    @wrap_filter_log("huaweicloud.elb-loadbalancer")
     def process(self, resources, event=None):
         transfer_resources = super().process(resources, event)
         diff = [resource for resource in resources if resource not in transfer_resources]
@@ -260,6 +287,7 @@ class ListenerRedirectListenerFilter(Filter):
         port={"type": "number", "minimum": 0},
     )
 
+    @wrap_filter_log("huaweicloud.elb-listener")
     def __call__(self, resource):
         if resource["protocol"] != "HTTP":
             # This filter only applies to HTTP listeners
@@ -277,15 +305,20 @@ class ListenerRedirectListenerFilter(Filter):
             redirect_listener_id=[id] if id else None,
         )
         response = client.list_l7_policies(request)
-        check_response(response)
-
+        log.debug(
+            f"[filter]-[{self.data.get('type', 'UnknownFilter')}] "
+            "Query the service:[ELB:list_l7_policies] is success."
+        )
         for policy in response.l7policies:
             if policy.redirect_listener_id is None:
                 continue
             # Get the listener information for the redirect listener
             request = ShowListenerRequest(listener_id=policy.redirect_listener_id)
             response = client.show_listener(request)
-            check_response(response)
+            log.debug(
+                f"[filter]-[{self.data.get('type', 'UnknownFilter')}] "
+                "query the service:[ELB:show_listener] is success."
+            )
 
             listener = response.listener
             if (
@@ -367,24 +400,3 @@ class ELBAgeFilter(AgeFilter):
 
     def get_resource_date(self, i):
         return parse(i.get(self.date_attribute, "2000-01-01T01:01:01.000Z"))
-
-
-def check_response(response, service_name="ELB", params=None):
-    if response is None:
-        log.error(f"Failed to get response from {service_name} service.")
-        if params:
-            log.error(f"Parameters: {params}")
-        raise exceptions.SdkException(
-            f"Failed to get response from {service_name} service."
-        )
-    if response.status_code != 200 and response.status_code != 201 and response.status_code != 204:
-        log.error(
-            f"Response failed from {service_name} service: {response.status_code}, "
-            f"{response.request_id}, {response.error_code}, {response.error_msg}"
-        )
-        if params:
-            log.error(f"Parameters: {params}")
-        raise exceptions.ServiceResponseException(
-            f"Get response from {service_name} service failed: {response.error_msg}. ",
-            response.error_code
-        )
