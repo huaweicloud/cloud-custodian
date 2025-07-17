@@ -1451,10 +1451,10 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 if ip_start > ip_end:
                     log.error("[filters]-[rule-allow-risk-ports] "
                               "Read trust ip map failed, "
-                              f"cause: the ip range:[{ip}] is invalid.")
+                              f"cause: the ip range:[{key}] is invalid.")
                     raise PolicyExecutionError("Read trust ip map failed, "
                                                "error message:["
-                                               f"The ip range '{ip}' is invalid].")
+                                               f"The ip range '{key}' is invalid].")
                 int_ips.extend([i for i in range(ip_start, ip_end + 1)])
             else:
                 int_ips.append(int(netaddr.IPAddress(key)))
