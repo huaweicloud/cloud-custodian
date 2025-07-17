@@ -1155,7 +1155,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 port_list = []
                 if ports:
                     ports = ports.split(',')
-                    port_list = self._extend_ports(ports)
+                    port_list = self._extend_ports(ports, valid_check=False)
                     risk_rule_ports = [p for p in port_list if p in risk_ports]
                 else:
                     risk_rule_ports = risk_ports
@@ -1176,7 +1176,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         if not deny_ports:
                             risk_rule_ports = []
                             break
-                        deny_ports = self._extend_ports(deny_ports.split(','))
+                        deny_ports = self._extend_ports(deny_ports.split(','), valid_check=False)
                         risk_rule_ports = [p for p in risk_rule_ports if p not in deny_ports]
                 # trust sg
                 risk_rule_ports = self._handle_trust_port(extend_trust_sg_obj,
@@ -1385,7 +1385,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 ret_rules.append(r)
         return ret_rules
 
-    def _extend_ports(self, req_port_list):
+    def _extend_ports(self, req_port_list, valid_check=True):
         if not req_port_list:
             return []
         int_port_list = []
@@ -1399,7 +1399,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 elif len(port_range) == 2:
                     start = int(port_range[0])
                     end = int(port_range[1])
-                    if start > end:
+                    if start > end and valid_check:
                         log.error("[filters]-[rule-allow-risk-ports] "
                                   "Extend port failed, "
                                   f"cause: the port range '{item}' is invalid.")
@@ -1409,13 +1409,14 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     ports = [i for i in range(start, end + 1)]
                     int_port_list.extend(ports)
             else:
-                log.error("[filters]-[rule-allow-risk-ports] "
-                          "Extend port failed, "
-                          f"cause: the port config '{item}' is invalid.")
-                raise PolicyExecutionError("Extend port failed, "
-                                           "error message:[The port config "
-                                           f"'{item}' is invalid, should be "
-                                           "an integer or a string].")
+                if valid_check:
+                    log.error("[filters]-[rule-allow-risk-ports] "
+                              "Extend port failed, "
+                              f"cause: the port config '{item}' is invalid.")
+                    raise PolicyExecutionError("Extend port failed, "
+                                               "error message:[The port config "
+                                               f"'{item}' is invalid, should be "
+                                               "an integer or a string].")
         return list(set(int_port_list))
 
     def _extend_ip_map(self, ip_obj):
