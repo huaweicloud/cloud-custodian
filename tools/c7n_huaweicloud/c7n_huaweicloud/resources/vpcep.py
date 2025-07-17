@@ -265,3 +265,46 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
                 })
 
         return results
+
+
+@VpcEndpoint.filter_registry.register('policy-principal-wildcards')
+class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
+    """Check if endpoint policy has explicitly principal or use '*' with conditions.
+
+    Filters ep us principal:'*' without conditions
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: policy-principal-wildcards
+            resource: huaweicloud.vpcep-ep
+            filters:
+              - type: policy-principal-wildcards
+    """
+    schema = type_schema(
+        'policy-principal-wildcards',
+    )
+
+    def process(self, resources, event=None):
+        result = []
+        for resource in resources:
+            if not self._check_policy_document(resource.get('policy_document', {})):
+                result.append(resource)
+        ids = [r.get('id') for r in result]
+        log.info(f"[filters]-[policy-principal-wildcards]-The resources:[vpcep-ep] with ids:[{ids}] policy is invalid.")
+        return result
+
+    def _check_policy_document(self, policy_document):
+        statement = policy_document.get('Statement')
+        if not statement:
+            return False
+        principal = statement.get('Principal', '').strip()
+        if not principal:
+            return False
+        if principal != '*':
+            return True
+        if statement.get('Condition'):
+            return True
+        return False
