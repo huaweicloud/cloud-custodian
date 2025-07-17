@@ -481,7 +481,7 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         try:
             resp = client.update_endpoint_policy(request)
             log.info(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
-                 f"with id:[{ep_id}] updating the policy has successed.")
+                 f"with id:[{ep_id}] updating the policy has succeeded.")
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
                       f"with id:[{ep_id}] update policy is failed.cause:{e}")
