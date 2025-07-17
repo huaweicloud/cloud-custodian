@@ -4,6 +4,8 @@
 import json
 import logging
 
+from requests.exceptions import HTTPError
+
 from c7n.utils import type_schema, local_session
 from c7n.filters import Filter
 from c7n_huaweicloud.provider import resources
@@ -316,12 +318,12 @@ class VpcEndpointUtils():
             resp = obs_client.getObject(bucketName=obs_bucket_name,
                                         objectKey=obs_file,
                                         loadStreamInMemory=True)
-            if resp.status < 300:
-                content = json.loads(resp.body.buffer)
-                return content
+            if resp.status == 200:
+                return json.loads(resp.body.buffer)
             else:
-                log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
-                return {}
+                log.error(f"get obs object from {obs_url} failed:"
+                          f"{resp.errorCode}, {resp.errorMessage}")
+                raise HTTPError(resp.status, resp.body)
         except exceptions.ClientRequestException as e:
             log.error(f'get obs object from {obs_url} error, '
                       f'request id:[{e.request_id}], '
@@ -376,7 +378,8 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
 
     def process(self, resources, event=None):
         if not self.data.get('org_accounts_obs_url'):
-            self.log.error("org_accounts_obs_url is a required parameter and cannot be empty")
+            log.error("[filters]-The filter[is-not-default-org-policy] " \
+            "org_accounts_obs_url is a required parameter and cannot be empty")
             return []
         if not resources:
             return []
@@ -390,14 +393,13 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
             if res.get('service_type', '') not in ['gateway', 'cvs_gateway']:
                 continue
 
-            if self._check_policy(res.get('policy_statement', []), new_accounts):
+            if self._check_policy(res.get('id'), 
+                                  res.get('policy_statement', []), new_accounts):
                 continue
-            log.info(f"ep {res.get('id')} policy is changed, "
-                     f"current: {res.get('policy_statement')}, expect: {new_accounts}")
             results.append(res)
         return results
 
-    def _check_policy(self, policy_statement, new_accounts):
+    def _check_policy(self, ep_id, policy_statement, new_accounts):
         if not policy_statement:
             return False
         if len(policy_statement) != 1:
@@ -410,7 +412,13 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
 
         current_accounts.sort()
         new_accounts.sort()
-        return current_accounts == new_accounts
+        result = current_accounts == new_accounts
+        if not result:
+            log.info(f"[filters]-[is-not-default-org-policy]-"
+                     f"The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] policy account is invalid,"
+                     f"current:[{current_accounts}], expect:[{new_accounts}]")
+        return result
 
 
 @VpcEndpoint.action_registry.register('update-default-org-policy')
@@ -453,7 +461,8 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
             return
 
         ep_id = resource.get("id", "")
-        log.info(f"endpoint {ep_id} policy is invalid, update it.")
+        log.info(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
+                 f"with id:[{ep_id}] policy is invalid.")
         self._update_policy(ep_id, new_accounts)
 
     def perform_action(self, resource):
@@ -466,16 +475,14 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
         body = UpdateEndpointPolicyRequestBody(policy_statement=[policy_statement])
         request.body = body
-        log.info(f"update policy request body: {request}")
+        log.debug(f"[actions]-update-default-org-policy update policy request body: {request}")
 
         client = self.manager.get_client()
         try:
             resp = client.update_endpoint_policy(request)
-            log.debug(f"update policy response: {resp}")
+            log.info(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
+                 f"with id:[{ep_id}] update policy is success.")
         except exceptions.ClientRequestException as e:
-            log.error(f'update {ep_id} policy error, '
-                      f'request id:[{e.request_id}], '
-                      f'status code:[{e.status_code}], '
-                      f'error code:[{e.error_code}], '
-                      f'error message:[{e.error_msg}].')
+            log.error(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
+                      f"with id:[{ep_id}] update policy is failed.cause:{e}")
             raise e
