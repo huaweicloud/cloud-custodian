@@ -363,7 +363,7 @@ class SecurityGroupRule(QueryResourceManager):
                 break
 
             offset += limit
-            if not responseTag.total_count or offset >= len(responseTag.resources):
+            if not responseTag.total_count or limit > len(responseTag.resources):
                 break
 
         resource_ids_with_tag = resourceTagDict.keys()
