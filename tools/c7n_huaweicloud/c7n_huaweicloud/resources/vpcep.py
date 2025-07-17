@@ -43,7 +43,7 @@ class VpcEndpoint(QueryResourceManager):
     def augment(self, resources):
         if not resources:
             # Return a fake resource
-            return [{"fake-resource": True}]
+            return [{"fake-resource": True, "id": "fake-id"}]
         return resources
 
 
@@ -129,7 +129,7 @@ class VpcEndpointServiceAndVpcFilter(Filter):
         if not matching_endpoints:
             self.log.info(
                 f"No endpoints found with service name {endpoint_service_name}")
-            return [{"endpoint_service_name": endpoint_service_name}]
+            return [{"endpoint_service_name": endpoint_service_name, "id": "fake-id"}]
 
         # If vpc_ids not provided, return empty list (no need to check VPCs)
         if not vpc_ids:
@@ -149,7 +149,8 @@ class VpcEndpointServiceAndVpcFilter(Filter):
                 (f"Missing VPC IDs found in service {endpoint_service_name}: "
                  f"{', '.join(missing_vpc_ids)}")
             )
-            return [{"endpoint_service_name": endpoint_service_name, "vpc_ids": missing_vpc_ids}]
+            return [{"endpoint_service_name": endpoint_service_name, "vpc_ids": missing_vpc_ids,
+                     "id": "fake-id"}]
 
         # If all vpc_ids exist, return empty list (no issues found)
         return []
