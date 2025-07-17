@@ -149,7 +149,7 @@ class VpcEndpointServiceAndVpcFilter(Filter):
                 (f"Missing VPC IDs found in service {endpoint_service_name}: "
                  f"{', '.join(missing_vpc_ids)}")
             )
-            return [{"endpoint_service_name": endpoint_service_name, "vpc_ids": missing_vpc_ids, 
+            return [{"endpoint_service_name": endpoint_service_name, "vpc_ids": missing_vpc_ids,
                      "id": "fake-id"}]
 
         # If all vpc_ids exist, return empty list (no issues found)
