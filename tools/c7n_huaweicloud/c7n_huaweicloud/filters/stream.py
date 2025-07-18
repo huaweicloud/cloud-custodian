@@ -23,7 +23,6 @@ class LtsStreamStorageEnabledFilter(Filter):
         request = ListLogGroupsRequest()
         stream_request = ListLogStreamRequest()
         response = client.list_log_groups(request)
-        should_break = False
         for group in response.log_groups:
             if group.log_group_name.startswith("functiongraph.log.group"):
                 continue
@@ -40,17 +39,13 @@ class LtsStreamStorageEnabledFilter(Filter):
                         streamDict["id"] = stream.log_stream_id
                         streamDict["tags"] = stream.tag
                         streams.append(streamDict)
-                        should_break = True
-                        break
             except Exception as e:
                 log.error("[query-storage-enabled-streams]- [query-streams] The resource:"
                           "[lts-stream] find stroage-enabled streams is failed."
                           " cause: {}".format(e))
                 raise
-            if should_break:
-                break
         log.info("[event/period]-The filtered resources has [{}]"
-                 "in total. ".format(str(len(streams))))
+                 " in total. ".format(str(len(streams))))
         return streams
 
 
