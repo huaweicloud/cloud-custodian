@@ -15,7 +15,8 @@ log = logging.getLogger("custodian.huaweicloud.filters.stream")
 class LtsStreamStorageEnabledFilter(Filter):
     schema = type_schema(
         'streams-storage-enabled'
-    ) 
+    )
+
     def process(self, resources, event=None):
         log.info("[event/period]-The filtered resources has [{}]"
                  " in total. ".format(str(len(resources))))
