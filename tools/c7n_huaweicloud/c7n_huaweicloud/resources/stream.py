@@ -37,14 +37,19 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         time.sleep(0.22)
-        client = self.manager.get_client()
-        request = UpdateLogStreamRequest()
-        request.log_group_id = resource["log_group_id"]
-        request.log_stream_id = resource["log_stream_id"]
-        request.body = UpdateLogStreamParams(
-            whether_log_storage=False
-        )
-        log.info("[actions]-[disable-stream-storage]: The resource:[stream] with"
-                 "id:[{}] modify storage is success".format(resource["log_stream_id"]))
-        response = client.update_log_stream(request)
-        return response
+        try:
+            client = self.manager.get_client()
+            request = UpdateLogStreamRequest()
+            request.log_group_id = resource["log_group_id"]
+            request.log_stream_id = resource["log_stream_id"]
+            request.body = UpdateLogStreamParams(
+                whether_log_storage=False
+            )
+            log.info("[actions]-[disable-stream-storage]: The resource:[stream] with"
+                     "id:[{}] modify storage is success".format(resource["log_stream_id"]))
+            response = client.update_log_stream(request)
+            return response
+        except Exception as e:
+            log.error("[actions]-[disable-stream-storage]-The resource:[stream] with id:"
+                      "[{}] modify sotrage failed. cause: {}".format(e))
+            raise

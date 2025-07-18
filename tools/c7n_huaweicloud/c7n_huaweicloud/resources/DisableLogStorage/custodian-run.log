@@ -1,0 +1,115 @@
+2025-07-18 11:26:36,173 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 11:26:41,234 - custodian.huaweicloud.filters.stream - INFO - [event/period]-The filtered resources has [29]        in total. 
+2025-07-18 11:26:41,236 - custodian.resources.stream - DEBUG - Filtered from 29 to 1 stream
+2025-07-18 11:26:41,237 - custodian.policy - INFO - policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 count:1 time:5.06
+2025-07-18 11:26:41,458 - custodian.huaweicloud.resources.lts-stream - INFO - [actions]-[disable-stream-storage]: The resource:[stream] withid:[f9549aa3-1f8c-4659-8fe9-50e817d0e1ff] modify storage is success
+2025-07-18 11:26:41,647 - custodian.policy - INFO - policy:DisableLogStorage action:ltsdisablestreamstorage resources:1 execution_time:0.41
+2025-07-18 11:26:41,652 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:disablelogstorage restype:huaweicloud.lts-stream scope:policy
+2025-07-18 11:32:06,409 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 11:32:08,680 - custodian.huaweicloud.filters.stream - INFO - [event/period]-The filtered resources has [1]in total. 
+2025-07-18 11:32:08,684 - custodian.resources.stream - DEBUG - Filtered from 29 to 1 stream
+2025-07-18 11:32:08,685 - custodian.policy - INFO - policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 count:1 time:2.28
+2025-07-18 11:32:08,907 - custodian.huaweicloud.resources.lts-stream - INFO - [actions]-[disable-stream-storage]: The resource:[stream] withid:[64357994-0e65-49e2-b075-0848abdfb765] modify storage is success
+2025-07-18 11:32:09,048 - custodian.policy - INFO - policy:DisableLogStorage action:ltsdisablestreamstorage resources:1 execution_time:0.36
+2025-07-18 11:32:09,052 - custodian.output - DEBUG - metric:ResourceCount Count:1 policy:disablelogstorage restype:huaweicloud.lts-stream scope:policy
+2025-07-18 11:35:27,110 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 11:35:35,444 - custodian.huaweicloud.filters.stream - INFO - [event/period]-The filtered resources has [0] in total. 
+2025-07-18 11:35:35,446 - custodian.resources.stream - DEBUG - Filtered from 29 to 0 stream
+2025-07-18 11:35:35,447 - custodian.policy - INFO - policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 count:0 time:8.33
+2025-07-18 11:35:35,448 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:disablelogstorage restype:huaweicloud.lts-stream scope:policy
+2025-07-18 11:38:29,128 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 11:38:37,390 - custodian.huaweicloud.filters.stream - INFO - [event/period]-The filtered resources has [29]in total. 
+2025-07-18 11:38:37,391 - custodian.resources.stream - DEBUG - Filtered from 29 to 2 stream
+2025-07-18 11:38:37,393 - custodian.policy - INFO - policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 count:2 time:8.26
+2025-07-18 11:38:37,615 - custodian.huaweicloud.resources.lts-stream - INFO - [actions]-[disable-stream-storage]: The resource:[stream] withid:[f9549aa3-1f8c-4659-8fe9-50e817d0e1ff] modify storage is success
+2025-07-18 11:38:38,190 - custodian.huaweicloud.resources.lts-stream - INFO - [actions]-[disable-stream-storage]: The resource:[stream] withid:[64357994-0e65-49e2-b075-0848abdfb765] modify storage is success
+2025-07-18 11:38:38,337 - custodian.policy - INFO - policy:DisableLogStorage action:ltsdisablestreamstorage resources:2 execution_time:0.94
+2025-07-18 11:38:38,341 - custodian.output - DEBUG - metric:ResourceCount Count:2 policy:disablelogstorage restype:huaweicloud.lts-stream scope:policy
+2025-07-18 11:40:26,481 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 11:40:34,873 - custodian.huaweicloud.filters.stream - INFO - [event/period]-The filtered resources has [0] in total. 
+2025-07-18 11:40:34,876 - custodian.resources.stream - DEBUG - Filtered from 29 to 0 stream
+2025-07-18 11:40:34,879 - custodian.policy - INFO - policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 count:0 time:8.40
+2025-07-18 11:40:34,881 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:disablelogstorage restype:huaweicloud.lts-stream scope:policy
+2025-07-18 11:41:01,918 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 11:41:10,482 - custodian.huaweicloud.filters.stream - INFO - [event/period]-The filtered resources has [2] in total. 
+2025-07-18 11:41:10,484 - custodian.resources.stream - DEBUG - Filtered from 29 to 2 stream
+2025-07-18 11:41:10,485 - custodian.policy - INFO - policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 count:2 time:8.56
+2025-07-18 11:41:10,707 - custodian.huaweicloud.resources.lts-stream - INFO - [actions]-[disable-stream-storage]: The resource:[stream] withid:[f9549aa3-1f8c-4659-8fe9-50e817d0e1ff] modify storage is success
+2025-07-18 11:41:11,054 - custodian.huaweicloud.resources.lts-stream - INFO - [actions]-[disable-stream-storage]: The resource:[stream] withid:[64357994-0e65-49e2-b075-0848abdfb765] modify storage is success
+2025-07-18 11:41:11,288 - custodian.policy - INFO - policy:DisableLogStorage action:ltsdisablestreamstorage resources:2 execution_time:0.80
+2025-07-18 11:41:11,291 - custodian.output - DEBUG - metric:ResourceCount Count:2 policy:disablelogstorage restype:huaweicloud.lts-stream scope:policy
+2025-07-18 14:24:06,827 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 14:24:15,180 - custodian.huaweicloud.filters.stream - INFO - [event/period]-The filtered resources has [0] in total. 
+2025-07-18 14:24:15,185 - custodian.resources.stream - DEBUG - Filtered from 29 to 0 stream
+2025-07-18 14:24:15,186 - custodian.policy - INFO - policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 count:0 time:8.36
+2025-07-18 14:24:15,187 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:disablelogstorage restype:huaweicloud.lts-stream scope:policy
+2025-07-18 14:24:48,220 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 14:24:53,166 - custodian.huaweicloud.filters.stream - ERROR - [query-storage-enabled-streams]-[query-streams] Theresource: [lts-stream] find stroage-enabled streams is failed. cause: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:24:53,168 - custodian.output - DEBUG - metric:PolicyException Count:1 policy:disablelogstorage restype:huaweicloud.lts-stream
+2025-07-18 14:24:53,169 - custodian.output - ERROR - Error while executing policy
+Traceback (most recent call last):
+  File "/root/huawei_custodian/cloud-custodian/c7n/policy.py", line 330, in run
+    resources = self.policy.resource_manager.resources()
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 541, in resources
+    resources = self.filter_resources(resources)
+  File "/root/huawei_custodian/cloud-custodian/c7n/manager.py", line 113, in filter_resources
+    resources = f.process(resources, event)
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/filters/stream.py", line 72, in process
+    streamDict["log_stream_id"] = stream.log_stream_it
+AttributeError: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:26:09,504 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 14:26:14,586 - custodian.huaweicloud.filters.stream - ERROR - [query-storage-enabled-streams]- [query-streams] The resource:[lts-stream] find stroage-enabled streams is failed. cause: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:26:14,589 - custodian.output - DEBUG - metric:PolicyException Count:1 policy:disablelogstorage restype:huaweicloud.lts-stream
+2025-07-18 14:26:14,589 - custodian.output - ERROR - Error while executing policy
+Traceback (most recent call last):
+  File "/root/huawei_custodian/cloud-custodian/c7n/policy.py", line 330, in run
+    resources = self.policy.resource_manager.resources()
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 541, in resources
+    resources = self.filter_resources(resources)
+  File "/root/huawei_custodian/cloud-custodian/c7n/manager.py", line 113, in filter_resources
+    resources = f.process(resources, event)
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/filters/stream.py", line 37, in process
+    streamDict["log_stream_id"] = stream.log_stream_it
+AttributeError: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:40:44,881 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 14:40:50,110 - custodian.huaweicloud.filters.stream - ERROR - [filters]-The filter:[streams-storage-enabled] query the service:[LTS:list_log_stream] failed. cause: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:40:50,114 - custodian.output - DEBUG - metric:PolicyException Count:1 policy:disablelogstorage restype:huaweicloud.lts-stream
+2025-07-18 14:40:50,118 - custodian.output - ERROR - Error while executing policy
+Traceback (most recent call last):
+  File "/root/huawei_custodian/cloud-custodian/c7n/policy.py", line 330, in run
+    resources = self.policy.resource_manager.resources()
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 541, in resources
+    resources = self.filter_resources(resources)
+  File "/root/huawei_custodian/cloud-custodian/c7n/manager.py", line 113, in filter_resources
+    resources = f.process(resources, event)
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/filters/stream.py", line 37, in process
+    streamDict["log_stream_id"] = stream.log_stream_it
+AttributeError: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:42:30,011 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 14:42:34,988 - custodian.huaweicloud.filters.stream - ERROR - [filters]-The filter:[streams-storage-enabled] query the service:[LTS:lts_log_stream] failed. cause: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:42:34,990 - custodian.output - DEBUG - metric:PolicyException Count:1 policy:disablelogstorage restype:huaweicloud.lts-stream
+2025-07-18 14:42:34,991 - custodian.output - ERROR - Error while executing policy
+Traceback (most recent call last):
+  File "/root/huawei_custodian/cloud-custodian/c7n/policy.py", line 330, in run
+    resources = self.policy.resource_manager.resources()
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 541, in resources
+    resources = self.filter_resources(resources)
+  File "/root/huawei_custodian/cloud-custodian/c7n/manager.py", line 113, in filter_resources
+    resources = f.process(resources, event)
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/filters/stream.py", line 71, in process
+    streamDict["log_stream_id"] = stream.log_stream_it
+AttributeError: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:44:35,197 - custodian.policy - DEBUG - Running policy:DisableLogStorage resource:huaweicloud.lts-stream region:ap-southeast-1 c7n:0.9.43
+2025-07-18 14:44:40,296 - custodian.huaweicloud.filters.stream - ERROR - [filters]-The filter:[streams-storage-enabled-for-schedule] query the service:[LTS:lts_log_stream] failed. cause: 'LogStreamResBody' object has no attribute 'log_stream_it'
+2025-07-18 14:44:40,300 - custodian.output - DEBUG - metric:PolicyException Count:1 policy:disablelogstorage restype:huaweicloud.lts-stream
+2025-07-18 14:44:40,302 - custodian.output - ERROR - Error while executing policy
+Traceback (most recent call last):
+  File "/root/huawei_custodian/cloud-custodian/c7n/policy.py", line 330, in run
+    resources = self.policy.resource_manager.resources()
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/query.py", line 541, in resources
+    resources = self.filter_resources(resources)
+  File "/root/huawei_custodian/cloud-custodian/c7n/manager.py", line 113, in filter_resources
+    resources = f.process(resources, event)
+  File "/root/huawei_custodian/cloud-custodian/tools/c7n_huaweicloud/c7n_huaweicloud/filters/stream.py", line 71, in process
+    streamDict["log_stream_id"] = stream.log_stream_it
+AttributeError: 'LogStreamResBody' object has no attribute 'log_stream_it'
