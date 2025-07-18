@@ -27,7 +27,6 @@ class Stream(QueryResourceManager):
         tags = "tag"
         tag_resource_type = 'lts-stream'
 
-
     def get_resources(self, resource_ids):
         client = self.get_client()
         streams = []
