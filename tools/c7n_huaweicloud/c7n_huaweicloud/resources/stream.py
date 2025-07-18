@@ -4,7 +4,9 @@
 import logging
 import time
 
-from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams
+from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, \
+     ListLogGroupsRequest, ListLogStreamRequest
+
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -24,6 +26,41 @@ class Stream(QueryResourceManager):
         id = 'log_group_id'
         tags = "tag"
         tag_resource_type = 'lts-stream'
+
+    def get_resources(self, resource_ids):
+        client = self.get_client()
+        streams = []
+        request = ListLogGroupsRequest()
+        stream_request = ListLogStreamRequest()
+        response = client.list_log_groups(request)
+        should_break = False
+        for group in response.log_groups:
+            if group.log_group_name.startswith("functiongraph.log.group"):
+                continue
+            time.sleep(0.22)
+            stream_request.log_group_id = group.log_group_id
+            try:
+                stream_response = client.list_log_stream(stream_request)
+                for stream in stream_response.log_streams:
+                    if stream.log_stream_id == resource_ids[0] and stream.whether_log_storage:
+                        streamDict = {}
+                        streamDict["log_group_id"] = group.log_group_id
+                        streamDict["log_stream_id"] = stream.log_stream_id
+                        streamDict["log_stream_name"] = stream.log_stream_name
+                        streamDict["id"] = stream.log_stream_id
+                        streamDict["tags"] = stream.tag
+                        streams.append(streamDict)
+                        should_break = True
+                        break
+            except Exception as e:
+                log.error("[filters]-The filter:[streams-storage-enabled] query the service:[LTS:"
+                          "list_log_stream] failed. cause: {}".format(e))
+                raise
+            if should_break:
+                break
+        log.info("[event/period]-The filtered resources has [{}]"
+                 " in total. ".format(str(len(streams))))
+        return streams
 
 
 Stream.filter_registry.register('streams-storage-enabled', LtsStreamStorageEnabledFilter)
