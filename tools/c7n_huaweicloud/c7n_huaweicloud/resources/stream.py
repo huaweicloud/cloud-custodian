@@ -51,5 +51,5 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
             return response
         except Exception as e:
             log.error("[actions]-[disable-stream-storage]-The resource:[stream] with id:"
-                      "[{}] modify sotrage failed. cause: {}".format(e))
+                      "[{}] modify sotrage failed. cause: {}".format(resource["log_stream_id"], e))
             raise
