@@ -49,8 +49,8 @@ class LtsStreamStorageEnabledFilter(Filter):
                 raise
             if should_break:
                 break
-        log.info("[event/period]-The filtered resources has [{}]\
-        in total. ".format(str(len(resources))))
+        log.info("[event/period]-The filtered resources has [{}]"
+                 "in total. ".format(str(len(streams))))
         return streams
 
 
