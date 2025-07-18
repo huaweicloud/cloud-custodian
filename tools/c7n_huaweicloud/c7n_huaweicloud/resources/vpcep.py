@@ -1,19 +1,29 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 import logging
+
+from requests.exceptions import HTTPError
 
 from c7n.utils import type_schema, local_session
 from c7n.filters import Filter
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+
 from huaweicloudsdksmn.v2 import (
     PublishMessageRequest,
     PublishMessageRequestBody,
 )
 from huaweicloudsdkvpc.v3 import ListVpcsRequest
 from huaweicloudsdkcore.exceptions import exceptions
+
+from huaweicloudsdkvpcep.v1 import (
+    UpdateEndpointPolicyRequest,
+    UpdateEndpointPolicyRequestBody,
+    PolicyStatement,
+)
 
 log = logging.getLogger('custodian.huaweicloud.resources.vpcep')
 
@@ -265,3 +275,214 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
                 })
 
         return results
+
+
+class VpcEndpointUtils():
+    """Provide utils
+    """
+    def __init__(self, manager):
+        self.manager = manager
+
+    def get_account(self, account_path, my_account=None):
+        results = []
+        if my_account:
+            results.append(my_account)
+
+        if not account_path:
+            log.error("account_path is required")
+            return results
+
+        account_list = self.get_file_content(account_path)
+        if account_list.get('accounts', []):
+            results.extend(account_list.get('accounts'))
+        return list(set(results))
+
+    def generate_new_accounts(self, account_path, my_account=None):
+        domain_ids = self.get_account(account_path, my_account)
+        results = []
+        for d in domain_ids:
+            results.append(f"domain/{d}:root")
+        return results
+
+    def get_file_content(self, obs_url):
+        if not obs_url:
+            return {}
+        obs_client = local_session(self.manager.session_factory).client("obs")
+        protocol_end = len("https://")
+        path_without_protocol = obs_url[protocol_end:]
+        obs_bucket_name = self.get_obs_name(path_without_protocol)
+        obs_server = self.get_obs_server(path_without_protocol)
+        obs_file = self.get_file_path(path_without_protocol)
+        obs_client.server = obs_server
+        try:
+            resp = obs_client.getObject(bucketName=obs_bucket_name,
+                                        objectKey=obs_file,
+                                        loadStreamInMemory=True)
+            if resp.status == 200:
+                return json.loads(resp.body.buffer)
+            else:
+                log.error(f"get obs object from {obs_url} failed:"
+                          f"{resp.errorCode}, {resp.errorMessage}")
+                raise HTTPError(resp.status, resp.body)
+        except exceptions.ClientRequestException as e:
+            log.error(f'get obs object from {obs_url} error, '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise e
+
+    def get_obs_name(self, obs_url):
+        last_obs_index = obs_url.rfind(".obs")
+        return obs_url[:last_obs_index]
+
+    def get_obs_server(self, obs_url):
+        last_obs_index = obs_url.rfind(".obs")
+        remaining_after_obs = obs_url[last_obs_index:]
+        split_res = remaining_after_obs.split("/", 1)
+        return split_res[0].lstrip(".")
+
+    def get_file_path(self, obs_url):
+        last_obs_index = obs_url.rfind(".obs")
+        remaining_after_obs = obs_url[last_obs_index:]
+        split_res = remaining_after_obs.split("/", 1)
+        return split_res[1]
+
+
+@VpcEndpoint.filter_registry.register('is-not-default-org-policy')
+class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
+    """Check if then endpoint is configrured with default organization policy.
+
+    This filter requires the org_accounts_obs_url parameter and optionally accepts a my_account.
+
+    Return a list of endpoints that do not have the default organization policy configured.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+            - name: is-not-default-org-policy
+            resource: huaweicloud.vpcep-ep
+            filters:
+                - type: is-not-default-org-policy
+                  my_account: "{my_account}"
+                  org_accounts_obs_url: {obs_url}
+    """
+
+    schema = type_schema(
+        'is-not-default-org-policy',
+        my_account={'type': 'string'},
+        org_accounts_obs_url={'type': 'string'}
+    )
+
+    def process(self, resources, event=None):
+        if not self.data.get('org_accounts_obs_url'):
+            log.error("[filters]-The filter[is-not-default-org-policy] "
+            "org_accounts_obs_url is a required parameter and cannot be empty")
+            return []
+        if not resources:
+            return []
+
+        results = []
+        ep_util = VpcEndpointUtils(self.manager)
+        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'),
+                                                     self.data.get('my_account'))
+
+        for res in resources:
+            if res.get('service_type', '') not in ['gateway', 'cvs_gateway']:
+                continue
+
+            if self._check_policy(res.get('id'),
+                                  res.get('policy_statement', []), new_accounts):
+                continue
+            results.append(res)
+        return results
+
+    def _check_policy(self, ep_id, policy_statement, new_accounts):
+        if not policy_statement:
+            return False
+        if len(policy_statement) != 1:
+            return False
+
+        current_accounts = policy_statement[0].get('Condition', {}).get(
+            'StringEquals', {}).get('ResourceOwner', [])
+        if not current_accounts:
+            return False
+
+        current_accounts.sort()
+        new_accounts.sort()
+        result = current_accounts == new_accounts
+        if not result:
+            log.info(f"[filters]-[is-not-default-org-policy]-"
+                     f"The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] policy account is invalid,"
+                     f"current:[{current_accounts}], expect:[{new_accounts}]")
+        return result
+
+
+@VpcEndpoint.action_registry.register('update-default-org-policy')
+class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
+
+    """Update the endpoint policy to default organization policy.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: update-default-org-policy
+            resource: huaweicloud.vpcep-ep
+            actions:
+              - type: update-default-org-policy
+                my_account: "{my_account}"
+                org_accounts_obs_url: {obs_url}
+    """
+
+    schema = type_schema('update-default-org-policy',
+                         my_account={'type': 'string'},
+                         org_accounts_obs_url={'type': 'string'}
+    )
+
+    def process(self, resources):
+        if not resources:
+            return []
+        ep_util = VpcEndpointUtils(self.manager)
+        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'),
+                                                     self.data.get('my_account'))
+        for resource in resources:
+            self.process_resource(resource, new_accounts)
+
+        return resources
+
+    def process_resource(self, resource, new_accounts):
+        """Execute update policy for a single resource"""
+        if resource.get('service_type', '') not in ['gateway', 'cvs_gateway']:
+            return
+
+        ep_id = resource.get("id", "")
+        log.info(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
+                 f"with id:[{ep_id}] policy is invalid.")
+        self._update_policy(ep_id, new_accounts)
+
+    def perform_action(self, resource):
+        return None
+
+    def _update_policy(self, ep_id, resource_owner):
+        policy_statement = PolicyStatement(
+            effect="Allow", action=["*"], resource=["*", "*/*"],
+            condition={"StringEquals": {"ResourceOwner": resource_owner}})
+        request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
+        body = UpdateEndpointPolicyRequestBody(policy_statement=[policy_statement])
+        request.body = body
+        log.debug(f"[actions]-update-default-org-policy update policy request body: {request}")
+
+        client = self.manager.get_client()
+        try:
+            client.update_endpoint_policy(request)
+            log.info(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] updating the policy has succeeded.")
+        except exceptions.ClientRequestException as e:
+            log.error(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
+                      f"with id:[{ep_id}] update policy is failed.cause:{e}")
+            raise e
