@@ -7,7 +7,7 @@ import time
 from c7n.filters import Filter
 from c7n.utils import type_schema
 
-from huaweicloudsdklts.v2 import ListLogStreamRequest
+from huaweicloudsdklts.v2 import ListLogStreamRequest, ListLogGroupsRequest 
 
 log = logging.getLogger("custodian.huaweicloud.filters.stream")
 
@@ -18,9 +18,40 @@ class LtsStreamStorageEnabledFilter(Filter):
     )
 
     def process(self, resources, event=None):
+        client = self.manager.get_client()
+        streams = []
+        request = ListLogGroupsRequest()
+        stream_request = ListLogStreamRequest()
+        response = client.list_log_groups(request)
+        should_break = False
+        for group in response.log_groups:
+            if group.log_group_name.startswith("functiongraph.log.group"):
+                continue
+            time.sleep(0.22)
+            stream_request.log_group_id = group.log_group_id
+            try:
+                stream_response = client.list_log_stream(stream_request)
+                for stream in stream_response.log_streams:
+                    if stream.whether_log_storage:
+                        streamDict = {}
+                        streamDict["log_group_id"] = group.log_group_id
+                        streamDict["log_stream_id"] = stream.log_stream_id
+                        streamDict["log_stream_name"] = stream.log_stream_name
+                        streamDict["id"] = stream.log_stream_id
+                        streamDict["tags"] = stream.tag
+                        streams.append(streamDict)
+                        should_break = True
+                        break
+            except Exception as e:
+                log.error("[query-storage-enabled-streams]- [query-streams] The resource:"
+                          "[lts-stream] find stroage-enabled streams is failed."
+                          " cause: {}".format(e))
+                raise
+            if should_break:
+                break
         log.info("[event/period]-The filtered resources has [{}]\
         in total. ".format(str(len(resources))))
-        return resources
+        return streams
 
 
 class LtsStreamStorageEnabledFilterForSchedule(Filter):
