@@ -3,9 +3,9 @@
 
 import logging
 import time
-import traceback
 
-from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams
+from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, \
+     ListLogGroupsRequest, ListLogStreamRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -60,6 +60,7 @@ class Stream(QueryResourceManager):
         log.info("[event/period]-The filtered resources has [{}]"
                  " in total. ".format(str(len(streams))))
         return streams
+
 
 Stream.filter_registry.register('streams-storage-enabled', LtsStreamStorageEnabledFilter)
 Stream.filter_registry.register('streams-storage-enabled-for-schedule',
