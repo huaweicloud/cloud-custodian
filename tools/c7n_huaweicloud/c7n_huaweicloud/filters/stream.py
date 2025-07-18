@@ -34,7 +34,7 @@ class LtsStreamStorageEnabledFilter(Filter):
                     if stream.whether_log_storage:
                         streamDict = {}
                         streamDict["log_group_id"] = group.log_group_id
-                        streamDict["log_stream_id"] = stream.log_stream_it
+                        streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
                         streamDict["id"] = stream.log_stream_id
                         streamDict["tags"] = stream.tag
@@ -68,14 +68,14 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                     if stream.whether_log_storage:
                         streamDict = {}
                         streamDict["log_group_id"] = group["log_group_id"]
-                        streamDict["log_stream_id"] = stream.log_stream_it
+                        streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
                         streamDict["id"] = stream.log_stream_id
                         streamDict["tags"] = stream.tag
                         streams.append(streamDict)
             except Exception as e:
-                log.error("[filters]-The filter:[streams-storage-enabled] query the service:[LTS:"
-                          "lts_log_stream] failed. cause: {}".format(e))
+                log.error("[filters]-The filter:[streams-storage-enabled-for-schedule] query the"
+                          " service:[LTS:lts_log_stream] failed. cause: {}".format(e))
                 raise
         log.info("[event/period]-The filtered resources has [{}]"
                  " in total. ".format(str(len(streams))))
