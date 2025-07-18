@@ -7,6 +7,7 @@ import time
 from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, \
      ListLogGroupsRequest, ListLogStreamRequest
 
+
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
@@ -25,7 +26,6 @@ class Stream(QueryResourceManager):
         id = 'log_group_id'
         tags = "tag"
         tag_resource_type = 'lts-stream'
-
 
 
     def get_resources(self, resource_ids):
@@ -78,7 +78,7 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
             request = UpdateLogStreamRequest()
             request.log_group_id = resource["log_group_id"]
             request.log_stream_id = resource["log_stream_id"]
-            request.body = UpdateLogStreamParamre(
+            request.body = UpdateLogStreamParams(
                 whether_log_storage=False
             )
             log.info("[actions]-[disable-stream-storage]: The resource:[stream] with"
