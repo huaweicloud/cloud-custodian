@@ -7,7 +7,7 @@ import time
 from c7n.filters import Filter
 from c7n.utils import type_schema
 
-from huaweicloudsdklts.v2 import ListLogStreamRequest, ListLogGroupsRequest 
+from huaweicloudsdklts.v2 import ListLogStreamRequest, ListLogGroupsRequest
 
 log = logging.getLogger("custodian.huaweicloud.filters.stream")
 
