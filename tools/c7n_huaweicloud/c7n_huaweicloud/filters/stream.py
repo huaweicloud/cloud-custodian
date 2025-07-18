@@ -80,5 +80,5 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                           "cause: {}".format(e))
                 raise
         log.info("[event/period]-The filtered resources has [{}]"
-                 "in total. ".format(str(len(resources))))
+                 " in total. ".format(str(len(streams))))
         return streams
