@@ -16,7 +16,7 @@ class LtsStreamStorageEnabledFilter(Filter):
     schema = type_schema(
         'streams-storage-enabled'
     )
-
+    
     log.info("[event/period]-The filtered resources has [{}]"
              " in total. ".format(str(len(streams))))
     return streams

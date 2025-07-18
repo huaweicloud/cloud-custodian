@@ -26,8 +26,6 @@ class Stream(QueryResourceManager):
         tags = "tag"
         tag_resource_type = 'lts-stream'
 
-
-
     def get_resources(self, resource_ids):
         client = self.get_client()
         streams = []
@@ -77,7 +75,7 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
             request = UpdateLogStreamRequest()
             request.log_group_id = resource["log_group_id"]
             request.log_stream_id = resource["log_stream_id"]
-            request.body = UpdateLogStreamParamre(
+            request.body = UpdateLogStreamParams(
                 whether_log_storage=False
             )
             log.info("[actions]-[disable-stream-storage]: The resource:[stream] with"
