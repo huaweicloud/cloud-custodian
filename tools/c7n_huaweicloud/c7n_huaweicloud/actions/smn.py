@@ -85,7 +85,7 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
             return message
         resource_details = get_resource_details(resource_type, ids)
         if not ids:
-            self.log.warning(f"[actions]-[notify-message] The resource_details: {resource_details}")
+            self.log.warning(f"[actions]-[notify-message] No id in resource: {resource_type}")
         return message.replace('{resource_details}', resource_details)
 
     def perform_action(self, resource):
@@ -164,7 +164,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
         resource_details = get_resource_details(resource_type, ids)
         if not ids:
             self.log.warning(
-                f"[actions]-[notify-message-structure] The resource_details: {resource_details}")
+                f"[actions]-[notify-message-structure] No id in resource: {resource_type}")
         return message_structure.replace('{resource_details}', resource_details)
 
     def perform_action(self, resource):
@@ -249,8 +249,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                 resource_details = get_resource_details(resource_type, ids)
                 if not ids:
                     self.log.warning(
-                        f"[actions]-[notify-message-template] The resource_details: "
-                        f"{resource_details}")
+                        f"[actions]-[notify-message-template] No id in resource: {resource_type}")
                 message_template_variables[k] = v.replace('{resource_details}', resource_details)
         return message_template_variables
 
