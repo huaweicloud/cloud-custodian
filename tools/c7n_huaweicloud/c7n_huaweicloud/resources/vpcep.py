@@ -250,10 +250,10 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
                     'topic_urn': topic_urn,
                     'message_id': getattr(publish_message_response, 'message_id', None)
                 })
-                log.info(f"[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
+                log.info("[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
                          f"send message for urn {topic_urn} has succeeded.")
             except Exception as e:
-                log.error(f"[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
+                log.error("[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
                           f"send message for urn {topic_urn} is failed.cause:{e}")
                 results.append({
                     'status': 'error',
@@ -261,6 +261,7 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
                     'error': str(e)
                 })
         return results
+
 
 @VpcEndpoint.filter_registry.register('policy-principal-wildcards')
 class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
