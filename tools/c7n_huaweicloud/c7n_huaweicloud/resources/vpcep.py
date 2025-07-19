@@ -100,23 +100,22 @@ class VpcEndpointServiceAndVpcFilter(Filter):
                     if vpcs:
                         vpc_ids.extend([v.id for v in vpcs])
                     marker = self.get_next_marker(vpcs, limit)
-                    self.log.debug(f"get all vpcs vpc_ids:{vpc_ids}, marker:{marker}")
                     if marker is None:
                         break
-                self.log.info(f"get all vpcs vpc_ids:{vpc_ids}")
+                log.debug("[filters]-[by-service-and-vpc-check]-"
+                          f"get all vpcs vpc_ids:{vpc_ids}")
             except exceptions.ClientRequestException as e:
-                self.log.error(
-                    f"List vpc failed, request id:{e.request_id}, "
-                    f"status code:{e.status_code}, "
-                    f"error code:{e.error_code}, "
-                    f"error message:{e.error_msg}."
-                )
-                raise Exception('get all vpc failed')
+                log.error("[filters]-[by-service-and-vpc-check]-"
+                          f"List vpc failed, request id:{e.request_id}, "
+                          f"status code:{e.status_code}, "
+                          f"error code:{e.error_code}, "
+                          f"error message:{e.error_msg}.")
+                raise e
 
         # Validate if endpoint_service_name is valid
         if not endpoint_service_name:
-            self.log.error(
-                "endpoint_service_name is a required parameter and cannot be empty")
+            log.error("[filters]-[by-service-and-vpc-check]-"
+                      "endpoint_service_name is a required parameter and cannot be empty")
             return []
 
         # Find endpoints that match the service name
@@ -127,8 +126,8 @@ class VpcEndpointServiceAndVpcFilter(Filter):
 
         # If no matching endpoints found, return a list containing only the service name
         if not matching_endpoints:
-            self.log.info(
-                f"No endpoints found with service name {endpoint_service_name}")
+            log.debug("[filters]-[by-service-and-vpc-check]-"
+                      f"No endpoints found with service name {endpoint_service_name}")
             return [{"endpoint_service_name": endpoint_service_name}]
 
         # If vpc_ids not provided, return empty list (no need to check VPCs)
@@ -145,10 +144,9 @@ class VpcEndpointServiceAndVpcFilter(Filter):
 
         # If there are missing vpc_ids, return result with missing VPC IDs
         if missing_vpc_ids:
-            self.log.info(
-                (f"Missing VPC IDs found in service {endpoint_service_name}: "
-                 f"{', '.join(missing_vpc_ids)}")
-            )
+            log.debug("[filters]-[by-service-and-vpc-check]-"
+                      f"Missing VPC IDs found in service {endpoint_service_name}: "
+                      f"{', '.join(missing_vpc_ids)}")
             return [{"endpoint_service_name": endpoint_service_name, "vpc_ids": missing_vpc_ids}]
 
         # If all vpc_ids exist, return empty list (no issues found)
@@ -242,30 +240,27 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
             publish_message_request = PublishMessageRequest(
                 topic_urn=topic_urn, body=body
             )
-            log.info(f"Sending message, request: {publish_message_request}")
-
             try:
                 client = local_session(
                     self.manager.session_factory).client('smn')
                 publish_message_response = client.publish_message(
                     publish_message_request)
-                log.info(
-                    f"Message sent successfully, response: {publish_message_response}")
                 results.append({
                     'status': 'success',
                     'topic_urn': topic_urn,
                     'message_id': getattr(publish_message_response, 'message_id', None)
                 })
+                log.info(f"[actions]-[vpc-endpoint-notification]-The resource:[vpcep-ep] "
+                         f"send message has succeeded.")
             except Exception as e:
-                log.error(f"Failed to send message: {e}")
+                log.error(f"[actions]-[vpc-endpoint-notification]-The resource:[vpcep-ep] "
+                          f"send message for urn {topic_urn} is failed.cause:{e}")
                 results.append({
                     'status': 'error',
                     'topic_urn': topic_urn,
                     'error': str(e)
                 })
-
         return results
-
 
 @VpcEndpoint.filter_registry.register('policy-principal-wildcards')
 class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
