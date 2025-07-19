@@ -250,10 +250,10 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
                     'topic_urn': topic_urn,
                     'message_id': getattr(publish_message_response, 'message_id', None)
                 })
-                log.info(f"[actions]-[vpc-endpoint-notification]-The resource:[vpcep-ep] "
-                         f"send message has succeeded.")
+                log.info(f"[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
+                         f"send message for urn {topic_urn} has succeeded.")
             except Exception as e:
-                log.error(f"[actions]-[vpc-endpoint-notification]-The resource:[vpcep-ep] "
+                log.error(f"[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
                           f"send message for urn {topic_urn} is failed.cause:{e}")
                 results.append({
                     'status': 'error',
