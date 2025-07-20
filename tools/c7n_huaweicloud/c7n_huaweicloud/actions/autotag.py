@@ -1,5 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import logging
 from c7n.actions import EventAction
 from c7n.exceptions import PolicyValidationError
 from c7n import utils
@@ -45,6 +46,8 @@ class AutoTagUser(EventAction):
     attempting to tag it.
 
     """  # NOQA
+
+    log = logging.getLogger("custodian.actions.auto-tag-user")
 
     schema = utils.type_schema(
         'auto-tag-user',
@@ -189,7 +192,7 @@ class AutoTagUser(EventAction):
                     return {item['key']: item['value'] for item in tags}
             return {}
         except Exception:
-            self.log.error("Parse Tags in resource %s failed", resource["id"])
+            self.log.warning("Parse tags in resource %s failed", resource["id"])
             return {}
 
     @classmethod

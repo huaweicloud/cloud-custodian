@@ -471,10 +471,8 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         enable = self.data.get("enable")
         ipgroup_type = self.data.get("ipgroup_type")
 
-        if (
-            (not ipgroup_id or len(ipgroup_id) == 0)
-            and (not ipgroup_name or len(ipgroup_name) == 0)
-        ):
+        if (not ipgroup_id or len(ipgroup_id) == 0) \
+            and (not ipgroup_name or len(ipgroup_name) == 0):
             log.error(
                 f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                 "Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
