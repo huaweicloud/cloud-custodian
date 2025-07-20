@@ -419,11 +419,9 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
                 )
             except exceptions.SdkException as e:
                 log.warning(
-                    (
-                        f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                        f"Failed to delete listener default pool: {resource['default_pool_id']}, "
-                        f"error: {str(e)}"
-                    )
+                    f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                    f"Failed to delete listener default pool: {resource['default_pool_id']}, "
+                    f"error: {str(e)}"
                 )
 
         request = DeleteListenerForceRequest(listener_id=resource["id"])
