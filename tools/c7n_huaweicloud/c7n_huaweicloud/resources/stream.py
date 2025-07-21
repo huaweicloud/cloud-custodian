@@ -36,7 +36,7 @@ class Stream(QueryResourceManager):
         for group in response.log_groups:
             if group.log_group_name.startswith("functiongraph.log.group"):
                 continue
-            time.sleep(0.22)
+            time.sleep(0.5)
             stream_request.log_group_id = group.log_group_id
             try:
                 stream_response = client.list_log_stream(stream_request)
@@ -87,7 +87,7 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                 continue
             request.log_group_id = group["log_group_id"]
             try:
-                time.sleep(0.22)
+                time.sleep(0.5)
                 response = client.list_log_stream(request)
                 for stream in response.log_streams:
                     if stream.whether_log_storage:
@@ -112,7 +112,7 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
     schema = type_schema("disable-stream-storage")
 
     def perform_action(self, resource):
-        time.sleep(0.22)
+        time.sleep(0.5)
         try:
             client = self.manager.get_client()
             request = UpdateLogStreamRequest()
