@@ -258,8 +258,9 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
             )
             response = client.create_vault(request)
             new_vault_id = response.vault.id
-            log.info(f"[actions]-[{self.action_name}] the resource:[{self.resource_type}] with id:[{resource_ids}]"
-                     f" create new backup vault:{new_vault_id}, and associate the servers to it success")
+            log.info(f"[actions]-[{self.action_name}] the resource:[{self.resource_type}]"
+                     f" with id:[{resource_ids}] create new backup vault:{new_vault_id},"
+                     " and associate the servers to it success")
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]-[{self.action_name}] create vault failed, cause "
                       f"request id:{e.request_id}, status code:{e.status_code}, msg:{e.error_msg}")
