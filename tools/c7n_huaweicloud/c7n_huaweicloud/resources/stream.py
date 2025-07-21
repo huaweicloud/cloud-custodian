@@ -5,14 +5,14 @@ import logging
 import time
 
 from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, \
-    ListLogGroupsRequest, ListLogStreamRequest
+    ListLogGroupsRequest, ListLogStreamRequest, ListLogStreamRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from c7n.filters import Filter
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from c7n_huaweicloud.filters.stream import LtsStreamStorageEnabledFilter, \
-    LtsStreamStorageEnabledFilterForSchedule
+
 
 log = logging.getLogger("custodian.huaweicloud.resources.lts-stream")
 
@@ -27,7 +27,6 @@ class Stream(QueryResourceManager):
         tag_resource_type = 'lts-stream'
 
     def get_resources(self, resource_ids):
-        log.info("after listen get all groups")
         client = self.get_client()
         streams = []
         request = ListLogGroupsRequest()
@@ -48,21 +47,65 @@ class Stream(QueryResourceManager):
                         streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
                         streamDict["id"] = stream.log_stream_id
+                        streamDict["tags"] = stream.tag
                         streams.append(streamDict)
                         should_break = True
                         break
             except Exception as e:
-                log.error(e)
+                log.error("[filters]-The filter:[streams-storage-enabled] query the service:[LTS:"
+                          "list_log_stream] failed. cause: {}".format(e))
                 raise
             if should_break:
                 break
-        log.info("The number of streams to disable storage is " + str(len(streams)))
+        log.info("[event/period]-The filtered resources has [{}]"
+                 " in total. ".format(str(len(streams))))
         return streams
 
 
 Stream.filter_registry.register('streams-storage-enabled', LtsStreamStorageEnabledFilter)
+class LtsStreamStorageEnabledFilter(Filter):
+    schema = type_schema(
+        'streams-storage-enabled'
+    )
+
+    def process(self, resources, event=None):
+        return resources
+
+
 Stream.filter_registry.register('streams-storage-enabled-for-schedule',
                                 LtsStreamStorageEnabledFilterForSchedule)
+class LtsStreamStorageEnabledFilterForSchedule(Filter):
+    schema = type_schema(
+        'streams-storage-enabled-for-schedule'
+    )
+
+    def process(self, resources, event=None):
+        client = self.manager.get_client()
+        request = ListLogStreamRequest()
+        streams = []
+        for group in resources:
+            if group["log_group_name"].startswith("functiongraph.log.group"):
+                continue
+            request.log_group_id = group["log_group_id"]
+            try:
+                time.sleep(0.22)
+                response = client.list_log_stream(request)
+                for stream in response.log_streams:
+                    if stream.whether_log_storage:
+                        streamDict = {}
+                        streamDict["log_group_id"] = group["log_group_id"]
+                        streamDict["log_stream_id"] = stream.log_stream_id
+                        streamDict["log_stream_name"] = stream.log_stream_name
+                        streamDict["id"] = stream.log_stream_id
+                        streamDict["tags"] = stream.tag
+                        streams.append(streamDict)
+            except Exception as e:
+                log.error("[filters]-The filter:[streams-storage-enabled-for-schedule] query the"
+                             " service:[LTS:lts_log_stream] failed. cause: {}".format(e))
+                raise
+        log.info("[event/period]-The filtered resources has [{}]"
+                    " in total. ".format(str(len(streams))))
+        return streams
 
 
 @Stream.action_registry.register("disable-stream-storage")
@@ -71,13 +114,19 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         time.sleep(0.22)
-        client = self.manager.get_client()
-        request = UpdateLogStreamRequest()
-        request.log_group_id = resource["log_group_id"]
-        request.log_stream_id = resource["log_stream_id"]
-        request.body = UpdateLogStreamParams(
-            whether_log_storage=False
-        )
-        log.info("disable storage: " + resource["log_stream_id"])
-        response = client.update_log_stream(request)
-        return response
+        try:
+            client = self.manager.get_client()
+            request = UpdateLogStreamRequest()
+            request.log_group_id = resource["log_group_id"]
+            request.log_stream_id = resource["log_stream_id"]
+            request.body = UpdateLogStreamParams(
+                whether_log_storage=False
+            )
+            log.info("[actions]-[disable-stream-storage]: The resource:[stream] with"
+                     "id:[{}] modify storage is success".format(resource["log_stream_id"]))
+            response = client.update_log_stream(request)
+            return response
+        except Exception as e:
+            log.error("[actions]-[disable-stream-storage]-The resource:[stream] with id:"
+                      "[{}] modify sotrage failed. cause: {}".format(resource["log_stream_id"], e))
+            raise
