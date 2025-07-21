@@ -5,7 +5,7 @@ import logging
 import time
 
 from huaweicloudsdklts.v2 import UpdateLogStreamRequest, UpdateLogStreamParams, \
-    ListLogGroupsRequest, ListLogStreamRequest, ListLogStreamRequest
+    ListLogGroupsRequest, ListLogStreamRequest
 
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -23,7 +23,7 @@ class Stream(QueryResourceManager):
         service = 'lts-stream'
         enum_spec = ("list_log_groups", 'log_groups', 'offset')
         id = 'log_group_id'
-        tag = True
+        tags = "tag"
         tag_resource_type = 'lts-stream'
 
     def get_resources(self, resource_ids):
@@ -62,7 +62,7 @@ class Stream(QueryResourceManager):
         return streams
 
 
-Stream.filter_registry.register('streams-storage-enabled', LtsStreamStorageEnabledFilter)
+@Stream.filter_registry.register('streams-storage-enabled')
 class LtsStreamStorageEnabledFilter(Filter):
     schema = type_schema(
         'streams-storage-enabled'
@@ -72,8 +72,7 @@ class LtsStreamStorageEnabledFilter(Filter):
         return resources
 
 
-Stream.filter_registry.register('streams-storage-enabled-for-schedule',
-                                LtsStreamStorageEnabledFilterForSchedule)
+@Stream.filter_registry.register('streams-storage-enabled-for-schedule')
 class LtsStreamStorageEnabledFilterForSchedule(Filter):
     schema = type_schema(
         'streams-storage-enabled-for-schedule'
