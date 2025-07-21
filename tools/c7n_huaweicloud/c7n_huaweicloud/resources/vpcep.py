@@ -102,20 +102,15 @@ class VpcEndpointServiceAndVpcFilter(Filter):
                     marker = self.get_next_marker(vpcs, limit)
                     if marker is None:
                         break
-                log.debug("[filters]-[by-service-and-vpc-check]-"
-                          f"get all vpcs vpc_ids:{vpc_ids}")
+                log.debug("[filters]-The filter:[by-service-and-vpc-check] query the service:"
+                          f"[/v3/{project_id}/vpc/vpcs] has successed. Get all vpcs:{vpc_ids}")
             except exceptions.ClientRequestException as e:
-                log.error("[filters]-[by-service-and-vpc-check]-"
-                          f"List vpc failed, request id:{e.request_id}, "
-                          f"status code:{e.status_code}, "
-                          f"error code:{e.error_code}, "
-                          f"error message:{e.error_msg}.")
+                log.error("[filters]-The filter:[by-service-and-vpc-check] query the service:"
+                          f"[/v3/{project_id}/vpc/vpcs] failed.cause: {e}")
                 raise e
 
         # Validate if endpoint_service_name is valid
         if not endpoint_service_name:
-            log.error("[filters]-[by-service-and-vpc-check]-"
-                      "endpoint_service_name is a required parameter and cannot be empty")
             return []
 
         # Find endpoints that match the service name
@@ -251,10 +246,10 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
                     'message_id': getattr(publish_message_response, 'message_id', None)
                 })
                 log.info("[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
-                         f"send message for urn {topic_urn} has succeeded.")
+                         f"send message to {topic_urn} has succeeded.")
             except Exception as e:
                 log.error("[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
-                          f"send message for urn {topic_urn} is failed.cause:{e}")
+                          f"send message to {topic_urn} failed.cause:{e}")
                 results.append({
                     'status': 'error',
                     'topic_urn': topic_urn,
