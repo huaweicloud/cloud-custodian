@@ -103,10 +103,10 @@ class VpcEndpointServiceAndVpcFilter(Filter):
                     if marker is None:
                         break
                 log.debug("[filters]-The filter:[by-service-and-vpc-check] query the service:"
-                          f"[/v3/{project_id}/vpc/vpcs] has successed. Get all vpcs:{vpc_ids}")
+                          f"[/v3/{{project_id}}/vpc/vpcs] has successed. Get all vpcs:{vpc_ids}")
             except exceptions.ClientRequestException as e:
                 log.error("[filters]-The filter:[by-service-and-vpc-check] query the service:"
-                          f"[/v3/{project_id}/vpc/vpcs] failed.cause: {e}")
+                          f"[/v3/{{project_id}}/vpc/vpcs] failed.cause: {e}")
                 raise e
 
         # Validate if endpoint_service_name is valid
