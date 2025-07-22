@@ -34,8 +34,6 @@ interactions:
       - api-gateway
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -49,6 +47,7 @@ interactions:
     status:
       code: 200
       message: OK
+
 - request:
     body: '{"key_spec": "ALL"}'
     headers:
@@ -103,4 +102,56 @@ interactions:
     status:
       code: 401
       message: Unauthorized
+- request:
+    body: '{"limit": "1000", "offset": "0", "action": "filter"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '52'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - kms.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250714T065903Z
+    method: POST
+    uri: https://kms.ap-southeast-1.myhuaweicloud.com/v1.0/ap-southeat-1/kms/resource_instances/action
+  response:
+    body:
+      string: "{\"total_count\":1,\"resources\":[{\"key_details\":{\"key_rotation_enabled\":\"false\",\"key_usage\":\"ENCRYPT_DECRYPT\",\"key_type\":\"1\",\"key_id\":\"17368998-bdca-4302-95ee-8925d139a29f\",\"key_spec\":\"AES_256\",\"origin\":\"kms\",\"expiration_time\":\"\",\"sys_enterprise_project_id\":\"0\",\"default_key_flag\":\"0\",\"creation_date\":\"1716661217000\",\"pending_days\":\"\",\"domain_id\":\"16e914a4f83a4c6ba9f06c24648cc146\",\"keystore_type\":\"DEFAULT\",\"scheduled_deletion_date\":\"\",\"multi_region_key_type\":\"SINGLE\",\"key_alias\":\"KMS-2990\",\"key_description\":\"\",\"realm\":\"ap-southeast-1\",\"keystore_id\":\"0\",\"key_state\":\"2\"},\"tags\":[]}]}\n"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 14 Jul 2025 06:59:03 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - d0681023b87c7d8c0905b6e03d921a52
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ""
 version: 1

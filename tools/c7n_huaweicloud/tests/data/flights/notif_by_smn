@@ -48,56 +48,6 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"alarm_action_enabled":true,"insufficientdata_actions":[{"type":"notification","notificationList":["urn:smn:ap-southeast-1:xxxxxxxxxxx:ces_notification_group_xxxxx"]}],"ok_actions":[{"type":"notification","notificationList":["urn:smn:ap-southeast-1:xxxxxxxxxxx:ces_notification_group_xxxxx"]}]}'
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Host:
-      - evs.ap-southeast-1.myhuaweicloud.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
-      X-Sdk-Date:
-      - 20250320T063810Z
-    method: POST
-    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn:smn:ap-southeast-1:xxxxxxxxxxx:ces_notification_group_xxxxx/publish
-  response:
-    body:
-      string: '{"request_id": "6a63a18b8bab40ffb71ebd9cb80d0085","message_id": "bf94b63a5dfb475994d3ac34664e24f2"}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 20 Mar 2025 06:38:10 GMT
-      Server:
-      - api-gateway
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - 078d8acc403c245ea4aa7c2d6991fdf3
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 200
-      message: OK
-- request:
     body: '{"subject": "Test Subject", "message": "Test Message\nregion: ap-southeast-1"}'
     headers:
       Accept:
@@ -119,11 +69,13 @@ interactions:
       X-Sdk-Date:
       - 20250326T071156Z
     method: POST
-    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-north-4%3Atest%3Atest/publish
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/test/notifications/topics/urn%3Asmn%3Acn-north-4%3Atest%3Atest/publish
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"2876944e3d49752f5f0059c5a80bc48b"}
-
+      string: '{
+                "message_id": "805431f6ae634a499d12b6fd436681c2",
+                "request_id": "0350489e2e474d6799f1d3ecbdca6198"
+               }
         '
     headers:
       Connection:
@@ -149,6 +101,6 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: OK
 version: 1

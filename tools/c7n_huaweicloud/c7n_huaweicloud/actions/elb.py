@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from functools import wraps
 import logging
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -28,6 +29,29 @@ from c7n.utils import type_schema, local_session
 log = logging.getLogger("custodian.huaweicloud.resources.elb")
 
 
+def wrap_perform_action_log(resource_name):
+    """Decorator to wrap the perform_action method for logging and error handling."""
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                result = func(*args, **kwargs)
+                log.info(
+                    f"[actions]-[{args[0].data.get('type', 'UnknownAction')}] "
+                    f"Success to deal resource[{resource_name}] with id:[{args[1]['id']}]. "
+                )
+                return result
+            except exceptions.SdkException as e:
+                log.error(
+                    f"[actions]-[{args[0].data.get('type', 'UnknownAction')}] "
+                    f"Failed to deal resource[{resource_name}] with id:[{args[1]['id']}]. "
+                    f"Exception: {e}"
+                )
+        return wrapper
+    return decorator
+
+
 class LoadbalancerDeleteAction(HuaweiCloudBaseAction):
     """Delete ELB Loadbalancers.
 
@@ -47,15 +71,14 @@ class LoadbalancerDeleteAction(HuaweiCloudBaseAction):
 
     schema = type_schema("delete")
 
+    @wrap_perform_action_log("huaweicloud.elb-loadbalancer")
     def perform_action(self, resource):
         client = self.manager.get_client()
         request = DeleteLoadBalancerCascadeRequest(loadbalancer_id=resource["id"])
         request.body = DeleteLoadBalancerCascadeRequestBody()
         request.body.loadbalancer = (
             DeleteLoadBalancerCascadeOption(unbounded_pool=True, public_ip=False))
-        response = client.delete_load_balancer_cascade(request)
-        check_response(response)
-        log.info(f"Successfully deleted loadbalancer: {resource['id']}")
+        client.delete_load_balancer_cascade(request)
 
 
 class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
@@ -79,6 +102,7 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
     schema = type_schema(type_name="unbind-publicips",
                          publicip_types={'type': 'array'})
 
+    @wrap_perform_action_log("huaweicloud.elb-loadbalancer")
     def perform_action(self, resource):
         loadbalancer_id = resource['id']
 
@@ -90,7 +114,6 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
         geip_count = len(resource['global_eips']) \
             if 'global_eips' in resource and resource['global_eips'] else 0
 
-        response = None
         # unbind public ipv6
         if 'ipv6_bandwidth' in publicip_types and eip_count > 0:
             elb_client = self.manager.get_client()
@@ -99,10 +122,11 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
                     request = UpdateLoadBalancerRequest(loadbalancer_id=loadbalancer_id)
                     request.body = UpdateLoadBalancerRequestBody()
                     request.body.loadbalancer = {'ipv6_bandwidth': None}
-                    response = elb_client.update_load_balancer(request)
-                    check_response(response)
+                    elb_client.update_load_balancer(request)
                     log.info(
-                        f"Successfully unbind ipv6_bandwidth for loadbalancer: {loadbalancer_id}"
+                        f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                        f"The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
+                        f"is unbinded ipv6 eip: {eip['eip_address']} successfully."
                     )
 
         # unbind public ipv4
@@ -111,20 +135,24 @@ class LoadbalancerUnbindPublicipsAction(HuaweiCloudBaseAction):
             for eip in resource['eips']:
                 if eip['ip_version'] == 4:
                     request = DisassociatePublicipsRequest(publicip_id=eip['eip_id'])
-                    response = eip_client.disassociate_publicips(request)
-                    check_response(response)
-                    log.info(f"Successfully unbind eip: {eip['eip_address']} for loadbalancer: "
-                             f"{loadbalancer_id}")
+                    eip_client.disassociate_publicips(request)
+                    log.info(
+                        f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                        f"The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
+                        f"is unbinded ipv4 eip: {eip['eip_address']} successfully."
+                    )
 
         # unbind geip
         if 'global_eip' in publicip_types and geip_count > 0:
             geip_client = local_session(self.manager.session_factory).client('geip')
             for geip in resource['global_eips']:
                 request = DisassociateInstanceRequest(global_eip_id=geip['global_eip_id'])
-                response = geip_client.disassociate_instance(request)
-                check_response(response)
-                log.info(f"Successfully unbind global eip: {geip['eip_address']} for loadbalancer: "
-                         f"{loadbalancer_id}")
+                geip_client.disassociate_instance(request)
+                log.info(
+                    f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                    f"The resource[huaweicloud.elb-loadbalancer] with id:[{loadbalancer_id}] "
+                    f"is unbinded global eip: {geip['eip_address']} successfully."
+                )
 
 
 class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
@@ -150,6 +178,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                          log_topic_id={'type': 'string'},
                          log_topic_name={'type': 'string'})
 
+    @wrap_perform_action_log("huaweicloud.elb-loadbalancer")
     def perform_action(self, resource):
         loadbalancer_id = resource['id']
         log_group_id = self.data.get("log_group_id")
@@ -158,24 +187,37 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
         log_topic_name = self.data.get("log_topic_name")
 
         if not log_group_id and not log_group_name:
-            log.error("log_group_id or log_group_name must be provided.")
-            raise Exception("log_group_id or log_group_name must be provided.")
+            log.error(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                "log_group_id or log_group_name must be provided "
+                "in the policy action type 'enable-logging'."
+            )
+            raise Exception("log_group_id or log_group_name must be provided"
+                            " in the policy action type 'enable-logging'.")
         if not log_topic_id and not log_topic_name:
-            log.error("log_topic_id or log_topic_name must be provided.")
-            raise Exception("log_topic_id or log_topic_name must be provided.")
+            log.error(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                "log_topic_id or log_topic_name must be provided "
+                "in the policy action type 'enable-logging'.")
+            raise Exception("log_topic_id or log_topic_name must be provided"
+                            " in the policy action type 'enable-logging'.")
 
         lts_client = local_session(self.manager.session_factory).client('lts-stream')
         log_group_response = lts_client.list_log_groups(ListLogGroupsRequest())
-        check_response(log_group_response)
         resp_log_group_id = None
         if log_group_id:
             for group in log_group_response.log_groups:
                 if group.log_group_id == log_group_id:
                     if log_group_name and group.log_group_name != log_group_name:
-                        log.error(f"Log group name '{log_group_name}' does not"
-                                  f" match log group id '{log_group_id}'")
-                        raise Exception(f"Log group name '{log_group_name}' "
-                                        f"does not match log group id '{log_group_id}'")
+                        log.error(
+                            f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                            f"Log group name '{log_group_name}' does not"
+                            f" match log group id '{log_group_id}'"
+                        )
+                        raise Exception(
+                            f"Log group name '{log_group_name}' "
+                            f"does not match log group id '{log_group_id}'"
+                        )
                     resp_log_group_id = group.log_group_id
                     break
         elif log_group_name:
@@ -184,21 +226,23 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_group_id = group.log_group_id
                     break
         if not resp_log_group_id:
-            log.error("Log group with specified 'log_group_name' "
-                      "or 'log_group_id' not found.")
+            log.error(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                "Log group with specified 'log_group_name' or 'log_group_id' not found."
+            )
             raise Exception("Log group with specified"
                 " 'log_group_name' or 'log_group_id' not found.")
 
         log_stream_response = lts_client.list_log_stream(
             ListLogStreamRequest(log_group_id=resp_log_group_id)
         )
-        check_response(log_stream_response, f"log_group_id={resp_log_group_id}")
         resp_log_stream_id = None
         if log_topic_id:
             for topic in log_stream_response.log_streams:
                 if topic.log_stream_id == log_topic_id:
                     if log_topic_name and topic.log_stream_name != log_topic_name:
                         log.error(
+                            f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                             f"Log topic name '{log_topic_name}' does not match "
                             f"log topic id '{log_topic_id}'"
                         )
@@ -214,7 +258,10 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_stream_id = topic.log_stream_id
                     break
         if not resp_log_stream_id:
-            log.error("Log topic with specified 'log_topic_name' or 'log_topic_id' not found.")
+            log.error(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                "Log topic with specified 'log_topic_name' or 'log_topic_id' not found."
+            )
             raise Exception(
                 "Log topic with specified 'log_topic_name' or 'log_topic_id' not found."
             )
@@ -224,11 +271,9 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                                       log_group_id=resp_log_group_id,
                                       log_topic_id=resp_log_stream_id)
         request = CreateLogtankRequest(CreateLogtankRequestBody(logtank))
-        response = client.create_logtank(request)
-        check_response(response, params=logtank)
+        client.create_logtank(request)
         resource['log_group_id'] = resp_log_group_id
         resource['log_topic_id'] = resp_log_stream_id
-        log.info(f"Successfully enabled logging for loadbalancer: {loadbalancer_id}")
 
 
 class LoadbalancerCreateLTSLogTransferAction(LtsCreateTransferLog):
@@ -286,6 +331,7 @@ class LoadbalancerCreateLTSLogTransferAction(LtsCreateTransferLog):
             log_topic_id_set.append(log_topic_id)
         return super().process_result(resources)
 
+    @wrap_perform_action_log("huaweicloud.elb-loadbalancer")
     def perform_action(self, resource):
         client = local_session(self.manager.session_factory).client("lts-transfer")
         request = CreateTransferRequest()
@@ -311,9 +357,7 @@ class LoadbalancerCreateLTSLogTransferAction(LtsCreateTransferLog):
             log_streams=listLogStreamsbody,
             log_group_id=self.data.get("log_group_id"),
         )
-        log.warning(request.body)
-        response = client.create_transfer(request)
-        check_response(response, service_name="LTS Transfer", params=request.body)
+        client.create_transfer(request)
 
 
 class ListenerDeleteAction(HuaweiCloudBaseAction):
@@ -338,6 +382,7 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
     schema = type_schema(type_name="delete",
                          loadbalancers={'type': 'array'})
 
+    @wrap_perform_action_log("huaweicloud.elb-listener")
     def perform_action(self, resource):
         lb_from_schema = self.data.get("loadbalancers")
         if (lb_from_schema and len(lb_from_schema) > 0
@@ -349,14 +394,14 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
         if ('default_pool_id' in resource and resource['default_pool_id'] and
                 len(resource['default_pool_id']) > 0):
             pool_request = DeletePoolCascadeRequest(pool_id=resource['default_pool_id'])
-            pool_response = client.delete_pool_cascade(pool_request)
-            check_response(pool_response)
-            log.info(f"Successfully deleted listener default pool: {resource['default_pool_id']}")
+            client.delete_pool_cascade(pool_request)
+            log.info(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                f"Successfully deleted listener default pool: {resource['default_pool_id']}"
+            )
 
         request = DeleteListenerForceRequest(listener_id=resource["id"])
-        response = client.delete_listener_force(request)
-        check_response(response)
-        log.info(f"Successfully deleted listener: {resource['id']}")
+        client.delete_listener_force(request)
 
 
 class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
@@ -390,6 +435,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
                          ipgroup_type={'type': 'string', 'enum': ['white', 'black']},
                          required=['ipgroup_type'])
 
+    @wrap_perform_action_log("huaweicloud.elb-listener")
     def perform_action(self, resource):
         ipgroup_id = ",".join(self.data.get("ipgroup_id")) if self.data.get("ipgroup_id") else None
         ipgroup_name = (
@@ -403,7 +449,9 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
             (not ipgroup_id or len(ipgroup_id) == 0)
             and (not ipgroup_name or len(ipgroup_name) == 0)
         ):
-            log.error("Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
+            log.error(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                "Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
             raise Exception("Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
 
         client = self.manager.get_client()
@@ -413,9 +461,11 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
             id=[ipgroup_id] if ipgroup_id else None,
         )
         ipgroup_response = client.list_ip_groups(ipgroup_request)
-        check_response(ipgroup_response)
         if not ipgroup_response.ipgroups or len(ipgroup_response.ipgroups) == 0:
-            log.error(f"No ip_groups found for name: {ipgroup_name} or id: {ipgroup_id}")
+            log.error(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                f"No ip_groups found for name: {ipgroup_name} or id: {ipgroup_id}"
+            )
             raise Exception(f"No ip_groups found for name: {ipgroup_name} or id: {ipgroup_id}")
         ipgroup_ids = [ipgroup.id for ipgroup in ipgroup_response.ipgroups]
         ipgroup_ids_str = ",".join(ipgroup_ids)
@@ -425,9 +475,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         request.body.listener = UpdateListenerOption()
         request.body.listener.ipgroup = UpdateListenerIpGroupOption(
             ipgroup_id=ipgroup_ids_str, enable_ipgroup=enable, type=ipgroup_type)
-        response = client.update_listener(request)
-        check_response(response, params=request.body)
-        log.info(f"Successfully updated ipgroup of listener: {resource['id']}")
+        client.update_listener(request)
 
 
 class ListenerRedirectAction(HuaweiCloudBaseAction):
@@ -454,6 +502,7 @@ class ListenerRedirectAction(HuaweiCloudBaseAction):
                          name={'type': 'string'},
                          port={'type': 'number', 'minimum': 0})
 
+    @wrap_perform_action_log("huaweicloud.elb-listener")
     def perform_action(self, resource):
         if resource['protocol'] != 'HTTP':
             return
@@ -472,10 +521,12 @@ class ListenerRedirectAction(HuaweiCloudBaseAction):
             protocol_port=[port] if port is not None else None
         )
         response = client.list_listeners(request)
-        check_response(response)
         if not response.listeners or len(response.listeners) == 0:
-            log.error(f"No listeners found for id: {redirect_listener_id}, "
-                      f"name: {name}, protocol: HTTPS, port: {port}")
+            log.error(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                f"No listeners found for id: {redirect_listener_id}, "
+                f"name: {name}, protocol: HTTPS, port: {port}"
+            )
             raise Exception(f"No listeners found for id: {redirect_listener_id}, "
                             f"name: {name}, protocol: HTTPS, port: {port}")
         listener = response.listeners[0]
@@ -489,30 +540,4 @@ class ListenerRedirectAction(HuaweiCloudBaseAction):
                 )
             )
         )
-        response = client.create_l7_policy(request)
-        check_response(response, params=request.body)
-        log.info(
-            f"Successfully redirected listener {listener_id} to listener {redirect_listener_id}"
-        )
-        return response
-
-
-def check_response(response, service_name="ELB", params=None):
-    if response is None:
-        log.error(f"Failed to get response from {service_name} service.")
-        if params:
-            log.error(f"Parameters: {params}")
-        raise exceptions.SdkException(
-            f"Failed to get response from {service_name} service."
-        )
-    if response.status_code != 200 and response.status_code != 201 and response.status_code != 204:
-        log.error(
-            f"Response failed from {service_name} service: {response.status_code}, "
-            f"{response.request_id}, {response.error_code}, {response.error_msg}"
-        )
-        if params:
-            log.error(f"Parameters: {params}")
-        raise exceptions.ServiceResponseException(
-            f"Get response from {service_name} service failed: {response.error_msg}. ",
-            response.error_code
-        )
+        client.create_l7_policy(request)

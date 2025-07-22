@@ -56,6 +56,7 @@ def run(event, context=None):
             log.info(f'[{p.execution_mode}]-User with account_id: '
                      f'[{context.getUserData("DOMAIN_ID")}] influenced the [{p.resource_type}], '
                      f'and triggered the policy [{p.name}].')
+            p.expand_variables(p.get_variables({'resource_details': '{resource_details}'}))
             p.validate()
             p.push(event, context)
 
