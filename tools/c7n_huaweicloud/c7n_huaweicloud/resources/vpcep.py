@@ -478,7 +478,7 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
                       f"with id:[{ep_id}] update policy is failed.cause:{e}")
             raise e
 
-    
+
 @VpcEndpoint.filter_registry.register('policy-principal-wildcards')
 class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
     """Check if endpoint policy has explicitly principal or use '*' with conditions.
