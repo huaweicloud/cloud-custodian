@@ -1,0 +1,115 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T085722Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+  response:
+    body:
+      string: "{\"kind\": \"Cluster\", \"apiVersion\": \"v3\", \"items\": [{\"kind\":
+        \"Cluster\", \"apiVersion\": \"v3\", \"metadata\": {\"name\": \"test-cluster-hibernate\",
+        \"uid\": \"cluster-hibernate-test-id-456\", \"creationTimestamp\": \"2023-01-15T08:00:00Z\",
+        \"updateTimestamp\": \"2023-01-16T10:30:00Z\"}, \"spec\": {\"type\": \"VirtualMachine\",
+        \"flavor\": \"cce.s1.small\", \"version\": \"v1.21.5-r0\", \"platformVersion\":
+        \"3.1.0\", \"description\": \"\u96C6\u7FA4\u4F11\u7720\u6D4B\u8BD5\", \"customSan\":
+        [], \"enableMasterVolumeEncryption\": false}, \"status\": {\"phase\": \"Available\",
+        \"jobID\": \"\", \"reason\": \"\", \"message\": \"\", \"endpoints\": []}}]}"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 08:57:22 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESTIME=1750323442858; path=/
+      - HWWAFSESID=220d77361d44189a95; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 862144dd68656c1f760ae28816c299a5
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250619T104819Z
+    method: POST
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters/cluster-hibernate-test-id-456/operation/hibernate
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 19 Jun 2025 10:48:19 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=f15ee7310499f7aed0; path=/
+      - HWWAFSESTIME=1750330099964; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 1927a55a15cb71c3a04c6f70efdd26dd
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

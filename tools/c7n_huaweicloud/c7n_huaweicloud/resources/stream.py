@@ -47,6 +47,7 @@ class Stream(QueryResourceManager):
                         streamDict["log_group_id"] = group.log_group_id
                         streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
+                        streamDict["id"] = stream.log_stream_id
                         streams.append(streamDict)
                         should_break = True
                         break
