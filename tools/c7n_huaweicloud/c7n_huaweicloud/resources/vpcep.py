@@ -569,14 +569,14 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-          - name: update-interface-policy
+          - name: update-policy-document
             resource: huaweicloud.vpcep-ep
             actions:
               - type: update-interface-policy
                 obs_url: {obs_url}
     """
 
-    schema = type_schema('update-interface-policy',
+    schema = type_schema('update-policy-document',
                          obs_url={'type': 'string'},
                          required=['obs_url']
     )
@@ -593,7 +593,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
 
     def process_resource(self, resource, policy_document):
         ep_id = resource.get("id", "")
-        log.info(f"[actions]-[update-interface-policy]-The resource:[vpcep-ep] "
+        log.info(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
                  f"with id:[{ep_id}] policy is invalid.")
         self._update_policy(ep_id, policy_document)
 
@@ -604,14 +604,14 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
         body = UpdateEndpointPolicyRequestBody(policy_document=policy_document)
         request.body = body
-        log.debug(f"[actions]-update-interface-policy update policy request body: {request}")
+        log.debug(f"[actions]-[update-policy-document] update policy request body: {request}")
 
         client = self.manager.get_client()
         try:
             client.update_endpoint_policy(request)
-            log.info(f"[actions]-[update-interface-policy]-The resource:[vpcep-ep] "
+            log.info(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
                      f"with id:[{ep_id}] updating the policy has succeeded.")
         except exceptions.ClientRequestException as e:
-            log.error(f"[actions]-[update-interface-policy]-The resource:[vpcep-ep] "
+            log.error(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
                       f"with id:[{ep_id}] update policy is failed.cause:{e}")
             raise e
