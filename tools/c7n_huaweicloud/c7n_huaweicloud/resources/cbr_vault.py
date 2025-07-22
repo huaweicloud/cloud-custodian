@@ -304,7 +304,7 @@ class CbrVaultUnassociatedReplicationFilter(Filter):
                 request.operation_type = "replication"
                 request.vault_id = r['id']
                 response = client.list_policies(request).to_dict()['policies']
-                if response[0]['id'] != self.data.get('replication_policy_id'):
+                if not response or response[0]['id'] != self.data.get('replication_policy_id'):
                     results.append(r)
                     result_vault_id.append(r['id'])
             except exceptions.ClientRequestException as e:
@@ -313,7 +313,8 @@ class CbrVaultUnassociatedReplicationFilter(Filter):
                           f" status code:{e.status_code}, msg:{e.error_msg}")
                 raise
         log.info(f"[filters]-the filter:[{self.filter_name}] query replication vaults:"
-                 f"[{result_vault_id}] without associate with policy:{response[0]['id']} success.")
+                 f"[{result_vault_id}] without associate with specific policy:"
+                 f"{self.data.get('replication_policy_id')} success.")
         return results
 
 
