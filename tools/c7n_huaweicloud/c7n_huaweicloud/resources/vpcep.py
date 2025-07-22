@@ -501,7 +501,12 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
 
     def process(self, resources, event=None):
         result = []
+        eps_ids = self._get_need_check_policy_eps_ids(resources)
         for resource in resources:
+            if not resource.get('service_type', '') == 'interface':
+                continue
+            if resource.get('endpoint_service_id') not in eps_ids:
+                continue
             if not self._check_policy_document(resource.get('policy_document', {})):
                 result.append(resource)
         ids = [r.get('id') for r in result]
@@ -522,3 +527,91 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
             if not item.get('Condition'):
                 return False
         return True
+
+    def _get_need_check_policy_eps_ids(self, resources):
+        huawei_eps_ids = []
+        for resource in resources:
+            if resource.get('endpoint_service_name').startswith('com.myhuaweicloud'):
+                huawei_eps_ids.append(resource.get('id'))
+        return self._get_enable_policy_eps(huawei_eps_ids)
+
+    def _get_enable_policy_eps(self, eps_ids):
+        result = []
+        for eps_id in eps_ids:
+            eps_detail = self.get_eps_detail(eps_id)
+            if eps_detail.get('enable_policy'):
+                result.append(eps_detail['id'])
+        return result
+
+    def _get_eps_detail(self, eps_id):
+        eps_client = local_session(self.manager.session_factory).client("vpcep-eps")
+        request = ListServiceDescribeDetailsRequest()
+        request.id = eps_id
+
+        try:
+            response = eps_client.list_service_describe_details(request)
+            log.info(f"[actions]-[policy-principal-wildcards]-The resource:[vpcep-ep] "
+                     f"with endpoint service id:[{eps_id}] get eps details has succeeded.")
+            return response
+        except exceptions.ClientRequestException as e:
+            log.error(f"[actions]-[policy-principal-wildcards]-The resource:[vpcep-ep] "
+                      f"with endpoint service id:[{eps_id}] get eps details is failed.cause:{e}")
+            raise e
+
+
+@VpcEndpoint.action_registry.register('update-policy-document')
+class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
+
+    """Update the endpoint policy.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: update-interface-policy
+            resource: huaweicloud.vpcep-ep
+            actions:
+              - type: update-interface-policy
+                obs_url: {obs_url}
+    """
+
+    schema = type_schema('update-interface-policy',
+                         obs_url={'type': 'string'},
+                         required=['obs_url']
+    )
+
+    def process(self, resources):
+        if not resources:
+            return []
+        ep_util = VpcEndpointUtils(self.manager)
+        policy_document = ep_util.get_file_content(self.data.get('obs_url'))
+        for resource in resources:
+            self.process_resource(resource, policy_document)
+
+        return resources
+
+    def process_resource(self, resource, policy_document):
+        ep_id = resource.get("id", "")
+        log.info(f"[actions]-[update-interface-policy]-The resource:[vpcep-ep] "
+                 f"with id:[{ep_id}] policy is invalid.")
+        self._update_policy(ep_id, policy_document)
+
+    def perform_action(self, resource):
+        return None
+
+    def _update_policy(self, ep_id, policy_document):
+        request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
+        body = UpdateEndpointPolicyRequestBody(policy_document=policy_document)
+        request.body = body
+        log.debug(f"[actions]-update-interface-policy update policy request body: {request}")
+
+        client = self.manager.get_client()
+        try:
+            client.update_endpoint_policy(request)
+            log.info(f"[actions]-[update-interface-policy]-The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] updating the policy has succeeded.")
+        except exceptions.ClientRequestException as e:
+            log.error(f"[actions]-[update-interface-policy]-The resource:[vpcep-ep] "
+                      f"with id:[{ep_id}] update policy is failed.cause:{e}")
+            raise e
