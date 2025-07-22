@@ -142,7 +142,7 @@ from huaweicloudsdkccm.v1.region.ccm_region import CcmRegion
 from c7n_huaweicloud.utils.cci_client import CCIClient
 from huaweicloudsdkvpcep.v1 import VpcepClient
 from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
-from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
+from huaweicloudsdkvpcep.v1 import ListEndpointsRequest, ListEndpointServiceRequest
 
 # CCE相关导入
 from huaweicloudsdkcce.v3 import (
@@ -551,7 +551,7 @@ class Session:
             )
         elif service == "cci":
             client = CCIClient(self.region, credentials)
-        elif service == 'vpcep-ep':
+        elif service in ['vpcep-ep', 'vpcep-eps']:
             client = (
                 VpcepClient.new_builder()
                 .with_credentials(credentials)
@@ -723,6 +723,8 @@ class Session:
             request = True
         elif service == 'vpcep-ep':
             request = ListEndpointsRequest()
+        elif service == 'vpcep-eps':
+            request = ListEndpointServiceRequest()
         elif service == "cce-cluster":
             request = ListClustersRequest()
         elif service == "cce-nodepool":
