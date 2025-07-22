@@ -57,8 +57,19 @@ class CtsDeleteTracker(HuaweiCloudBaseAction):
         request.tracker_type = properties["tracker_type"]
         try:
             response = client.delete_tracker(request)
+            log.info(
+                f"[actions]-[delete_tracker] The resource: [system tracker] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"delete tracker is success"
+            )
         except exceptions.ClientRequestException as e:
-            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+            log.error(
+                f"[actions]-[delete_tracker] The resource: [system tracker] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"delete tracker is failed"
+            )
+            log.error(f"cause: {e.status_code}, {e.request_id},"
+                      f" {e.error_code}, {e.error_msg}")
             raise
         return response
 
@@ -102,8 +113,19 @@ class CtsToggleTracker(HuaweiCloudBaseAction):
 
         try:
             response = client.update_tracker(request)
+            log.info(
+                f"[actions]-[update_tracker] The resource: [system tracker] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"toggle tracker is success"
+            )
         except exceptions.ClientRequestException as e:
-            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
+            log.error(
+                f"[actions]-[update_tracker] The resource: [system tracker] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"toggle tracker is failed"
+            )
+            log.error(f"cause: {e.status_code}, {e.request_id},"
+                      f" {e.error_code}, {e.error_msg}")
             raise
         return response
 
@@ -217,11 +239,20 @@ class CtsSetTraceFileValidation(HuaweiCloudBaseAction):
 
         try:
             response = client.update_tracker(request)
-            log.info(f"Successfully updated trace file validation ("
-                     f"is_support_validate={properties['is_support_validate']}) "
-                     f"for tracker {properties['tracker_name']}.")
+            log.info(
+                f"[actions]-[update_tracker] The resource: [system tracker] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"set file validation/encryption/obs tranfer/lts transfer is success "
+                f"is_support_validate={properties['is_support_validate']} "
+                f"for tracker {properties['tracker_name']}."
+            )
         except exceptions.ClientRequestException as e:
-            log.error(f"Error updating trace file validation: {e.status_code}, {e.request_id},"
+            log.error(
+                f"[actions]-[update_tracker] The resource: [system tracker] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"set file validation/encryption/obs tranfer/lts transfer is failed."
+            )
+            log.error(f"cause: {e.status_code}, {e.request_id},"
                       f" {e.error_code}, {e.error_msg}")
             raise
         return response
@@ -342,11 +373,20 @@ class CtsSetTraceFileValidationWithLtsPreservation(HuaweiCloudBaseAction):
             # 打印 request 关键信息
             log.info(f"Request body: {request.body}")
             response = client.update_tracker(request)
-            log.info(f"Successfully updated trace file validation ("
-                     f"is_support_validate={properties['is_support_validate']}) "
-                     f"for tracker {properties['tracker_name']}.")
+            log.info(
+                f"[actions]-[update_tracker] The resource: [system tracker] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"set file validation/encryption/obs tranfer with lts preservation is success "
+                f"is_support_validate={properties['is_support_validate']} "
+                f"for tracker {properties['tracker_name']}."
+            )
         except exceptions.ClientRequestException as e:
-            log.error(f"Error updating trace file validation: {e.status_code}, {e.request_id},"
+            log.error(
+                f"[actions]-[update_tracker] The resource: [system tracker] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"set file validation/encryption/obs tranfer with lts preservation is failed."
+            )
+            log.error(f"cause: {e.status_code}, {e.request_id},"
                       f" {e.error_code}, {e.error_msg}")
             raise
         return response

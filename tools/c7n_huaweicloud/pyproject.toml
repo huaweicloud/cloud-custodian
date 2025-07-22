@@ -65,7 +65,7 @@ huaweicloudsdkworkspace = "^3.1.138"
 huaweicloudsdkcdn = "^3.1.146"
 huaweicloudsdkccm = "^3.1.153"
 huaweicloudsdklts = "^3.1.150"
-huaweicloudsdkvpcep = "^3.1.138"
+huaweicloudsdkvpcep = "3.1.155"
 huaweicloudsdkcce = "^3.1.138"
 
 [tool.poetry.group.dev.dependencies]

@@ -55,8 +55,9 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
 
     def process(self, resources):
         resource_type = self.manager.resource_type.service
-        ids = ','.join(data['id'] for data in resources)
+        ids = None
         try:
+            ids = get_resource_ids(resources)
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
@@ -70,11 +71,11 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
                     f"[actions]-[notify-message] query the service:[POST /v2/{{project_id}}"
                     f"/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
-                    f"[actions]-[notify-message] The resource:{resource_type} with id:[{ids}] "
+                    f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
                     f"Publish message is success")
         except Exception as e:
             self.log.error(
-                f"[actions]-[notify-message] The resource:{resource_type} with id:[{ids}] "
+                f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
                 f"Publish message to SMN Topics is failed, cause:{e}")
         return self.process_result(resources)
 
@@ -83,6 +84,8 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
         if '{resource_details}' not in message:
             return message
         resource_details = get_resource_details(resource_type, ids)
+        if not ids:
+            self.log.warning(f"[actions]-[notify-message] No id in resource: {resource_type}")
         return message.replace('{resource_details}', resource_details)
 
     def perform_action(self, resource):
@@ -130,8 +133,9 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
 
     def process(self, resources):
         resource_type = self.manager.resource_type.service
-        ids = ','.join(data['id'] for data in resources)
+        ids = None
         try:
+            ids = get_resource_ids(resources)
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
@@ -146,10 +150,10 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
                     f"[actions]-[notify-message-structure] The resource:{resource_type} with id:"
-                    f"[{ids}] Publish message structure success")
+                    f"{ids} Publish message structure success")
         except Exception as e:
             self.log.error(
-                f"[actions]-[notify-message-structure] The resource:{resource_type} with id:[{ids}]"
+                f"[actions]-[notify-message-structure] The resource:{resource_type} with id:{ids}"
                 f" Publish message structure to SMN Topics failed, cause:{e}")
         return self.process_result(resources)
 
@@ -158,6 +162,9 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
         if '{resource_details}' not in message_structure:
             return message_structure
         resource_details = get_resource_details(resource_type, ids)
+        if not ids:
+            self.log.warning(
+                f"[actions]-[notify-message-structure] No id in resource: {resource_type}")
         return message_structure.replace('{resource_details}', resource_details)
 
     def perform_action(self, resource):
@@ -210,8 +217,9 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
 
     def process(self, resources):
         resource_type = self.manager.resource_type.service
-        ids = ','.join(data['id'] for data in resources)
+        ids = None
         try:
+            ids = get_resource_ids(resources)
             smn_client = local_session(self.manager.session_factory).client("smn")
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
@@ -227,10 +235,10 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
                     f"[actions]-[notify-message-template] The resource:{resource_type} with id:"
-                    f"[{ids}] Publish message template success.")
+                    f"{ids} Publish message template success.")
         except Exception as e:
             self.log.error(
-                f"[actions]-[notify-message-template] The resource:{resource_type} with id:[{ids}] "
+                f"[actions]-[notify-message-template] The resource:{resource_type} with id:{ids} "
                 f"Publish message template to SMN Topics failed, cause:{e}")
         return self.process_result(resources)
 
@@ -239,6 +247,9 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
         for k, v in message_template_variables.items():
             if '{resource_details}' in v:
                 resource_details = get_resource_details(resource_type, ids)
+                if not ids:
+                    self.log.warning(
+                        f"[actions]-[notify-message-template] No id in resource: {resource_type}")
                 message_template_variables[k] = v.replace('{resource_details}', resource_details)
         return message_template_variables
 
@@ -246,5 +257,9 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
         pass
 
 
+def get_resource_ids(resources):
+    return [data['id'] for data in resources if 'id' in data]
+
+
 def get_resource_details(resource_type, ids):
-    return '{resource_type}:{ids}'.format(resource_type=resource_type, ids=ids)
+    return '{resource_type}:{ids}'.format(resource_type=resource_type, ids=','.join(ids))

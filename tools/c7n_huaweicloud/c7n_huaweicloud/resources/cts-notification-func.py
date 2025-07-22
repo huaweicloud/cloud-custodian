@@ -113,9 +113,19 @@ class CtsUpdateNotification(HuaweiCloudBaseAction):
 
         try:
             response = client.update_notification(request)
+            log.info(
+                f"[actions]-[update_notification] The resource: [func notification] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"update notification is success"
+            )
             log.info(f"Successfully updated CTS notification: {response}")
         except exceptions.ClientRequestException as e:
-            log.error(f"Error updating CTS notification: {e.status_code}, {e.request_id},"
+            log.error(
+                f"[actions]-[update_notification] The resource: [func notification] "
+                f"with id:[{resource.get('id', 'empty')}] "
+                f"update notification is failed"
+            )
+            log.error(f"cause: {e.status_code}, {e.request_id},"
                       f" {e.error_code}, {e.error_msg}")
             raise
         return response
