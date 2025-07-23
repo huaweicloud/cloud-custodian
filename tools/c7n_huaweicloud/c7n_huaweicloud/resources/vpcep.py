@@ -611,7 +611,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
                       f"with id:[{resource.get('id')}] status {resource.get('status')} "
                       f"is not available, wait: {i}")
             time.sleep(5)
-        return False   
+        return False
 
     def _update_policy(self, ep_id, policy_document):
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
