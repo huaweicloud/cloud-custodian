@@ -23,6 +23,7 @@ from huaweicloudsdkvpcep.v1 import (
     UpdateEndpointPolicyRequest,
     UpdateEndpointPolicyRequestBody,
     PolicyStatement,
+    ListServiceDescribeDetailsRequest
 )
 
 log = logging.getLogger('custodian.huaweicloud.resources.vpcep')
@@ -510,7 +511,7 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
             if not self._check_policy_document(resource.get('policy_document', {})):
                 result.append(resource)
         ids = [r.get('id') for r in result]
-        log.info(f"[filters]-[policy-principal-wildcards]-The resources:[vpcep-ep] "
+        log.info(f"[filters]-[policy-principal-wildcards]-The resource:[vpcep-ep] "
                  f"invalid policy list:{ids}")
         return result
 
@@ -532,15 +533,15 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
         huawei_eps_ids = []
         for resource in resources:
             if resource.get('endpoint_service_name').startswith('com.myhuaweicloud'):
-                huawei_eps_ids.append(resource.get('id'))
-        return self._get_enable_policy_eps(huawei_eps_ids)
+                huawei_eps_ids.append(resource.get('endpoint_service_id'))
+        return self._get_enable_policy_eps(list(set(huawei_eps_ids)))
 
     def _get_enable_policy_eps(self, eps_ids):
         result = []
         for eps_id in eps_ids:
-            eps_detail = self.get_eps_detail(eps_id)
-            if eps_detail.get('enable_policy'):
-                result.append(eps_detail['id'])
+            eps_detail = self._get_eps_detail(eps_id)
+            if eps_detail.enable_policy:
+                result.append(eps_detail.id)
         return result
 
     def _get_eps_detail(self, eps_id):
@@ -550,12 +551,12 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
 
         try:
             response = eps_client.list_service_describe_details(request)
-            log.info(f"[actions]-[policy-principal-wildcards]-The resource:[vpcep-ep] "
-                     f"with endpoint service id:[{eps_id}] get eps details has succeeded.")
+            log.debug(f"[actions]-[policy-principal-wildcards]-The resource:[vpcep-ep] "
+                      f"get eps [{eps_id}] details has succeeded.")
             return response
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]-[policy-principal-wildcards]-The resource:[vpcep-ep] "
-                      f"with endpoint service id:[{eps_id}] get eps details is failed.cause:{e}")
+                      f"get eps [{eps_id}] details is failed.cause:{e}")
             raise e
 
 
