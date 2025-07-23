@@ -174,6 +174,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 log.error(f"[actions]-[{self.action_name}] "
                           f"failed to add resource to {vaults[vault_num]['id']}, "
                           f"cause request id:{e.request_id}, msg:{e.error_msg}")
+                raise
             vault_num += 1
         vault_billing = {}
         if len(vaults) > 0:
@@ -309,6 +310,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                     log.error(f"[actions]-[{self.action_name}]"
                               f" query policy by vault:{vault_item['id']} failed,"
                               f" cause request id:{e.request_id}, msg:{e.error_msg}")
+                    raise
         if not policy_id:
             # if inherit policy failed, list exists policy
             log.debug(f"[actions]-[{self.action_name}]"
@@ -328,4 +330,5 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 log.error(f"[actions]-[{self.action_name}]"
                           f" query exist policy list failed,"
                           f" cause request id:{e.request_id}, msg:{e.error_msg}")
+                raise
         return policy_id
