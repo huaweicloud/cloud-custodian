@@ -172,8 +172,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                               f"{vaults[vault_num]['id']} success.")
             except exceptions.ClientRequestException as e:
                 log.error(f"[actions]-[{self.action_name}] "
-                          f"add resource id:[{server_ids}] to vault id:{vaults[vault_num]['id']} failed, "
-                          f"cause request id:{e.request_id}, msg:{e.error_msg}")
+                          f"add resource id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
+                          f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
                 raise
             vault_num += 1
         vault_billing = {}
