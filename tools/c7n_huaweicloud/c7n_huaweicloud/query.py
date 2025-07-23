@@ -72,24 +72,28 @@ class ResourceQuery:
             enum_op, path, pagination, limit = m.enum_spec
 
         # ims special processing
-        if pagination == "ims":
-            resources = self._pagination_ims(m, enum_op, path)
-        elif pagination == "offset":
-            resources = self._pagination_limit_offset(m, enum_op, path, limit)
-        elif pagination == "marker":
-            resources = self._pagination_limit_marker(m, enum_op, path)
-        elif pagination == "maxitems-marker":
-            resources = self._pagination_maxitems_marker(m, enum_op, path)
-        elif pagination is None:
-            resources = self._non_pagination(m, enum_op, path)
-        elif pagination == "page":
-            resources = self._pagination_limit_page(m, enum_op, path)
-        elif pagination == "cdn":
-            resources = self._pagination_cdn(m, enum_op, path)
-        else:
-            log.exception(f"Unsupported pagination type: {pagination}")
-            sys.exit(1)
-        return resources
+        try:
+            if pagination == "ims":
+                resources = self._pagination_ims(m, enum_op, path)
+            elif pagination == "offset":
+                resources = self._pagination_limit_offset(m, enum_op, path, limit)
+            elif pagination == "marker":
+                resources = self._pagination_limit_marker(m, enum_op, path)
+            elif pagination == "maxitems-marker":
+                resources = self._pagination_maxitems_marker(m, enum_op, path)
+            elif pagination is None:
+                resources = self._non_pagination(m, enum_op, path)
+            elif pagination == "page":
+                resources = self._pagination_limit_page(m, enum_op, path)
+            elif pagination == "cdn":
+                resources = self._pagination_cdn(m, enum_op, path)
+            else:
+                log.exception(f"Unsupported pagination type: {pagination}")
+                sys.exit(1)
+            return resources
+        except exceptions.SdkException as e:
+            log.error(f"[pagination]-[{enum_op}] Failed to get resources. Exception: {e}")
+            raise e
 
     def _pagination_limit_offset(self, m, enum_op, path, limit):
 
