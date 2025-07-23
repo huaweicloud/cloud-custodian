@@ -3,6 +3,7 @@
 
 import json
 import logging
+import time
 
 from requests.exceptions import HTTPError
 
@@ -588,7 +589,8 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         ep_util = VpcEndpointUtils(self.manager)
         policy_document = ep_util.get_file_content(self.data.get('obs_url'))
         for resource in resources:
-            self.process_resource(resource, policy_document)
+            if self._wait_ep_can_processed(resource):
+                self.process_resource(resource, policy_document)
 
         return resources
 
@@ -600,6 +602,16 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         return None
+
+    def _wait_ep_can_processed(self, resource):
+        for i in range(12):
+            if resource.get('status') not in ('creating', 'deleting'):
+                return True
+            log.debug(f"[actions]-[update-policy-document] The resource:[vpcep-ep] "
+                      f"with id:[{resource.get('id')}] status {resource.get('status')} "
+                      f"is not available, wait: {i}")
+            time.sleep(5)
+        return False   
 
     def _update_policy(self, ep_id, policy_document):
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
