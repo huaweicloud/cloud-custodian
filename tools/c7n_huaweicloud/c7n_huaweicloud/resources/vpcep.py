@@ -604,14 +604,14 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         org_id = self._get_org_id()
         policy_document = {"Statement": [
             {
-                "Action": ["*"], 
-                "Condition": {"StringEquals": {"g:PrincipalOrgID": org_id}, 
-                              "StringEqualsIfExists": {"g:ResourceOrgID": org_id}}, 
+                "Action": ["*"],
+                "Condition": {"StringEquals": {"g:PrincipalOrgID": org_id},
+                              "StringEqualsIfExists": {"g:ResourceOrgID": org_id}},
                 "Effect": "Allow", "Principal": "*", "Resource": ["*"]
-            }], 
+            }],
             "Version": "5.0"}
         return policy_document
-        
+
     def _wait_ep_can_processed(self, resource):
         for i in range(12):
             if resource.get('status') not in ('creating', 'deleting'):
