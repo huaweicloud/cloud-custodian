@@ -27,6 +27,8 @@ from huaweicloudsdkvpcep.v1 import (
     ListServiceDescribeDetailsRequest
 )
 
+from huaweicloudsdkorganizations.v1 import ShowOrganizationRequest
+
 log = logging.getLogger('custodian.huaweicloud.resources.vpcep')
 
 
@@ -575,19 +577,14 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
             resource: huaweicloud.vpcep-ep
             actions:
               - type: update-interface-policy
-                obs_url: {obs_url}
     """
 
-    schema = type_schema('update-policy-document',
-                         obs_url={'type': 'string'},
-                         required=['obs_url']
-    )
+    schema = type_schema('update-policy-document')
 
     def process(self, resources):
         if not resources:
             return []
-        ep_util = VpcEndpointUtils(self.manager)
-        policy_document = ep_util.get_file_content(self.data.get('obs_url'))
+        policy_document = self._get_policy()
         for resource in resources:
             if self._wait_ep_can_processed(resource):
                 self.process_resource(resource, policy_document)
@@ -603,6 +600,18 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         return None
 
+    def _get_policy(self):
+        org_id = self._get_org_id()
+        policy_document = {"Statement": [
+            {
+                "Action": ["*"], 
+                "Condition": {"StringEquals": {"g:PrincipalOrgID": org_id}, 
+                              "StringEqualsIfExists": {"g:ResourceOrgID": org_id}}, 
+                "Effect": "Allow", "Principal": "*", "Resource": ["*"]
+            }], 
+            "Version": "5.0"}
+        return policy_document
+        
     def _wait_ep_can_processed(self, resource):
         for i in range(12):
             if resource.get('status') not in ('creating', 'deleting'):
@@ -612,6 +621,18 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
                       f"is not available, wait: {i}")
             time.sleep(5)
         return False
+
+    def _get_org_id(self):
+        client = local_session(self.manager.session_factory).client("org-account")
+        try:
+            resp = client.show_organization(ShowOrganizationRequest())
+            log.debug(f"[actions]-[update-policy-document]-query the service:"
+                      f"[/v1/organizations] has successed. Get org is: {resp}")
+            return resp.organization.id
+        except exceptions.ClientRequestException as e:
+            log.error(f"[actions]-[update-policy-document]-query the service:"
+                      f"[/v1/organizations] is failed.cause:{e}")
+            raise e
 
     def _update_policy(self, ep_id, policy_document):
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
