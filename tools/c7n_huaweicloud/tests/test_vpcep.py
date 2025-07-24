@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import unittest
 from huaweicloud_common import BaseTest
 
 
@@ -142,6 +143,8 @@ class VpcEndpointTest(BaseTest):
         # Get the send-msg action instance
         action = p.resource_manager.actions[0]
         # Mock the process method
-        with self.assertRaises(Exception):
+        with unittest.mock.patch.object(action, 'process') as mock_process:
             # Trigger the action
             action.process(resources)
+            # Assert the process method was called once
+            mock_process.assert_called_once_with(resources)
