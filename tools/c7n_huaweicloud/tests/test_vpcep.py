@@ -143,7 +143,6 @@ class VpcEndpointTest(BaseTest):
         # Get the send-msg action instance
         action = p.resource_manager.actions[0]
         # Mock the process method
-        with unittest.mock.patch.object(action, 'process') as mock_process:
-        with self.assertRaise(Exception):
+        with self.assertRaises(Exception):
             # Trigger the action
             action.process(resources)
