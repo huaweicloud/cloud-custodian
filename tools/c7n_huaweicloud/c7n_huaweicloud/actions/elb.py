@@ -220,18 +220,27 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                         )
                     resp_log_group_id = group.log_group_id
                     break
+            if not resp_log_group_id:
+                log.error(
+                    f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                    f"Log group with specified log_group_id='{log_group_id}' not found."
+                )
+                raise Exception(
+                    f"Log group with specified log_group_id='{log_group_id}' not found."
+                )
         elif log_group_name:
             for group in log_group_response.log_groups:
                 if group.log_group_name == log_group_name:
                     resp_log_group_id = group.log_group_id
                     break
-        if not resp_log_group_id:
-            log.error(
-                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                "Log group with specified 'log_group_name' or 'log_group_id' not found."
-            )
-            raise Exception("Log group with specified"
-                " 'log_group_name' or 'log_group_id' not found.")
+            if not resp_log_group_id:
+                log.error(
+                    f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                    f"Log group with specified log_group_name='{log_group_name}' not found."
+                )
+                raise Exception(
+                    f"Log group with specified log_group_name='{log_group_name}' not found."
+                )
 
         log_stream_response = lts_client.list_log_stream(
             ListLogStreamRequest(log_group_id=resp_log_group_id)
@@ -252,19 +261,27 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                         )
                     resp_log_stream_id = topic.log_stream_id
                     break
+            if not resp_log_stream_id:
+                log.error(
+                    f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                    f"Log topic with specified log_topic_id='{log_topic_id}' not found."
+                )
+                raise Exception(
+                    f"Log topic with specified 'log_topic_id'='{log_topic_id}' not found."
+                )
         elif log_topic_name:
             for topic in log_stream_response.log_streams:
                 if topic.log_stream_name == log_topic_name:
                     resp_log_stream_id = topic.log_stream_id
                     break
-        if not resp_log_stream_id:
-            log.error(
-                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                "Log topic with specified 'log_topic_name' or 'log_topic_id' not found."
-            )
-            raise Exception(
-                "Log topic with specified 'log_topic_name' or 'log_topic_id' not found."
-            )
+            if not resp_log_stream_id:
+                log.error(
+                    f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                    f"Log topic with specified log_topic_name='{log_topic_name}' not found."
+                )
+                raise Exception(
+                    f"Log topic with specified 'log_topic_name'='{log_topic_name}' not found."
+                )
 
         client = self.manager.get_client()
         logtank = CreateLogtankOption(loadbalancer_id=loadbalancer_id,
@@ -393,12 +410,19 @@ class ListenerDeleteAction(HuaweiCloudBaseAction):
 
         if ('default_pool_id' in resource and resource['default_pool_id'] and
                 len(resource['default_pool_id']) > 0):
-            pool_request = DeletePoolCascadeRequest(pool_id=resource['default_pool_id'])
-            client.delete_pool_cascade(pool_request)
-            log.info(
-                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                f"Successfully deleted listener default pool: {resource['default_pool_id']}"
-            )
+            try:
+                pool_request = DeletePoolCascadeRequest(pool_id=resource['default_pool_id'])
+                client.delete_pool_cascade(pool_request)
+                log.info(
+                    f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                    f"Successfully deleted listener default pool: {resource['default_pool_id']}"
+                )
+            except exceptions.SdkException as e:
+                log.warning(
+                    f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                    f"Failed to delete listener default pool: {resource['default_pool_id']}, "
+                    f"error: {str(e)}"
+                )
 
         request = DeleteListenerForceRequest(listener_id=resource["id"])
         client.delete_listener_force(request)
@@ -445,10 +469,8 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         enable = self.data.get("enable")
         ipgroup_type = self.data.get("ipgroup_type")
 
-        if (
-            (not ipgroup_id or len(ipgroup_id) == 0)
-            and (not ipgroup_name or len(ipgroup_name) == 0)
-        ):
+        if (not ipgroup_id or len(ipgroup_id) == 0) \
+            and (not ipgroup_name or len(ipgroup_name) == 0):
             log.error(
                 f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                 "Either 'ipgroup_id' or 'ipgroup_name' must be provided.")

@@ -551,7 +551,7 @@ class Session:
             )
         elif service == "cci":
             client = CCIClient(self.region, credentials)
-        elif service == 'vpcep-ep':
+        elif service in ['vpcep-ep', 'vpcep-eps']:
             client = (
                 VpcepClient.new_builder()
                 .with_credentials(credentials)
