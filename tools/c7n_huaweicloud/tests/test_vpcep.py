@@ -144,11 +144,6 @@ class VpcEndpointTest(BaseTest):
         action = p.resource_manager.actions[0]
         # Mock the process method
         with unittest.mock.patch.object(action, 'process') as mock_process:
+        with self.assertRaise(Exception):
             # Trigger the action
-            try:
-                action.process(resources)
-            except Exception:
-                # Assert the process method was called once
-                mock_process.assert_called_once_with(resources)
-            else:
-                self.assertTrue(False)
+            action.process(resources)
