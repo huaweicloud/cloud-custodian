@@ -7,7 +7,7 @@ from c7n.exceptions import PolicyValidationError, PolicyExecutionError
 from huaweicloudsdkcore.exceptions import exceptions
 from requests.exceptions import HTTPError
 
-log = logging.getLogger("custodian.huaweicloud.filters.exempted")
+log = logging.getLogger("custodian.filters.exempted")
 
 
 def register_exempted_filters(filters):
@@ -77,7 +77,7 @@ def get_tags_from_resource(resource):
         raise PolicyExecutionError(f"tags:{tags} type not support "
                                     f"in resource {resource['id']}")
     except Exception:
-        log.info(f"tags:{tags} type not support "
+        log.error(f"tags:{tags} type not support "
                   f"in resource [{resource['id']}]")
         raise PolicyExecutionError(f"tags:{tags} type not support "
                                     f"in resource [{resource['id']}]")
@@ -125,13 +125,13 @@ class ExemptedFilter(Filter):
     def validate(self):
         field = self.data.get('field', None)
         if field is None or field == '':
-            self.log.warning("field is required in filter exempted")
+            log.error("field is required in filter exempted")
             raise PolicyValidationError("field is required in filter exempted")
 
         exempted_values = self.data.get('exempted_values', [])
         obs_url = self.data.get('obs_url', None)
         if obs_url is None and not exempted_values:
-            self.log.warning("exempted_values or obs_url is required in filter exempted")
+            log.error("exempted_values or obs_url is required in filter exempted")
             raise PolicyValidationError("exempted_values or obs_url is required in filter exempted")
         return self
 
@@ -155,20 +155,20 @@ class ExemptedFilter(Filter):
         try:
             resource_values = get_values_from_resource(i, field)
         except TypeError:
-            self.log.info(f"{field} type not support in resource [{i['id']}], "
+            log.warning(f"{field} type not support in resource [{i['id']}], "
                              f"only support int or string, not exempted the resource")
             return True
         except KeyError:
-            self.log.info(f"{field} not in resource [{i['id']}], not exempted the resource")
+            log.warning(f"{field} not in resource [{i['id']}], not exempted the resource")
             return True
         except Exception:
-            self.log.info(f"get {field} in resource [{i['id']}] failed, not exempted the resource")
+            log.warning(f"get {field} in resource [{i['id']}] failed, not exempted the resource")
             return True
         resource_values = set(resource_values)
         exempted_values = set(exempted_values)
         intersection = list(resource_values & exempted_values)
         if len(intersection) > 0:
-            self.log.info(f"c7n_huaweicloud.filter:Resource [{i['id']}] is exempted, "
+            log.info(f"c7n_huaweicloud.filter:Resource [{i['id']}] is exempted, "
                           f"exempted values: {intersection}")
         return len(intersection) == 0
 
@@ -186,18 +186,30 @@ class ExemptedFilter(Filter):
             resp = obs_client.getObject(bucketName=obs_bucket_name,
                                         objectKey=obs_file,
                                         loadStreamInMemory=True)
-            if resp.status < 300:
+            if 300 > resp.status >= 200:
+                log.debug(f"[filters]-The filter:exempted query the service:"
+                               f"[{obs_url}] is success.")
                 exempted_values_obs = json.loads(resp.body.buffer)[group_key]
                 return exempted_values_obs
             else:
-                self.log.warning(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
+                log.error(f"[filters]-The filter:exempted query the service:"
+                          f"[{obs_url}] is failed. "
+                          f"cause: {resp.errorMessage}, "
+                          f"status code: {resp.status}")
                 raise HTTPError(resp.status, resp.body)
         except exceptions.ClientRequestException as e:
-            self.log.warning("get obs object failed, ", e.status_code, e.request_id,
-                           e.error_code, e.error_msg)
+            log.error(f"[filters]-The filter:exempted query the service:"
+                      f"[{obs_url}] is failed. "
+                      f"cause: {e.error_msg}, "
+                      f"error code: {e.error_code}, "
+                      f"status code: {e.status_code}, "
+                      f"request id: {e.request_id}")
             raise
-        except Exception:
-            self.log.warning("get_exempted_values_from_obs occur exception")
+        except Exception as e:
+            log.error(f"[filters]-The filter:exempted query the service:"
+                      f"[{obs_url}] is failed. "
+                      f"group_key: {group_key}. "
+                      f"cause: {e}")
             raise
 
 

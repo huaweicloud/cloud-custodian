@@ -34,8 +34,6 @@ interactions:
       - api-gateway
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -49,4 +47,59 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: '{"action": "filter", "limit": 1000, "offset": 0}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '48'
+      Content-Type:
+      - application/json;charset=utf-8
+      Host:
+      - vpc.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250716T110119Z
+    method: POST
+    uri: https://vpc.ap-southeast-1.myhuaweicloud.com/v2.0/ap-southeat-1/security-groups/resource_instances/action
+  response:
+    body:
+      string: '{"resources":[{"resource_name":"sg-refer-test","resource_id":"bfb76404-e29b-4003-8d44-d503e9f9a04e","resource_detail":"","tags":[]},{"resource_name":"sg-exempted-test","resource_id":"9356e003-f9b1-407c-83a1-5b2bbe730125","resource_detail":"","tags":[{"key":"VPC_EXEMPTED","value":"VPC_EXEMPTED"}]}],"total_count":2}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 16 Jul 2025 11:01:19 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=5969f76eb620bcda91; path=/
+      - HWWAFSESTIME=1752663676187; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6f1e0b5501b9b85fa679c9b95d0e5c0a
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
 version: 1

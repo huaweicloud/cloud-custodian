@@ -357,7 +357,7 @@ interactions:
     uri: https://cbr.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/vaults/f85e42a4-d23b-4af9-b361-e56758e6faa4/addresources
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"df15c06a66b78e5853446b26ed1ce7bb"}
+      string: '{"add_resource_ids":["f85e42a4-d23b-4af9-b361-e56758e6faa4"]}
 
         '
     headers:
@@ -384,6 +384,6 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
+      code: 200
       message: Unauthorized
 version: 1
