@@ -113,9 +113,8 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"subject": "VPC\u7ec8\u7aef\u8282\u70b9\u914d\u7f6e\u901a\u77e5", "message":
-      "alert:xxx Please check whether VPC vpc-12345678 has a VPC endpoint configured,
-      and whether the endpoint service name is com.huaweicloud.service.test."}'
+    body: '{"subject": "VPC Endpoint Configuration Notification", "message":
+      "alert:xxx Please check whether VPC has a VPC endpoint configured, and whether the endpoint service name is com.huaweicloud.service.test."}'
     headers:
       Accept:
       - '*/*'
@@ -136,12 +135,10 @@ interactions:
       X-Sdk-Date:
       - 20250612T095510Z
     method: POST
-    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/notifications/topics/urn%3Asmn%3Acn-north-4%3A0df25bbc878091b62f88c00c2959df9a%3Atest/publish
+    uri: https://smn.ap-southeast-1.myhuaweicloud.com/v2/0df25bbc878091b62f88c00c2959df9a/notifications/topics/urn%3Asmn%3Acn-north-4%3A0df25bbc878091b62f88c00c2959df9a%3Atest/publish
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"2be792e73bb7d30159f7fe60f7f6c2d6"}
-
-        '
+      string: '{"message_id":"2be792e73bb7d30159f7fe60f7f6c2d7","request_id":"2be792e73bb7d30159f7fe60f7f6c2d6"}'
     headers:
       Connection:
       - keep-alive
@@ -169,6 +166,6 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: OK
 version: 1

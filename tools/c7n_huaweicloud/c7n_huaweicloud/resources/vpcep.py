@@ -264,11 +264,7 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
             except Exception as e:
                 log.error("[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
                           f"send message to {topic_urn} failed.cause:{e}")
-                results.append({
-                    'status': 'error',
-                    'topic_urn': topic_urn,
-                    'error': str(e)
-                })
+                raise e
         return results
 
 
