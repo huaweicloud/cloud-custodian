@@ -143,6 +143,7 @@ from c7n_huaweicloud.utils.cci_client import CCIClient
 from huaweicloudsdkvpcep.v1 import VpcepClient
 from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
 from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
+from huaweicloudsdkvpcep.v1 import ListEndpointServiceRequest
 
 # CCE相关导入
 from huaweicloudsdkcce.v3 import (
@@ -723,6 +724,8 @@ class Session:
             request = True
         elif service == 'vpcep-ep':
             request = ListEndpointsRequest()
+        elif service == 'vpcep-eps':
+            request = ListEndpointServiceRequest()
         elif service == "cce-cluster":
             request = ListClustersRequest()
         elif service == "cce-nodepool":
