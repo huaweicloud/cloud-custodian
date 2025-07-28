@@ -69,6 +69,7 @@ ResourceMap = {
     "huaweicloud.ccm-private-ca": "c7n_huaweicloud.resources.ccm.CertificateAuthority",
     "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate",
     "huaweicloud.vpcep-ep": "c7n_huaweicloud.resources.vpcep.VpcEndpoint",
+    "huaweicloud.vpcep-eps": "c7n_huaweicloud.resources.vpcep.VpcEndpointService",
     "huaweicloud.cce-cluster": "c7n_huaweicloud.resources.cce.CceCluster",
     "huaweicloud.cce-nodepool": "c7n_huaweicloud.resources.cce.CceNodePool",
     "huaweicloud.cce-node": "c7n_huaweicloud.resources.cce.CceNode",
