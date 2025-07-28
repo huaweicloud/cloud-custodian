@@ -76,13 +76,10 @@ class VpcEndpointService(QueryResourceManager):
     """
     class resource_type(TypeInfo):
         service = 'vpcep-eps'
-        enum_spec = ('list_endpoint_services', 'endpoint_services', 'offset')
+        enum_spec = ('list_endpoint_service', 'endpoint_services', 'offset')
         id = 'id'
-        name = 'endpoint_service_name'
-        filter_name = 'endpoint_service_name'
-        filter_type = 'scalar'
         taggable = True
-        tag_resource_type = 'endpoint-services'
+        tag_resource_type = 'endpoint_service'
 
     def augment(self, resources):
         if not resources:
@@ -680,7 +677,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
                       f"with id:[{ep_id}] update policy is failed.cause:{e}")
             raise e
 
-@VpcEndpoint.action_registry.register('enable-eps-approval-enabled')
+@VpcEndpointService.action_registry.register('enable-eps-approval-enabled')
 class VpcEndpointEnableEpsApprovalEnabled(HuaweiCloudBaseAction):
 
     """Enable the eps approval enabled.
@@ -712,6 +709,19 @@ class VpcEndpointEnableEpsApprovalEnabled(HuaweiCloudBaseAction):
         log.info(f"[actions]-[enable-eps-approval-enabled]-The resource:[vpcep-eps] "
                  f"with id:[{eps_id}] approval-enabled is False.")
         self._enable_eps_approval_enabled(eps_id)
+
+    def perform_action(self, resource):
+        return None
+
+    def _wait_eps_can_processed(self, resource):
+        for i in range(12):
+            if resource.get('status') not in ('creating', 'deleting'):
+                return True
+            log.debug(f"[actions]-[enable-eps-approval-enabled] The resource:[vpcep-eps] "
+                      f"with id:[{resource.get('id')}] status {resource.get('status')} "
+                      f"is not available, wait: {i}")
+            time.sleep(5)
+        return False
 
     def _enable_eps_approval_enabled(self, eps_id):
         request = UpdateEndpointServiceRequest(vpc_endpoint_service_id=eps_id)
