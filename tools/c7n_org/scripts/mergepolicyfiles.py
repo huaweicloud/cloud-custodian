@@ -5,7 +5,7 @@ import os
 import click
 import yaml
 
-POLICY_KEY= "policies"
+POLICY_KEY = "policies"
 
 
 @click.command()
@@ -43,4 +43,3 @@ def main(output, policy_files, policy_files_path):
 
 if __name__ == '__main__':
     main()
-
