@@ -62,6 +62,7 @@ class VpcEndpoint(QueryResourceManager):
             return [{"fake-resource": True}]
         return resources
 
+
 @resources.register('vpcep-eps')
 class VpcEndpointService(QueryResourceManager):
     """Huawei Cloud VPC Endpoint Service Resource Manager
@@ -676,6 +677,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
             log.error(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
                       f"with id:[{ep_id}] update policy is failed.cause:{e}")
             raise e
+
 
 @VpcEndpointService.action_registry.register('enable-eps-approval-enabled')
 class VpcEndpointEnableEpsApprovalEnabled(HuaweiCloudBaseAction):
