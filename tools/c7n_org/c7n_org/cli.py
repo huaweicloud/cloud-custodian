@@ -872,7 +872,6 @@ def run(config, use, output_dir, accounts, not_accounts, tags, region,
     total_success_resources = sum(success_policy_counts.values())
     total_failed_policies = sum(failed_policy_counts.values())
 
-
     log.info("=== Policy Execution Results ===")
     log.info(f"Successfully executed policies and matched resource counts: "
              f"{dict(success_policy_counts)}")
