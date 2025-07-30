@@ -104,6 +104,7 @@ from huaweicloudsdkram.v1 import (
     RamClient,
     SearchResourceShareAssociationsRequest,
     SearchResourceShareAssociationsReqBody,
+    SearchSharedResourcesRequest, SearchSharedResourcesReqBody,
 )
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
@@ -143,6 +144,7 @@ from c7n_huaweicloud.utils.cci_client import CCIClient
 from huaweicloudsdkvpcep.v1 import VpcepClient
 from huaweicloudsdkvpcep.v1.region.vpcep_region import VpcepRegion
 from huaweicloudsdkvpcep.v1 import ListEndpointsRequest
+from huaweicloudsdkvpcep.v1 import ListEndpointServiceRequest
 
 # CCE相关导入
 from huaweicloudsdkcce.v3 import (
@@ -567,6 +569,13 @@ class Session:
                 .with_region(CceRegion.value_of(self.region))
                 .build()
             )
+        elif service == "ram-shared-resource":
+            client = (
+                RamClient.new_builder()
+                .with_credentials(globalCredentials)
+                .with_region(RamRegion.value_of("cn-north-4"))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -723,6 +732,8 @@ class Session:
             request = True
         elif service == 'vpcep-ep':
             request = ListEndpointsRequest()
+        elif service == 'vpcep-eps':
+            request = ListEndpointServiceRequest()
         elif service == "cce-cluster":
             request = ListClustersRequest()
         elif service == "cce-nodepool":
@@ -737,6 +748,11 @@ class Session:
             request = ListChartsRequest()
         elif service == "cce-release":
             request = ListReleasesRequest()
+        elif service == "ram-shared-resource":
+            request = SearchSharedResourcesRequest()
+            request.body = SearchSharedResourcesReqBody(
+                resource_owner="self"
+            )
         return request
 
 

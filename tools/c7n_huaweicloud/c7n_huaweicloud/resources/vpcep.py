@@ -23,6 +23,8 @@ from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkvpcep.v1 import (
     UpdateEndpointPolicyRequest,
     UpdateEndpointPolicyRequestBody,
+    UpdateEndpointServiceRequest,
+    UpdateEndpointServiceRequestBody,
     PolicyStatement,
     ListServiceDescribeDetailsRequest
 )
@@ -53,6 +55,32 @@ class VpcEndpoint(QueryResourceManager):
         filter_type = 'scalar'
         taggable = True
         tag_resource_type = 'endpoint'
+
+    def augment(self, resources):
+        if not resources:
+            # Return a fake resource
+            return [{"fake-resource": True}]
+        return resources
+
+
+@resources.register('vpcep-eps')
+class VpcEndpointService(QueryResourceManager):
+    """Huawei Cloud VPC Endpoint Service Resource Manager
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: list-vpc-endpoint-services
+            resource: huaweicloud.vpcep-eps
+    """
+    class resource_type(TypeInfo):
+        service = 'vpcep-eps'
+        enum_spec = ('list_endpoint_service', 'endpoint_services', 'offset')
+        id = 'id'
+        taggable = True
+        tag_resource_type = 'endpoint_service'
 
     def augment(self, resources):
         if not resources:
@@ -264,11 +292,7 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
             except Exception as e:
                 log.error("[actions]-[eps-check-ep-msg]-The resource:[vpcep-ep] "
                           f"send message to {topic_urn} failed.cause:{e}")
-                results.append({
-                    'status': 'error',
-                    'topic_urn': topic_urn,
-                    'error': str(e)
-                })
+                raise e
         return results
 
 
@@ -648,4 +672,67 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
                       f"with id:[{ep_id}] update policy is failed.cause:{e}")
+            raise e
+
+
+@VpcEndpointService.action_registry.register('enable-eps-approval-enabled')
+class VpcEndpointEnableEpsApprovalEnabled(HuaweiCloudBaseAction):
+
+    """Enable the eps approval enabled.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: enable-eps-approval-enabled
+            resource: huaweicloud.vpcep-eps
+            actions:
+              - type: enable-eps-approval-enabled
+    """
+
+    schema = type_schema('enable-eps-approval-enabled')
+
+    def process(self, resources):
+        if not resources:
+            return []
+        for resource in resources:
+            if self._wait_eps_can_processed(resource):
+                self.process_resource(resource)
+
+        return resources
+
+    def process_resource(self, resource):
+        eps_id = resource.get("id", "")
+        log.info(f"[actions]-[enable-eps-approval-enabled]-The resource:[vpcep-eps] "
+                 f"with id:[{eps_id}] approval-enabled is False.")
+        self._enable_eps_approval_enabled(eps_id)
+
+    def perform_action(self, resource):
+        return None
+
+    def _wait_eps_can_processed(self, resource):
+        for i in range(12):
+            if resource.get('status') not in ('creating', 'deleting'):
+                return True
+            log.debug(f"[actions]-[enable-eps-approval-enabled] The resource:[vpcep-eps] "
+                      f"with id:[{resource.get('id')}] status {resource.get('status')} "
+                      f"is not available, wait: {i}")
+            time.sleep(5)
+        return False
+
+    def _enable_eps_approval_enabled(self, eps_id):
+        request = UpdateEndpointServiceRequest(vpc_endpoint_service_id=eps_id)
+        body = UpdateEndpointServiceRequestBody(approval_enabled=True)
+        request.body = body
+        log.debug(f"[actions]-[enable-eps-approval-enabled] update request body: {request}")
+
+        client = self.manager.get_client()
+        try:
+            client.update_endpoint_service(request)
+            log.info(f"[actions]-[enable-eps-approval-enabled]-The resource:[vpcep-eps] "
+                     f"with id:[{eps_id}] enable the approval enabled has succeeded.")
+        except exceptions.ClientRequestException as e:
+            log.error(f"[actions]-[enable-eps-approval-enabled]-The resource:[vpcep-eps] "
+                      f"with id:[{eps_id}] enable the approval enabled is failed.cause:{e}")
             raise e
