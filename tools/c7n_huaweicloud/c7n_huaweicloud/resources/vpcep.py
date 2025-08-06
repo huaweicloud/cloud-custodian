@@ -542,17 +542,26 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
                  f"invalid policy list:{ids}")
         return result
 
+    def _is_principal_wildcards(self, statement):
+        wildcards = '*'
+        principal = statement.get('Principal', '')
+        if not principal or principal == wildcards:
+            return True
+        if isinstance(principal, dict):
+            for iam in principal.get('IAM', []):
+                if iam == wildcards:
+                    return True
+            for ser in principal.get('Service', []):
+                if ser == wildcards:
+                    return True
+        return False
+
     def _check_policy_document(self, policy_document):
         statement = policy_document.get('Statement', [])
         if not statement:
             return False
         for item in statement:
-            principal = item.get('Principal', '')
-            if not principal:
-                return False
-            if principal != '*':
-                continue
-            if not item.get('Condition'):
+            if self._is_principal_wildcards(item) and not item.get('Condition'):
                 return False
         return True
 
