@@ -82,5 +82,8 @@ ResourceMap = {
     "huaweicloud.cci_configmap": "c7n_huaweicloud.resources.cci.CCIConfigMap",
     "huaweicloud.cci_secret": "c7n_huaweicloud.resources.cci.CCISecret",
     "huaweicloud.ram-shared-resource":
-        "c7n_huaweicloud.resources.ram-shared-resource.RAMSharedResources"
+        "c7n_huaweicloud.resources.ram-shared-resource.RAMSharedResources",
+    "huaweicloud.as-group": "c7n_huaweicloud.resources.as.AsGroup",
+    "huaweicloud.as-config": "c7n_huaweicloud.resources.as.AsConfig",
+    "huaweicloud.as-policy": "c7n_huaweicloud.resources.as.AsPolicy"
 }
