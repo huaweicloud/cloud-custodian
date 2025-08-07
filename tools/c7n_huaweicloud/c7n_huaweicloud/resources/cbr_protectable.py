@@ -147,7 +147,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 num_resource = len(vaults[vault_num]['resources'])
                 space = self.max_count - num_resource
                 if space <= 0:
-                    log.debug(f"[actions]-[{self.action_name}] "
+                    log.info(f"[actions]-[{self.action_name}] "
                               f"unable to add resource to {vaults[vault_num]['id']},"
                               "because the number of instances in the vault"
                               f" {vaults[vault_num]['id']} has reached the upper limit.")
@@ -167,13 +167,14 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                         resources=listResourcesbody
                     )
                     response = client.add_vault_resource(request)
-                    log.debug(f"[actions]-[{self.action_name}] the resource:[{self.resource_type}]"
+                    log.info(f"[actions]-[{self.action_name}] the resource:[{self.resource_type}]"
                               f" with id:{server_ids} associate to vault:"
                               f"{vaults[vault_num]['id']} success.")
             except exceptions.ClientRequestException as e:
                 log.error(f"[actions]-[{self.action_name}] "
-                          f"failed to add resource to {vaults[vault_num]['id']}, "
-                          f"cause request id:{e.request_id}, msg:{e.error_msg}")
+                          f"add resource id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
+                          f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
+                raise
             vault_num += 1
         vault_billing = {}
         if len(vaults) > 0:
@@ -199,6 +200,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
 
     def create_new_vault(self, resources, policy_id, vault_name, vault_billing):
         client = self.manager.get_client()
+        resource_ids = []
         try:
             request = CreateVaultRequest()
             listResourcesVault = []
@@ -209,6 +211,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                         type="OS::Nova::Server"
                     )
                 )
+                resource_ids.append(server.get('id'))
             # prioritize existing repositories
             if vault_billing:
                 consistent_level = vault_billing['consistent_level']
@@ -255,6 +258,10 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 vault=vault_body
             )
             response = client.create_vault(request)
+            new_vault_id = response.vault.id
+            log.info(f"[actions]-[{self.action_name}] the resource:[{self.resource_type}]"
+                     f" with id:[{resource_ids}] create new backup vault:{new_vault_id},"
+                     " and associate the servers to it success")
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]-[{self.action_name}] create vault failed, cause "
                       f"request id:{e.request_id}, status code:{e.status_code}, msg:{e.error_msg}")
@@ -303,6 +310,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                     log.error(f"[actions]-[{self.action_name}]"
                               f" query policy by vault:{vault_item['id']} failed,"
                               f" cause request id:{e.request_id}, msg:{e.error_msg}")
+                    raise
         if not policy_id:
             # if inherit policy failed, list exists policy
             log.debug(f"[actions]-[{self.action_name}]"
@@ -322,4 +330,5 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 log.error(f"[actions]-[{self.action_name}]"
                           f" query exist policy list failed,"
                           f" cause request id:{e.request_id}, msg:{e.error_msg}")
+                raise
         return policy_id
