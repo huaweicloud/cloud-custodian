@@ -69,6 +69,7 @@ ResourceMap = {
     "huaweicloud.ccm-private-ca": "c7n_huaweicloud.resources.ccm.CertificateAuthority",
     "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate",
     "huaweicloud.vpcep-ep": "c7n_huaweicloud.resources.vpcep.VpcEndpoint",
+    "huaweicloud.vpcep-eps": "c7n_huaweicloud.resources.vpcep.VpcEndpointService",
     "huaweicloud.cce-cluster": "c7n_huaweicloud.resources.cce.CceCluster",
     "huaweicloud.cce-nodepool": "c7n_huaweicloud.resources.cce.CceNodePool",
     "huaweicloud.cce-node": "c7n_huaweicloud.resources.cce.CceNode",
@@ -79,5 +80,10 @@ ResourceMap = {
     "huaweicloud.cci_namespace": "c7n_huaweicloud.resources.cci.CCINamespace",
     "huaweicloud.cci_pod": "c7n_huaweicloud.resources.cci.CCIPod",
     "huaweicloud.cci_configmap": "c7n_huaweicloud.resources.cci.CCIConfigMap",
-    "huaweicloud.cci_secret": "c7n_huaweicloud.resources.cci.CCISecret"
+    "huaweicloud.cci_secret": "c7n_huaweicloud.resources.cci.CCISecret",
+    "huaweicloud.ram-shared-resource":
+        "c7n_huaweicloud.resources.ram-shared-resource.RAMSharedResources",
+    "huaweicloud.as-group": "c7n_huaweicloud.resources.as.AsGroup",
+    "huaweicloud.as-config": "c7n_huaweicloud.resources.as.AsConfig",
+    "huaweicloud.as-policy": "c7n_huaweicloud.resources.as.AsPolicy"
 }

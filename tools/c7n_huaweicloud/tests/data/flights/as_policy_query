@@ -1,0 +1,81 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - as.ap-southeast-1.myhwclouds.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250612T141553Z
+    method: GET
+    uri: https://as.ap-southeast-1.myhwclouds.com/autoscaling-api/v2/ap-southeat-1/scaling_policy?limit=100&start_number=0
+  response:
+    body:
+      string: '{
+            "limit": 20,
+            "total_number": 1,
+            "start_number": 0,
+            "scaling_policies": [
+                {
+                    "scaling_policy_id": "803a35a5-38fb-4d27-a042-496c14bc1fb8",
+                    "scaling_policy_name": "as-policy-7a75",
+                    "scaling_resource_id": "8ade64b5-d685-40b8-8582-4ce306ea37a6",
+                    "scaling_resource_type": "SCALING_GROUP",
+                    "scaling_policy_type": "RECURRENCE",
+                    "scheduled_policy": {
+                        "launch_time": "03:30",
+                        "recurrence_type": "Daily",
+                        "start_time": "2017-08-28T03:08Z",
+                        "end_time": "2017-09-01T03:08Z"
+                    },
+                    "cool_down_time": 900,
+                    "scaling_policy_action": {
+                        "operation": "ADD",
+                        "size": 1
+                    },
+                    "policy_status": "INSERVICE",
+                    "create_time": "2017-08-31T03:02:41Z"
+                }
+            ]
+        }'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 12 Jun 2025 14:15:54 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=fdf5d737405d808252; path=/
+      - HWWAFSESTIME=1749737754255; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7ac3934da72e2cbac6d75c2a71256f7d
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: OK
+version: 1

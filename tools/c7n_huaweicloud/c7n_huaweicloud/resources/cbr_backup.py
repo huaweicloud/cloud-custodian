@@ -53,7 +53,7 @@ class CbrDeleteBackup(HuaweiCloudBaseAction):
             request.backup_id = resource['id']
             response = client.delete_backup(request)
             log.info(f"[actions]-[delete] The resource:[cbr-backup] with id:[{resource['id']}]"
-                     f" is deleted successfully.")
+                     f" is deleted success.")
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]-[delete] The resource:[cbr-backup] with id:[{resource['id']}]"
                       f" is failed, cause:request id:{e.request_id}, status code:{e.status_code},"
