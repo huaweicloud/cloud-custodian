@@ -42,12 +42,27 @@ def wrap_perform_action_log(resource_name):
                     f"Success to deal resource[{resource_name}] with id:[{args[1]['id']}]. "
                 )
                 return result
+            except exceptions.RequestTimeoutException as e:
+                # Log the exception with resource details
+                log.error(
+                    f"[actions]-[{args[0].data.get('type', 'UnknownAction')}] "
+                    f"Failed to deal resource[{resource_name}] with id:[{args[1]['id']}]. "
+                    f"Exception: {e}"
+                )
+                # Raise the exception to be handled by the caller
+                raise e
             except exceptions.SdkException as e:
                 log.error(
                     f"[actions]-[{args[0].data.get('type', 'UnknownAction')}] "
                     f"Failed to deal resource[{resource_name}] with id:[{args[1]['id']}]. "
                     f"Exception: {e}"
                 )
+                # Raise the exception if it is a RequestTimeoutException or has a 403 status code
+                if isinstance(e, exceptions.RequestTimeoutException):
+                    raise e
+                if hasattr(e, 'status_code') and e.status_code == 403:
+                    raise e
+
         return wrapper
     return decorator
 
