@@ -43,6 +43,7 @@ def run(event, context=None):
     options_overrides['security_token'] = context.getSecurityToken()
     options_overrides['region'] = context.getUserData('HUAWEI_DEFAULT_REGION')
     options_overrides['domain_id'] = context.getUserData('DOMAIN_ID')
+    options_overrides['account_id'] = context.getUserData('DOMAIN_ID')
 
     # merge all our options in
     options = Config.empty(**options_overrides)
@@ -56,6 +57,7 @@ def run(event, context=None):
             log.info(f'[{p.execution_mode}]-User with account_id: '
                      f'[{context.getUserData("DOMAIN_ID")}] influenced the [{p.resource_type}], '
                      f'and triggered the policy [{p.name}].')
+            p.expand_variables(p.get_variables({'resource_details': '{resource_details}'}))
             p.validate()
             p.push(event, context)
 

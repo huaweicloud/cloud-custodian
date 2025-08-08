@@ -1,4 +1,5 @@
 import re
+import logging
 from datetime import datetime, timedelta
 
 from c7n import utils
@@ -38,6 +39,7 @@ class TagCountFilter(Filter):
         count={'type': 'integer', 'minimum': 0},
         op={'enum': list(OPERATORS.keys())})
     schema_alias = True
+    log = logging.getLogger('custodian.filters.tag-count')
 
     def __call__(self, i):
         count = self.data.get('count', 5)
@@ -73,7 +75,7 @@ class TagCountFilter(Filter):
                     return {item['key']: item['value'] for item in tags}
             return {}
         except Exception:
-            self.log.error("Parse Tags in resource %s failed", resource["id"])
+            self.log.warning("Parse tags in resource %s failed", resource["id"])
             return {}
 
 
@@ -123,6 +125,7 @@ class TagActionFilter(Filter):
         skew_hours={'type': 'number', 'minimum': 0},
         op={'type': 'string'})
     schema_alias = True
+    log = logging.getLogger('custodian.filters.marked-for-op')
 
     def validate(self):
         op = self.data.get('op')
@@ -216,5 +219,5 @@ class TagActionFilter(Filter):
                     return {item['key']: item['value'] for item in tags}
             return {}
         except Exception:
-            self.log.error("Parse Tags in resource %s failed", resource["id"])
+            self.log.warning("Parse tags in resource %s failed", resource["id"])
             return {}

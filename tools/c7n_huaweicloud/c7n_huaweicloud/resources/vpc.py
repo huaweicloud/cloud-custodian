@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
 import logging
 import json
 import netaddr
@@ -9,6 +10,8 @@ import os
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkvpc.v2 import (
     ListPortsRequest,
+    ListSecurityGroupsByTagsRequest,
+    ListSecurityGroupsByTagsRequestBody,
     UpdateFlowLogReq,
     UpdateFlowLogRequest,
     UpdateFlowLogReqBody,
@@ -39,13 +42,12 @@ from huaweicloudsdkvpc.v3 import (
     UpdateSubNetworkInterfaceRequestBody
 )
 
-from c7n.exceptions import PolicyValidationError
+from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 from c7n.filters import Filter, ValueFilter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from requests.exceptions import HTTPError
 
 log = logging.getLogger("custodian.huaweicloud.resources.vpc")
 
@@ -65,6 +67,42 @@ class Port(QueryResourceManager):
         enum_spec = ('list_ports', 'ports', 'marker')
         id = 'id'
         tag_resource_type = ''
+
+    def get_resources(self, resource_ids):
+        resources = self.get_api_resources()
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
+
+    def _fetch_resources(self, query):
+        return self.get_api_resources(query)
+
+    def get_api_resources(self, query=None):
+        ecs_list = []
+        resourceTagDict = {}
+        try:
+            ecs_list = self.get_resource_manager("huaweicloud.ecs").resources()
+        except exceptions.ClientRequestException as ex:
+            log.error(f"Failed to query ecs tags, "
+                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
+        for ecs in ecs_list:
+            tag = ecs.get("tags", [])
+            if tag:
+                resourceTagDict[ecs.get("id")] = tag
+
+        resource_ids_with_tag = resourceTagDict.keys()
+        q = query or self.get_resource_query()
+        resources = (
+            self.augment(self.source.get_resources(q)) or []
+        )
+        for resource in resources:
+            resource_id = resource.get("device_id", "")
+            resource_tag = resourceTagDict.get(resource_id) \
+                if resource_id in resource_ids_with_tag else []
+            resource["tags"] = resource_tag
+        return resources
 
 
 @Port.filter_registry.register("port-forwarding")
@@ -135,19 +173,27 @@ class PortDisablePortForwarding(HuaweiCloudBaseAction):
                 else:
                     new_pair = AllowedAddressPairV3(ip_address=pair_ip, mac_address=pair_mac)
                 new_pairs.append(new_pair)
-        if not is_subeni:
-            port_body = UpdatePortOption(allowed_address_pairs=new_pairs)
-            request = UpdatePortRequest()
-            request.port_id = resource['id']
-            request.body = UpdatePortRequestBody(port=port_body)
-            response = client.update_port(request)
-        else:
-            request = UpdateSubNetworkInterfaceRequest()
-            request.sub_network_interface_id = resource['id']
-            subeni_body = UpdateSubNetworkInterfaceOption(allowed_address_pairs=new_pairs)
-            request.body = UpdateSubNetworkInterfaceRequestBody(
-                sub_network_interface=subeni_body)
-            response = client.update_sub_network_interface(request)
+        try:
+            if not is_subeni:
+                port_body = UpdatePortOption(allowed_address_pairs=new_pairs)
+                request = UpdatePortRequest()
+                request.port_id = resource['id']
+                request.body = UpdatePortRequestBody(port=port_body)
+                response = client.update_port(request)
+            else:
+                request = UpdateSubNetworkInterfaceRequest()
+                request.sub_network_interface_id = resource['id']
+                subeni_body = UpdateSubNetworkInterfaceOption(allowed_address_pairs=new_pairs)
+                request.body = UpdateSubNetworkInterfaceRequestBody(
+                    sub_network_interface=subeni_body)
+                response = client.update_sub_network_interface(request)
+            log.info(f"[actions]-[disable-port-forwarding]-The resource:[vpc-port] with id: "
+                     f"[{resource['id']}] update network interface succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error(f"[actions]-[disable-port-forwarding]-The resource:[vpc-port] with id: "
+                      f"[{resource['id']}] update network interface failed, "
+                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
         return response
 
 
@@ -183,10 +229,16 @@ class SecurityGroupDelete(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        request = DeleteSecurityGroupRequest(security_group_id=resource["id"])
-        response = client.delete_security_group(request)
-        log.info("Delete security group %s response is: [%d] %s" %
-                 (resource["id"], response.status_code, response.to_json_object()))
+        try:
+            request = DeleteSecurityGroupRequest(security_group_id=resource["id"])
+            response = client.delete_security_group(request)
+            log.info(f"[actions]-[delete]-The resource:[vpc-security-group] with id: "
+                     f"[{resource['id']}] delete security group succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error(f"[actions]-[delete]-The resource:[vpc-security-group] with id: "
+                      f"[{resource['id']}] delete security group failed, "
+                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
         return response
 
 
@@ -216,10 +268,13 @@ class SecurityGroupUnAttached(Filter):
         try:
             request = ListPortsRequest(security_groups=sg_ids)
             response = client.list_ports(request)
-        except exceptions.ClientRequestException as ex:
-            log.exception("Unable to filter unattached security groups because query ports failed."
-                          "RequestId: %s, Reason: %s." %
-                          (ex.request_id, ex.error_msg))
+            log.debug("[filters]-[unattached] query the service:[VPC:list_ports] succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error(f"[filters]-[unattached]-The resource:[vpc-security-group] "
+                      f"filter unattached security groups failed, "
+                      f"cause: query ports associated to the security groups [{sg_ids}] "
+                      f"failed, error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
         ports_object = response.ports
         ports = [p.to_dict() for p in ports_object]
         port_sgs = []
@@ -288,6 +343,58 @@ class SecurityGroupRule(QueryResourceManager):
         enum_spec = ('list_security_group_rules', 'security_group_rules', 'marker')
         id = 'id'
         tag_resource_type = ''
+
+    def get_resources(self, resource_ids):
+        resources = self.get_api_resources()
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
+
+    def _fetch_resources(self, query):
+        return self.get_api_resources(query)
+
+    def get_api_resources(self, query=None):
+        session = local_session(self.session_factory)
+        client = session.client("vpc_v2")
+        resourceTagDict = {}
+        offset, limit = 0, 1000
+        while True:
+            try:
+                requestTag = ListSecurityGroupsByTagsRequest()
+                requestTag.body = ListSecurityGroupsByTagsRequestBody(
+                    offset=offset,
+                    limit=limit,
+                    action="filter"
+                )
+                responseTag = client.list_security_groups_by_tags(requestTag)
+                tagResources = responseTag.resources
+                for tagResource in tagResources:
+                    tag = tagResource.to_dict().get("tags", [])
+                    if tag:
+                        resourceTagDict[tagResource.resource_id] = tag
+            except exceptions.ClientRequestException as ex:
+                log.error(f"Failed to query security group tags, "
+                          f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
+                break
+
+            offset += limit
+            if not responseTag.total_count or limit > len(responseTag.resources):
+                break
+
+        resource_ids_with_tag = resourceTagDict.keys()
+        q = query or self.get_resource_query()
+        resources = (
+            self.augment(self.source.get_resources(q)) or []
+        )
+        for resource in resources:
+            parent_resource_id = resource.get("security_group_id", "")
+            resource_tag = resourceTagDict.get(parent_resource_id) \
+                if parent_resource_id in resource_ids_with_tag else []
+            resource["tags"] = resource_tag
+
+        return resources
 
 
 class SecurityGroupRuleFilter(Filter):
@@ -443,10 +550,14 @@ class SecurityGroupRuleFilter(Filter):
                 if len(sgs) > 0:
                     sgs = [sg.to_dict() for sg in sgs]
                     self.default_sg = sgs[0].get('id')
-            except exceptions.ClientRequestException as ex:
-                log.exception("Unable to query defauly security group."
-                              "RequestId: %s, Reason: %s." %
-                              (ex.request_id, ex.error_msg))
+                log.debug(f"[filters]-[{self.direction}] "
+                          f"query the service:[VPC:list_security_groups] succeed.")
+            except exceptions.ServiceResponseException as ex:
+                log.error(f"[filters]-[{self.direction}]-The resource:[vpc-security-group-rule] "
+                          f"filter rules in default security group failed, "
+                          f"cause: query default security group failed, "
+                          f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                raise ex
         return super(SecurityGroupRuleFilter, self).process(resources, event)
 
     def process_direction(self, rule):
@@ -735,10 +846,16 @@ class SecurityGroupRuleDelete(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        request = DeleteSecurityGroupRuleRequest(security_group_rule_id=resource["id"])
-        response = client.delete_security_group_rule(request)
-        log.info("Delete security group rule %s response is: [%d] %s" %
-                 (resource["id"], response.status_code, response.to_json_object()))
+        try:
+            request = DeleteSecurityGroupRuleRequest(security_group_rule_id=resource["id"])
+            response = client.delete_security_group_rule(request)
+            log.info(f"[actions]-[delete]-The resource:[vpc-security-group-rule] with id: "
+                     f"[{resource['id']}] delete security group rule succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error(f"[actions]-[delete]-The resource:[vpc-security-group-rule] with id: "
+                      f"[{resource['id']}] delete security group rule failed, "
+                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
         return response
 
 
@@ -779,7 +896,7 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
             rules = [r for r in resources if direction == r['direction']]
             # remove matched rules
             if mode == 'matched':
-                self.perform_action(rules)
+                self.perform_action(rules, 'remove-rules')
                 ret_rules.extend(rules)
             # remove all rules in the security group of the matched rules
             elif mode == 'all':
@@ -787,15 +904,20 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
                     request = ListSecurityGroupRulesRequest(security_group_id=sg_ids,
                                                             direction=direction)
                     response = client.list_security_group_rules(request)
-                except exceptions.ClientRequestException as ex:
-                    log.exception("Unable to remove all rules because query %s rules "
-                                  "failed. RequestId: %s, Reason: %s." %
-                                  (direction, ex.request_id, ex.error_msg))
-                    continue
+                    log.info(f"[actions]-[remove-rules]-The resource:[vpc-security-group-rule] "
+                             f"query {mode} rules in security groups "
+                             f"of the matched rules succeed.")
+                except exceptions.ServiceResponseException as ex:
+                    log.error(f"[actions]-[remove-rules]- The resource:[vpc-security-group-rule] "
+                              f"remove {mode} rules in security group "
+                              f"of the matched rules failed, "
+                              f"cause: query rules failed, "
+                              f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                    raise ex
 
                 all_rules_object = response.security_group_rules
                 all_rules = [r.to_dict() for r in all_rules_object]
-                self.perform_action(all_rules)
+                self.perform_action(all_rules, 'remove-rules')
                 ret_rules.extend(all_rules)
             # remove rules with a list of rule filter conditions
             elif isinstance(mode, list):
@@ -809,13 +931,14 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
                         response = client.list_security_group_rules(request)
                         to_delete_rules_object = response.security_group_rules
                         to_delete_rules = [r.to_dict() for r in to_delete_rules_object]
-                    except exceptions.ClientRequestException as ex:
-                        log.exception("Unable to remove specified rules because query "
-                                      "%s rules failed. "
-                                      "RequestId: %s, Reason: %s." %
-                                      (direction, ex.request_id, ex.error_msg))
-                        continue
-                    self.perform_action(to_delete_rules)
+                        log.info("[actions]-[set-rules]-The resource:[vpc-security-group-rule] "
+                                 "query rules in security groups of the matched rules succeed.")
+                    except exceptions.ServiceResponseException as ex:
+                        log.error("[actions]-[set-rules]-The resource:[vpc-security-group-rule] "
+                                  "remove specific rules failed, cause: query rules failed, "
+                                  f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                        raise ex
+                    self.perform_action(to_delete_rules, 'set-rules')
                     ret_rules.extend(to_delete_rules)
 
         return self.process_remove_result(ret_rules)
@@ -825,18 +948,19 @@ class RemoveSecurityGroupRules(HuaweiCloudBaseAction):
         remove_result.get("remove_succeeded_rules").extend(resources)
         return remove_result
 
-    def perform_action(self, rules):
+    def perform_action(self, rules, action=None):
         client = self.manager.get_client()
         for r in rules:
             try:
                 request = DeleteSecurityGroupRuleRequest(security_group_rule_id=r["id"])
                 client.delete_security_group_rule(request)
-            except exceptions.ClientRequestException as ex:
-                res = r.get("id")
-                log.exception("Unable to submit action against the resource - %s "
-                              "RequestId: %s, Reason: %s" %
-                              (res, ex.request_id, ex.error_msg))
-                self.handle_exception(r, rules)
+                log.info(f"[actions]-[{action}]-The resource:[vpc-security-group-rule] "
+                         f"with id: [{r['id']}] delete security group rule succeed.")
+            except exceptions.ServiceResponseException as ex:
+                log.error(f"[actions]-[{action}]-The resource:[vpc-security-group-rule] "
+                          f"with id: [{r['id']}] delete security group rule failed, "
+                          f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                raise ex
 
 
 @SecurityGroupRule.action_registry.register('set-rules')
@@ -926,10 +1050,12 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
                 request.body = \
                     BatchCreateSecurityGroupRulesRequestBody(security_group_rules=create_rules)
                 response = client.batch_create_security_group_rules(request)
-            except exceptions.ClientRequestException as ex:
-                log.exception("Unable to add rules in security group %s. "
-                              "RequestId: %s, Reason: %s" %
-                              (sg_id, ex.request_id, ex.error_msg))
+                log.info(f"[actions]-[set-rules]-The resource:[vpc-security-group-rule] "
+                         f"add rules in security group [{sg_id}] succeed.")
+            except exceptions.ServiceResponseException as ex:
+                log.error(f"[actions]-[set-rules]-The resource:[vpc-security-group-rule] "
+                          f"add rules in security group [{sg_id}] failed, "
+                          f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
                 add_failed = True
                 break
             res_rules_object = response.security_group_rules
@@ -937,15 +1063,18 @@ class SetSecurityGroupRules(HuaweiCloudBaseAction):
             ret_rules.extend(res_rules)
         # revert added rules if add rules failed
         if add_failed:
+            log.info("[actions]-[set-rules]-Starting to delete added rules...")
             for rule in ret_rules:
                 try:
                     request = DeleteSecurityGroupRuleRequest(security_group_rule_id=rule['id'])
                     response = client.delete_security_group_rule(request)
-                except exceptions.ClientRequestException as ex:
-                    log.exception("Unable to delete rule %s in security group %s. "
-                                  "RequestId: %s, Reason: %s" %
-                                  (rule['id'], rule['security_group_id'],
-                                   ex.request_id, ex.error_msg))
+                    log.info(f"[actions]-[set-rules]-The resource:[vpc-security-group-rule] "
+                             f"delete added rule {rule['id']} succeed.")
+                except exceptions.ServiceResponseException as ex:
+                    log.error(f"[actions]-[set-rules]-The resource:[vpc-security-group-rule] "
+                              f"delete added rule {rule['id']} failed, "
+                              f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                    raise ex
             return {}
 
         # remove rules
@@ -987,6 +1116,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
 
     schema = type_schema("rule-allow-risk-ports",
                          direction={'enum': ['ingress', 'egress']},
+                         trust_ip_num_limit={'type': 'integer'},
                          risk_ports_path={'type': 'string'},
                          trust_sg_path={'type': 'string'},
                          trust_ip_path={'type': 'string'},
@@ -1007,13 +1137,17 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         # {sg_id : deny_rules}
         deny_rule_map = {}
         extend_trust_ip_obj = {}
+        extend_trust_sg_obj = {}
         if risk_ports_obj:
             if trust_ip_obj:
                 extend_trust_ip_obj = self._extend_ip_map(trust_ip_obj)
+            if trust_sg_obj:
+                extend_trust_sg_obj = self._extend_sg_map(trust_sg_obj)
             for rule in resources:
                 if rule.get('direction') != direction or rule.get('action') != 'allow':
                     continue
                 protocol = rule.get('protocol')
+                # allow all protocol and ports, rule need to delete
                 if not protocol:
                     results.append(rule)
                     continue
@@ -1022,13 +1156,14 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 port_list = []
                 if ports:
                     ports = ports.split(',')
-                    port_list = self._extend_ports(ports)
+                    port_list = self._extend_ports(ports, valid_check=False)
                     risk_rule_ports = [p for p in port_list if p in risk_ports]
                 else:
                     risk_rule_ports = risk_ports
                 if not risk_rule_ports:
                     continue
                 sg = rule['security_group_id']
+                # deny rules high priority
                 if sg not in deny_rule_map:
                     deny_rules = self.get_deny_rules(sg, direction)
                     new_sg = {sg: deny_rules}
@@ -1042,10 +1177,10 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         if not deny_ports:
                             risk_rule_ports = []
                             break
-                        deny_ports = self._extend_ports(deny_ports.split(','))
+                        deny_ports = self._extend_ports(deny_ports.split(','), valid_check=False)
                         risk_rule_ports = [p for p in risk_rule_ports if p not in deny_ports]
                 # trust sg
-                risk_rule_ports = self._handle_trust_port(trust_sg_obj,
+                risk_rule_ports = self._handle_trust_port(extend_trust_sg_obj,
                                                           protocol,
                                                           sg,
                                                           risk_rule_ports)
@@ -1054,6 +1189,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 # trust ip
                 rule_ip = rule.get('remote_ip_prefix')
                 rule_ag_id = rule.get('remote_address_group_id')
+                rule_remote_sg_id = rule.get('remote_group_id')
                 if rule_ip and rule_ip != '0.0.0.0/0':
                     # rule_ip is a specific ip
                     if rule_ip.endswith('/32'):
@@ -1086,10 +1222,15 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         response = client.show_address_group(request)
                         ag = response.address_group.to_dict()
                         ips = ag['ip_set']
-                    except exceptions.ClientRequestException as ex:
-                        log.exception("Unable to show remote address group in security group "
-                                      "rule %s RequestId: %s, Reason: %s." %
-                                      (rule_ag_id, ex.request_id, ex.error_msg))
+                        log.debug("[filters]-[rule-allow-risk-ports]-"
+                                  "query the service:[VPC:show_address_group] succeed.")
+                    except exceptions.ServiceResponseException as ex:
+                        log.error("[filters]-[rule-allow-risk-ports]-"
+                                  "The resource:[vpc-security-group-rule] "
+                                  "filter rules allowing high risk ports failed, "
+                                  f"cause: query address group [{rule_ag_id}] failed, "
+                                  f"error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
+                        raise ex
                     trust_all_ips = True
                     for ip in ips:
                         if '0.0.0.0/0' == ip:
@@ -1120,6 +1261,46 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                                 break
                     if trust_all_ips:
                         risk_rule_ports = []
+                elif rule_remote_sg_id:
+                    sg_ids = [rule_remote_sg_id]
+                    client = self.manager.get_resource_manager('vpc-port').get_client()
+                    try:
+                        request = ListPortsRequest(security_groups=sg_ids)
+                        response = client.list_ports(request)
+                        log.debug("[filters]-[rule-allow-risk-ports] "
+                                  "query the service:[VPC:list_ports] succeed.")
+                    except exceptions.ServiceResponseException as ex:
+                        log.error("[filters]-[rule-allow-risk-ports]-"
+                                  "The resource:[vpc-security-group-rule] "
+                                  "filter unattached security groups failed, "
+                                  "cause: query ports associated to "
+                                  f"the security group [{rule_remote_sg_id}] failed, "
+                                  f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                        raise ex
+                    ports_object = response.ports
+                    ports = [p.to_dict() for p in ports_object]
+                    port_ips = []
+                    # get ip of ports
+                    for port in ports:
+                        fixed_ips = port.get("fixed_ips", [])
+                        if len(fixed_ips) == 1:
+                            port_ips.append(fixed_ips[0].get("ip_address"))
+                        elif len(fixed_ips) == 2:
+                            for fixed_ip in fixed_ips:
+                                ip_address = fixed_ip.get("ip_address")
+                                if (':' not in ip_address and "IPv4" == ethertype) or \
+                                    (':' in ip_address and "IPv6" == ethertype):
+                                    port_ips.append(ip_address)
+                    trust_all_ips = True
+                    # check port ips trust
+                    for ip in port_ips:
+                        ip_int = int(netaddr.IPAddress(ip))
+                        if self._handle_trust_port(extend_trust_ip_obj, protocol,
+                                                   ip_int, risk_rule_ports):
+                            trust_all_ips = False
+                            break
+                    if trust_all_ips:
+                        risk_rule_ports = []
 
                 if risk_rule_ports:
                     results.append(rule)
@@ -1136,7 +1317,6 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         elif 'all' in trust_map:
             trust_port = trust_map.get('all')
         if trust_port:
-            trust_port = self._extend_ports(trust_port)
             return [p for p in risk_rule_ports if p not in trust_port]
         return risk_rule_ports
 
@@ -1155,14 +1335,26 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                                         objectKey=obs_file,
                                         loadStreamInMemory=True)
             if resp.status < 300:
+                log.debug(f"[filters]-[rule-allow-risk-ports]-"
+                          f"query the service:[OBS:getObject] with obs_url:[{obs_url}] succeed.")
                 content = json.loads(resp.body.buffer)
                 return content
             else:
-                log.error(f"get obs object failed: {resp.errorCode}, {resp.errorMessage}")
-                raise HTTPError(resp.status, resp.body)
-        except exceptions.ClientRequestException as e:
-            log.error(e.status_code, e.request_id, e.error_code, e.error_msg)
-            raise e
+                log.error(f"[filters]-[rule-allow-risk-ports]-"
+                          f"The resource:[vpc-security-group-rule] "
+                          f"filter rules allowing high risk ports failed, "
+                          f"cause: get obs object with obs_url:[{obs_url}] failed, "
+                          f"error_code[{resp.errorCode}], error_msg[{resp.errorMessage}].")
+                raise PolicyExecutionError("Get obs object failed, "
+                                           f"error_code[{resp.errorCode}], "
+                                           f"error_msg[{resp.errorMessage}]")
+        except exceptions.ServiceResponseException as ex:
+            log.error(f"[filters]-[rule-allow-risk-ports]-"
+                      f"The resource:[vpc-security-group-rule] "
+                      f"filter rules allowing high risk ports failed, "
+                      f"cause: get obs object with obs_url:[{obs_url}] failed, "
+                      f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
 
     def get_obs_name(self, obs_url):
         last_obs_index = obs_url.rfind(".obs")
@@ -1221,17 +1413,21 @@ class SecurityGroupRuleAllowRiskPort(Filter):
             response = client.list_security_group_rules(request)
             deny_rules_object = response.security_group_rules
             deny_rules = [r.to_dict() for r in deny_rules_object]
-        except exceptions.ClientRequestException as ex:
-            log.exception("Unable to list deny rules in security group %s"
-                          "RequestId: %s, Reason: %s." %
-                          (sg_id, ex.request_id, ex.error_msg))
+            log.debug("[filters]-[rule-allow-risk-ports]-"
+                      "query the service:[VPC:list_security_group_rules] succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.warning("[filters]-[rule-allow-risk-ports]-"
+                        "The resource:[vpc-security-group-rule] "
+                        "filter rules allowing high risk ports failed, "
+                        f"cause: query deny rules in security group [{sg_id}] failed, "
+                        f"error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
         for r in deny_rules:
             ip = r.get('remote_ip_prefix')
             if not ip or ip in ('0.0.0.0/0', '::/0'):
                 ret_rules.append(r)
         return ret_rules
 
-    def _extend_ports(self, req_port_list):
+    def _extend_ports(self, req_port_list, valid_check=True):
         if not req_port_list:
             return []
         int_port_list = []
@@ -1245,41 +1441,108 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 elif len(port_range) == 2:
                     start = int(port_range[0])
                     end = int(port_range[1])
-                    if start >= end:
-                        continue
+                    if start > end and valid_check:
+                        log.error("[filters]-[rule-allow-risk-ports] "
+                                  "Extend port failed, "
+                                  f"cause: the port range '{item}' is invalid.")
+                        raise PolicyExecutionError("Read port range failed, "
+                                                   "error message:[The port range "
+                                                   f"'{item}' is invalid].")
                     ports = [i for i in range(start, end + 1)]
                     int_port_list.extend(ports)
             else:
-                continue
+                if valid_check:
+                    log.error("[filters]-[rule-allow-risk-ports] "
+                              "Extend port failed, "
+                              f"cause: the port config '{item}' is invalid.")
+                    raise PolicyExecutionError("Extend port failed, "
+                                               "error message:[The port config "
+                                               f"'{item}' is invalid, should be "
+                                               "an integer or a string].")
         return list(set(int_port_list))
 
     def _extend_ip_map(self, ip_obj):
         extended_ip_obj = {}
+        ip_num_limit = self.data.get('trust_ip_num_limit', 100000)
+        log.info("[filters]-[rule-allow-risk-ports]-"
+                 f"The trust ip num limit is {ip_num_limit}.")
         for key, value in ip_obj.items():
             int_ips = []
+            value.pop("description", None)
+            # extend ip as key of ip_obj
             if ',' in key:
                 ips = key.split(',')
                 for ip in ips:
                     ip = ip.strip()
                     if '-' in ip:
                         ip_range = ip.split('-')
-                        if ip_range[0] < ip_range[1]:
-                            ip_start = int(netaddr.IPAddress(ip_range[0]))
-                            ip_end = int(netaddr.IPAddress(ip_range[1]))
-                            int_ips.extend([i for i in range(ip_start, ip_end + 1)])
+                        ip_start = int(netaddr.IPAddress(ip_range[0].strip()))
+                        ip_end = int(netaddr.IPAddress(ip_range[1].strip()))
+                        if ip_start > ip_end:
+                            log.error("[filters]-[rule-allow-risk-ports] "
+                                      "Read trust ip map failed, "
+                                      f"cause: the ip range '{ip}' is invalid.")
+                            raise PolicyExecutionError("Read trust ip map failed, "
+                                                       "error message:["
+                                                       f"The ip range '{ip}' is invalid].")
+                        int_ips.extend([i for i in range(ip_start, ip_end + 1)])
                     else:
                         int_ips.append(int(netaddr.IPAddress(ip)))
             elif '-' in key:
                 ip_range = key.split('-')
-                if ip_range[0] < ip_range[1]:
-                    ip_start = int(netaddr.IPAddress(ip_range[0]))
-                    ip_end = int(netaddr.IPAddress(ip_range[1]))
-                    int_ips.extend([i for i in range(ip_start, ip_end + 1)])
+                ip_start = int(netaddr.IPAddress(ip_range[0].strip()))
+                ip_end = int(netaddr.IPAddress(ip_range[1].strip()))
+                if ip_start > ip_end:
+                    log.error("[filters]-[rule-allow-risk-ports] "
+                              "Read trust ip map failed, "
+                              f"cause: the ip range:[{key}] is invalid.")
+                    raise PolicyExecutionError("Read trust ip map failed, "
+                                               "error message:["
+                                               f"The ip range '{key}' is invalid].")
+                int_ips.extend([i for i in range(ip_start, ip_end + 1)])
             else:
                 int_ips.append(int(netaddr.IPAddress(key)))
+            # set value of ip_obj
+            port_extended_value = {}
+            for protocol, ports in value.items():
+                extended_port = self._extend_ports(ports)
+                port_extended_value[protocol] = extended_port
             for int_ip in int_ips:
-                extended_ip_obj[int_ip] = value
+                if int_ip in extended_ip_obj:
+                    raw_value = extended_ip_obj[int_ip]
+                    new_value = {}
+                    for protocol, ports in port_extended_value.items():
+                        if protocol in raw_value:
+                            new_ports = copy.deepcopy(raw_value[protocol])
+                            new_ports.extend(ports)
+                            new_ports = list(set(new_ports))
+                            new_value[protocol] = new_ports
+                        else:
+                            new_value[protocol] = ports
+                    extended_ip_obj[int_ip] = new_value
+                else:
+                    extended_ip_obj[int_ip] = port_extended_value
+            if len(extended_ip_obj.keys()) > ip_num_limit:
+                log.error("[filters]-The filter:[rule-allow-risk-ports] read trust ip config "
+                          "file failed, cause: the number of trust ip has exceeded "
+                          f"the upper limit {ip_num_limit}.")
+                raise PolicyExecutionError("Read trust ip map failed, "
+                                           "error message:[The number of trust ip "
+                                           f"has exceeded the upper limit {ip_num_limit}].")
+        log.info("[filters]-[rule-allow-risk-ports]-"
+                 f"The number of trust ips in config is {len(extended_ip_obj.keys())}.")
         return extended_ip_obj
+
+    def _extend_sg_map(self, sg_obj):
+        extended_sg_obj = {}
+        for key, value in sg_obj.items():
+            value.pop("description", None)
+            new_value = {}
+            for protocol, ports in value.items():
+                extend_ports = self._extend_ports(value[protocol])
+                new_value[protocol] = extend_ports
+            extended_sg_obj[key] = new_value
+        return extended_sg_obj
 
 
 @SecurityGroupRule.action_registry.register("deny-risk-ports")
@@ -1338,11 +1601,13 @@ class SecurityGroupRuleDenyRiskPorts(HuaweiCloudBaseAction):
                     BatchCreateSecurityGroupRulesRequestBody(security_group_rules=create_rules,
                                                              ignore_duplicate=True)
                 response = client.batch_create_security_group_rules(request)
-            except exceptions.ClientRequestException as ex:
-                log.exception("Unable to add rules in security group %s. "
-                              "RequestId: %s, Reason: %s" %
-                              (sg_id, ex.request_id, ex.error_msg))
-                break
+                log.info(f"[actions]-[deny-risk-ports]-The resource:[vpc-security-group-rule] "
+                         f"add deny rules in security group [{sg_id}] succeed.")
+            except exceptions.ServiceResponseException as ex:
+                log.error(f"[actions]-[deny-risk-ports]-The resource:[vpc-security-group-rule] "
+                          f"add deny rules in security group [{sg_id}] failed, "
+                          f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                raise ex
             res_rules_object = response.security_group_rules
             res_rules = [r.to_dict() for r in res_rules_object]
             ret_rules.extend(res_rules)
@@ -1419,22 +1684,26 @@ class SetFlowLog(HuaweiCloudBaseAction):
                     response = client.update_flow_log(request)
                     resp_fl = response.flow_log
                     ret_fls.append(resp_fl.to_dict())
-                except exceptions.ClientRequestException as ex:
-                    log.exception("Failed to %s flow log. "
-                                  "RequestId: %s, Reason: %s." %
-                                  (action, ex.request_id, ex.error_msg))
-                    self.handle_exception(fl, resources)
+                    log.info(f"[actions]-[set-flow-log]-The resource:[vpc-flow-log] "
+                             f"{action} flow log [{fl['id']}] succeed.")
+                except exceptions.ServiceResponseException as ex:
+                    log.error(f"[actions]-[set-flow-log]-The resource:[vpc-flow-log] "
+                              f"{action} flow log [{fl['id']}] failed, "
+                              f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                    raise ex
         elif action == 'delete':
             for fl in resources:
                 try:
                     request = DeleteFlowLogRequest(flowlog_id=fl['id'])
                     response = client.delete_flow_log(request)
                     ret_fls.append(fl)
-                except exceptions.ClientRequestException as ex:
-                    log.exception("Failed to %s flow log. "
-                                  "RequestId: %s, Reason: %s." %
-                                  (action, ex.request_id, ex.error_msg))
-                    self.handle_exception(fl, resources)
+                    log.info(f"[actions]-[set-flow-log]-The resource:[vpc-flow-log] "
+                             f"{action} flow log [{fl['id']}] succeed.")
+                except exceptions.ServiceResponseException as ex:
+                    log.error(f"[actions]-[set-flow-log]-The resource:[vpc-flow-log] "
+                              f"{action} flow log [{fl['id']}] failed, "
+                              f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                    raise ex
         elif action == 'create':
             req_fls = self.data.get('create-attrs', ())
             resource_ids = [f['resource_id'] for f in resources]
@@ -1454,10 +1723,14 @@ class SetFlowLog(HuaweiCloudBaseAction):
                         response = client.create_flow_log(request)
                         resp_fl = response.flow_log
                         ret_fls.append(resp_fl.to_dict())
-                    except exceptions.ClientRequestException as ex:
-                        log.exception("Failed to %s flow log. "
-                                      "RequestId: %s, Reason: %s." %
-                                      (action, ex.request_id, ex.error_msg))
+                        log.info(f"[actions]-[set-flow-log]-The resource:[vpc-flow-log] "
+                                 f"{action} flow log of resource[{r}] succeed.")
+                    except exceptions.ServiceResponseException as ex:
+                        log.error(f"[actions]-[set-flow-log]-The resource:[vpc-flow-log] "
+                                  f"{action} flow log of resource[{r}] failed, "
+                                  f"cause: error_code[{ex.error_code}], "
+                                  f"error_msg[{ex.error_msg}].")
+                        raise ex
 
         return self.process_fl_result(ret_fls, action)
 
@@ -1580,12 +1853,15 @@ class PeeringMissingRoute(Filter):
                                     and route['nexthop'] == peering_id
                                     for route in routes)
                 if is_route_exist:
-                    return False
-        except exceptions.ClientRequestException as ex:
-            log.exception("Failed to check missing route because "
-                        "query routetables of %s failed. "
-                        "RequestId: %s, Reason: %s." %
-                        (vpc_id, ex.request_id, ex.error_msg))
+                    break
+            log.debug("[filters]-[missing-route] "
+                      "query the service:[VPC:show_route_table] succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error("[filters]-[missing-route]-The resource:[vpc-peering] "
+                      f"check whether peering[{peering_id}] is missing route failed, "
+                      "cause: query peering routes failed, "
+                      f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
         return not is_route_exist
 
 
@@ -1612,8 +1888,14 @@ class PeeringDelete(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         client = self.manager.get_client()
-        request = DeleteVpcPeeringRequest(peering_id=resource["id"])
-        response = client.delete_vpc_peering(request)
-        log.info("Delete vpc peering %s response is: [%d] %s" %
-                (resource["id"], response.status_code, response.to_json_object()))
+        try:
+            request = DeleteVpcPeeringRequest(peering_id=resource["id"])
+            response = client.delete_vpc_peering(request)
+            log.info(f"[actions]-[delete]-The resource:[vpc-peering] with id:"
+                     f"[{resource['id']}] delete peering succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error(f"[actions]-[delete]-The resource:[vpc-peering] with id:"
+                      f"[{resource['id']}] delete peering failed, "
+                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
         return response
