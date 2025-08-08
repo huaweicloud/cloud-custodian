@@ -420,7 +420,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
             return []
 
         results = []
-        new_accounts = ep_util.generate_new_accounts(account_list,
+        new_accounts = ep_util.generate_new_accounts(account_list.get('accounts', []),
                                                      self.data.get('my_account'))
         new_resources = list(set(resource_list.get('resources', [])))
 
@@ -551,7 +551,7 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         if not resources:
             return []
         ep_util = VpcEndpointUtils(self.manager)
-        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'),
+        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url').get('accounts', []),
                                                      self.data.get('my_account'))
         resource_list = ep_util.get_file_content(self.data.get('org_resources_obs_url'))
         new_resources = list(set(resource_list.get('resources', [])))
