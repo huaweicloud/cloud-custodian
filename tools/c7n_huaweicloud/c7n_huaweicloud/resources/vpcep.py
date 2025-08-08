@@ -515,7 +515,7 @@ def _is_default_policy(policy):
     default_policy_resources = ["*", "*/*"]
     policy_resource.sort()
     default_policy_resources.sort()
-    if policy.get('Effect', '') == 'Allow' and policy.get('Action', '') == '*' \
+    if policy.get('Effect', '') == 'Allow' and policy.get('Action', []) == ['*'] \
             and default_policy_resources == policy_resource and policy.get('Condition', '') == '':
         return True
     else:
