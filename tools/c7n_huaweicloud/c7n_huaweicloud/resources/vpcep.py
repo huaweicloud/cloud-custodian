@@ -441,7 +441,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         if not policy_statements:
             log.info(f"[filters]-[is-not-default-org-policy]-"
                      f"The resource:[vpcep-ep] "
-                     f"with id:[{ep_id}] current policys are empty,"
+                     f"with id:[{ep_id}] current policies are empty,"
                      f"expect:[{new_accounts}]")
             return False
         contain_default_account_policy = False
@@ -452,7 +452,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         if not contain_default_account_policy:
             log.info(f"[filters]-[is-not-default-org-policy]-"
                      f"The resource:[vpcep-ep] "
-                     f"with id:[{ep_id}] policys do not contain default account policy,"
+                     f"with id:[{ep_id}] policies do not contain default account policy,"
                      f"expect:[{new_accounts}]")
             return False
 
@@ -461,7 +461,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         if not current_accounts:
             log.info(f"[filters]-[is-not-default-org-policy]-"
                      f"The resource:[vpcep-ep] "
-                     f"with id:[{ep_id}] policys contain default account policy but account is empty,"
+                     f"with id:[{ep_id}] policiess contain default account policy but account is empty,"
                      f"current:[{current_accounts}], expect:[{new_accounts}]")
             return False
 
@@ -487,7 +487,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         if not contain_default_resource_policy:
             log.info(f"[filters]-[is-not-default-org-policy]-"
                      f"The resource:[vpcep-ep] "
-                     f"with id:[{ep_id}] policys do not contain default resource policy,"
+                     f"with id:[{ep_id}] policies do not contain default resource policy,"
                      f"expect:[{new_resources}]")
             return False
 
@@ -495,7 +495,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         if not current_resources:
             log.info(f"[filters]-[is-not-default-org-policy]-"
                      f"The resource:[vpcep-ep] "
-                     f"with id:[{ep_id}] policys contain default resource policy but resource is empty,"
+                     f"with id:[{ep_id}] policies contain default resource policy, but resource is empty,"
                      f"current:[{current_resources}], expect:[{new_resources}]")
             return False
 
