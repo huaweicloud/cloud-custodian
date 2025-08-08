@@ -579,11 +579,11 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         ep_id = resource.get("id", "")
         policy_statements = []
         policy_statements.append(PolicyStatement(
-            Sid="allow-trusted-account-resources",
+            sid="allow-trusted-account-resources",
             effect="Allow", action=["*"], resource=["*", "*/*"],
             condition={"StringEquals": {"ResourceOwner": resource_owner}}))
         policy_statements.append(PolicyStatement(
-            Sid="allow-huaweicloud-public-data",
+            sid="allow-huaweicloud-public-data",
             effect="Allow", action=["*"], resource=new_resources))
         for policy_statement in resource.get('policy_statement', []):
             if _is_default_policy(policy_statement) or policy_statement.get('Sid', '') \
