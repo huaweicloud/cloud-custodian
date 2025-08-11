@@ -417,7 +417,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
                       'the content of org_accounts_obs_url or org_resources_obs_url is invalid, please check format: '
                       'the content of org_accounts_obs_url should be: {"accounts": ["account_id1", "account_id2"]}, '
                       'the content of org_resources_obs_url should be: {"resources": ["resource1", "resource2"]}')
-            return []
+            raise e
 
         results = []
         new_accounts = ep_util.generate_new_accounts(account_list.get('accounts', []),
