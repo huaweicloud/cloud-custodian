@@ -401,8 +401,8 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
             "org_resources_obs_url is a required parameter and cannot be empty")
             return []
         ep_util = VpcEndpointUtils(self.manager)
-        account_list = ep_util.get_file_content(self.data.get('org_accounts_obs_url'))
         try:
+            account_list = ep_util.get_file_content(self.data.get('org_accounts_obs_url'))
             if not account_list.get('accounts', []):
                 log.error("[filters]-The filter[is-not-default-org-policy] "
                           "the accounts of org_accounts_obs_url cannot be empty")
