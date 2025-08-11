@@ -395,23 +395,23 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         if not self.data.get('org_accounts_obs_url'):
             log.error("[filters]-The filter[is-not-default-org-policy] "
             "org_accounts_obs_url is a required parameter and cannot be empty")
-            return []
+            raise ValueError("org_accounts_obs_url cannot be empty")
         if not self.data.get('org_resources_obs_url'):
             log.error("[filters]-The filter[is-not-default-org-policy] "
             "org_resources_obs_url is a required parameter and cannot be empty")
-            return []
+            raise ValueError("org_resources_obs_url cannot be empty")
         ep_util = VpcEndpointUtils(self.manager)
         try:
             account_list = ep_util.get_file_content(self.data.get('org_accounts_obs_url'))
             if not account_list.get('accounts', []):
                 log.error("[filters]-The filter[is-not-default-org-policy] "
                           "the accounts of org_accounts_obs_url cannot be empty")
-                return []
+                raise ValueError("accounts cannot be empty")
             resource_list = ep_util.get_file_content(self.data.get('org_resources_obs_url'))
             if not resource_list.get('resources', []):
                 log.error("[filters]-The filter[is-not-default-org-policy] "
                           "the resources of org_resources_obs_url cannot be empty")
-                return []
+                raise ValueError("resources cannot be empty")
         except json.JSONDecodeError as e:
             log.error('[filters]-The filter[is-not-default-org-policy] '
                       'the content of org_accounts_obs_url or org_resources_obs_url is invalid, '
@@ -429,7 +429,8 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
             if res.get('service_type', '') not in ['gateway', 'cvs_gateway']:
                 continue
 
-            if self._default_policy_contains_same_accounts(
+            if len(res.get('policy_statement', [])) == 2 \
+                    and self._default_policy_contains_same_accounts(
                         res.get('id'), res.get('policy_statement', []), new_accounts) \
                     and self._default_policy_contains_same_resources(
                         res.get('id'), res.get('policy_statement', []), new_resources):
@@ -513,18 +514,6 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         return result
 
 
-def _is_default_policy(policy):
-    policy_resource = policy.get('Resource', [])
-    default_policy_resources = ["*", "*/*"]
-    policy_resource.sort()
-    default_policy_resources.sort()
-    if policy.get('Effect', '') == 'Allow' and policy.get('Action', []) == ['*'] \
-            and default_policy_resources == policy_resource and policy.get('Condition', '') == '':
-        return True
-    else:
-        return False
-
-
 @VpcEndpoint.action_registry.register('update-default-org-policy')
 class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
 
@@ -580,19 +569,13 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
 
     def _update_policy(self, resource, resource_owner, new_resources):
         ep_id = resource.get("id", "")
-        policy_statements = []
-        policy_statements.append(PolicyStatement(
-            sid="allow-trusted-account-resources",
-            effect="Allow", action=["*"], resource=["*", "*/*"],
-            condition={"StringEquals": {"ResourceOwner": resource_owner}}))
-        policy_statements.append(PolicyStatement(
-            sid="allow-huaweicloud-public-data",
-            effect="Allow", action=["*"], resource=new_resources))
-        for policy_statement in resource.get('policy_statement', []):
-            if _is_default_policy(policy_statement) or policy_statement.get('Sid', '') \
-                    in ['allow-trusted-account-resources', 'allow-huaweicloud-public-data']:
-                continue
-            policy_statements.append(policy_statement)
+        policy_statements = [
+            PolicyStatement(sid="allow-trusted-account-resources",
+                            effect="Allow", action=["*"], resource=["*", "*/*"],
+                            condition={"StringEquals": {"ResourceOwner": resource_owner}}),
+            PolicyStatement(sid="allow-huaweicloud-public-data",
+                            effect="Allow", action=["*"], resource=new_resources)
+        ]
 
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
         body = UpdateEndpointPolicyRequestBody(policy_statement=policy_statements)
