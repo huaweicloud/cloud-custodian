@@ -1268,7 +1268,7 @@ class InstanceEphemeralFilter(Filter):
         client = self.manager.get_client()
         try:
             response = client.nova_show_flavor_extra_specs(request)
-            log.debug("[filters]-[ephemeral] "
+            log.info("[filters]-[ephemeral] "
                      "The resource:[ecs] with request:[%s] "
                      "query nove flavor extra specs is success.", request)
         except exceptions.ClientRequestException as e:
@@ -1357,7 +1357,7 @@ class InstanceUserData(ValueFilter):
         client = self.manager.get_client()
         try:
             response = client.show_server(request)
-            log.debug("[filters]-{instance-user-data} "
+            log.info("[filters]-{instance-user-data} "
                      "The resource:[ecs] with request:[%s] "
                      "query server detail is success.", request)
         except exceptions.ClientRequestException as e:
@@ -1532,15 +1532,11 @@ class InstanceImageNotCompliance(Filter):
                 resp = obs_client.getObject(bucketName=obs_bucket_name,
                                             objectKey=obs_file,
                                             loadStreamInMemory=True)
-                resp.status = 404
-                resp.errorCode = "OBS.404"
-                resp.errorMessage = "The bucket does not exist."
-                resp.body = '{"errorCode": "OBS.404", "errorMessage": "The bucket does not exist."}'
                 if resp.status < 300:
                     ids = json.loads(resp.body.buffer)['image_ids']
                     image_ids.extend(ids)
                     image_ids = list(set(image_ids))
-                    log.debug("[filters]-{instance-image-not-compliance} "
+                    log.info("[filters]-{instance-image-not-compliance} "
                               "The resource:[ecs] with obs_url:[%s]"
                               "query obs service:{get object} success.",
                               obs_url)
@@ -1566,6 +1562,9 @@ class InstanceImageNotCompliance(Filter):
         for id in instance_image_map.keys():
             if id not in image_ids:
                 results.extend(instance_image_map[id])
+        log.info("[filters]-{instance-image-not-compliance} "
+                 "compliance image ids: %s",
+                 image_ids)
         return results
 
     def get_obs_name(self, obs_url):
