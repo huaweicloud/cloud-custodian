@@ -414,9 +414,10 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
                 return []
         except json.JSONDecodeError as e:
             log.error('[filters]-The filter[is-not-default-org-policy] '
-                      'the content of org_accounts_obs_url or org_resources_obs_url is invalid, please check format: '
-                      'the content of org_accounts_obs_url should be: {"accounts": ["account_id1", "account_id2"]}, '
-                      'the content of org_resources_obs_url should be: {"resources": ["resource1", "resource2"]}')
+                      'the content of org_accounts_obs_url or org_resources_obs_url is invalid, '
+                      'please check format: the content of org_accounts_obs_url should be: '
+                      '{"accounts": ["account_id1", "account_id2"]}, the content of '
+                      'org_resources_obs_url should be: {"resources": ["resource1", "resource2"]}')
             raise e
 
         results = []
@@ -428,10 +429,10 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
             if res.get('service_type', '') not in ['gateway', 'cvs_gateway']:
                 continue
 
-            if self._default_policy_contains_same_accounts(res.get('id'),
-                                                           res.get('policy_statement', []), new_accounts) \
-                    and self._default_policy_contains_same_resources(res.get('id'),
-                                                                     res.get('policy_statement', []), new_resources):
+            if self._default_policy_contains_same_accounts(
+                        res.get('id'), res.get('policy_statement', []), new_accounts) \
+                    and self._default_policy_contains_same_resources(
+                        res.get('id'), res.get('policy_statement', []), new_resources):
                 continue
             results.append(res)
         return results
@@ -461,7 +462,8 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         if not current_accounts:
             log.info(f"[filters]-[is-not-default-org-policy]-"
                      f"The resource:[vpcep-ep] "
-                     f"with id:[{ep_id}] policiess contain default account policy but account is empty,"
+                     f"with id:[{ep_id}] policiess contain default account policy, "
+                     f"but account is empty,"
                      f"current:[{current_accounts}], expect:[{new_accounts}]")
             return False
 
@@ -495,7 +497,8 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         if not current_resources:
             log.info(f"[filters]-[is-not-default-org-policy]-"
                      f"The resource:[vpcep-ep] "
-                     f"with id:[{ep_id}] policies contain default resource policy, but resource is empty,"
+                     f"with id:[{ep_id}] policies contain default resource policy, "
+                     f"but resource is empty,"
                      f"current:[{current_resources}], expect:[{new_resources}]")
             return False
 
