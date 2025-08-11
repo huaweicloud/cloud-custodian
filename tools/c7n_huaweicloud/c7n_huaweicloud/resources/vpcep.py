@@ -412,7 +412,7 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
                 log.error("[filters]-The filter[is-not-default-org-policy] "
                           "the resources of org_resources_obs_url cannot be empty")
                 return []
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             log.error('[filters]-The filter[is-not-default-org-policy] '
                       'the content of org_accounts_obs_url or org_resources_obs_url is invalid, please check format: '
                       'the content of org_accounts_obs_url should be: {"accounts": ["account_id1", "account_id2"]}, '
