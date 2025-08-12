@@ -60,7 +60,7 @@ class NotifyMessageFromEvent(HuaweiCloudBaseAction):
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
 
-            keyArr = self.get_param( message)
+            keyArr = self.get_param(message)
             self.log.error("keyArr: %s", keyArr)
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
