@@ -9,6 +9,7 @@ from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBod
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 
+
 def register_smn2_actions(actions):
     actions.register('notify-message-from-event', NotifyMessageFromEvent)
 
