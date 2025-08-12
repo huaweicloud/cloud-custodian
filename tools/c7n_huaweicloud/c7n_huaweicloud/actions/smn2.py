@@ -3,11 +3,12 @@
 import logging
 
 import jmespath
+import re
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody
 
+from c7n.exceptions import PolicyExecutionError
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
-
 
 def register_smn2_actions(actions):
     actions.register('notify-message-from-event', NotifyMessageFromEvent)
@@ -49,21 +50,19 @@ class NotifyMessageFromEvent(HuaweiCloudBaseAction):
                 "items": {"type": "string"}
             },
             'subject': {'type': 'string'},
-            'keyArr': {'type': 'array'},
             'message': {'type': 'string'}
         }
     })
 
     def process(self, event):
         resource_type = self.manager.resource_type.service
-        self.log.error("--------------------------")
-        self.log.error(event)
-        self.log.error("--------------------------")
-        id=jmespath.search('resource_id', event)
+        message = self.data.get('message')
+        id=jmespath.search('cts.resource_id', event)
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
-            keyArr = self.data.get('keyArr', [])
 
+            keyArr = self.get_param( message)
+            self.log.error("keyArr: %s", keyArr)
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
                 message=self.build_message(resource_type, id, event, keyArr)
@@ -82,16 +81,23 @@ class NotifyMessageFromEvent(HuaweiCloudBaseAction):
             self.log.error(
                 f"[actions]-[notify-message] The resource:{resource_type} with id:{id} "
                 f"Publish message to SMN Topics is failed, cause:{e}")
+            raise e
         return self.process_result(event)
 
     def build_message(self, resource_type, id, event, keyArr):
         message = self.data.get('message')
         if keyArr is not None:
             for k in keyArr:
-                kstr = "{" + k + "}"
+                kstr = "%" + k + "%"
                 kv = jmespath.search(k, event)
+                self.log.info(f"{kstr}:{kv}")
                 if kstr in message:
-                    message = message.replace(kstr, kv)
+                    if kv:
+                        message = message.replace(kstr, kv)
+                    else:
+                        self.log.warning(f"[actions]-[notify-message]{kstr} is not exist!")
+
+
         if '{resource_details}' not in message:
             return message
         resource_details = get_resource_details(resource_type, id)
@@ -101,6 +107,10 @@ class NotifyMessageFromEvent(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         pass
+
+    def get_param(self, message):
+        pattern = re.escape("%") + r'(.*?)' + re.escape("%")
+        return re.findall(pattern, message)
 
 
 def get_resource_details(resource_type, id):
