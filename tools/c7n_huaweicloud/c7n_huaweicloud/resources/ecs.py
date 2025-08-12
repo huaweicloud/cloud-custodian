@@ -66,6 +66,8 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n.filters import AgeFilter, ValueFilter, Filter, OPERATORS
 from dateutil.parser import parse
+from requests.exceptions import HTTPError
+from c7n.exceptions import PolicyValidationError
 
 log = logging.getLogger("custodian.huaweicloud.resources.ecs")
 
@@ -1266,7 +1268,7 @@ class InstanceEphemeralFilter(Filter):
         client = self.manager.get_client()
         try:
             response = client.nova_show_flavor_extra_specs(request)
-            log.debug("[filters]-[ephemeral] "
+            log.info("[filters]-[ephemeral] "
                      "The resource:[ecs] with request:[%s] "
                      "query nove flavor extra specs is success.", request)
         except exceptions.ClientRequestException as e:
@@ -1355,7 +1357,7 @@ class InstanceUserData(ValueFilter):
         client = self.manager.get_client()
         try:
             response = client.show_server(request)
-            log.debug("[filters]-{instance-user-data} "
+            log.info("[filters]-{instance-user-data} "
                      "The resource:[ecs] with request:[%s] "
                      "query server detail is success.", request)
         except exceptions.ClientRequestException as e:
@@ -1513,8 +1515,10 @@ class InstanceImageNotCompliance(Filter):
         obs_url = self.data.get('obs_url', None)
         obs_client = local_session(self.manager.session_factory).client("obs")
         if not image_ids and obs_url is None:
-            log.error("image_ids or obs_url is required")
-            return []
+            log.error("[filters]-{instance-image-not-compliance} "
+                      "image_ids or obs_url is required in filter exempted")
+            raise PolicyValidationError("[filters]-{instance-image-not-compliance} "
+                                        "image_ids or obs_url is required in filter exempted")
         if obs_url is not None:
             # 1. 提取第一个变量：从 "https://" 到最后一个 "obs" 的部分
             protocol_end = len("https://")
@@ -1532,7 +1536,7 @@ class InstanceImageNotCompliance(Filter):
                     ids = json.loads(resp.body.buffer)['image_ids']
                     image_ids.extend(ids)
                     image_ids = list(set(image_ids))
-                    log.debug("[actions]-{instance-image-not-compliance} "
+                    log.info("[filters]-{instance-image-not-compliance} "
                               "The resource:[ecs] with obs_url:[%s]"
                               "query obs service:{get object} success.",
                               obs_url)
@@ -1542,7 +1546,7 @@ class InstanceImageNotCompliance(Filter):
                               "get obs object is failed, cause: "
                               "error_code[%s] error_msg[%s]",
                               obs_url, resp.errorCode, resp.errorMessage)
-                    raise
+                    raise HTTPError(resp.status, resp.body)
             except exceptions.ClientRequestException as e:
                 log.error("[filters]-{instance-image-not-compliance} "
                           "The resource:[ecs] with obs_url:[%s] "
@@ -1558,6 +1562,9 @@ class InstanceImageNotCompliance(Filter):
         for id in instance_image_map.keys():
             if id not in image_ids:
                 results.extend(instance_image_map[id])
+        log.info("[filters]-{instance-image-not-compliance} "
+                 "compliance image ids: %s",
+                 image_ids)
         return results
 
     def get_obs_name(self, obs_url):
