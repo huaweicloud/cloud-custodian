@@ -246,6 +246,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
         }
     )
 
+    # action名称与yaml中action的type并非一致，添加请注意！
     actions_without_resources = ["notifymessagefromevent"]
 
     def validate(self):
