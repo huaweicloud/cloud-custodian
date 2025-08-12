@@ -246,6 +246,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
         }
     )
 
+    actions_without_resources = ["notifymessagefromevent"]
+
     def validate(self):
         super(FunctionGraphMode, self).validate()
         prefix = self.policy.data['mode'].get('function-prefix', 'custodian-')
@@ -284,6 +286,24 @@ class FunctionGraphMode(ServerlessExecutionMode):
     def run(self, event, context):
         if not self.policy.is_runnable(event):
             return
+        actions = self.policy.resource_manager.actions
+        # 判断actions，若只包含非资源类action无需查询资源
+        if self.only_actions_without_resources(actions):
+            with self.policy.ctx as ctx:
+                if 'debug' in event:
+                    self.policy.log.info(
+                        "Invoking actions %s", self.policy.resource_manager.actions
+                    )
+
+                for action in actions:
+                    self.policy.log.info(
+                        "policy:%s invoking action:%s without resources",
+                        self.policy.name,
+                        action.name,
+                    )
+                    results = action.process(event)
+                    ctx.output.write_file("action-%s" % action.name, utils.dumps(results))
+                return
         resources = self.resolve_resources(event)
         if not resources:
             # 根据resource_ids未获取到资源
@@ -301,6 +321,15 @@ class FunctionGraphMode(ServerlessExecutionMode):
                  f'{resources_list}')
 
         return self.run_resource_set(event, resources)
+
+    def only_actions_without_resources(self, actions):
+        # 循环判断actions中action名称
+        for action in actions:
+            if action.name not in self.actions_without_resources:
+                # 有任一action不在非资源类action列表中则返回false
+                return False
+
+        return True
 
     def run_resource_set(self, event, resources):
         from c7n.actions import EventAction
@@ -326,6 +355,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
                 )
                 if isinstance(action, EventAction):
                     results = action.process(resources, event)
+                elif action.name in self.actions_without_resources:
+                    results = action.process(event)
                 else:
                     results = action.process(resources)
                 ctx.output.write_file("action-%s" % action.name, utils.dumps(results))
