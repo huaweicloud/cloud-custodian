@@ -6,7 +6,6 @@ import jmespath
 import re
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody
 
-from c7n.exceptions import PolicyExecutionError
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 
@@ -33,8 +32,7 @@ class NotifyMessageFromEvent(HuaweiCloudBaseAction):
                   topic_urn_list:
                    - urn:smn:cn-north-4:xxxx:test
                   subject: 'test subject'
-                  keyarr : ["status","accoutid"]
-                  message: 'test message {status},'
+                  message: 'test message %cts.status%,%cts.status%'
     """
 
     log = logging.getLogger("custodian.huaweicloud.actions.smn2.NotifyMessageFromEvent")
@@ -96,7 +94,6 @@ class NotifyMessageFromEvent(HuaweiCloudBaseAction):
                         message = message.replace(kstr, kv)
                     else:
                         self.log.warning(f"[actions]-[notify-message]{kstr} is not exist!")
-
 
         if '{resource_details}' not in message:
             return message
