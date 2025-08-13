@@ -698,7 +698,7 @@ def _wait_ep_can_processed(resource):
         log.debug(f"[actions]-[update-policy-document] The resource:[vpcep-ep] "
                   f"with id:[{resource.get('id')}] status {resource.get('status')} "
                   f"is not available, wait: {i}")
-        time.sleep(5)
+        time.sleep(10)
     raise ValueError("Ep status is creating or deleting, can not update, please retry")
 
 
