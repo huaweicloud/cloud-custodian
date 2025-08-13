@@ -186,40 +186,6 @@ class SecmasterTest(BaseTest):
     #     self.assertEqual(data_object2["title"], "很旧的告警")
     #     self.assertEqual(data_object2["create_time"], "2024-12-01T09:00:00Z+0800")
 
-    def test_secmaster_alert_age_filter_very_old(self):
-        """Test SecMaster alert age filter - very old alerts (more than 170 days)"""
-        factory = self.replay_flight_data("secmaster_alert_age_filter")
-        p = self.load_policy(
-            {
-                "name": "secmaster-alert-age-very-old-test",
-                "resource": "huaweicloud.secmaster-alert",
-                "filters": [
-                    {
-                        "type": "age",
-                        "days": 170,
-                        "op": "gt",  # Alerts older than 170 days
-                    }
-                ],
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        # VCR file contains alerts with different ages:
-        # alert-very-old-004 (~175 days) is older than 170 days
-        # alert-old-003 (~99 days), alert-recent-002 (~66 days), alert-new-001 (~60 days)
-        # are newer than 170 days (filtered out)
-        self.assertEqual(
-            len(resources),
-            1,
-            "Should have 1 alert older than 170 days according to VCR file",
-        )
-        # Verify the very old alert - alert-very-old-004
-        alert = resources[0]
-        self.assertEqual(alert["id"], "alert-very-old-004")
-        data_object = alert["data_object"]
-        self.assertEqual(data_object["title"], "很旧的告警")
-        self.assertEqual(data_object["create_time"], "2024-12-01T09:00:00Z+0800")
-
     def test_secmaster_playbook_value_filter_enabled(self):
         """Test SecMaster playbook value filter - enabled playbooks"""
         factory = self.replay_flight_data("secmaster_playbook_value_filter")

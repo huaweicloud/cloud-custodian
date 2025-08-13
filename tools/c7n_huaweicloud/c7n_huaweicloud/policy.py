@@ -265,10 +265,10 @@ class FunctionGraphMode(ServerlessExecutionMode):
         resource_ids = CloudTraceServiceEvents.get_ids(event, mode)
         if resource_ids is None:
             raise ValueError("Unknown push event mode %s", self.data)
-        log.info(f'[{self.policy.execution_mode}]-The resources ID list is: {resource_ids}')
         if not resource_ids:
             log.warning("Could not find resource ids")
             return []
+        log.info(f'[{self.policy.execution_mode}]-The resources ID list is: {resource_ids}')
         resources = self.policy.resource_manager.get_resources(resource_ids)
         if 'debug' in event:
             log.info("Resources %s", resources)
