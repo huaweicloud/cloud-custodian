@@ -312,8 +312,8 @@ class VpcEndpointUtils():
         return list(set(results))
 
     def generate_new_accounts(self, account_list, my_account=None):
-        accounts = [account.strip() for account in account_list]
-        domain_ids = self.get_account(accounts, my_account)
+        accounts_strip = [account.strip() for account in account_list]
+        domain_ids = self.get_account(accounts_strip, my_account)
         results = []
         for d in domain_ids:
             results.append(f"domain/{d}:root")
@@ -427,8 +427,8 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         results = []
         new_accounts = ep_util.generate_new_accounts(account_list.get('accounts', []),
                                                      self.data.get('my_account'))
-        resources = resource_list.get('resources', [])
-        resources_strip = [resource.strip() for resource in resources]
+        resources_list = resource_list.get('resources', [])
+        resources_strip = [resource.strip() for resource in resources_list]
         new_resources = list(set(resources_strip))
 
         for res in resources:
@@ -552,8 +552,8 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         new_accounts = ep_util.generate_new_accounts(account_list.get('accounts', []),
                                                      self.data.get('my_account'))
         resource_list = ep_util.get_file_content(self.data.get('org_resources_obs_url'))
-        resources = resource_list.get('resources', [])
-        resources_strip = [resource.strip() for resource in resources]
+        resources_list = resource_list.get('resources', [])
+        resources_strip = [resource.strip() for resource in resources_list]
         new_resources = list(set(resources_strip))
 
         for resource in resources:
