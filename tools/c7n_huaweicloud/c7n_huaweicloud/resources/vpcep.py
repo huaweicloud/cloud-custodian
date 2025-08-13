@@ -557,7 +557,8 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         new_resources = list(set(resources_strip))
 
         for resource in resources:
-            self.process_resource(resource, new_accounts, new_resources)
+            if _wait_ep_can_processed(resource):
+                self.process_resource(resource, new_accounts, new_resources)
 
         return resources
 
@@ -690,6 +691,17 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
             raise e
 
 
+def _wait_ep_can_processed(resource):
+    for i in range(12):
+        if resource.get('status') not in ('creating', 'deleting'):
+            return True
+        log.debug(f"[actions]-[update-policy-document] The resource:[vpcep-ep] "
+                  f"with id:[{resource.get('id')}] status {resource.get('status')} "
+                  f"is not available, wait: {i}")
+        time.sleep(5)
+    raise ValueError("Ep status is creating or deleting, can not update, please retry")
+
+
 @VpcEndpoint.action_registry.register('update-policy-document')
 class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     """Update the endpoint policy.
@@ -712,7 +724,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
             return []
         expect_condition = self._get_expect_condition()
         for resource in resources:
-            if self._wait_ep_can_processed(resource):
+            if _wait_ep_can_processed(resource):
                 self.process_resource(resource, expect_condition)
 
         return resources
@@ -733,7 +745,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
             for statement in statements:
                 if _is_principal_wildcards(statement) and not statement.get('Condition'):
                     statement["Condition"] = expect_condition
-                expect_statements.append(statements)
+                expect_statements.append(statement)
         expect_policy_document = {
             "Statement": expect_statements,
             "Version": "5.0"
@@ -751,16 +763,6 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
                             "StringEqualsIfExists": {"g:ResourceOrgID": org_id}
                             }
         return expect_condition
-
-    def _wait_ep_can_processed(self, resource):
-        for i in range(12):
-            if resource.get('status') not in ('creating', 'deleting'):
-                return True
-            log.debug(f"[actions]-[update-policy-document] The resource:[vpcep-ep] "
-                      f"with id:[{resource.get('id')}] status {resource.get('status')} "
-                      f"is not available, wait: {i}")
-            time.sleep(5)
-        return False
 
     def _get_org_id(self):
         client = local_session(self.manager.session_factory).client("org-account")
