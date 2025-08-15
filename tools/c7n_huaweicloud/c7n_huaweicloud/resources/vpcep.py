@@ -46,6 +46,7 @@ class VpcEndpoint(QueryResourceManager):
           - name: list-vpc-endpoints
             resource: huaweicloud.vpcep-ep
     """
+
     class resource_type(TypeInfo):
         service = 'vpcep-ep'
         enum_spec = ('list_endpoints', 'endpoints', 'offset')
@@ -75,6 +76,7 @@ class VpcEndpointService(QueryResourceManager):
           - name: list-vpc-endpoint-services
             resource: huaweicloud.vpcep-eps
     """
+
     class resource_type(TypeInfo):
         service = 'vpcep-eps'
         enum_spec = ('list_endpoint_service', 'endpoint_services', 'offset')
@@ -299,25 +301,19 @@ class VpcEndpointSendMsg(HuaweiCloudBaseAction):
 class VpcEndpointUtils():
     """Provide utils
     """
+
     def __init__(self, manager):
         self.manager = manager
 
-    def get_account(self, account_path, my_account=None):
-        results = []
+    def get_account(self, account_list, my_account=None):
+        results = account_list
         if my_account:
             results.append(my_account)
-
-        if not account_path:
-            log.error("account_path is required")
-            return results
-
-        account_list = self.get_file_content(account_path)
-        if account_list.get('accounts', []):
-            results.extend(account_list.get('accounts'))
         return list(set(results))
 
-    def generate_new_accounts(self, account_path, my_account=None):
-        domain_ids = self.get_account(account_path, my_account)
+    def generate_new_accounts(self, account_list, my_account=None):
+        accounts_strip = [account.strip() for account in account_list]
+        domain_ids = self.get_account(accounts_strip, my_account)
         results = []
         for d in domain_ids:
             results.append(f"domain/{d}:root")
@@ -386,47 +382,96 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
             filters:
                 - type: is-not-default-org-policy
                   my_account: "{my_account}"
-                  org_accounts_obs_url: {obs_url}
+                  org_accounts_obs_url: {accounts_obs_url}
+                  org_resources_obs_url: {resources_obs_url}
     """
 
     schema = type_schema(
         'is-not-default-org-policy',
         my_account={'type': 'string'},
-        org_accounts_obs_url={'type': 'string'}
+        org_accounts_obs_url={'type': 'string'},
+        org_resources_obs_url={'type': 'string'}
     )
 
     def process(self, resources, event=None):
-        if not self.data.get('org_accounts_obs_url'):
-            log.error("[filters]-The filter[is-not-default-org-policy] "
-            "org_accounts_obs_url is a required parameter and cannot be empty")
-            return []
         if not resources:
             return []
+        if not self.data.get('org_accounts_obs_url'):
+            log.error("[filters]-The filter[is-not-default-org-policy] "
+                      "org_accounts_obs_url is a required parameter and cannot be empty")
+            raise ValueError("org_accounts_obs_url cannot be empty")
+        if not self.data.get('org_resources_obs_url'):
+            log.error("[filters]-The filter[is-not-default-org-policy] "
+                      "org_resources_obs_url is a required parameter and cannot be empty")
+            raise ValueError("org_resources_obs_url cannot be empty")
+        ep_util = VpcEndpointUtils(self.manager)
+        try:
+            account_list = ep_util.get_file_content(self.data.get('org_accounts_obs_url'))
+            if not account_list.get('accounts', []):
+                log.error("[filters]-The filter[is-not-default-org-policy] "
+                          "the accounts of org_accounts_obs_url cannot be empty")
+                raise ValueError("accounts cannot be empty")
+            resource_list = ep_util.get_file_content(self.data.get('org_resources_obs_url'))
+            if not resource_list.get('resources', []):
+                log.error("[filters]-The filter[is-not-default-org-policy] "
+                          "the resources of org_resources_obs_url cannot be empty")
+                raise ValueError("resources cannot be empty")
+        except json.JSONDecodeError as e:
+            log.error('[filters]-The filter[is-not-default-org-policy] '
+                      'the content of org_accounts_obs_url or org_resources_obs_url is invalid, '
+                      'please check format: the content of org_accounts_obs_url should be: '
+                      '{"accounts": ["account_id1", "account_id2"]}, the content of '
+                      'org_resources_obs_url should be: {"resources": ["resource1", "resource2"]}')
+            raise e
 
         results = []
-        ep_util = VpcEndpointUtils(self.manager)
-        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'),
+        new_accounts = ep_util.generate_new_accounts(account_list.get('accounts', []),
                                                      self.data.get('my_account'))
+        resources_list = resource_list.get('resources', [])
+        resources_strip = [resource.strip() for resource in resources_list]
+        new_resources = list(set(resources_strip))
 
         for res in resources:
             if res.get('service_type', '') not in ['gateway', 'cvs_gateway']:
                 continue
 
-            if self._check_policy(res.get('id'),
-                                  res.get('policy_statement', []), new_accounts):
+            if len(res.get('policy_statement', [])) == 2 \
+                    and self._default_policy_contains_same_accounts(
+                res.get('id'), res.get('policy_statement', []), new_accounts) \
+                    and self._default_policy_contains_same_resources(
+                res.get('id'), res.get('policy_statement', []), new_resources):
                 continue
             results.append(res)
         return results
 
-    def _check_policy(self, ep_id, policy_statement, new_accounts):
-        if not policy_statement:
+    def _default_policy_contains_same_accounts(self, ep_id, policy_statements, new_accounts):
+        global default_account_policy
+        if not policy_statements:
+            log.info(f"[filters]-[is-not-default-org-policy]-"
+                     f"The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] current policies are empty,"
+                     f"expect:[{new_accounts}]")
             return False
-        if len(policy_statement) != 1:
+        contain_default_account_policy = False
+        for policy_statement in policy_statements:
+            if policy_statement.get('Sid', '') == 'allow-trusted-account-resources':
+                contain_default_account_policy = True
+                default_account_policy = policy_statement
+        if not contain_default_account_policy:
+            log.info(f"[filters]-[is-not-default-org-policy]-"
+                     f"The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] policies do not contain default account policy,"
+                     f"expect:[{new_accounts}]")
             return False
 
-        current_accounts = policy_statement[0].get('Condition', {}).get(
+        current_accounts = default_account_policy.get('Condition', {}).get(
             'StringEquals', {}).get('ResourceOwner', [])
         if not current_accounts:
+            log.info(f"[filters]-[is-not-default-org-policy]-"
+                     f"The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] policiess contain default account policy, "
+                     f"but account is empty,"
+                     f"current:[{current_accounts}], expect:[{new_accounts}]")
             return False
 
         current_accounts.sort()
@@ -439,10 +484,44 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
                      f"current:[{current_accounts}], expect:[{new_accounts}]")
         return result
 
+    def _default_policy_contains_same_resources(self, ep_id, policy_statements, new_resources):
+        global default_resource_policy
+        if not policy_statements:
+            return False
+        contain_default_resource_policy = False
+        for policy_statement in policy_statements:
+            if policy_statement.get('Sid', '') == 'allow-huaweicloud-public-data':
+                contain_default_resource_policy = True
+                default_resource_policy = policy_statement
+        if not contain_default_resource_policy:
+            log.info(f"[filters]-[is-not-default-org-policy]-"
+                     f"The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] policies do not contain default resource policy,"
+                     f"expect:[{new_resources}]")
+            return False
+
+        current_resources = default_resource_policy.get('Resource', [])
+        if not current_resources:
+            log.info(f"[filters]-[is-not-default-org-policy]-"
+                     f"The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] policies contain default resource policy, "
+                     f"but resource is empty,"
+                     f"current:[{current_resources}], expect:[{new_resources}]")
+            return False
+
+        current_resources.sort()
+        new_resources.sort()
+        result = current_resources == new_resources
+        if not result:
+            log.info(f"[filters]-[is-not-default-org-policy]-"
+                     f"The resource:[vpcep-ep] "
+                     f"with id:[{ep_id}] policy resource is invalid,"
+                     f"current:[{current_resources}], expect:[{new_resources}]")
+        return result
+
 
 @VpcEndpoint.action_registry.register('update-default-org-policy')
 class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
-
     """Update the endpoint policy to default organization policy.
 
     :example:
@@ -455,26 +534,35 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
             actions:
               - type: update-default-org-policy
                 my_account: "{my_account}"
-                org_accounts_obs_url: {obs_url}
+                org_accounts_obs_url: {accounts_obs_url}
+                org_resources_obs_url: {resources_obs_url}
     """
 
     schema = type_schema('update-default-org-policy',
                          my_account={'type': 'string'},
-                         org_accounts_obs_url={'type': 'string'}
-    )
+                         org_accounts_obs_url={'type': 'string'},
+                         org_resources_obs_url={'type': 'string'}
+                         )
 
     def process(self, resources):
         if not resources:
             return []
         ep_util = VpcEndpointUtils(self.manager)
-        new_accounts = ep_util.generate_new_accounts(self.data.get('org_accounts_obs_url'),
+        account_list = ep_util.get_file_content(self.data.get('org_accounts_obs_url'))
+        new_accounts = ep_util.generate_new_accounts(account_list.get('accounts', []),
                                                      self.data.get('my_account'))
+        resource_list = ep_util.get_file_content(self.data.get('org_resources_obs_url'))
+        resources_list = resource_list.get('resources', [])
+        resources_strip = [resource.strip() for resource in resources_list]
+        new_resources = list(set(resources_strip))
+
         for resource in resources:
-            self.process_resource(resource, new_accounts)
+            if _wait_ep_can_processed(resource):
+                self.process_resource(resource, new_accounts, new_resources)
 
         return resources
 
-    def process_resource(self, resource, new_accounts):
+    def process_resource(self, resource, new_accounts, new_resources):
         """Execute update policy for a single resource"""
         if resource.get('service_type', '') not in ['gateway', 'cvs_gateway']:
             return
@@ -482,17 +570,23 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         ep_id = resource.get("id", "")
         log.info(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
                  f"with id:[{ep_id}] policy is invalid.")
-        self._update_policy(ep_id, new_accounts)
+        self._update_policy(resource, new_accounts, new_resources)
 
     def perform_action(self, resource):
         return None
 
-    def _update_policy(self, ep_id, resource_owner):
-        policy_statement = PolicyStatement(
-            effect="Allow", action=["*"], resource=["*", "*/*"],
-            condition={"StringEquals": {"ResourceOwner": resource_owner}})
+    def _update_policy(self, resource, resource_owner, new_resources):
+        ep_id = resource.get("id", "")
+        policy_statements = [
+            PolicyStatement(sid="allow-trusted-account-resources",
+                            effect="Allow", action=["*"], resource=["*", "*/*"],
+                            condition={"StringEquals": {"ResourceOwner": resource_owner}}),
+            PolicyStatement(sid="allow-huaweicloud-public-data",
+                            effect="Allow", action=["*"], resource=new_resources)
+        ]
+
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
-        body = UpdateEndpointPolicyRequestBody(policy_statement=[policy_statement])
+        body = UpdateEndpointPolicyRequestBody(policy_statement=policy_statements)
         request.body = body
         log.debug(f"[actions]-update-default-org-policy update policy request body: {request}")
 
@@ -505,6 +599,21 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
             log.error(f"[actions]-[update-default-org-policy]-The resource:[vpcep-ep] "
                       f"with id:[{ep_id}] update policy is failed.cause:{e}")
             raise e
+
+
+def _is_principal_wildcards(statement):
+    wildcards = '*'
+    principal = statement.get('Principal', '')
+    if not principal or principal == wildcards:
+        return True
+    if isinstance(principal, dict):
+        for iam in principal.get('IAM', []):
+            if iam == wildcards:
+                return True
+        for ser in principal.get('Service', []):
+            if ser == wildcards:
+                return True
+    return False
 
 
 @VpcEndpoint.filter_registry.register('policy-principal-wildcards')
@@ -542,26 +651,12 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
                  f"invalid policy list:{ids}")
         return result
 
-    def _is_principal_wildcards(self, statement):
-        wildcards = '*'
-        principal = statement.get('Principal', '')
-        if not principal or principal == wildcards:
-            return True
-        if isinstance(principal, dict):
-            for iam in principal.get('IAM', []):
-                if iam == wildcards:
-                    return True
-            for ser in principal.get('Service', []):
-                if ser == wildcards:
-                    return True
-        return False
-
     def _check_policy_document(self, policy_document):
         statement = policy_document.get('Statement', [])
         if not statement:
             return False
         for item in statement:
-            if self._is_principal_wildcards(item) and not item.get('Condition'):
+            if _is_principal_wildcards(item) and not item.get('Condition'):
                 return False
         return True
 
@@ -596,9 +691,19 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
             raise e
 
 
+def _wait_ep_can_processed(resource):
+    for i in range(12):
+        if resource.get('status') not in ('creating', 'deleting'):
+            return True
+        log.debug(f"[actions]-[update-policy-document] The resource:[vpcep-ep] "
+                  f"with id:[{resource.get('id')}] status {resource.get('status')} "
+                  f"is not available, wait: {i}")
+        time.sleep(10)
+    raise ValueError("Ep status is creating or deleting, can not update, please retry")
+
+
 @VpcEndpoint.action_registry.register('update-policy-document')
 class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
-
     """Update the endpoint policy.
 
     :example:
@@ -617,43 +722,47 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     def process(self, resources):
         if not resources:
             return []
-        policy_document = self._get_policy()
+        expect_condition = self._get_expect_condition()
         for resource in resources:
-            if self._wait_ep_can_processed(resource):
-                self.process_resource(resource, policy_document)
+            if _wait_ep_can_processed(resource):
+                self.process_resource(resource, expect_condition)
 
         return resources
 
-    def process_resource(self, resource, policy_document):
+    def process_resource(self, resource, expect_condition):
+        expect_statements = []
         ep_id = resource.get("id", "")
+        policy_document = resource.get('policy_document', {})
+        statements = policy_document.get('Statement', [])
+        if not statements:
+            expect_statements.append(
+                {
+                    "Action": ["*"],
+                    "Condition": expect_condition,
+                    "Effect": "Allow", "Principal": "*", "Resource": ["*"]
+                })
+        else:
+            for statement in statements:
+                if _is_principal_wildcards(statement) and not statement.get('Condition'):
+                    statement["Condition"] = expect_condition
+                expect_statements.append(statement)
+        expect_policy_document = {
+            "Statement": expect_statements,
+            "Version": "5.0"
+        }
         log.info(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
                  f"with id:[{ep_id}] policy is invalid.")
-        self._update_policy(ep_id, policy_document)
+        self._update_policy(ep_id, expect_policy_document)
 
     def perform_action(self, resource):
         return None
 
-    def _get_policy(self):
+    def _get_expect_condition(self):
         org_id = self._get_org_id()
-        policy_document = {"Statement": [
-            {
-                "Action": ["*"],
-                "Condition": {"StringEquals": {"g:PrincipalOrgID": org_id},
-                              "StringEqualsIfExists": {"g:ResourceOrgID": org_id}},
-                "Effect": "Allow", "Principal": "*", "Resource": ["*"]
-            }],
-            "Version": "5.0"}
-        return policy_document
-
-    def _wait_ep_can_processed(self, resource):
-        for i in range(12):
-            if resource.get('status') not in ('creating', 'deleting'):
-                return True
-            log.debug(f"[actions]-[update-policy-document] The resource:[vpcep-ep] "
-                      f"with id:[{resource.get('id')}] status {resource.get('status')} "
-                      f"is not available, wait: {i}")
-            time.sleep(5)
-        return False
+        expect_condition = {"StringEquals": {"g:PrincipalOrgID": org_id},
+                            "StringEqualsIfExists": {"g:ResourceOrgID": org_id}
+                            }
+        return expect_condition
 
     def _get_org_id(self):
         client = local_session(self.manager.session_factory).client("org-account")
@@ -686,7 +795,6 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
 
 @VpcEndpointService.action_registry.register('enable-eps-approval-enabled')
 class VpcEndpointEnableEpsApprovalEnabled(HuaweiCloudBaseAction):
-
     """Enable the eps approval enabled.
 
     :example:
