@@ -56,12 +56,13 @@ class NotifyMessageFromEvent(HuaweiCloudBaseAction):
     def process(self, event):
         resource_type = self.manager.resource_type.service
         message = self.data.get('message')
+        self.log.debug("event: %s", event)
         id = jmespath.search('cts.resource_id', event)
         try:
             smn_client = local_session(self.manager.session_factory).client("smn")
 
             keyArr = self.get_param(message)
-            self.log.error("keyArr: %s", keyArr)
+            self.log.debug("keyArr: %s", keyArr)
             body = PublishMessageRequestBody(
                 subject=self.data.get('subject'),
                 message=self.build_message(resource_type, id, event, keyArr)
