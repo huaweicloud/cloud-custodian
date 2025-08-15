@@ -34,7 +34,7 @@ class Stream(QueryResourceManager):
         response = client.list_log_groups(request)
         should_break = False
         for group in response.log_groups:
-            if group.log_group_name.startswith("functiongraph.log.group"):
+            if group.log_group_name.startswith("lts-group-for-custodian-fg"):
                 continue
             time.sleep(0.5)
             stream_request.log_group_id = group.log_group_id
@@ -83,7 +83,7 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
         request = ListLogStreamRequest()
         streams = []
         for group in resources:
-            if group["log_group_name"].startswith("functiongraph.log.group"):
+            if group["log_group_name"].startswith("lts-group-for-custodian-fg"):
                 continue
             request.log_group_id = group["log_group_id"]
             try:
