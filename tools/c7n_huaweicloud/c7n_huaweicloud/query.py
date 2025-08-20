@@ -14,6 +14,7 @@ from c7n.manager import ResourceManager
 from c7n.query import sources, MaxResourceLimit
 from c7n.utils import local_session
 from c7n_huaweicloud.actions.smn import register_smn_actions
+from c7n_huaweicloud.actions.smn2 import register_smn2_actions
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.filters.exempted import register_exempted_filters
@@ -521,6 +522,7 @@ class QueryMeta(type):
             register_tms_filters(attrs["filter_registry"])
 
         register_smn_actions(attrs["action_registry"])
+        register_smn2_actions(attrs["action_registry"])
         register_exempted_filters(attrs["filter_registry"])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
