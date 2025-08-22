@@ -34,8 +34,6 @@ class Stream(QueryResourceManager):
         response = client.list_log_groups(request)
         should_break = False
         for group in response.log_groups:
-            if group.log_group_name.startswith("functiongraph.log.group"):
-                continue
             time.sleep(0.5)
             stream_request.log_group_id = group.log_group_id
             try:
@@ -83,8 +81,6 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
         request = ListLogStreamRequest()
         streams = []
         for group in resources:
-            if group["log_group_name"].startswith("functiongraph.log.group"):
-                continue
             request.log_group_id = group["log_group_id"]
             try:
                 time.sleep(0.5)
@@ -92,6 +88,7 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                 for stream in response.log_streams:
                     if stream.whether_log_storage:
                         streamDict = {}
+                        streamDict["log_group_name"] = group["log_group_name"]
                         streamDict["log_group_id"] = group["log_group_id"]
                         streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
@@ -104,6 +101,7 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                 raise
         log.info("[event/period]-The filtered resources has [{}]"
                     " in total. ".format(str(len(streams))))
+        log.debug("[event/period]-The filtered resources is [{}]".format(streams))
         return streams
 
 
