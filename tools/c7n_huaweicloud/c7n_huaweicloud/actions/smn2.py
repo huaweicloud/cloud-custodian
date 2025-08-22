@@ -90,12 +90,12 @@ class NotifyMessageFromEvent(HuaweiCloudBaseAction):
             for k in keyArr:
                 kstr = "%" + k + "%"
                 kv = jmespath.search(k, event)
-                self.log.info(f"{kstr}:{kv}")
+                self.log.info(f"{k}:{kv}")
                 if kstr in message:
                     if kv:
                         message = message.replace(kstr, kv)
                     else:
-                        self.log.warning(f"[actions]-[notify-message]{kstr} is not exist!")
+                        self.log.warning(f"[actions]-[notify-message]{k} is not exist!")
 
         if '{resource_details}' not in message:
             return message
