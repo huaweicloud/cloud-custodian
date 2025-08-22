@@ -56,19 +56,19 @@ class Kms(QueryResourceManager):
             response = client.list_keys(request)
             details = response.key_details
             if len(details) == 0:
-                log.debug("[action]-fileter the resource:resourceType:KMS "
+                log.debug("[filter]-the filter list_keys,the resource:resourceType:KMS "
                           "list_keys details is empty")
                 return details
 
             if hasattr(details[0], "tags"):
-                log.debug("[action]-fileter the resource:resourceType:KMS "
+                log.debug("[filter]-the filter list_keys,the resource:resourceType:KMS "
                           "list_keys tags is empty")
                 isQueryTags = False
         except Exception as e:
             log.error(
-                "[action]-fileter the resource:resourceType:KMS "
-                "list_keys is failed,"
-                " cause={}".format(e.error_msg))
+                "[filter]- the filter list_keys query the service:kms/list-keys "
+                "the resource:resourceType:KMS "
+                "is failed,cause={}".format(e.error_msg))
             raise e
 
         if isQueryTags:
@@ -85,16 +85,19 @@ class Kms(QueryResourceManager):
                     responseTag = client.list_kms_by_tags(requestTag)
                     tagResources = responseTag.resources
                     if len(tagResources) == 0:
-                        log.debug("[action]-fileter the resource:resourceType:KMS "
+                        log.debug("[filter]-list_kms_by_tags,query the "
+                                  "service:kms/service_instance/action,"
+                                  "the resource:resourceType:KMS "
                                   "list_kms_by_tags response is empty")
                     for tagResource in tagResources:
                         resourceTagDict[tagResource.resource_id] = tagResource.to_dict().get('tags')
 
                 except Exception as e:
                     log.error(
-                        "[action]-fileter the resource:resourceType:KMS "
-                        "list_kms_by_tags is failed,"
-                        " cause={}".format(e.error_msg))
+                        "[filter]-list_kms_by_tags,query the service:kms/service_instance/action, "
+                        "the resource:resourceType:KMS "
+                        "list_kms_by_tags is failed,cause={}".format(e.error_msg))
+
                     raise e
 
                 offset += limit

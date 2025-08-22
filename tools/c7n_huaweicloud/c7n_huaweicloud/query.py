@@ -14,6 +14,7 @@ from c7n.manager import ResourceManager
 from c7n.query import sources, MaxResourceLimit
 from c7n.utils import local_session
 from c7n_huaweicloud.actions.smn import register_smn_actions
+from c7n_huaweicloud.actions.smn2 import register_smn2_actions
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.filters.exempted import register_exempted_filters
@@ -77,6 +78,8 @@ class ResourceQuery:
                 resources = self._pagination_ims(m, enum_op, path)
             elif pagination == "offset":
                 resources = self._pagination_limit_offset(m, enum_op, path, limit)
+            elif pagination == "start_number":
+                resources = self._pagination_limit_start_number(m, enum_op, path, limit)
             elif pagination == "marker":
                 resources = self._pagination_limit_marker(m, enum_op, path)
             elif pagination == "maxitems-marker":
@@ -135,6 +138,59 @@ class ResourceQuery:
             resources = resources + res
             if len(res) == limit:
                 offset += limit
+            else:
+                return resources
+        return resources
+
+    def _pagination_limit_start_number(self, m, enum_op, path, limit):
+        """Process API pagination using start_number parameter
+
+        Similar to offset pagination, but uses
+        start_number parameter to specify the starting position
+        """
+        session = local_session(self.session_factory)
+        client = session.client(m.service)
+
+        start_number = 0  # Initial value is 0, according to API documentation default
+        limit = limit or DEFAULT_LIMIT_SIZE
+        resources = []
+        while 1:
+            request = session.request(m.service)
+            request.limit = limit
+            request.start_number = start_number
+            response = self._invoke_client_enum(client, enum_op, request)
+            res = jmespath.search(
+                path,
+                eval(
+                    str(response)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                ),
+            )
+
+            if path == "*":
+                data_json = json.loads(str(response))
+                data_json["id"] = data_json[m.id]
+                resources.append(data_json)
+                return resources
+
+            # If res is None, return collected resources directly
+            if res is None:
+                return resources
+
+            # replace id with the specified one
+            if len(res) > 0:
+                for data in res:
+                    data["id"] = data[m.id]
+                    if getattr(m, "tag_resource_type", None):
+                        data["tag_resource_type"] = m.tag_resource_type
+
+                resources = resources + res
+                if len(res) == limit:
+                    start_number += limit
+                else:
+                    return resources
             else:
                 return resources
         return resources
@@ -466,6 +522,7 @@ class QueryMeta(type):
             register_tms_filters(attrs["filter_registry"])
 
         register_smn_actions(attrs["action_registry"])
+        register_smn2_actions(attrs["action_registry"])
         register_exempted_filters(attrs["filter_registry"])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 

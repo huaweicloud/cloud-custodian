@@ -1116,6 +1116,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
 
     schema = type_schema("rule-allow-risk-ports",
                          direction={'enum': ['ingress', 'egress']},
+                         trust_ip_num_limit={'type': 'integer'},
                          risk_ports_path={'type': 'string'},
                          trust_sg_path={'type': 'string'},
                          trust_ip_path={'type': 'string'},
@@ -1462,7 +1463,9 @@ class SecurityGroupRuleAllowRiskPort(Filter):
 
     def _extend_ip_map(self, ip_obj):
         extended_ip_obj = {}
-        ip_num_limit = 100000
+        ip_num_limit = self.data.get('trust_ip_num_limit', 100000)
+        log.info("[filters]-[rule-allow-risk-ports]-"
+                 f"The trust ip num limit is {ip_num_limit}.")
         for key, value in ip_obj.items():
             int_ips = []
             value.pop("description", None)
@@ -1473,8 +1476,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     ip = ip.strip()
                     if '-' in ip:
                         ip_range = ip.split('-')
-                        ip_start = int(netaddr.IPAddress(ip_range[0]))
-                        ip_end = int(netaddr.IPAddress(ip_range[1]))
+                        ip_start = int(netaddr.IPAddress(ip_range[0].strip()))
+                        ip_end = int(netaddr.IPAddress(ip_range[1].strip()))
                         if ip_start > ip_end:
                             log.error("[filters]-[rule-allow-risk-ports] "
                                       "Read trust ip map failed, "
@@ -1487,8 +1490,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         int_ips.append(int(netaddr.IPAddress(ip)))
             elif '-' in key:
                 ip_range = key.split('-')
-                ip_start = int(netaddr.IPAddress(ip_range[0]))
-                ip_end = int(netaddr.IPAddress(ip_range[1]))
+                ip_start = int(netaddr.IPAddress(ip_range[0].strip()))
+                ip_end = int(netaddr.IPAddress(ip_range[1].strip()))
                 if ip_start > ip_end:
                     log.error("[filters]-[rule-allow-risk-ports] "
                               "Read trust ip map failed, "
@@ -1526,6 +1529,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 raise PolicyExecutionError("Read trust ip map failed, "
                                            "error message:[The number of trust ip "
                                            f"has exceeded the upper limit {ip_num_limit}].")
+        log.info("[filters]-[rule-allow-risk-ports]-"
+                 f"The number of trust ips in config is {len(extended_ip_obj.keys())}.")
         return extended_ip_obj
 
     def _extend_sg_map(self, sg_obj):
