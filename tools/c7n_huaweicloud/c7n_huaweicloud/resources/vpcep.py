@@ -187,6 +187,7 @@ class VpcEndpointServiceAndVpcFilter(Filter):
                       f"Missing VPC IDs found in service {endpoint_service_name}: "
                       f"{', '.join(missing_vpc_ids)}")
             ids_str = ', '.join(missing_vpc_ids)
+            #the id here represents the id of vpc
             return [{"endpoint_service_name": endpoint_service_name, "vpc_ids": missing_vpc_ids,
                      "id": ids_str}]
 
