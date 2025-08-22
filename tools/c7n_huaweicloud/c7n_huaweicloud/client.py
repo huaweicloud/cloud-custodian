@@ -167,6 +167,10 @@ from huaweicloudsdkas.v1 import (
 from huaweicloudsdkas.v1.region.as_region import AsRegion
 from huaweicloudsdkelb.v2 import ElbClient as ElbClientV2
 from huaweicloudsdkelb.v2.region.elb_region import ElbRegion as ElbRegionV2
+from huaweicloudsdkcodeartsbuild.v3.region.codeartsbuild_region import CodeArtsBuildRegion
+from huaweicloudsdkcodeartsbuild.v3 import (
+    CodeArtsBuildClient, ListJobRequest
+)
 from huaweicloudsdkprojectman.v4.region.projectman_region import ProjectManRegion
 from huaweicloudsdkprojectman.v4 import ProjectManClient, ListProjectsV4Request
 
@@ -617,6 +621,13 @@ class Session:
                 .with_region(CodeHubRegion.value_of("sa-brazil-1"))
                 .build()
             )
+        elif service == "codearts-build":
+            client = (
+                CodeArtsBuildClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CodeArtsBuildRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -800,6 +811,8 @@ class Session:
             request = ListScalingConfigsRequest()
         elif service == 'as-policy':
             request = ListAllScalingV2PoliciesRequest()
+        elif service == 'codearts-build':
+            request = ListJobRequest()
         # req api query projects request for codeartsrepo.
         elif service == "codeartsrepo-project":
             request = ListProjectsV4Request()

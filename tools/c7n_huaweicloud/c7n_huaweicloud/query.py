@@ -90,6 +90,8 @@ class ResourceQuery:
                 resources = self._pagination_limit_page(m, enum_op, path)
             elif pagination == "cdn":
                 resources = self._pagination_cdn(m, enum_op, path)
+            elif pagination == "page_index":
+                resources = self._pagination_page_index(m, enum_op, path)
             else:
                 log.exception(f"Unsupported pagination type: {pagination}")
                 sys.exit(1)
@@ -433,6 +435,39 @@ class ResourceQuery:
         while 1:
             request = session.request(m.service)
             request.page_number = page
+            response = self._invoke_client_enum(client, enum_op, request)
+            res = jmespath.search(
+                path,
+                eval(
+                    str(response)
+                    .replace("null", "None")
+                    .replace("false", "False")
+                    .replace("true", "True")
+                ),
+            )
+
+            if not res:
+                return resources
+
+            # replace id with the specified one
+            for data in res:
+                data["id"] = data[m.id]
+                data["tag_resource_type"] = m.tag_resource_type
+
+            resources = resources + res
+            page += 1
+        return resources
+
+    def _pagination_page_index(self, m, enum_op, path):
+        session = local_session(self.session_factory)
+        client = session.client(m.service)
+
+        page = 0
+        resources = []
+        while 1:
+            request = session.request(m.service)
+            request.page_index = page
+            request.page_size = m.page_size
             response = self._invoke_client_enum(client, enum_op, request)
             res = jmespath.search(
                 path,
