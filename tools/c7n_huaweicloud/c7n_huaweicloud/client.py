@@ -176,6 +176,7 @@ class Session:
     def __init__(self, options=None):
         self.token = None
         self.domain_id = None
+        self.domain_name = None
         self.region = None
         self.ak = None
         self.sk = None
