@@ -45,6 +45,7 @@ def run(event, context=None):
     options_overrides['domain_id'] = context.getUserData('DOMAIN_ID')
     options_overrides['account_id'] = context.getUserData('DOMAIN_ID')
     options_overrides['account_name'] = context.getUserData('DOMAIN_NAME')
+    options_overrides['region'] = context.getUserData('HUAWEI_DEFAULT_REGION')
 
     # merge all our options in
     options = Config.empty(**options_overrides)
