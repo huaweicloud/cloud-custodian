@@ -4,6 +4,7 @@
 import json
 import logging
 import time
+import datetime
 
 from requests.exceptions import HTTPError
 
@@ -26,7 +27,8 @@ from huaweicloudsdkvpcep.v1 import (
     UpdateEndpointServiceRequest,
     UpdateEndpointServiceRequestBody,
     PolicyStatement,
-    ListServiceDescribeDetailsRequest
+    ListServiceDescribeDetailsRequest,
+    ListEndpointsRequest
 )
 
 from huaweicloudsdkorganizations.v1 import ShowOrganizationRequest
@@ -521,6 +523,56 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
                      f"with id:[{ep_id}] policy resource is invalid,"
                      f"current:[{current_resources}], expect:[{new_resources}]")
         return result
+
+
+@VpcEndpoint.filter_registry.register('is-less-than-fix-max-time')
+class VpcEndpointObsCheckLessThanFixMaxTimeFilter(Filter):
+    """Check if endpoint is less than fix max time.
+
+    Return a list of endpoints that less than fix max time.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+            - name: is-less-than-fix-max-time
+            resource: huaweicloud.vpcep-ep
+            filters:
+                - type: is-less-than-fix-max-time
+    """
+
+    schema = type_schema(
+        'is-less-than-fix-max-time'
+    )
+
+    def process(self, resources, event=None):
+        if not resources:
+            return []
+
+        fix_max_time = datetime.datetime.strptime("2025-08-26T01:30:00", '%Y-%m-%dT%H:%M:%SZ')
+
+        client = self.manager.get_client()
+        current_offset = 0
+        default_limit = 1000
+        results = []
+        while True:
+            request = ListEndpointsRequest(limit=default_limit, offset=current_offset,
+                                           sort_key="update_at", sort_dir="asc")
+            response = client.list_endpoints(request)
+            update_time_exceed_fix_max_time = False
+            for endpoint in response.endpoints:
+                update_time = datetime.datetime.strptime(endpoint.updated_at, '%Y-%m-%dT%H:%M:%SZ')
+                if update_time < fix_max_time:
+                    results.append(endpoint)
+                else:
+                    update_time_exceed_fix_max_time = True
+                    break
+            if update_time_exceed_fix_max_time or len(response.endpoints) >= default_limit:
+                break
+            else:
+                current_offset += default_limit
+        return results
 
 
 @VpcEndpoint.action_registry.register('update-default-org-policy')
