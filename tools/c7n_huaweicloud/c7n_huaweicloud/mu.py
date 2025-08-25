@@ -129,11 +129,13 @@ class FunctionGraphManager:
                 response = self.client.list_functions(request)
             except exceptions.ClientRequestException as e:
                 log.error(f'List functions failed, '
+                          f'domain id:[{self.session.domain_id}], '
                           f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
                 raise PolicyExecutionError(f'List functions failed, '
+                                           f'domain id:[{self.session.domain_id}], '
                                            f'request id:[{e.request_id}], '
                                            f'status code:[{e.status_code}], '
                                            f'error code:[{e.error_code}], '
@@ -168,11 +170,13 @@ class FunctionGraphManager:
             response = self.client.create_function(request)
         except exceptions.ClientRequestException as e:
             log.error(f'Create function failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Create function failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -180,18 +184,20 @@ class FunctionGraphManager:
 
         return response
 
-    def get_custodian_depend_version_id(self, runtime="Python3.20"):
+    def get_custodian_depend_version_id(self, runtime="Python3.10"):
         depend_name = f'custodian-huaweicloud-{runtime}'
         list_dependencies_request = ListDependenciesRequest(runtime=runtime, name=depend_name)
         try:
             dependencies = self.client.list_dependencies(list_dependencies_request).dependencies
         except exceptions.ClientRequestException as e:
             log.error(f'List dependencies failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'List dependencies failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -208,6 +214,7 @@ class FunctionGraphManager:
                 dependency_version = self.client.show_dependency_version(show_dependency_version_request)  # noqa: E501
             except exceptions.ClientRequestException as e:
                 log.error(f'Show dependency version failed, '
+                          f'domain id:[{self.session.domain_id}], '
                           f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
@@ -245,11 +252,13 @@ class FunctionGraphManager:
                 return None
             else:
                 log.error(f'Show function config failed, '
+                          f'domain id:[{self.session.domain_id}], '
                           f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Show function config failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -289,11 +298,13 @@ class FunctionGraphManager:
             response = self.client.update_function_config(request)
         except exceptions.ClientRequestException as e:
             log.error(f'Update function config failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Update function config failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -317,11 +328,13 @@ class FunctionGraphManager:
             response = self.client.update_function_code(request)
         except exceptions.ClientRequestException as e:
             log.error(f'Update function code failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Update function code failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -335,11 +348,13 @@ class FunctionGraphManager:
             response = self.client.list_function_triggers(request)
         except exceptions.ClientRequestException as e:
             log.error(f'List function triggers failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'List function triggers failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -481,11 +496,13 @@ class FunctionGraphManager:
                 old_config = None
             else:
                 log.error(f'Show function async config failed, '
+                          f'domain id:[{self.session.domain_id}], '
                           f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
                 raise PolicyExecutionError(f'Show function async config failed, '
+                                           f'domain id:[{self.session.domain_id}], '
                                            f'request id:[{e.request_id}], '
                                            f'status code:[{e.status_code}], '
                                            f'error code:[{e.error_code}], '
@@ -528,11 +545,13 @@ class FunctionGraphManager:
                 )
             except exceptions.ClientRequestException as e:
                 log.error(f'Update function async config failed, '
+                          f'domain id:[{self.session.domain_id}], '
                           f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
                 raise PolicyExecutionError(f'Update function async config failed, '
+                                           f'domain id:[{self.session.domain_id}], '
                                            f'request id:[{e.request_id}], '
                                            f'status code:[{e.status_code}], '
                                            f'error code:[{e.error_code}], '
@@ -546,11 +565,13 @@ class FunctionGraphManager:
                 _ = self.client.delete_function_async_invoke_config(delete_async_config_request)
             except exceptions.ClientRequestException as e:
                 log.error(f'Delete function async config failed, '
+                          f'domain id:[{self.session.domain_id}], '
                           f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
                 raise PolicyExecutionError(f'Delete function async config failed, '
+                                           f'domain id:[{self.session.domain_id}], '
                                            f'request id:[{e.request_id}], '
                                            f'status code:[{e.status_code}], '
                                            f'error code:[{e.error_code}], '
@@ -569,11 +590,13 @@ class FunctionGraphManager:
             old_tags = self.client.list_function_tags(list_function_tags_request).tags
         except exceptions.ClientRequestException as e:
             log.error(f'List function tags failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'List function tags failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -603,11 +626,13 @@ class FunctionGraphManager:
                 _ = self.client.delete_tags(delete_tags_request)
             except exceptions.ClientRequestException as e:
                 log.error(f'Delete function tags failed, '
+                          f'domain id:[{self.session.domain_id}], '
                           f'request id:[{e.request_id}], '
                           f'status code:[{e.status_code}], '
                           f'error code:[{e.error_code}], '
                           f'error message:[{e.error_msg}].')
                 raise PolicyExecutionError(f'Delete function tags failed, '
+                                           f'domain id:[{self.session.domain_id}], '
                                            f'request id:[{e.request_id}], '
                                            f'status code:[{e.status_code}], '
                                            f'error code:[{e.error_code}], '
@@ -637,11 +662,13 @@ class FunctionGraphManager:
             _ = self.client.create_tags(create_tags_request)
         except exceptions.ClientRequestException as e:
             log.error(f'Create function tags failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Create function tags failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -672,11 +699,13 @@ class FunctionGraphManager:
             _ = self.client.delete_function(request)
         except exceptions.ClientRequestException as e:
             log.error(f'Delete function failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Delete function failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -1068,6 +1097,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
             vpcs = vpc_client_v3.list_vpcs(get_vpcs_request).vpcs
         except exceptions.ClientRequestException as e:
             log.error(f'Get vpc_id by vpc_name failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
@@ -1088,6 +1118,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
             subnets = vpc_client_v2.list_subnets(get_subnets_request).subnets
         except exceptions.ClientRequestException as e:
             log.error(f'Get subnet_id by subnet_name failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
@@ -1111,6 +1142,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
             log_groups = lts_client_v2.list_log_groups(list_groups_request).log_groups
         except exceptions.ClientRequestException as e:
             log.error(f'Get group_id by group_name failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
@@ -1133,6 +1165,7 @@ class PolicyFunctionGraph(AbstractFunctionGraph):
             log_streams = lts_client_v2.list_log_streams(list_streams_request).log_streams
         except exceptions.ClientRequestException as e:
             log.error(f'Get stream_id by stream_name failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
@@ -1192,11 +1225,13 @@ class FunctionGraphTriggerBase:
             _ = self.client.delete_function_trigger(request)
         except exceptions.ClientRequestException as e:
             log.error(f'Delete function trigger failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Delete function trigger failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -1225,11 +1260,13 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
             return create_trigger_response
         except exceptions.ClientRequestException as e:
             log.error(f'Create function trigger failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Create function trigger failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -1294,11 +1331,13 @@ class TimerServiceSource(FunctionGraphTriggerBase):
             return create_trigger_response
         except exceptions.ClientRequestException as e:
             log.error(f'Create function trigger failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Create function trigger failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -1352,11 +1391,13 @@ class EventGridServiceSource:
             list_channels_response = self.client.list_channels(list_channels_request)
         except exceptions.ClientRequestException as e:
             log.error(f'List channels failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'List channels failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
@@ -1378,11 +1419,13 @@ class EventGridServiceSource:
             return create_subscription_response
         except exceptions.ClientRequestException as e:
             log.error(f'Create subscription failed, '
+                      f'domain id:[{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
             raise PolicyExecutionError(f'Create subscription failed, '
+                                       f'domain id:[{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
                                        f'status code:[{e.status_code}], '
                                        f'error code:[{e.error_code}], '
