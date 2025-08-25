@@ -442,6 +442,7 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                 f"Delete LTS to SMN Topics is success.")
             resource["lts"] = None
         except Exception as e:
+            log.warning("aaaaaaaaaaaaaaaaa")
             if response and response.status_code == 404:
                 log.warning(
                     f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
