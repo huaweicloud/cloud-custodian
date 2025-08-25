@@ -443,6 +443,7 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
             resource["lts"] = None
         except Exception as e:
             log.warning("aaaaaaaaaaaaaaaaa")
+            log.warning("bbbbbbbbbbbbbbbbb")
             if response and response.status_code == 404:
                 log.warning(
                     f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
