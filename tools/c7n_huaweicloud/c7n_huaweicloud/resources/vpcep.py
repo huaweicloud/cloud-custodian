@@ -552,7 +552,8 @@ class VpcEndpointObsCheckLessThanFixMaxTimeFilter(Filter):
         fix_max_time = datetime(2025, 8, 26, 1, 30, 0, tzinfo=timezone.utc)
         results = []
         for res in resources:
-            if res.updated_at < fix_max_time:
+            res_update_time = datetime.strptime(res.get('updated_at'), "%Y-%m-%dT%H:%M:%S%z")
+            if res_update_time < fix_max_time:
                 results.append(res)
         res_count = len(results)
         log.info(f"[filters]-[is-less-than-fix-max-time]-"
