@@ -555,9 +555,11 @@ class VpcEndpointObsCheckLessThanFixMaxTimeFilter(Filter):
             res_update_time = datetime.strptime(res.get('updated_at'), "%Y-%m-%dT%H:%M:%S%z")
             if res_update_time < fix_max_time:
                 results.append(res)
+        ids = [r.get('id') for r in results]
         res_count = len(results)
-        log.info(f"[filters]-[is-less-than-fix-max-time]-"
-                 f"There are {res_count} endpoints less than fix max time {fix_max_time}.")
+        log.info(f"[filters]-[is-less-than-fix-max-time]-The resource:[vpcep-ep] "
+                 f"There are {res_count} endpoints less than fix max time {fix_max_time} "
+                 f"endpoints list:{ids}")
         return results
 
 
