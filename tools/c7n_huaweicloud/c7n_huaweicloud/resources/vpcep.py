@@ -4,7 +4,7 @@
 import json
 import logging
 import time
-import datetime
+from datetime import datetime, timezone
 
 from requests.exceptions import HTTPError
 
@@ -27,8 +27,7 @@ from huaweicloudsdkvpcep.v1 import (
     UpdateEndpointServiceRequest,
     UpdateEndpointServiceRequestBody,
     PolicyStatement,
-    ListServiceDescribeDetailsRequest,
-    ListEndpointsRequest
+    ListServiceDescribeDetailsRequest
 )
 
 from huaweicloudsdkorganizations.v1 import ShowOrganizationRequest
@@ -550,28 +549,14 @@ class VpcEndpointObsCheckLessThanFixMaxTimeFilter(Filter):
         if not resources:
             return []
 
-        fix_max_time = datetime.datetime.strptime("2025-08-26T01:30:00", '%Y-%m-%dT%H:%M:%SZ')
-
-        client = self.manager.get_client()
-        current_offset = 0
-        default_limit = 1000
+        fix_max_time = datetime(2025, 8, 26, 1, 30, 0, tzinfo=timezone.utc)
         results = []
-        while True:
-            request = ListEndpointsRequest(limit=default_limit, offset=current_offset,
-                                           sort_key="update_at", sort_dir="asc")
-            response = client.list_endpoints(request)
-            update_time_exceed_fix_max_time = False
-            for endpoint in response.endpoints:
-                update_time = datetime.datetime.strptime(endpoint.updated_at, '%Y-%m-%dT%H:%M:%SZ')
-                if update_time < fix_max_time:
-                    results.append(endpoint)
-                else:
-                    update_time_exceed_fix_max_time = True
-                    break
-            if update_time_exceed_fix_max_time or len(response.endpoints) >= default_limit:
-                break
-            else:
-                current_offset += default_limit
+        for res in resources:
+            if res.updated_at < fix_max_time:
+                results.append(res)
+        res_count = len(results)
+        log.info(f"[filters]-[is-less-than-fix-max-time]-"
+                 f"There are {res_count} endpoints less than fix max time {fix_max_time}.")
         return results
 
 
