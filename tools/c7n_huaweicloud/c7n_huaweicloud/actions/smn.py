@@ -161,7 +161,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                 if hasattr(response, 'message_id'):
                     self.log.info(
                         f"[actions]-[notify-message-structure] The request_id:{response.request_id}"
-                        f"and message_id:{response.message_id}")
+                        f" and message_id:{response.message_id}")
                 self.log.info(
                     f"[actions]-[notify-message-structure] The resource:{resource_type} with id:"
                     f"{ids} Publish message structure success")
