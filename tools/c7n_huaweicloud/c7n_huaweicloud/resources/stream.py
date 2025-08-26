@@ -114,7 +114,6 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         time.sleep(0.5)
-        log.debug("[event/period]-The resource are [{}]".format(resource))
         try:
             client = self.manager.get_client()
             request = UpdateLogStreamRequest()
