@@ -70,14 +70,16 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
                 self.log.debug(
                     f"[actions]-[notify-message] query the service:[POST /v2/{{project_id}}"
                     f"/notifications/topics/{topic_urn}/publish] is success.")
-                self.log.info(
-                    f"[actions]-[notify-message] The request_id:{response.request_id} "
-                    f"and message_id:{response.message_id}")
+                if hasattr(response, 'message_id'):
+                    self.log.info(
+                        f"[actions]-[notify-message] The request_id:{response.request_id} "
+                        f"and message_id:{response.message_id}")
+
                 self.log.info(
                     f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
                     f"Publish message is success")
         except Exception as e:
-            if response is not None:
+            if response is not None and hasattr(response, 'message_id'):
                 self.log.info(
                     f"[actions]-[notify-message] The request_id:{response.request_id} "
                     f"and message_id:{response.message_id}")
@@ -156,16 +158,17 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                 self.log.debug(
                     f"[actions]-[notify-message-structure] query the service:[POST "
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
-                self.log.info(
-                    f"[actions]-[notify-message] The request_id:{response.request_id} "
-                    f"and message_id:{response.message_id}")
+                if hasattr(response, 'message_id'):
+                    self.log.info(
+                        f"[actions]-[notify-message-structure] The request_id:{response.request_id} "
+                        f"and message_id:{response.message_id}")
                 self.log.info(
                     f"[actions]-[notify-message-structure] The resource:{resource_type} with id:"
                     f"{ids} Publish message structure success")
         except Exception as e:
-            if response is not None:
+            if response is not None and hasattr(response, 'message_id'):
                 self.log.info(
-                    f"[actions]-[notify-message] The request_id:{response.request_id} "
+                    f"[actions]-[notify-message-structure] The request_id:{response.request_id} "
                     f"and message_id:{response.message_id}")
             self.log.error(
                 f"[actions]-[notify-message-structure] The resource:{resource_type} with id:{ids}"
@@ -249,16 +252,17 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                 self.log.debug(
                     f"[actions]-[notify-message-template] query the service:[POST "
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
-                self.log.info(
-                    f"[actions]-[notify-message] The request_id:{response.request_id} "
-                    f"and message_id:{response.message_id}")
+                if hasattr(response, 'message_id'):
+                    self.log.info(
+                        f"[actions]-[notify-message-template] The request_id:{response.request_id} "
+                        f"and message_id:{response.message_id}")
                 self.log.info(
                     f"[actions]-[notify-message-template] The resource:{resource_type} with id:"
                     f"{ids} Publish message template success.")
         except Exception as e:
-            if response is not None:
+            if response is not None and hasattr(response, 'message_id'):
                 self.log.info(
-                    f"[actions]-[notify-message] The request_id:{response.request_id} "
+                    f"[actions]-[notify-message-template] The request_id:{response.request_id} "
                     f"and message_id:{response.message_id}")
             self.log.error(
                 f"[actions]-[notify-message-template] The resource:{resource_type} with id:{ids} "
