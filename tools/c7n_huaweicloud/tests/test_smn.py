@@ -147,10 +147,7 @@ class SmnTest(BaseTest):
                 }
             ]
         }, session_factory=factory)
-        try:
-            resources = p.run()
-        except:
-            pass
+        resources = p.run()
         self.assertEqual(len(resources), 3)
         self.assertFalse(resources[0]['access_policy'].__contains__("*"))
         self.assertFalse(resources[1]['access_policy'].__contains__("*"))
