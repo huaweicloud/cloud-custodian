@@ -160,7 +160,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
                 if hasattr(response, 'message_id'):
                     self.log.info(
-                        f"[actions]-[notify-message-structure] The request_id:{response.request_id} "
+                        f"[actions]-[notify-message-structure] The request_id:{response.request_id}"
                         f"and message_id:{response.message_id}")
                 self.log.info(
                     f"[actions]-[notify-message-structure] The resource:{resource_type} with id:"
