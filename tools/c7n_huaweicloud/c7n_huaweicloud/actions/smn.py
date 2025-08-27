@@ -1,5 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import json
 import logging
 
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody
@@ -70,19 +71,19 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
                 self.log.debug(
                     f"[actions]-[notify-message] query the service:[POST /v2/{{project_id}}"
                     f"/notifications/topics/{topic_urn}/publish] is success.")
-                if hasattr(response, 'message_id'):
-                    self.log.info(
-                        f"[actions]-[notify-message] The request_id:{response.request_id} "
-                        f"and message_id:{response.message_id}")
-
+                self.log.info(
+                    f"[actions]-[notify-message] "
+                    f"The request_id:{getattr(response, 'request_id', None)} "
+                    f"and message_id:{getattr(response, 'message_id', None)}")
                 self.log.info(
                     f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
                     f"Publish message is success")
         except Exception as e:
-            if response is not None and hasattr(response, 'message_id'):
+            if response is not None:
                 self.log.info(
-                    f"[actions]-[notify-message] The request_id:{response.request_id} "
-                    f"and message_id:{response.message_id}")
+                    f"[actions]-[notify-message] "
+                    f"The request_id:{getattr(response, 'request_id', None)} "
+                    f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
                 f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
                 f"Publish message to SMN Topics is failed, cause:{e}")
@@ -158,18 +159,18 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                 self.log.debug(
                     f"[actions]-[notify-message-structure] query the service:[POST "
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
-                if hasattr(response, 'message_id'):
-                    self.log.info(
-                        f"[actions]-[notify-message-structure] The request_id:{response.request_id}"
-                        f" and message_id:{response.message_id}")
+                self.log.info(
+                    f"[actions]-[notify-message-structure] "
+                    f"The request_id:{getattr(response, 'request_id', None)} "
+                    f"and message_id:{getattr(response, 'message_id', None)}")
                 self.log.info(
                     f"[actions]-[notify-message-structure] The resource:{resource_type} with id:"
                     f"{ids} Publish message structure success")
         except Exception as e:
-            if response is not None and hasattr(response, 'message_id'):
-                self.log.info(
-                    f"[actions]-[notify-message-structure] The request_id:{response.request_id} "
-                    f"and message_id:{response.message_id}")
+            self.log.info(
+                f"[actions]-[notify-message-structure] "
+                f"The request_id:{getattr(response, 'request_id', None)} "
+                f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
                 f"[actions]-[notify-message-structure] The resource:{resource_type} with id:{ids}"
                 f" Publish message structure to SMN Topics failed, cause:{e}")
@@ -252,18 +253,18 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                 self.log.debug(
                     f"[actions]-[notify-message-template] query the service:[POST "
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
-                if hasattr(response, 'message_id'):
-                    self.log.info(
-                        f"[actions]-[notify-message-template] The request_id:{response.request_id} "
-                        f"and message_id:{response.message_id}")
+                self.log.info(
+                    f"[actions]-[notify-message-template] "
+                    f"The request_id:{getattr(response, 'request_id', None)} "
+                    f"and message_id:{getattr(response, 'message_id', None)}")
                 self.log.info(
                     f"[actions]-[notify-message-template] The resource:{resource_type} with id:"
                     f"{ids} Publish message template success.")
         except Exception as e:
-            if response is not None and hasattr(response, 'message_id'):
-                self.log.info(
-                    f"[actions]-[notify-message-template] The request_id:{response.request_id} "
-                    f"and message_id:{response.message_id}")
+            self.log.info(
+                f"[actions]-[notify-message-template] "
+                f"The request_id:{getattr(response, 'request_id', None)} "
+                f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
                 f"[actions]-[notify-message-template] The resource:{resource_type} with id:{ids} "
                 f"Publish message template to SMN Topics failed, cause:{e}")
