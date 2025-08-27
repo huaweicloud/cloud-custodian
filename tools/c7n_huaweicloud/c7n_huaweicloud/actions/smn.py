@@ -1,6 +1,5 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-import json
 import logging
 
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody
