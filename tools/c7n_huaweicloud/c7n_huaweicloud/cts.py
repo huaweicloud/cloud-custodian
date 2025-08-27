@@ -67,10 +67,16 @@ class CloudTraceServiceEvents:
             mode_code = e.get('code')
             if mode_code:
                 log.info(f'Expect code for event is {mode_code}')
-                if event_code != mode_code:
-                    log.warning(f'The code[{event_code}] in CTS event is not matched the'
-                                f' code[{mode_code}] in mode configuration')
-                    continue
+                if isinstance(mode_code, int):
+                    if event_code != mode_code:
+                        log.warning(f'The code[{event_code}] in CTS event is not matched the'
+                                    f' code[{mode_code}] in mode configuration')
+                        continue
+                elif isinstance(mode_code, list):
+                    if event_code not in mode_code:
+                        log.warning(f'The code[{event_code}] in CTS event is not in the'
+                                    f' code list{mode_code} in mode configuration')
+                        continue
 
             id_query = e.get('ids')
             if not id_query:

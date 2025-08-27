@@ -411,7 +411,12 @@ class CloudTraceMode(FunctionGraphMode):
                      'source': {'type': 'string'},
                      'event': {'type': 'string'},
                      'ids': {'type': 'string'},
-                     'code': {'type': 'integer'},
+                     'code': {
+                         'oneOf': [
+                             {'type': 'integer'},
+                             {'type': 'array', 'items': {'type': 'integer'}}
+                         ]
+                     },
                  }}]
         }},
         rinherit=FunctionGraphMode.schema)
