@@ -625,7 +625,7 @@ class Session:
             client = (
                 CodeArtsBuildClient.new_builder()
                 .with_credentials(credentials)
-                .with_region(CodeArtsBuildRegion.value_of(self.region))
+                .with_region(CodeArtsBuildRegion.value_of('sa-brazil-1'))
                 .build()
             )
         return client

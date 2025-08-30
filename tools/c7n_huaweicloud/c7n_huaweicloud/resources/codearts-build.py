@@ -1,10 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
-import time
-import traceback
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager
 from c7n_huaweicloud.query import TypeInfo
@@ -12,7 +9,6 @@ from c7n_huaweicloud.query import TypeInfo
 from huaweicloudsdkcodeartsbuild.v3 import ShowJobConfigRequest
 
 from c7n.filters import Filter
-from c7n.filters.core import AgeFilter
 from c7n.utils import local_session, type_schema
 
 log = logging.getLogger('custodian.huaweicloud.codearts-build')
@@ -51,7 +47,7 @@ class Job(QueryResourceManager):
 
 
 @Job.filter_registry.register('not-exist')
-class ExecutionHostFilter(Filter):
+class NotExistFilter(Filter):
     """ codearts build execution-host filter.
 
     Filters the job to find those not exist in project
@@ -64,7 +60,7 @@ class ExecutionHostFilter(Filter):
         - name: execution-host
           resource: huaweicloud.codearts-build-job
           filters:
-            - type: exist
+            - type: not-exist
      """
     schema = type_schema('exist')
 
@@ -91,7 +87,7 @@ class ExecutionHostFilter(Filter):
           resource: huaweicloud.codearts-build-job
           filters:
             - type: execution-host
-              name: default
+              host_type: default
               id: c7a85a3f43174298a6ceb970e7e41e55
      """
     schema = type_schema(
@@ -144,7 +140,6 @@ class ExecutionHostFilter(Filter):
 
         except AttributeError as e:
             self.log.error(f"Invalid client object or missing show_job_config method: {e}")
-            raise ClientException("Invalid client configuration") from e
 
         except Exception as e:
             self.log.error(f"Failed to get job config for {job_id}: {e}")
@@ -189,7 +184,8 @@ class ExecutionHostFilter(Filter):
         if actual_type == expected_type:
             results.append(target_resource)
         else:
-            self.log.debug(f"Job {job_id} type mismatch: expected {expected_type}, got {actual_type}")
+            self.log.debug(f"Job {job_id} type mismatch: expected {expected_type}"
+                           f", got {actual_type}")
 
     def _process_all_resources(self, client, resources, expected_type, results):
         for resource in resources:
@@ -207,7 +203,8 @@ class ExecutionHostFilter(Filter):
                     results.append(resource)
                     self.log.debug(f"Job {resource_id} matched expected type {expected_type}")
                 else:
-                    self.log.debug(f"Job {resource_id} type mismatch: expected {expected_type}, got {actual_type}")
+                    self.log.debug(f"Job {resource_id} type mismatch: expected {expected_type}"
+                                   f", got {actual_type}")
 
             except Exception as e:
                 self.log.error(f"Error processing job {resource_id}: {str(e)}")
