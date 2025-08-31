@@ -109,7 +109,7 @@ class Alarm(QueryResourceManager):
 
                 resources = self.get_alarm_resources(alarm_ids)
             except exceptions.ClientRequestException as e:
-                log.error(f"[actions]- list_alarm_rules - The resource:ces-alarm "
+                log.error(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
                           f"with id:[] query alarm rules is failed. cause: {e.error_msg} ")
                 raise e
         return resources
@@ -974,3 +974,4 @@ class CreateVpcEventAlarmRule(BaseAction):
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
                       f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
             raise e
+
