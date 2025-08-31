@@ -1,0 +1,178 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cloudbuild-ext.sa-brazil-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0; os/Linux##61-Ubuntu_SMP_PREEMPT_DYNAMIC_Fri_Apr_11_23:16:11_UTC_2025#x86_64
+        python/3.12.3 impl/CPython; app/c63ff6b6-6525-4bc5-be04-49bb326296dc
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250830T091405Z
+    method: GET
+    uri: https://cloudbuild-ext.sa-brazil-1.myhuaweicloud.com/v1/job/list?page_index=0&page_size=100
+  response:
+    body:
+      string: "{\"result\": {\"total\": 752, \"job_list\": [{\"id\": \"0d0415bc87f647369a6b9dc9d326ba5d\",
+        \"job_name\": \"test\", \"job_creator\": \"080b8db7ef8010d81f28c009073be150\",
+        \"user_id\": \"080b8db7ef8010d81f28c009073be150\", \"user_name\": \"test\",
+        \"project_id\": \"2258551282bd485da91df760e0e0d7de\", \"project_name\": \"test\",
+        \"last_build_time\": 1755484540000, \"health_score\": 0, \"source_code\":
+        \"codeci\", \"last_build_status\": \"blue\", \"last_job_running_status\":
+        \"Finished\", \"last_build_user\": \"hwstaff_intl_master\", \"last_build_user_id\":
+        \"080b8db7ef8010d81f28c009073be150\", \"last_build_nick_name\": \"intl\",
+        \"task_id\": \"#20250817.2\", \"code_branch\": \"master\", \"trigger_type\":
+        \"\u624B\u5DE5\u89E6\u53D1\", \"build_time\": 59000, \"scm_type\": \"codehub\",
+        \"build_project_id\": \"fea631b6-515a-4eef-b002-70b628bbdc09\", \"build_type\":
+        \"branch\", \"project_permission_switch\": false}]}, \"status\": \"success\"}"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 30 Aug 2025 09:14:06 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=fc0e5738033e8394ca; path=/
+      - HWWAFSESTIME=1756545246816; path=/
+      - HWWAFSESTIME=1756545246818; path=/
+      - HWWAFSESID=f4c9d7395beceeb7dd; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - de3315fa187959a06c3f4c92022e68e4
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Cookie:
+      - HWWAFSESID=f4c9d7395beceeb7dd; HWWAFSESTIME=1756545246818
+      Host:
+      - cloudbuild-ext.sa-brazil-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0; os/Linux##61-Ubuntu_SMP_PREEMPT_DYNAMIC_Fri_Apr_11_23:16:11_UTC_2025#x86_64
+        python/3.12.3 impl/CPython; app/c63ff6b6-6525-4bc5-be04-49bb326296dc
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250830T092130Z
+    method: GET
+    uri: https://cloudbuild-ext.sa-brazil-1.myhuaweicloud.com/v1/job/list?page_index=1&page_size=100
+  response:
+    body:
+      string: '{"result": {"total": 752, "job_list": []}, "status": "success"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 30 Aug 2025 09:21:31 GMT
+      Server:
+      - CloudWAF
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - bad4833a4e04d6ff221fef19939578c9
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cloudbuild-ext.sa-brazil-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0; os/Linux##61-Ubuntu_SMP_PREEMPT_DYNAMIC_Fri_Apr_11_23:16:11_UTC_2025#x86_64
+        python/3.12.3 impl/CPython; app/c63ff6b6-6525-4bc5-be04-49bb326296dc
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250830T092325Z
+    method: GET
+    uri: https://cloudbuild-ext.sa-brazil-1.myhuaweicloud.com/v1/job/0d0415bc87f647369a6b9dc9d326ba5d/config
+  response:
+    body:
+      string: '{"result": {"arch": "x86-64", "project_id": "2258551282bd485da91df760e0e0d7de", "domain_id":
+        "080b8db696000fe60f27c009b9105fe0", "job_name": "ant0818-67053341", "job_id": "c66e06560e574a7696b830d87a4d1caf",
+        "auto_update_sub_module": "false", "flavor": "DEFAULT", "host_type": "devcloud", "build_config_type": "ACTION",
+        "limit_time": "4", "build_if_code_updated": false, "source_code": "codeci", "build_environment_type": "docker"},
+        "error": null, "status": "success"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 30 Aug 2025 09:23:26 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=2174f734a4fecf4360; path=/
+      - HWWAFSESTIME=1756545806133; path=/
+      - HWWAFSESTIME=1756545806135; path=/
+      - HWWAFSESID=921cc73040287797e7; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 6507fc683668a50309ab56ead6d09fef
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1
