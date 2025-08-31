@@ -10,7 +10,8 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkces.v2 import UpdateAlarmNotificationsRequest, Notification, \
     PutAlarmNotificationReq, BatchEnableAlarmRulesRequest, BatchEnableAlarmsRequestBody, \
-    CreateAlarmRulesRequest, Policy, PostAlarmsReqV2, AlarmType, ListAlarmRulesRequest
+    CreateAlarmRulesRequest, Policy, PostAlarmsReqV2, AlarmType, ListAlarmRulesRequest, \
+    ListOneClickAlarmRulesRequest
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody, \
     ListTopicsRequest
@@ -33,15 +34,24 @@ class Alarm(QueryResourceManager):
     def get_resources(self, resource_ids):
         id_set = set()
         for raw in resource_ids:
-            id_set.update(raw.split(","))
+            # 获取普通告警规则资源
+            if raw.startswith("al"):
+                return self.get_alarm_resources(resource_ids)
+            # 获取一键告警规则资源
+            elif raw.startswith("oca"):
+                return self.get_one_click_alarm_resources(resource_ids)
 
-        all_resources = self.get_api_resources(resource_ids)
+        all_resources = self.get_alarm_resources(resource_ids)
         return [r for r in all_resources if r["alarm_id"] in id_set]
 
     def _fetch_resources(self, query):
-        return self.get_api_resources(query)
+        return self.get_alarm_resources(query)
 
-    def get_api_resources(self, resource_ids):
+    def get_alarm_resources(self, resource_ids):
+        id_set = set()
+        for raw in resource_ids:
+            id_set.update(raw.split(","))
+
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
         resources = []
@@ -75,6 +85,33 @@ class Alarm(QueryResourceManager):
             if not response.count or offset >= len(response.alarms):
                 break
 
+        return [r for r in resources if r["alarm_id"] in id_set]
+
+    def get_one_click_alarm_resources(self, resource_ids):
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+        alarm_ids = []
+        resources = []
+        for one_click_id in resource_ids:
+            try:
+                request = ListOneClickAlarmRulesRequest()
+                request.one_click_alarm_id = one_click_id
+                response = client.list_one_click_alarm_rules(request)
+                current_resources = eval(
+                    str(response.alarms)
+                        .replace("null", "None")
+                        .replace("false", "False")
+                        .replace("true", "True")
+                )
+                for resource in current_resources:
+                    if "alarm_id" in resource:  # 获取alarm_id
+                        alarm_ids.append(resource["alarm_id"])
+
+                resources = self.get_alarm_resources(alarm_ids)
+            except exceptions.ClientRequestException as e:
+                log.error(f"[actions]- list_alarm_rules - The resource:ces-alarm "
+                          f"with id:[] query alarm rules is failed. cause: {e.error_msg} ")
+                raise e
         return resources
 
 
