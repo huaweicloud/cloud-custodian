@@ -146,14 +146,14 @@ class SwrEe(QueryResourceManager):
                     )
                     all_repositories.append(repository)
 
-                log.info(
-                    f"Retrieved {len(repositories)} repositories for instance: {instance['id']} "
+                log.debug(
+                    f"The resource:[swr-ee] retrieved {len(repositories)} repositories for instance: {instance['id']} "
                     f"({instance_index + 1}/{len(instances)})")
 
         except Exception as e:
-            log.error(f"Failed to fetch SWR repositories: {e}")
+            log.error(f"The resource:[swr-ee] failed to fetch SWR repositories: {e}")
 
-        log.info(f"Retrieved a total of {len(all_repositories)} SWR repositories")
+        log.debug(f"The resource:[swr-ee] retrieved a total of {len(all_repositories)} SWR repositories")
         return all_repositories
 
     def get_resources(self, resource_ids):
@@ -273,7 +273,7 @@ class SwrEeImage(QueryResourceManager):
         for instance in instances:
             try:
                 temp_images = self._get_artifacts(instance)
-                log.info("instance: %s, Retrieved a total of %d SWR images",
+                log.debug("The resource:[swr-ee-image] instance: %s, Retrieved a total of %d SWR images",
                          instance['id'],
                          len(temp_images))
 
@@ -283,7 +283,7 @@ class SwrEeImage(QueryResourceManager):
                 temp_images = self._get_artifacts_by_traverse_repos(instance)
                 all_images.extend(temp_images)
 
-        log.info("Retrieved a total of %d SWR images", len(all_images))
+        log.debug("The resource:[swr-ee-image] retrieved a total of %d SWR images", len(all_images))
         return all_images
 
     def _get_artifacts(self, instance):
@@ -343,7 +343,7 @@ class SwrEeImage(QueryResourceManager):
 
             all_artifacts.extend(artifacts)
             log.debug(
-                f"Retrieved {len(artifacts)} images for repository "
+                f"The resource:[swr-ee-image] retrieved {len(artifacts)} images for repository "
                 f"{repo['instance_id']}/{repo['namespace_name']}/{repo['name']} "
                 f"({repo_index + 1}/{len(repositories)})")
 
@@ -494,14 +494,14 @@ class SwrEeNamespace(QueryResourceManager):
                     namespace['is_public'] = namespace["metadata"]["public"].lower() == "true"
                     all_namespaces.append(namespace)
 
-                log.info(
-                    f"Retrieved {len(namespaces)} namespaces for instance: {instance['id']} "
+                log.debug(
+                    f"The resource:[swr-ee-namespace] retrieved {len(namespaces)} namespaces for instance: {instance['id']} "
                     f"({instance_index + 1}/{len(instances)})")
 
         except Exception as e:
-            log.error(f"Failed to fetch SWR namespaces: {e}")
+            log.error(f"The resource:[swr-ee-namespace] failed to fetch SWR namespaces: {e}")
 
-        log.info(f"Retrieved a total of {len(all_namespaces)} SWR namespaces")
+        log.debug(f"The resource:[swr-ee-namespace] retrieved a total of {len(all_namespaces)} SWR namespaces")
         return all_namespaces
 
     def get_resources(self, resource_ids):
@@ -996,7 +996,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
             # skip and do not create a new one
             if retentions and retentions[0]['name'] != policy_name:
                 log.warning(
-                    f"instance: {instance_id}, namespace: {namespace_name}, "
+                    f"[actions]-[set-lifecycle] instance: {instance_id}, namespace: {namespace_name}, "
                     f"policy has been manually created")
                 return
 
@@ -1016,7 +1016,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                     if not kind or not pattern:
                         log.warning(
-                            f"Skipping invalid tag_selector: {selector_data}"
+                            f"[actions]-[set-lifecycle] Skipping invalid tag_selector: {selector_data}"
                         )
                         continue
 
@@ -1030,7 +1030,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 # Ensure there are tag selectors
                 if not tag_selectors:
                     log.warning(
-                        "No valid tag_selectors, will use default empty tag selector")
+                        "[actions]-[set-lifecycle] No valid tag_selectors, will use default empty tag selector")
                     # Add a default tag selector to avoid API error
                     tag_selectors.append(RetentionSelector(
                         kind="doublestar",
@@ -1047,7 +1047,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                     if not kind or not pattern:
                         log.warning(
-                            f"Skipping invalid scope_selectors: {scope_data}"
+                            f"[actions]-[set-lifecycle] Skipping invalid scope_selectors: {scope_data}"
                         )
                         continue
 
@@ -1067,7 +1067,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 # Ensure there are scope selectors
                 if not repository_selectors:
                     log.warning(
-                        "No valid repository_selectors, will use default empty repository selector")
+                        "[actions]-[set-lifecycle] No valid repository_selectors, will use default empty repository selector")
                     # Add a default scope selector to avoid API error
                     repository_selectors.append(RetentionSelector(
                         kind="doublestar",
@@ -1090,7 +1090,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 rules.append(rule)
 
             # Log final generated rules
-            log.debug(f"Final generated rules: {rules}")
+            log.debug(f"[actions]-[set-lifecycle] Final generated rules: {rules}")
 
             trigger_setting = TriggerSetting(cron="0 59 23 * * ?")
             trigger_config = TriggerConfig(type="scheduled", trigger_settings=trigger_setting)
@@ -1113,11 +1113,11 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                 # Output complete request content for debugging
                 if hasattr(request, 'to_dict'):
-                    log.debug(f"Complete request: {request.to_dict()}")
+                    log.debug(f"[actions]-[set-lifecycle] Complete request: {request.to_dict()}")
 
                 # Send request
                 log.debug(
-                    f"Sending create lifecycle rule request: "
+                    f"[actions]-[set-lifecycle] Sending create lifecycle rule request: "
                     f"instance_id={instance_id}, namespace_name={namespace_name}"
                 )
                 response = client.create_instance_retention_policy(request)
@@ -1126,7 +1126,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 retention_id = response.id
 
                 log.info(
-                    f"Successfully created lifecycle rule: "
+                    f"[actions]-[set-lifecycle] Successfully created lifecycle rule: "
                     f"{instance_id}/{namespace_name}, ID: {retention_id}"
                 )
             else:
@@ -1148,17 +1148,17 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                 # Output complete request content for debugging
                 if hasattr(request, 'to_dict'):
-                    log.debug(f"Complete request: {request.to_dict()}")
+                    log.debug(f"[actions]-[set-lifecycle] Complete request: {request.to_dict()}")
 
                 # Send request
                 log.info(
-                    f"Sending update lifecycle rule request: "
+                    f"[actions]-[set-lifecycle] Sending update lifecycle rule request: "
                     f"instance_id={instance_id}, namespace_name={namespace_name}"
                 )
                 response = client.update_instance_retention_policy(request)
 
                 log.info(
-                    f"Successfully updated lifecycle rule: "
+                    f"[actions]-[set-lifecycle] Successfully updated lifecycle rule: "
                     f"{instance_id}/{namespace_name}, ID: {retentions[0]['id']}"
                 )
 
@@ -1167,10 +1167,9 @@ class SetLifecycle(HuaweiCloudBaseAction):
             error_msg = str(e)
             error_detail = traceback.format_exc()
             log.error(
-                f"Failed to create lifecycle rule: "
+                f"[actions]-[set-lifecycle] Failed to create lifecycle rule: "
                 f"{instance_id}/{namespace_name}: {error_msg}"
             )
-            log.debug(f"Exception details: {error_detail}")
 
 
 @SwrEeNamespace.action_registry.register('set-immutability')
@@ -1255,7 +1254,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
             if not kind or not pattern:
                 log.warning(
-                    f"Skipping invalid tag_selector: {tag_selector}"
+                    f"[actions]-[set-immutability] Skipping invalid tag_selector: {tag_selector}"
                 )
                 continue
 
@@ -1282,7 +1281,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
 
             if not kind or not pattern:
                 log.warning(
-                    f"Skipping invalid scope_selectors: {scope_data}"
+                    f"[actions]-[set-immutability] Skipping invalid scope_selectors: {scope_data}"
                 )
                 continue
 
@@ -1302,10 +1301,8 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         # Ensure there are scope selectors
         if not repository_selectors:
             log.warning(
-                "No valid repository_selectors, will use default empty repository selector")
+                "[actions]-[set-immutability] No valid repository_selectors, will use default empty repository selector")
             # Add a default scope selector to avoid API error
-            log.warning(
-                "No valid repository_selectors, will use default empty repository selector")
             repository_selectors.append(RetentionSelector(
                 kind="doublestar",
                 decoration="repoMatches",
@@ -1335,7 +1332,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
                 )
 
                 log.info(
-                    f"Successfully created immutable rule: "
+                    f"[actions]-[set-immutability] Successfully created immutable rule: "
                     f"{instance_id}/{namespace_name}, ID: {response.id}"
                 )
 
@@ -1345,7 +1342,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         # 101 is the unique priority configured by custodian
         if imutable_dict['priority'] != priority:
             log.warning(
-                f"instance_id: {instance_id}, namespace_name: {namespace_name}, "
+                f"[actions]-[set-immutability] instance_id: {instance_id}, namespace_name: {namespace_name}, "
                 f"has been manually set")
             return
 
@@ -1360,7 +1357,7 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             immutable_rule_id=imutable_dict['id'],
             body=rule))
         log.info(
-            f"Successfully updated immutable rule: "
+            f"[actions]-[set-immutability] Successfully updated immutable rule: "
             f"{instance_id}/{namespace_name}, ID: {imutable_dict['id']}"
         )
 
