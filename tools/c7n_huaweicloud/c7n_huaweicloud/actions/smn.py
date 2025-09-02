@@ -56,6 +56,7 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = None
+        response = None
         try:
             ids = get_resource_ids(resources)
             smn_client = local_session(self.manager.session_factory).client("smn")
@@ -63,17 +64,25 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
                 subject=self.data.get('subject'),
                 message=self.build_message(resource_type, ids)
             )
-
             for topic_urn in self.data.get('topic_urn_list', []):
                 request = PublishMessageRequest(topic_urn=topic_urn, body=body)
-                smn_client.publish_message(request)
+                response = smn_client.publish_message(request)
                 self.log.debug(
                     f"[actions]-[notify-message] query the service:[POST /v2/{{project_id}}"
                     f"/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
+                    f"[actions]-[notify-message] "
+                    f"The request_id:{getattr(response, 'request_id', None)} "
+                    f"and message_id:{getattr(response, 'message_id', None)}")
+                self.log.info(
                     f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
                     f"Publish message is success")
         except Exception as e:
+            if response is not None:
+                self.log.info(
+                    f"[actions]-[notify-message] "
+                    f"The request_id:{getattr(response, 'request_id', None)} "
+                    f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
                 f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
                 f"Publish message to SMN Topics is failed, cause:{e}")
@@ -134,6 +143,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = None
+        response = None
         try:
             ids = get_resource_ids(resources)
             smn_client = local_session(self.manager.session_factory).client("smn")
@@ -144,14 +154,22 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
 
             for topic_urn in self.data.get('topic_urn_list', []):
                 request = PublishMessageRequest(topic_urn=topic_urn, body=body)
-                smn_client.publish_message(request)
+                response = smn_client.publish_message(request)
                 self.log.debug(
                     f"[actions]-[notify-message-structure] query the service:[POST "
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
+                    f"[actions]-[notify-message-structure] "
+                    f"The request_id:{getattr(response, 'request_id', None)} "
+                    f"and message_id:{getattr(response, 'message_id', None)}")
+                self.log.info(
                     f"[actions]-[notify-message-structure] The resource:{resource_type} with id:"
                     f"{ids} Publish message structure success")
         except Exception as e:
+            self.log.info(
+                f"[actions]-[notify-message-structure] "
+                f"The request_id:{getattr(response, 'request_id', None)} "
+                f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
                 f"[actions]-[notify-message-structure] The resource:{resource_type} with id:{ids}"
                 f" Publish message structure to SMN Topics failed, cause:{e}")
@@ -218,6 +236,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = None
+        response = None
         try:
             ids = get_resource_ids(resources)
             smn_client = local_session(self.manager.session_factory).client("smn")
@@ -229,14 +248,22 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
 
             for topic_urn in self.data.get('topic_urn_list', []):
                 request = PublishMessageRequest(topic_urn=topic_urn, body=body)
-                smn_client.publish_message(request)
+                response = smn_client.publish_message(request)
                 self.log.debug(
                     f"[actions]-[notify-message-template] query the service:[POST "
                     f"/v2/{{project_id}}/notifications/topics/{topic_urn}/publish] is success.")
                 self.log.info(
+                    f"[actions]-[notify-message-template] "
+                    f"The request_id:{getattr(response, 'request_id', None)} "
+                    f"and message_id:{getattr(response, 'message_id', None)}")
+                self.log.info(
                     f"[actions]-[notify-message-template] The resource:{resource_type} with id:"
                     f"{ids} Publish message template success.")
         except Exception as e:
+            self.log.info(
+                f"[actions]-[notify-message-template] "
+                f"The request_id:{getattr(response, 'request_id', None)} "
+                f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
                 f"[actions]-[notify-message-template] The resource:{resource_type} with id:{ids} "
                 f"Publish message template to SMN Topics failed, cause:{e}")

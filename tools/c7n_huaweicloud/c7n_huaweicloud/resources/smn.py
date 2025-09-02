@@ -53,11 +53,13 @@ class Topic(QueryResourceManager):
                         f"[resource]-[smn-topic] query the service:[GET /v2/{{project_id}}"
                         f"/{resource_type}/{resource_id}/tags] is success.")
                     tags = response.to_dict().get('tags')
-                    resource['tags'] = {item['key']: item['value'] for item in tags}
+                    if tags is not None:
+                        resource['tags'] = {item['key']: item['value'] for item in tags}
             except Exception as e:
                 log.error(
                     f"[resource]-[smn-topic] query tags resource:[{resource_id}] is failed, "
                     f"cause:{e}")
+                raise e
         return resources
 
 
@@ -117,6 +119,7 @@ class TopicLtsFilter(Filter):
             except Exception as e:
                 log.error(
                     f"[filters]-[topic-lts] get lts resource:[{resource_id}] is failed, cause:{e}")
+                raise e
         return resources_valid
 
     def check(self, enabled, lts):
@@ -205,6 +208,7 @@ class TopicAccessFilter(Filter):
             except Exception as e:
                 log.error(
                     f"[filters]-[topic-access] resource:[{resource_id}] is failed, cause:{e}")
+                raise e
         return resources_valid
 
     def check(self, access_policy):
@@ -324,9 +328,15 @@ class TopicDelete(HuaweiCloudBaseAction):
                 f"[actions]-[delete]-The resource:[smn-topic] with id:[{resource_id}] "
                 f"Delete SMN Topics is success")
         except Exception as e:
-            log.error(
-                f"[actions]-[delete]-The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete SMN Topics is failed, cause:{e}")
+            if response and response.status_code == 404:
+                log.warning(
+                    f"[actions]-[delete]-The resource:[smn-topic] with id:[{resource_id}] "
+                    f"Delete SMN Topics is failed, cause:{e}")
+            else:
+                log.error(
+                    f"[actions]-[delete]-The resource:[smn-topic] with id:[{resource_id}] "
+                    f"Delete SMN Topics is failed, cause:{e}")
+                raise e
         return response
 
 
@@ -382,6 +392,7 @@ class TopicCreateLts(HuaweiCloudBaseAction):
             log.error(
                 f"[actions]-[create-lts]-The resource:[smn-topic] with id:[{resource_id}] "
                 f"Create LTS to SMN Topics is failed, cause:{e}")
+            raise e
         return response
 
 
@@ -432,9 +443,15 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
                 f"Delete LTS to SMN Topics is success.")
             resource["lts"] = None
         except Exception as e:
-            log.error(
-                f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete LTS to SMN Topics is failed, cause:{e}")
+            if response and response.status_code == 404:
+                log.warning(
+                    f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
+                    f"Delete LTS to SMN Topics is failed, cause:{e}")
+            else:
+                log.error(
+                    f"[actions]-[delete-lts]-The resource:[smn-topic] with id:[{resource_id}] "
+                    f"Delete LTS to SMN Topics is failed, cause:{e}")
+                raise e
         return response
 
 
@@ -500,9 +517,15 @@ class TopicUpdateAccessPolicy(HuaweiCloudBaseAction):
                 f"Update access policy to SMN Topics is success.")
             resource['access_policy'] = self.data.get('value')
         except Exception as e:
-            log.error(
-                f"[actions]-[update-access] The resource:[smn-topic] with id:[{resource_id}] "
-                f"Update access policy to SMN Topics is failed, cause:{e}")
+            if response and response.status_code == 404:
+                log.warning(
+                    f"[actions]-[update-access] The resource:[smn-topic] with id:[{resource_id}] "
+                    f"Update access policy to SMN Topics is failed, cause:{e}")
+            else:
+                log.error(
+                    f"[actions]-[update-access] The resource:[smn-topic] with id:[{resource_id}] "
+                    f"Update access policy to SMN Topics is failed, cause:{e}")
+                raise e
         return response
 
 
@@ -575,10 +598,17 @@ class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
                 f"[{resource_id}] Delete allow all user access policy to SMN Topics is success.")
             resource['access_policy'] = value
         except Exception as e:
-            log.error(
-                f"[actions]-[delete-allow-all-user-access] The resource:smn-topic with id:"
-                f"[{resource_id}] Delete allow all user access policy to SMN Topics is failed, "
-                f"cause:{e}")
+            if response and response.status_code == 404:
+                log.warning(
+                    f"[actions]-[delete-allow-all-user-access] The resource:smn-topic with id:"
+                    f"[{resource_id}] Delete allow all user access policy to SMN Topics is failed, "
+                    f"cause:{e}")
+            else:
+                log.error(
+                    f"[actions]-[delete-allow-all-user-access] The resource:smn-topic with id:"
+                    f"[{resource_id}] Delete allow all user access policy to SMN Topics is failed, "
+                    f"cause:{e}")
+                raise e
         return response
 
 
@@ -619,7 +649,13 @@ class TopicDeleteAccessPolicy(HuaweiCloudBaseAction):
                 f"Delete access policy to SMN Topics is success.")
             resource['access_policy'] = None
         except Exception as e:
-            log.error(
-                f"[actions]-[delete-access] The resource:[smn-topic] with id:[{resource_id}] "
-                f"Delete access policy to SMN Topics is failed, cause:{e}")
+            if response and response.status_code == 404:
+                log.warning(
+                    f"[actions]-[delete-access] The resource:[smn-topic] with id:[{resource_id}] "
+                    f"Delete access policy to SMN Topics is failed, cause:{e}")
+            else:
+                log.error(
+                    f"[actions]-[delete-access] The resource:[smn-topic] with id:[{resource_id}] "
+                    f"Delete access policy to SMN Topics is failed, cause:{e}")
+                raise e
         return response
