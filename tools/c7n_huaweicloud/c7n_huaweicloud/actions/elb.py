@@ -728,7 +728,10 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         #             f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
         #             f"Enterprise project with name '{enterprise_project_name}' not found."
         #         )
-        #         raise Exception(f"Enterprise project with name '{enterprise_project_name}' not found.")
+        #         raise Exception(
+        #             f"Enterprise project with name '{enterprise_project_name}' "
+        #             "not found."
+        #         )
         #     enterprise_project_id = ep_response.enterprise_projects[0].id
         #     request.body.ipgroup.enterprise_project_id = enterprise_project_id
         response = client.create_ip_group(request)
