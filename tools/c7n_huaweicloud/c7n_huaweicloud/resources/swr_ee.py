@@ -147,13 +147,14 @@ class SwrEe(QueryResourceManager):
                     all_repositories.append(repository)
 
                 log.debug(
-                    f"The resource:[swr-ee] retrieved {len(repositories)} repositories for instance: {instance['id']} "
-                    f"({instance_index + 1}/{len(instances)})")
+                    f"The resource:[swr-ee] retrieved {len(repositories)} repositories for instance: "
+                    f"{instance['id']} ({instance_index + 1}/{len(instances)})")
 
         except Exception as e:
             log.error(f"The resource:[swr-ee] failed to fetch SWR repositories: {e}")
 
-        log.debug(f"The resource:[swr-ee] retrieved a total of {len(all_repositories)} SWR repositories")
+        log.debug(
+            f"The resource:[swr-ee] retrieved a total of {len(all_repositories)} SWR repositories")
         return all_repositories
 
     def get_resources(self, resource_ids):
@@ -273,9 +274,10 @@ class SwrEeImage(QueryResourceManager):
         for instance in instances:
             try:
                 temp_images = self._get_artifacts(instance)
-                log.debug("The resource:[swr-ee-image] instance: %s, Retrieved a total of %d SWR images",
-                         instance['id'],
-                         len(temp_images))
+                log.debug(
+                    "The resource:[swr-ee-image] instance: %s, Retrieved a total of %d SWR images",
+                    instance['id'],
+                    len(temp_images))
 
                 all_images.extend(temp_images)
             except Exception as artifact_err:
@@ -501,7 +503,8 @@ class SwrEeNamespace(QueryResourceManager):
         except Exception as e:
             log.error(f"The resource:[swr-ee-namespace] failed to fetch SWR namespaces: {e}")
 
-        log.debug(f"The resource:[swr-ee-namespace] retrieved a total of {len(all_namespaces)} SWR namespaces")
+        log.debug(
+            f"The resource:[swr-ee-namespace] retrieved a total of {len(all_namespaces)} SWR namespaces")
         return all_namespaces
 
     def get_resources(self, resource_ids):
@@ -1165,7 +1168,6 @@ class SetLifecycle(HuaweiCloudBaseAction):
         except Exception as e:
             # Record detailed exception information
             error_msg = str(e)
-            error_detail = traceback.format_exc()
             log.error(
                 f"[actions]-[set-lifecycle] Failed to create lifecycle rule: "
                 f"{instance_id}/{namespace_name}: {error_msg}"
