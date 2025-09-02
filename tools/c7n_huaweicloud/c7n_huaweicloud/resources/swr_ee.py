@@ -151,6 +151,7 @@ class SwrEe(QueryResourceManager):
 
         except Exception as e:
             log.error(f"The resource:[swr-ee] failed to fetch SWR repositories: {e}")
+            raise e
 
         log.debug(
             f"The resource:[swr-ee] retrieved a total of {len(all_repositories)} SWR repositories")
@@ -280,7 +281,7 @@ class SwrEeImage(QueryResourceManager):
 
                 all_images.extend(temp_images)
             except Exception as artifact_err:
-                log.debug("Failed to get artifacts: %s", artifact_err)
+                log.warning("The resource:[swr-ee-image] failed to get artifacts: %s", artifact_err)
                 temp_images = self._get_artifacts_by_traverse_repos(instance)
                 all_images.extend(temp_images)
 
@@ -378,7 +379,6 @@ class SwrEeImage(QueryResourceManager):
 
             for temp_resource in temp_resources:
                 if 'repository_name' not in temp_resource:
-                    log.debug("not have repository name")
                     continue
 
                 art = f"{temp_resource['repository_name']}/{temp_resource['digest']}"
@@ -501,6 +501,7 @@ class SwrEeNamespace(QueryResourceManager):
 
         except Exception as e:
             log.error(f"The resource:[swr-ee-namespace] failed to fetch SWR namespaces: {e}")
+            raise e
 
         log.debug(
             f"The resource:[swr-ee-namespace] retrieved a total of {len(all_namespaces)} "
