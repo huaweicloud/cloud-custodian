@@ -1,7 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import logging
-import traceback
 import jmespath
 import json
 
@@ -504,7 +503,8 @@ class SwrEeNamespace(QueryResourceManager):
             log.error(f"The resource:[swr-ee-namespace] failed to fetch SWR namespaces: {e}")
 
         log.debug(
-            f"The resource:[swr-ee-namespace] retrieved a total of {len(all_namespaces)} namespaces")
+            f"The resource:[swr-ee-namespace] retrieved a total of {len(all_namespaces)} "
+            f"namespaces")
         return all_namespaces
 
     def get_resources(self, resource_ids):
