@@ -147,7 +147,7 @@ class SwrEe(QueryResourceManager):
                     all_repositories.append(repository)
 
                 log.debug(
-                    f"The resource:[swr-ee] retrieved {len(repositories)} repositories for instance: "
+                    f"The resource:[swr-ee] retrieved {len(repositories)} repositories: "
                     f"{instance['id']} ({instance_index + 1}/{len(instances)})")
 
         except Exception as e:
@@ -497,14 +497,14 @@ class SwrEeNamespace(QueryResourceManager):
                     all_namespaces.append(namespace)
 
                 log.debug(
-                    f"The resource:[swr-ee-namespace] retrieved {len(namespaces)} namespaces for instance: {instance['id']} "
-                    f"({instance_index + 1}/{len(instances)})")
+                    f"The resource:[swr-ee-namespace] retrieved {len(namespaces)} namespaces:"
+                    f" {instance['id']} ({instance_index + 1}/{len(instances)})")
 
         except Exception as e:
             log.error(f"The resource:[swr-ee-namespace] failed to fetch SWR namespaces: {e}")
 
         log.debug(
-            f"The resource:[swr-ee-namespace] retrieved a total of {len(all_namespaces)} SWR namespaces")
+            f"The resource:[swr-ee-namespace] retrieved a total of {len(all_namespaces)} namespaces")
         return all_namespaces
 
     def get_resources(self, resource_ids):
@@ -999,7 +999,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
             # skip and do not create a new one
             if retentions and retentions[0]['name'] != policy_name:
                 log.warning(
-                    f"[actions]-[set-lifecycle] instance: {instance_id}, namespace: {namespace_name}, "
+                    f"[actions]-[set-lifecycle] instance: {instance_id}, "
+                    f"namespace: {namespace_name}, "
                     f"policy has been manually created")
                 return
 
@@ -1019,7 +1020,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                     if not kind or not pattern:
                         log.warning(
-                            f"[actions]-[set-lifecycle] Skipping invalid tag_selector: {selector_data}"
+                            f"[actions]-[set-lifecycle] Skipping invalid tag_selector: "
+                            f"{selector_data}"
                         )
                         continue
 
@@ -1033,7 +1035,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 # Ensure there are tag selectors
                 if not tag_selectors:
                     log.warning(
-                        "[actions]-[set-lifecycle] No valid tag_selectors, will use default empty tag selector")
+                        "[actions]-[set-lifecycle] No valid tag_selectors,"
+                        " will use default empty tag selector")
                     # Add a default tag selector to avoid API error
                     tag_selectors.append(RetentionSelector(
                         kind="doublestar",
@@ -1050,7 +1053,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
 
                     if not kind or not pattern:
                         log.warning(
-                            f"[actions]-[set-lifecycle] Skipping invalid scope_selectors: {scope_data}"
+                            f"[actions]-[set-lifecycle] Skipping invalid scope_selectors: "
+                            f"{scope_data}"
                         )
                         continue
 
@@ -1070,7 +1074,8 @@ class SetLifecycle(HuaweiCloudBaseAction):
                 # Ensure there are scope selectors
                 if not repository_selectors:
                     log.warning(
-                        "[actions]-[set-lifecycle] No valid repository_selectors, will use default empty repository selector")
+                        "[actions]-[set-lifecycle] No valid repository_selectors, "
+                        "will use default empty repository selector")
                     # Add a default scope selector to avoid API error
                     repository_selectors.append(RetentionSelector(
                         kind="doublestar",
@@ -1303,7 +1308,8 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         # Ensure there are scope selectors
         if not repository_selectors:
             log.warning(
-                "[actions]-[set-immutability] No valid repository_selectors, will use default empty repository selector")
+                "[actions]-[set-immutability] No valid repository_selectors, "
+                "will use default empty repository selector")
             # Add a default scope selector to avoid API error
             repository_selectors.append(RetentionSelector(
                 kind="doublestar",
@@ -1344,7 +1350,8 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
         # 101 is the unique priority configured by custodian
         if imutable_dict['priority'] != priority:
             log.warning(
-                f"[actions]-[set-immutability] instance_id: {instance_id}, namespace_name: {namespace_name}, "
+                f"[actions]-[set-immutability] instance_id: {instance_id}, "
+                f"namespace_name: {namespace_name}, "
                 f"has been manually set")
             return
 
