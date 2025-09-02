@@ -30,8 +30,13 @@ class Alarm(QueryResourceManager):
         id = 'alarm_id'
         tag_resource_type = None
 
-    def get_resources(self, query):
-        return self.get_api_resources(query)
+    def get_resources(self, resource_ids):
+        id_set = set()
+        for raw in resource_ids:
+            id_set.update(raw.split(","))
+
+        all_resources = self.get_api_resources(resource_ids)
+        return [r for r in all_resources if r["alarm_id"] in id_set]
 
     def _fetch_resources(self, query):
         return self.get_api_resources(query)
