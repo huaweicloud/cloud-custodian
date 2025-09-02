@@ -198,10 +198,6 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                                           # Optional, default is 30.
                                           # Optional. Only meaningful when creation is "always" or
                                           # "create-if-absent."
-                enterprise_project_name: "{my-enterprise-project-id} "  # Replace with your
-                                          # enterprise project id default is "default".
-                                          # Optional. Only meaningful when creation is "always" or
-                                          # "create-if-absent."
     """
 
     schema = type_schema(
@@ -590,10 +586,8 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
                                     # "always" - means create new ipgroup.
                                     # "create-if-absent" - means create if not exists.
                                     # (compare using the ipgroup_name).
-                # enterprise_project_name: "{my-enterprise-project-name} "  # Replace with your
-                #                           # enterprise project name default is "default".
-                #                           # only meaningful for creating new ipgroup when
-                #                           # creation is "always" or "create-if-absent."
+                description: 'some description' # only meaningful for creating new ipgroup when
+                                            # creation is "always" or "create-if-absent."
                 ip_list:
                 - ip: '192.168.0.1'
                     description: 'some description'
@@ -614,6 +608,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
                              'enum': ['no', 'always', 'create-if-absent'],
                              'default': 'no'
                          },
+                         description={'type': 'string'},
                          ip_list={
                              'type': 'array',
                              'items': {
@@ -634,18 +629,19 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         enable = self.data.get("enable", True)
         ipgroup_type = self.data.get("ipgroup_type", "white")
         creation = self.data.get("creation", "no")
+        description = self.data.get("description", "")
         ip_list = self.data.get("ip_list", [])
         enterprise_project_name = self.data.get("enterprise_project_name", "default")
 
         ipgroups = []
         if creation == "always":
             ipgroups = [self.create_ipgroup(
-                "ipgroup_empty_by_custodian", ip_list, enterprise_project_name)]
+                "ipgroup_empty_by_custodian", ip_list, enterprise_project_name, description)]
         elif creation == "create-if-absent":
             all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
             if not all_finded:
                 ipgroups = [self.create_ipgroup(
-                    "ipgroup_empty_by_custodian", ip_list, enterprise_project_name)]
+                    "ipgroup_empty_by_custodian", ip_list, enterprise_project_name, description)]
         else:
             all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
             if not all_finded:
@@ -704,7 +700,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
 
         return all_name_finded and all_id_finded, ipgroup_response.ipgroups
 
-    def create_ipgroup(self, ipgroup_name, ip_list, enterprise_project_name):
+    def create_ipgroup(self, ipgroup_name, ip_list, enterprise_project_name, description):
         client = self.manager.get_client()
         ip_list_body = []
         for ip in ip_list:
@@ -713,6 +709,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         request.body = CreateIpGroupRequestBody()
         request.body.ipgroup = CreateIpGroupOption()
         request.body.ipgroup.name = ipgroup_name
+        request.body.ipgroup.description = description
         request.body.ipgroup.ip_list = ip_list_body
         if not enterprise_project_name or len(enterprise_project_name) == 0 or \
                 enterprise_project_name == "default":
