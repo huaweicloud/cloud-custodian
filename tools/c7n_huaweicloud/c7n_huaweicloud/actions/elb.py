@@ -633,6 +633,16 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         ip_list = self.data.get("ip_list", [])
         enterprise_project_name = self.data.get("enterprise_project_name", "default")
 
+        if (not ipgroup_ids or len(ipgroup_ids) == 0) \
+            and (not ipgroup_names or len(ipgroup_names) == 0):
+            log.error(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                "ipgroup_id or ipgroup_name must be provided "
+                "in the policy action type 'set-acl-ipgroup'."
+            )
+            raise Exception("ipgroup_id or ipgroup_name must be provided"
+                            " in the policy action type 'set-acl-ipgroup'.")
+
         ipgroups = []
         if creation == "always":
             ipgroups = [self.create_ipgroup(
@@ -660,11 +670,6 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         client.update_listener(request)
 
     def get_ipgroup(self, ipgroup_ids, ipgroup_names):
-        if (
-            (not ipgroup_ids or len(ipgroup_ids) == 0)
-            and (not ipgroup_names or len(ipgroup_names) == 0)
-        ):
-            return False, []
         client = self.manager.get_client()
         ipgroup_request = ListIpGroupsRequest(
             enterprise_project_id=["all_granted_eps"],
