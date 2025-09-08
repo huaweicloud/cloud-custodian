@@ -18,11 +18,13 @@ from huaweicloudsdkelb.v3 import (DeleteLoadBalancerCascadeRequest,
                                   UpdateListenerOption, UpdateListenerIpGroupOption,
                                   CreateL7PolicyRequest, CreateL7PolicyRequestBody,
                                   CreateL7PolicyOption, ListListenersRequest,
-                                  ListIpGroupsRequest)
+                                  ListIpGroupsRequest, CreateIpGroupRequest,
+                                  CreateIpGroupRequestBody, CreateIpGroupOption)
 from huaweicloudsdkgeip.v3 import DisassociateInstanceRequest
 from huaweicloudsdklts.v2 import CreateTransferRequestBodyLogTransferInfo, TransferDetail, \
     CreateTransferRequestBodyLogStreams, CreateTransferRequestBody, CreateTransferRequest, \
-    ListLogGroupsRequest, ListLogStreamRequest
+    ListLogGroupsRequest, ListLogStreamRequest, CreateLogGroupRequest, \
+    CreateLogGroupParams, CreateLogStreamRequest, CreateLogStreamParams
 
 from c7n.utils import type_schema, local_session
 
@@ -174,23 +176,162 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
               - type: is-not-logging
             actions:
               - type: enable-logging
-                log_group_name: "{my-log-group}  # Replace with your log group name"
-                log_topic_name: "{my-log-topic}  # Replace with your log topic name"
+                creation: "always"  # Create new log group and topic or not. Options are:
+                                    # "no" - means do not create. Default is "no".
+                                    # "always" - means create new log group and topic.
+                                    # "create-if-absent" - means create if not exists.
+                log_group_name: "{my-log-group}  # Rrequired. Replace with your log group name."
+                log_group_tags: # Optional. Only meaningful when creation is "always" or
+                                # "create-if-absent."
+                    - key: "key1"
+                      value: "value1"
+                log_group_ttl_in_days: 30 # Log storage time (days), value range: 1-30,
+                                          # default is 30.
+                                          # Optional. Only meaningful when creation is "always" or
+                                          # "create-if-absent"
+                log_topic_name: "{my-log-topic}  # Rrequired. Replace with your log topic name."
+                log_topic_tags: # Optional. Only meaningful when creation is "always" or
+                                # "create-if-absent."
+                    - key: "key1"
+                      value: "value1"
+                log_topic_ttl_in_days: 30 # Log storage time (days), value range: 1-30.
+                                          # Optional, default is 30.
+                                          # Optional. Only meaningful when creation is "always" or
+                                          # "create-if-absent."
     """
 
-    schema = type_schema(type_name="enable-logging",
-                         log_group_id={'type': 'string'},
-                         log_group_name={'type': 'string'},
-                         log_topic_id={'type': 'string'},
-                         log_topic_name={'type': 'string'})
+    schema = type_schema(
+        type_name="enable-logging",
+        creation={
+            'type': 'string',
+            'enum': ['no', 'always', 'create-if-absent'],
+            'default': 'no'
+        },
+        log_group_id={'type': 'string'},
+        log_group_name={'type': 'string'},
+        log_group_ttl_in_days={'type': 'integer', 'minimum': 1, 'maximum': 30},
+        log_group_tags={'type': 'array', 'items': {
+                    'type': 'object',
+                    'required': ['key', 'value'],
+                    'properties': {
+                        'key': {'type': 'string'},
+                        'value': {'type': 'string'},
+                    }
+                }},
+        log_topic_id={'type': 'string'},
+        log_topic_name={'type': 'string'},
+        log_topic_ttl_in_days={'type': 'integer', 'minimum': 1, 'maximum': 30},
+        log_topic_tags={'type': 'array', 'items': {
+                    'type': 'object',
+                    'required': ['key', 'value'],
+                    'properties': {
+                        'key': {'type': 'string'},
+                        'value': {'type': 'string'},
+                    }
+                }},
+        enterprise_project_name={'type': 'string'}
+    )
 
     @wrap_perform_action_log("huaweicloud.elb-loadbalancer")
     def perform_action(self, resource):
         loadbalancer_id = resource['id']
+        creation = self.data.get("creation", "no")
+
         log_group_id = self.data.get("log_group_id")
-        log_topic_id = self.data.get("log_topic_id")
         log_group_name = self.data.get("log_group_name")
+        log_group_ttl_in_days = self.data.get("log_group_ttl_in_days", 30)
+        log_group_tags = self.data.get("log_group_tags", [])
+
+        log_topic_id = self.data.get("log_topic_id")
         log_topic_name = self.data.get("log_topic_name")
+        log_topic_ttl_in_days = self.data.get("log_topic_ttl_in_days", 30)
+        log_topic_tags = self.data.get("log_topic_tags", [])
+
+        enterprise_project_name = self.data.get("enterprise_project_name", "default")
+
+        if creation == "always":
+            resp_log_group_id = self.create_log_group(
+                log_group_name,
+                log_group_ttl_in_days,
+                log_group_tags
+            )
+            resp_log_stream_id = self.create_log_topic(
+                resp_log_group_id,
+                log_topic_name,
+                log_topic_ttl_in_days,
+                log_topic_tags,
+                enterprise_project_name
+            )
+        elif creation == "create-if-absent":
+            resp_log_group_id, resp_log_stream_id = self.check_logging_existence(
+                log_group_id, log_group_name, log_topic_id, log_topic_name
+            )
+            if not resp_log_group_id:
+                resp_log_group_id = self.create_log_group(
+                    log_group_name,
+                    log_group_ttl_in_days,
+                    log_group_tags
+                )
+            if not resp_log_stream_id:
+                resp_log_stream_id = self.create_log_topic(
+                    resp_log_group_id,
+                    log_topic_name,
+                    log_topic_ttl_in_days,
+                    log_topic_tags,
+                    enterprise_project_name
+                )
+        else:
+            resp_log_group_id, resp_log_stream_id = self.check_logging_existence(
+                log_group_id, log_group_name, log_topic_id, log_topic_name
+            )
+            if not resp_log_group_id or not resp_log_stream_id:
+                raise Exception("Log group or log topic does not exist and "
+                                "creation is set to 'no'. Cannot enable logging.")
+
+        client = self.manager.get_client()
+        logtank = CreateLogtankOption(loadbalancer_id=loadbalancer_id,
+                                      log_group_id=resp_log_group_id,
+                                      log_topic_id=resp_log_stream_id)
+        request = CreateLogtankRequest(CreateLogtankRequestBody(logtank))
+        client.create_logtank(request)
+        resource['log_group_id'] = resp_log_group_id
+        resource['log_topic_id'] = resp_log_stream_id
+
+    def create_log_group(self, log_group_name, group_ttl_in_days, log_group_tags):
+        lts_client = local_session(self.manager.session_factory).client('lts-stream')
+        log_group_request = CreateLogGroupRequest()
+        log_group_request.body = CreateLogGroupParams(log_group_name=log_group_name,
+                                          ttl_in_days=group_ttl_in_days,
+                                          tags=log_group_tags)
+        group_response = lts_client.create_log_group(log_group_request)
+        log_group_id = group_response.log_group_id
+        log.info(
+            f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+            f"Successfully created log group: {log_group_name}, id: {log_group_id}"
+        )
+        return log_group_id
+
+    def create_log_topic(self, log_group_id,
+                       log_topic_name, log_topic_ttl_in_days, log_topic_tags,
+                       enterprise_project_name):
+        lts_client = local_session(self.manager.session_factory).client('lts-stream')
+
+        log_topic_request = CreateLogStreamRequest()
+        log_topic_request.log_group_id = log_group_id
+        log_topic_request.body = CreateLogStreamParams(log_stream_name=log_topic_name,
+                                            ttl_in_days=log_topic_ttl_in_days,
+                                            tags=log_topic_tags,
+                                            enterprise_project_name=enterprise_project_name)
+        topic_response = lts_client.create_log_stream(log_topic_request)
+        log_topic_id = topic_response.log_stream_id
+        log.info(
+            f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+            f"Successfully created log topic: {log_topic_name}, id: {log_topic_id}"
+        )
+        return log_topic_id
+
+    def check_logging_existence(self, log_group_id, log_group_name,
+                                log_topic_id, log_topic_name):
 
         if not log_group_id and not log_group_name:
             log.error(
@@ -231,9 +372,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log group with specified log_group_id='{log_group_id}' not found."
                 )
-                raise Exception(
-                    f"Log group with specified log_group_id='{log_group_id}' not found."
-                )
+                return None, None
         elif log_group_name:
             for group in log_group_response.log_groups:
                 if group.log_group_name == log_group_name:
@@ -244,9 +383,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log group with specified log_group_name='{log_group_name}' not found."
                 )
-                raise Exception(
-                    f"Log group with specified log_group_name='{log_group_name}' not found."
-                )
+                return None, None
 
         log_stream_response = lts_client.list_log_stream(
             ListLogStreamRequest(log_group_id=resp_log_group_id)
@@ -272,9 +409,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log topic with specified log_topic_id='{log_topic_id}' not found."
                 )
-                raise Exception(
-                    f"Log topic with specified 'log_topic_id'='{log_topic_id}' not found."
-                )
+                return resp_log_group_id, None
         elif log_topic_name:
             for topic in log_stream_response.log_streams:
                 if topic.log_stream_name == log_topic_name:
@@ -285,18 +420,8 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log topic with specified log_topic_name='{log_topic_name}' not found."
                 )
-                raise Exception(
-                    f"Log topic with specified 'log_topic_name'='{log_topic_name}' not found."
-                )
-
-        client = self.manager.get_client()
-        logtank = CreateLogtankOption(loadbalancer_id=loadbalancer_id,
-                                      log_group_id=resp_log_group_id,
-                                      log_topic_id=resp_log_stream_id)
-        request = CreateLogtankRequest(CreateLogtankRequestBody(logtank))
-        client.create_logtank(request)
-        resource['log_group_id'] = resp_log_group_id
-        resource['log_topic_id'] = resp_log_stream_id
+                return resp_log_group_id, None
+        return resp_log_group_id, resp_log_stream_id
 
 
 class LoadbalancerCreateLTSLogTransferAction(LtsCreateTransferLog):
@@ -456,6 +581,20 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
               - type: set-acl-ipgroup
                 ipgroup_name: ["my-ipgroup"]
                 ipgroup_type: white
+                creation: "always"  # Create new ipgroup or not. Options are:
+                                    # "no" - means do not create. Default is "no".
+                                    # "always" - means create new ipgroup.
+                                    # "create-if-absent" - means create if not exists.
+                                    # (compare using the ipgroup_name).
+                description: 'some description' # only meaningful for creating new ipgroup when
+                                            # creation is "always" or "create-if-absent."
+                ip_list:
+                - ip: '192.168.0.1'
+                    description: 'some description'
+                - ip: '192.168.0.0/24'
+                    description: 'some description'
+                - ip: '192.168.0.10-192.168.0.99'
+                    description: 'some description'
     """
 
     schema = type_schema(type_name="set-acl-ipgroup",
@@ -463,39 +602,63 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
                          ipgroup_name={'type': 'array'},
                          enable={'type': 'boolean', 'default': True},
                          ipgroup_type={'type': 'string', 'enum': ['white', 'black']},
-                         required=['ipgroup_type'])
+                         required=['ipgroup_type'],
+                         creation={
+                             'type': 'string',
+                             'enum': ['no', 'always', 'create-if-absent'],
+                             'default': 'no'
+                         },
+                         description={'type': 'string'},
+                         ip_list={
+                             'type': 'array',
+                             'items': {
+                                 'type': 'object',
+                                 'properties': {
+                                     'ip': {'type': 'string'},
+                                     'description': {'type': 'string'}
+                                 },
+                                 'required': ['ip']
+                             }
+                         },
+                         enterprise_project_name={'type': 'string'})
 
     @wrap_perform_action_log("huaweicloud.elb-listener")
     def perform_action(self, resource):
-        ipgroup_id = ",".join(self.data.get("ipgroup_id")) if self.data.get("ipgroup_id") else None
-        ipgroup_name = (
-            ",".join(self.data.get("ipgroup_name"))
-            if self.data.get("ipgroup_name") else None
-        )
-        enable = self.data.get("enable")
-        ipgroup_type = self.data.get("ipgroup_type")
+        ipgroup_ids = self.data.get("ipgroup_id", [])
+        ipgroup_names = self.data.get("ipgroup_name", [])
+        enable = self.data.get("enable", True)
+        ipgroup_type = self.data.get("ipgroup_type", "white")
+        creation = self.data.get("creation", "no")
+        description = self.data.get("description", "")
+        ip_list = self.data.get("ip_list", [])
+        enterprise_project_name = self.data.get("enterprise_project_name", "default")
 
-        if (not ipgroup_id or len(ipgroup_id) == 0) \
-            and (not ipgroup_name or len(ipgroup_name) == 0):
+        if (not ipgroup_ids or len(ipgroup_ids) == 0) \
+            and (not ipgroup_names or len(ipgroup_names) == 0):
             log.error(
                 f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                "Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
-            raise Exception("Either 'ipgroup_id' or 'ipgroup_name' must be provided.")
-
-        client = self.manager.get_client()
-        ipgroup_request = ListIpGroupsRequest(
-            enterprise_project_id=["all_granted_eps"],
-            name=[ipgroup_name] if ipgroup_name else None,
-            id=[ipgroup_id] if ipgroup_id else None,
-        )
-        ipgroup_response = client.list_ip_groups(ipgroup_request)
-        if not ipgroup_response.ipgroups or len(ipgroup_response.ipgroups) == 0:
-            log.error(
-                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                f"No ip_groups found for name: {ipgroup_name} or id: {ipgroup_id}"
+                "ipgroup_id or ipgroup_name must be provided "
+                "in the policy action type 'set-acl-ipgroup'."
             )
-            raise Exception(f"No ip_groups found for name: {ipgroup_name} or id: {ipgroup_id}")
-        ipgroup_ids = [ipgroup.id for ipgroup in ipgroup_response.ipgroups]
+            raise Exception("ipgroup_id or ipgroup_name must be provided"
+                            " in the policy action type 'set-acl-ipgroup'.")
+
+        ipgroups = []
+        if creation == "always":
+            ipgroups = [self.create_ipgroup(
+                "ipgroup_empty_by_custodian", ip_list, enterprise_project_name, description)]
+        elif creation == "create-if-absent":
+            all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
+            if not all_finded:
+                ipgroups = [self.create_ipgroup(
+                    "ipgroup_empty_by_custodian", ip_list, enterprise_project_name, description)]
+        else:
+            all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
+            if not all_finded:
+                raise Exception("Ipgroup does not exist and creation is set to 'no'."
+                                " Cannot set acl ipgroup.")
+
+        ipgroup_ids = [ipgroup.id for ipgroup in ipgroups]
         ipgroup_ids_str = ",".join(ipgroup_ids)
 
         request = UpdateListenerRequest(listener_id=resource["id"])
@@ -503,7 +666,82 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         request.body.listener = UpdateListenerOption()
         request.body.listener.ipgroup = UpdateListenerIpGroupOption(
             ipgroup_id=ipgroup_ids_str, enable_ipgroup=enable, type=ipgroup_type)
+        client = self.manager.get_client()
         client.update_listener(request)
+
+    def get_ipgroup(self, ipgroup_ids, ipgroup_names):
+        client = self.manager.get_client()
+        ipgroup_request = ListIpGroupsRequest(
+            enterprise_project_id=["all_granted_eps"],
+            name=ipgroup_names if ipgroup_names and len(ipgroup_names) > 0 else None,
+            id=ipgroup_ids if ipgroup_ids and len(ipgroup_ids) > 0 else None
+        )
+        ipgroup_response = client.list_ip_groups(ipgroup_request)
+        if not ipgroup_response.ipgroups:
+            log.warning(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                f"No ip_groups found for name: {ipgroup_names} or id: {ipgroup_ids}"
+            )
+            return False, []
+
+        all_name_finded = True
+        if (ipgroup_names and len(ipgroup_names) > 0
+                and len(ipgroup_response.ipgroups) < len(ipgroup_names) and
+                any(ipgroup.name not in ipgroup_names for ipgroup in ipgroup_response.ipgroups)):
+            log.warning(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                f"Some ip_groups not found for name: {ipgroup_names}"
+            )
+            all_name_finded = False
+        all_id_finded = True
+        if (ipgroup_ids and len(ipgroup_ids) > 0
+                and len(ipgroup_response.ipgroups) < len(ipgroup_ids) and
+                any(ipgroup.id not in ipgroup_ids for ipgroup in ipgroup_response.ipgroups)):
+            log.warning(
+                f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+                f"Some ip_groups not found for id: {ipgroup_ids}"
+            )
+            all_id_finded = False
+
+        return all_name_finded and all_id_finded, ipgroup_response.ipgroups
+
+    def create_ipgroup(self, ipgroup_name, ip_list, enterprise_project_name, description):
+        client = self.manager.get_client()
+        ip_list_body = []
+        for ip in ip_list:
+            ip_list_body.append({'ip': ip['ip'], 'description': ip.get('description', '')})
+        request = CreateIpGroupRequest()
+        request.body = CreateIpGroupRequestBody()
+        request.body.ipgroup = CreateIpGroupOption()
+        request.body.ipgroup.name = ipgroup_name
+        request.body.ipgroup.description = description
+        request.body.ipgroup.ip_list = ip_list_body
+        if not enterprise_project_name or len(enterprise_project_name) == 0 or \
+                enterprise_project_name == "default":
+            enterprise_project_id = "0"
+            request.body.ipgroup.enterprise_project_id = enterprise_project_id
+        # else:
+        #     ep_client = local_session(self.manager.session_factory).client('eps')
+        #     ep_request = ListEnterpriseProjectsRequest()
+        #     ep_request.name = [enterprise_project_name]
+        #     ep_response = ep_client.list_enterprise_projects(ep_request)
+        #     if not ep_response.enterprise_projects or len(ep_response.enterprise_projects) == 0:
+        #         log.error(
+        #             f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+        #             f"Enterprise project with name '{enterprise_project_name}' not found."
+        #         )
+        #         raise Exception(
+        #             f"Enterprise project with name '{enterprise_project_name}' "
+        #             "not found."
+        #         )
+        #     enterprise_project_id = ep_response.enterprise_projects[0].id
+        #     request.body.ipgroup.enterprise_project_id = enterprise_project_id
+        response = client.create_ip_group(request)
+        log.info(
+            f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
+            f"Successfully created ipgroup: {ipgroup_name}, id: {response.ipgroup.id}"
+        )
+        return response.ipgroup
 
 
 class ListenerRedirectAction(HuaweiCloudBaseAction):
