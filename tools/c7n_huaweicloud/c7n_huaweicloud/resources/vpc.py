@@ -145,7 +145,7 @@ class ENIIpNotTrust(Filter):
     :example:
 
     .. code-block:: yaml
-    
+
         policies:
           - name: eni-ip-not-trust
             resource: huaweicloud.vpc-port
@@ -156,7 +156,7 @@ class ENIIpNotTrust(Filter):
                 trust_sg_path: ""
                 trust_ip_path: ""
     """
-    
+
     schema = type_schema("eni-ip-not-trust",
              direction={'enum': ['ingress', 'egress']},
              trust_ip_num_limit={'type': 'integer'},
