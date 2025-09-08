@@ -4,7 +4,6 @@
 import json
 import logging
 import time
-from datetime import datetime, timezone
 
 from requests.exceptions import HTTPError
 
@@ -524,45 +523,6 @@ class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
         return result
 
 
-@VpcEndpoint.filter_registry.register('is-less-than-fix-max-time')
-class VpcEndpointObsCheckLessThanFixMaxTimeFilter(Filter):
-    """Check if endpoint is less than fix max time.
-
-    Return a list of endpoints that less than fix max time.
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-            - name: is-less-than-fix-max-time
-            resource: huaweicloud.vpcep-ep
-            filters:
-                - type: is-less-than-fix-max-time
-    """
-
-    schema = type_schema(
-        'is-less-than-fix-max-time'
-    )
-
-    def process(self, resources, event=None):
-        if not resources:
-            return []
-
-        fix_max_time = datetime(2025, 8, 26, 1, 30, 0, tzinfo=timezone.utc)
-        results = []
-        for res in resources:
-            res_update_time = datetime.strptime(res.get('updated_at'), "%Y-%m-%dT%H:%M:%S%z")
-            if res_update_time < fix_max_time:
-                results.append(res)
-        ids = [r.get('id') for r in results]
-        res_count = len(results)
-        log.info(f"[filters]-[is-less-than-fix-max-time]-The resource:[vpcep-ep] "
-                 f"There are {res_count} endpoints less than fix max time {fix_max_time} "
-                 f"endpoints list:{ids}")
-        return results
-
-
 @VpcEndpoint.action_registry.register('update-default-org-policy')
 class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
     """Update the endpoint policy to default organization policy.
@@ -625,7 +585,10 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
                             effect="Allow", action=["*"], resource=["*", "*/*"],
                             condition={"StringEquals": {"ResourceOwner": resource_owner}}),
             PolicyStatement(sid="allow-huaweicloud-public-data",
-                            effect="Allow", action=["*"], resource=new_resources)
+                            effect="Allow",
+                            action=["HeadBucket", "ListBucket", "GetBucketLocation",
+                                    "GetObject", "GetObjectVersion"],
+                            resource=new_resources)
         ]
 
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
@@ -657,6 +620,19 @@ def _is_principal_wildcards(statement):
             if ser == wildcards:
                 return True
     return False
+
+
+def isSameOrgId(condition, org_id):
+    string_equals = False
+    string_equals_if_exists = False
+    if condition.get('StringEquals') and condition.get('StringEquals').get("g:PrincipalOrgID"):
+        if condition.get('StringEquals').get("g:PrincipalOrgID") == org_id:
+            string_equals = True
+    if condition.get('StringEqualsIfExists') \
+            and condition.get('StringEqualsIfExists').get("g:ResourceOrgID"):
+        if condition.get('StringEqualsIfExists').get("g:ResourceOrgID") == org_id:
+            string_equals_if_exists = True
+    return string_equals and string_equals_if_exists
 
 
 @VpcEndpoint.filter_registry.register('policy-principal-wildcards')
@@ -698,10 +674,26 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
         statement = policy_document.get('Statement', [])
         if not statement:
             return False
+        if len(statement) != 1:
+            return False
         for item in statement:
-            if _is_principal_wildcards(item) and not item.get('Condition'):
+            if _is_principal_wildcards(item) and \
+                    (not item.get('Condition')
+                     or not isSameOrgId(item.get('Condition'), self._get_org_id())):
                 return False
         return True
+
+    def _get_org_id(self):
+        client = local_session(self.manager.session_factory).client("org-account")
+        try:
+            resp = client.show_organization(ShowOrganizationRequest())
+            log.debug(f"[actions]-[update-policy-document]-query the service:"
+                      f"[/v1/organizations] has successed. Get org is: {resp}")
+            return resp.organization.id
+        except exceptions.ClientRequestException as e:
+            log.error(f"[actions]-[update-policy-document]-query the service:"
+                      f"[/v1/organizations] is failed.cause:{e}")
+            raise e
 
     def _get_need_check_policy_eps_ids(self, resources):
         huawei_eps_ids = []
