@@ -687,10 +687,10 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
         client = local_session(self.manager.session_factory).client("org-account")
         try:
             resp = client.show_organization(ShowOrganizationRequest())
-            log.debug(f"[filters]-[policy-principal-wildcards]-query the service:"
+            log.info(f"[filters]-[policy-principal-wildcards]-query the service:"
                       f"[/v1/organizations] has successed. Get org is: {resp}")
             return resp.organization.id
-        except exceptions.ClientRequestException as e:
+        except exceptions as e:
             log.error(f"[filters]-[policy-principal-wildcards]-query the service:"
                       f"[/v1/organizations] is failed.cause:{e}")
             raise e
