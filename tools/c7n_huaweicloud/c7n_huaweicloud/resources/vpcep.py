@@ -769,24 +769,20 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         ep_id = resource.get("id", "")
         policy_document = resource.get('policy_document', {})
         statements = policy_document.get('Statement', [])
-        if not statements:
-            expect_statements.append(
-                {
-                    "Action": ["*"],
-                    "Condition": expect_condition,
-                    "Effect": "Allow", "Principal": "*", "Resource": ["*"]
-                })
-        else:
-            for statement in statements:
-                if _is_principal_wildcards(statement) and not statement.get('Condition'):
-                    statement["Condition"] = expect_condition
-                expect_statements.append(statement)
+        expect_statements.append(
+            {
+                "Action": ["*"],
+                "Condition": expect_condition,
+                "Effect": "Allow", "Principal": "*", "Resource": ["*"]
+            })
+
         expect_policy_document = {
             "Statement": expect_statements,
             "Version": "5.0"
         }
         log.info(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
-                 f"with id:[{ep_id}] policy is invalid.")
+                 f"with id:[{ep_id}] policy is invalid, "
+                 f"cur: {statements}, expect: {expect_statements}")
         self._update_policy(ep_id, expect_policy_document)
 
     def perform_action(self, resource):
@@ -797,6 +793,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         expect_condition = {"StringEquals": {"g:PrincipalOrgID": org_id},
                             "StringEqualsIfExists": {"g:ResourceOrgID": org_id}
                             }
+        log.info(f"[actions]-[update-policy-document]-Get org is: {org_id}")
         return expect_condition
 
     def _get_org_id(self):
