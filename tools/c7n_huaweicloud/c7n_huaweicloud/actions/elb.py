@@ -368,7 +368,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_group_id = group.log_group_id
                     break
             if not resp_log_group_id:
-                log.error(
+                log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log group with specified log_group_id='{log_group_id}' not found."
                 )
@@ -379,7 +379,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_group_id = group.log_group_id
                     break
             if not resp_log_group_id:
-                log.error(
+                log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log group with specified log_group_name='{log_group_name}' not found."
                 )
@@ -405,7 +405,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_stream_id = topic.log_stream_id
                     break
             if not resp_log_stream_id:
-                log.error(
+                log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log topic with specified log_topic_id='{log_topic_id}' not found."
                 )
@@ -416,7 +416,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_stream_id = topic.log_stream_id
                     break
             if not resp_log_stream_id:
-                log.error(
+                log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log topic with specified log_topic_name='{log_topic_name}' not found."
                 )
@@ -643,15 +643,16 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
             raise Exception("ipgroup_id or ipgroup_name must be provided"
                             " in the policy action type 'set-acl-ipgroup'.")
 
+        ipgroup_name = len(ipgroup_names) > 0 and ipgroup_names[0] or ""
         ipgroups = []
         if creation == "always":
             ipgroups = [self.create_ipgroup(
-                "ipgroup_empty_by_custodian", ip_list, enterprise_project_name, description)]
+                ipgroup_name, ip_list, enterprise_project_name, description)]
         elif creation == "create-if-absent":
             all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
             if not all_finded:
                 ipgroups = [self.create_ipgroup(
-                    "ipgroup_empty_by_custodian", ip_list, enterprise_project_name, description)]
+                    ipgroup_name, ip_list, enterprise_project_name, description)]
         else:
             all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
             if not all_finded:
