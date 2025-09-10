@@ -247,7 +247,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
         log_topic_ttl_in_days = self.data.get("log_topic_ttl_in_days", 30)
         log_topic_tags = self.data.get("log_topic_tags", [])
 
-        enterprise_project_name = self.data.get("enterprise_project_name", "default")
+        enterprise_project_name = self.data.get("enterprise_project_name", None)
 
         if creation == "always":
             resp_log_group_id = self.create_log_group(
@@ -717,10 +717,10 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         request.body.ipgroup.name = ipgroup_name
         request.body.ipgroup.description = description
         request.body.ipgroup.ip_list = ip_list_body
-        if not enterprise_project_name or len(enterprise_project_name) == 0 or \
-                enterprise_project_name == "default":
-            enterprise_project_id = "0"
-            request.body.ipgroup.enterprise_project_id = enterprise_project_id
+        # if not enterprise_project_name or len(enterprise_project_name) == 0 or \
+        #         enterprise_project_name == "default":
+        #     enterprise_project_id = 
+        #     request.body.ipgroup.enterprise_project_id = enterprise_project_id
         # else:
         #     ep_client = local_session(self.manager.session_factory).client('eps')
         #     ep_request = ListEnterpriseProjectsRequest()
