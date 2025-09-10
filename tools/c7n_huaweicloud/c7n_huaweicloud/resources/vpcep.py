@@ -585,7 +585,10 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
                             effect="Allow", action=["*"], resource=["*", "*/*"],
                             condition={"StringEquals": {"ResourceOwner": resource_owner}}),
             PolicyStatement(sid="allow-huaweicloud-public-data",
-                            effect="Allow", action=["*"], resource=new_resources)
+                            effect="Allow",
+                            action=["HeadBucket", "ListBucket", "GetBucketLocation",
+                                    "GetObject", "GetObjectVersion"],
+                            resource=new_resources)
         ]
 
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
@@ -617,6 +620,19 @@ def _is_principal_wildcards(statement):
             if ser == wildcards:
                 return True
     return False
+
+
+def isSameOrgId(condition, org_id):
+    string_equals = False
+    string_equals_if_exists = False
+    if condition.get('StringEquals') and condition.get('StringEquals').get("g:PrincipalOrgID"):
+        if condition.get('StringEquals').get("g:PrincipalOrgID") == org_id:
+            string_equals = True
+    if condition.get('StringEqualsIfExists') \
+            and condition.get('StringEqualsIfExists').get("g:ResourceOrgID"):
+        if condition.get('StringEqualsIfExists').get("g:ResourceOrgID") == org_id:
+            string_equals_if_exists = True
+    return string_equals and string_equals_if_exists
 
 
 @VpcEndpoint.filter_registry.register('policy-principal-wildcards')
@@ -658,10 +674,26 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
         statement = policy_document.get('Statement', [])
         if not statement:
             return False
+        if len(statement) != 1:
+            return False
         for item in statement:
-            if _is_principal_wildcards(item) and not item.get('Condition'):
+            if _is_principal_wildcards(item) and \
+                    (not item.get('Condition')
+                     or not isSameOrgId(item.get('Condition'), self._get_org_id())):
                 return False
         return True
+
+    def _get_org_id(self):
+        client = local_session(self.manager.session_factory).client("org-account")
+        try:
+            resp = client.show_organization(ShowOrganizationRequest())
+            log.info(f"[filters]-[policy-principal-wildcards]-query the service:"
+                      f"[/v1/organizations] has successed. Get org is: {resp}")
+            return resp.organization.id
+        except exceptions as e:
+            log.error(f"[filters]-[policy-principal-wildcards]-query the service:"
+                      f"[/v1/organizations] is failed.cause:{e}")
+            raise e
 
     def _get_need_check_policy_eps_ids(self, resources):
         huawei_eps_ids = []
@@ -737,24 +769,20 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         ep_id = resource.get("id", "")
         policy_document = resource.get('policy_document', {})
         statements = policy_document.get('Statement', [])
-        if not statements:
-            expect_statements.append(
-                {
-                    "Action": ["*"],
-                    "Condition": expect_condition,
-                    "Effect": "Allow", "Principal": "*", "Resource": ["*"]
-                })
-        else:
-            for statement in statements:
-                if _is_principal_wildcards(statement) and not statement.get('Condition'):
-                    statement["Condition"] = expect_condition
-                expect_statements.append(statement)
+        expect_statements.append(
+            {
+                "Action": ["*"],
+                "Condition": expect_condition,
+                "Effect": "Allow", "Principal": "*", "Resource": ["*"]
+            })
+
         expect_policy_document = {
             "Statement": expect_statements,
             "Version": "5.0"
         }
         log.info(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
-                 f"with id:[{ep_id}] policy is invalid.")
+                 f"with id:[{ep_id}] policy is invalid, "
+                 f"cur: {statements}, expect: {expect_statements}")
         self._update_policy(ep_id, expect_policy_document)
 
     def perform_action(self, resource):
@@ -765,6 +793,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         expect_condition = {"StringEquals": {"g:PrincipalOrgID": org_id},
                             "StringEqualsIfExists": {"g:ResourceOrgID": org_id}
                             }
+        log.info(f"[actions]-[update-policy-document]-Get org is: {org_id}")
         return expect_condition
 
     def _get_org_id(self):
