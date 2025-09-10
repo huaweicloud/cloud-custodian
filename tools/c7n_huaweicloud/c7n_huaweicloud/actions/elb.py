@@ -719,7 +719,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         request.body.ipgroup.ip_list = ip_list_body
         # if not enterprise_project_name or len(enterprise_project_name) == 0 or \
         #         enterprise_project_name == "default":
-        #     enterprise_project_id = 
+        #     enterprise_project_id = "0"
         #     request.body.ipgroup.enterprise_project_id = enterprise_project_id
         # else:
         #     ep_client = local_session(self.manager.session_factory).client('eps')
