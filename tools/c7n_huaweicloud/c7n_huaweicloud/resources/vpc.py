@@ -136,6 +136,74 @@ class PortForwarding(Filter):
         return enabled_ports
 
 
+@Port.filter_registry.register("eni-ip-not-trust")
+class ENIIpNotTrust(Filter):
+    """The security groups associated with the network interfaces
+       are the remote security groups of some security group rules.
+       Filter out these network interfaces whose IP are not trusted.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: eni-ip-not-trust
+            resource: huaweicloud.vpc-port
+            filters:
+              - type: eni-ip-not-trust
+                direction: ingress
+                risk_ports_path: ""
+                trust_sg_path: ""
+                trust_ip_path: ""
+    """
+
+    schema = type_schema("eni-ip-not-trust",
+             direction={'enum': ['ingress', 'egress']},
+             trust_ip_num_limit={'type': 'integer'},
+             risk_ports_path={'type': 'string'},
+             trust_ip_path={'type': 'string'},
+             required=['direction', 'risk_ports_path', 'trust_ip_path'])
+
+    def process(self, resources, event=None):
+        client = self.manager.get_resource_manager('vpc-security-group-rule').get_client()
+        direction = self.data.get('direction', 'ingress')
+        res_ports = []
+        new_data = copy.deepcopy(self.data)
+        new_data.pop('type', None)
+        rule_filter = SecurityGroupRuleAllowRiskPort(new_data, self.manager)
+        for port in resources:
+            device_owner = port['device_owner']
+            if device_owner and not device_owner.startswith('compute'):
+                continue
+            raw_sgs = port['security_groups']
+            try:
+                request = ListSecurityGroupRulesRequest(remote_group_id=raw_sgs,
+                                                        direction=direction)
+                response = client.list_security_group_rules(request)
+                log.debug("[filters]-[eni-ip-not-trust] query the service:"
+                          "[VPC:list_security_group_rules] succeed.")
+            except exceptions.ServiceResponseException as ex:
+                log.error("[filters]-[eni-ip-not-trust]-The resource:[vpc-port] "
+                          "filter security group rules failed, "
+                          "cause: query remote rules of security groups associated to "
+                          f"the port [{port['id']}] failed, "
+                          f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                raise ex
+            rules_object = response.security_group_rules
+            rules = [r.to_dict() for r in rules_object]
+
+            rule_filter_result = rule_filter.process(rules)
+            if rule_filter_result:
+                to_remove_sgs = [rule.get('remote_group_id') for rule in rule_filter_result]
+                set_to_remove_sgs = set(to_remove_sgs)
+                set_raw_sgs = set(raw_sgs)
+                new_sgs = list(set_raw_sgs - set_to_remove_sgs)
+                if len(new_sgs) > 0:
+                    port['security_groups'] = new_sgs
+                    res_ports.append(port)
+        return res_ports
+
+
 @Port.action_registry.register("disable-port-forwarding")
 class PortDisablePortForwarding(HuaweiCloudBaseAction):
     """Action to disable port forwarding on network interfaces.
@@ -191,6 +259,59 @@ class PortDisablePortForwarding(HuaweiCloudBaseAction):
                      f"[{resource['id']}] update network interface succeed.")
         except exceptions.ServiceResponseException as ex:
             log.error(f"[actions]-[disable-port-forwarding]-The resource:[vpc-port] with id: "
+                      f"[{resource['id']}] update network interface failed, "
+                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
+        return response
+
+
+@Port.action_registry.register("update-security-groups")
+class PortUpdateSecurityGroups(HuaweiCloudBaseAction):
+    """Action to update security groups associated with the network interfaces.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: eni-update-security-groups
+            resource: huaweicloud.vpc-port
+            filters:
+              - type: eni-ip-not-trust
+                direction: ingress
+                risk_ports_path: ""
+                trust_sg_path: ""
+                trust_ip_path: ""
+            actions:
+              - type: update-security-groups
+    """
+
+    schema = type_schema("update-security-groups")
+
+    def perform_action(self, resource):
+        device_owner = resource.get('device_owner', '')
+        is_subeni = ('compute:subeni' == device_owner)
+        client = self.manager.get_resource_manager('vpc-security-group').get_client() \
+                 if is_subeni else self.manager.get_client()
+        new_sgs = resource.get('security_groups')
+        try:
+            if not is_subeni:
+                port_body = UpdatePortOption(security_groups=new_sgs)
+                request = UpdatePortRequest()
+                request.port_id = resource['id']
+                request.body = UpdatePortRequestBody(port=port_body)
+                response = client.update_port(request)
+            else:
+                request = UpdateSubNetworkInterfaceRequest()
+                request.sub_network_interface_id = resource['id']
+                subeni_body = UpdateSubNetworkInterfaceOption(security_groups=new_sgs)
+                request.body = UpdateSubNetworkInterfaceRequestBody(
+                    sub_network_interface=subeni_body)
+                response = client.update_sub_network_interface(request)
+                log.info(f"[actions]-[update-security-groups]-The resource:[vpc-port] with id: "
+                         f"[{resource['id']}] update network interface succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error(f"[actions]-[update-security-groups]-The resource:[vpc-port] with id: "
                       f"[{resource['id']}] update network interface failed, "
                       f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
             raise ex
@@ -1402,7 +1523,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         return multiport
 
     def get_deny_rules(self, sg_id, direction):
-        client = self.manager.get_client()
+        client = self.manager.get_resource_manager('vpc-security-group-rule').get_client()
         sg_ids = [sg_id]
         action = 'deny'
         ret_rules = []
