@@ -717,8 +717,14 @@ def run_account(account, region, policies_config, output_path,
         for p in policies:
             # Extend policy execution conditions with account information
             p.conditions.env_vars['account'] = account
+            p.conditions.env_vars['account_name'] = account['name']
             # Variable expansion and non schema validation (not optional)
             p.expand_variables(p.get_variables(account.get('vars', {})))
+            p.expand_variables(p.get_variables({
+                'resource_details': '{resource_details}',
+                'account_name': account['name'],
+                'policy_name': p.name,
+            }))
             p.validate()
             log.debug(
                 "Running policy:%s account:%s region:%s",
