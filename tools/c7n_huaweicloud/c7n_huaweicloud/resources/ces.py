@@ -36,7 +36,8 @@ class Alarm(QueryResourceManager):
         for raw in resource_ids:
             # 获取普通告警规则资源
             if raw.startswith("al"):
-                return self.get_alarm_resources(resource_ids)
+                all_resources = self.get_alarm_resources(resource_ids)
+                return [r for r in all_resources if r["alarm_id"] in id_set]
             # 获取一键告警规则资源
             elif raw.startswith("oca"):
                 return self.get_one_click_alarm_resources(resource_ids)
@@ -48,12 +49,6 @@ class Alarm(QueryResourceManager):
         return self.get_alarm_resources(query)
 
     def get_alarm_resources(self, resource_ids):
-        id_set = set()
-        if resource_ids is None:
-            resource_ids = []
-        for raw in resource_ids:
-            id_set.update(raw.split(","))
-
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
         resources = []
@@ -87,14 +82,14 @@ class Alarm(QueryResourceManager):
             if not response.count or offset >= len(response.alarms):
                 break
 
-        return [r for r in resources if r["alarm_id"] in id_set]
+        return resources
 
-    def get_one_click_alarm_resources(self, resource_ids):
+    def get_one_click_alarm_resources(self, one_click_alarm_ids):
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
         alarm_ids = []
         resources = []
-        for one_click_id in resource_ids:
+        for one_click_id in one_click_alarm_ids:
             try:
                 request = ListOneClickAlarmRulesRequest()
                 request.one_click_alarm_id = one_click_id
