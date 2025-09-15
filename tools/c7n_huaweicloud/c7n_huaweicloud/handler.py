@@ -53,11 +53,14 @@ def run(event, context=None):
 
     options = HuaweiCloud().initialize(options)
     policies = PolicyCollection.from_data(policy_config, options)
+    log.debug(f'policies: {policies}')
     if policies:
         for p in policies:
             log.info(f'[{p.execution_mode}]-User with account: '
                      f'[{context.getUserData("DOMAIN_NAME")}/{context.getUserData("DOMAIN_ID")}] '
                      f'influenced the [{p.resource_type}], and triggered the policy [{p.name}].')
+            # Extend "account_name" in policy execution conditions with UserData
+            p.conditions.env_vars['account_name'] = context.getUserData('DOMAIN_NAME')
             p.validate()
             p.push(event, context)
 
