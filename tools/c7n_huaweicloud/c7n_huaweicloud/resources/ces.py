@@ -29,7 +29,7 @@ class Alarm(QueryResourceManager):
         service = 'ces'
         enum_spec = ("list_alarm_rules", 'alarms', 'offset')
         id = 'alarm_id'
-        tag_resource_type = None
+        tag_resource_type = 'CES-alarm'
 
     def get_resources(self, resource_ids):
         id_set = set()
@@ -971,3 +971,4 @@ class CreateVpcEventAlarmRule(BaseAction):
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
                       f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
             raise e
+
