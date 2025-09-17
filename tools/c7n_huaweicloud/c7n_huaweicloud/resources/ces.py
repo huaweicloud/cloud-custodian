@@ -72,6 +72,7 @@ class Alarm(QueryResourceManager):
                         else:
                             log.warning(f"Resource missing both id and alarm_id: {resource}")
                             resource["id"] = f"generated_{hash(str(resource))}"
+                        resource["tag_resource_type"] = "CES-alarm"
                     resources.append(resource)
             except exceptions.ClientRequestException as e:
                 log.error(f"[actions]- list_alarm_rules - The resource:ces-alarm "
