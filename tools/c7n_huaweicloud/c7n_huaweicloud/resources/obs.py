@@ -9,6 +9,7 @@ import re
 from huaweicloudsdkcore.exceptions import exceptions
 
 from obs import ACL
+from obs import TagInfo
 
 from c7n.utils import type_schema, set_annotation, local_session,\
 format_string_values
@@ -584,6 +585,117 @@ class RemoveCrossAccountAccessConfig(HuaweiCloudBaseAction):
             % (bucket_name, resp.reason))
             raise_exception(resp, 'setBucketAcl', bucket)
         else:
+            log.info('[actions]-[remove-cross-account-config] The resource:[bucket]' +
+            ' with id:[%s] set bucket acl is success.' % bucket_name)
+
+
+@Obs.action_registry.register("tag")
+class ObsTagAction(HuaweiCloudBaseAction):
+    """Add or remove tags on the OBS bucket.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: create-obs-tags
+            resource: huaweicloud.obs
+            actions:
+              - type: tag
+                tags:
+                  - key: Environment
+                    value: Production
+                  - key: Owner
+                    value: DevOpsTeam
+
+          - name: delete-obs-tags
+            resource: huaweicloud.obs
+            actions:
+              - type: tag
+                tags:
+                  - key: Environment
+                  - key: TempTag
+                operate: delete
+    """
+    schema = type_schema(
+        'tag',
+        required=['tags'],
+        tags={
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'additionalProperties': False,
+                'required': ['key'],
+                'properties': {
+                    'key': {'type': 'string', 'minLength': 1, 'maxLength': 35},
+                    'value': {'type': 'string','minLength': 0, 'maxLength': 44}
+                }
+            }
+        },
+        operate={'type': 'string', 'enum': ['create', 'delete']}
+    )
+
+    def perform_action(self, bucket):
+        operate = self.data.get('operate', 'create')
+        tags_config = self.data.get('tags', [])
+
+        if operate == 'create':
+            self._create_tags(bucket, tags_config)
+        else:
+            self._delete_tags(bucket, tags_config)
+
+    def _create_tags(self, bucket, tags_config):
+        current_tags = bucket['tags']
+        current_tag_keys = {tag['key']: index for index, tag in enumerate(current_tags)}
+
+        for new_tag in tags_config:
+            tag_key = new_tag['key']
+            tag_value = new_tag.get('value', '')
+            
+            if tag_key in current_tag_keys:
+                index = current_tag_keys[tag_key]
+                current_tags[index]['value'] = tag_value
+            else:
+                current_tags.append({'key': tag_key, 'value': tag_value})
+
+        self._set_bucket_tags(bucket, current_tags)
+
+    def _delete_tags(self, bucket, tags_config):
+        current_tags = bucket['tags']
+        keys_to_delete = {tag['key'] for tag in tags_config}
+        remaining_tags = [
+            tag for tag in current_tags 
+            if tag['key'] not in keys_to_delete
+        ]
+
+        self._set_bucket_tags(bucket, remaining_tags)
+
+    def _set_bucket_tags(self, bucket, tags_list):
+        bucket_name = bucket['name']
+        client = get_obs_client(self.manager.session_factory, bucket)
+        self.log.debug("bucket [%s] new tag is %s" % (bucket_name, tags_list))
+
+        action = "setBucketTagging"
+        if tags_list:
+            tagInfo = TagInfo()
+            
+            for tag in tags_list:
+                tag_key = tag['key']
+                tag_value = tag.get('value', '')
+                tagInfo.addTag(tag_key, tag_value)
+
+            resp = client.setBucketTagging(bucket_name, tagInfo)
+        else:
+            action = "deleteBucketTagging"
+            resp = client.deleteBucketTagging(bucket_name)
+
+        if resp.status > 300:
+            self.log.error('[actions]-The action:[tag]' +
+                ' update bucket:[%s] bucket tags is failed. cause: %s'
+                  % (bucket['name'], resp.reason))
+            raise_exception(resp, action, bucket)
+        else:
+            bucket['tags'] = tags_list
             log.info('[actions]-[remove-cross-account-config] The resource:[bucket]' +
             ' with id:[%s] set bucket acl is success.' % bucket_name)
 
