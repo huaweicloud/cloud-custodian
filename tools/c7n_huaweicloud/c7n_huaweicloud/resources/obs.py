@@ -628,7 +628,7 @@ class ObsTagAction(HuaweiCloudBaseAction):
                 'required': ['key'],
                 'properties': {
                     'key': {'type': 'string', 'minLength': 1, 'maxLength': 35},
-                    'value': {'type': 'string','minLength': 0, 'maxLength': 44}
+                    'value': {'type': 'string', 'minLength': 0, 'maxLength': 44}
                 }
             }
         },
@@ -664,7 +664,7 @@ class ObsTagAction(HuaweiCloudBaseAction):
         current_tags = bucket['tags']
         keys_to_delete = {tag['key'] for tag in tags_config}
         remaining_tags = [
-            tag for tag in current_tags 
+            tag for tag in current_tags
             if tag['key'] not in keys_to_delete
         ]
 
@@ -678,7 +678,7 @@ class ObsTagAction(HuaweiCloudBaseAction):
         action = "setBucketTagging"
         if tags_list:
             tagInfo = TagInfo()
-            
+
             for tag in tags_list:
                 tag_key = tag['key']
                 tag_value = tag.get('value', '')
