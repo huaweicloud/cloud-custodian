@@ -651,7 +651,6 @@ class ObsTagAction(HuaweiCloudBaseAction):
         for new_tag in tags_config:
             tag_key = new_tag['key']
             tag_value = new_tag.get('value', '')
-            
             if tag_key in current_tag_keys:
                 index = current_tag_keys[tag_key]
                 current_tags[index]['value'] = tag_value
@@ -678,7 +677,6 @@ class ObsTagAction(HuaweiCloudBaseAction):
         action = "setBucketTagging"
         if tags_list:
             tagInfo = TagInfo()
-
             for tag in tags_list:
                 tag_key = tag['key']
                 tag_value = tag.get('value', '')
