@@ -247,7 +247,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
         log_topic_ttl_in_days = self.data.get("log_topic_ttl_in_days", 30)
         log_topic_tags = self.data.get("log_topic_tags", [])
 
-        enterprise_project_name = self.data.get("enterprise_project_name", "default")
+        enterprise_project_name = self.data.get("enterprise_project_name", None)
 
         if creation == "always":
             resp_log_group_id = self.create_log_group(
@@ -368,7 +368,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_group_id = group.log_group_id
                     break
             if not resp_log_group_id:
-                log.error(
+                log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log group with specified log_group_id='{log_group_id}' not found."
                 )
@@ -379,7 +379,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_group_id = group.log_group_id
                     break
             if not resp_log_group_id:
-                log.error(
+                log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log group with specified log_group_name='{log_group_name}' not found."
                 )
@@ -405,7 +405,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_stream_id = topic.log_stream_id
                     break
             if not resp_log_stream_id:
-                log.error(
+                log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log topic with specified log_topic_id='{log_topic_id}' not found."
                 )
@@ -416,7 +416,7 @@ class LoadbalancerEnableLoggingAction(HuaweiCloudBaseAction):
                     resp_log_stream_id = topic.log_stream_id
                     break
             if not resp_log_stream_id:
-                log.error(
+                log.info(
                     f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                     f"Log topic with specified log_topic_name='{log_topic_name}' not found."
                 )
@@ -643,15 +643,16 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
             raise Exception("ipgroup_id or ipgroup_name must be provided"
                             " in the policy action type 'set-acl-ipgroup'.")
 
+        ipgroup_name = len(ipgroup_names) > 0 and ipgroup_names[0] or ""
         ipgroups = []
         if creation == "always":
             ipgroups = [self.create_ipgroup(
-                "ipgroup_empty_by_custodian", ip_list, enterprise_project_name, description)]
+                ipgroup_name, ip_list, enterprise_project_name, description)]
         elif creation == "create-if-absent":
             all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
             if not all_finded:
                 ipgroups = [self.create_ipgroup(
-                    "ipgroup_empty_by_custodian", ip_list, enterprise_project_name, description)]
+                    ipgroup_name, ip_list, enterprise_project_name, description)]
         else:
             all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
             if not all_finded:
@@ -716,10 +717,10 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         request.body.ipgroup.name = ipgroup_name
         request.body.ipgroup.description = description
         request.body.ipgroup.ip_list = ip_list_body
-        if not enterprise_project_name or len(enterprise_project_name) == 0 or \
-                enterprise_project_name == "default":
-            enterprise_project_id = "0"
-            request.body.ipgroup.enterprise_project_id = enterprise_project_id
+        # if not enterprise_project_name or len(enterprise_project_name) == 0 or \
+        #         enterprise_project_name == "default":
+        #     enterprise_project_id = "0"
+        #     request.body.ipgroup.enterprise_project_id = enterprise_project_id
         # else:
         #     ep_client = local_session(self.manager.session_factory).client('eps')
         #     ep_request = ListEnterpriseProjectsRequest()

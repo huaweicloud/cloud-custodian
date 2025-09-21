@@ -107,6 +107,7 @@ class Kms(QueryResourceManager):
             default = []
             for detail in details:
                 dict = detail.to_dict()
+                dict["tag_resource_type"] = "kms"
                 dict["tags"] = resourceTagDict.get(detail.key_id, default)
                 dict["id"] = detail.key_id
                 resources.append(dict)
