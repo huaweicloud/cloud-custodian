@@ -672,7 +672,7 @@ class ObsTagAction(HuaweiCloudBaseAction):
     def _set_bucket_tags(self, bucket, tags_list):
         bucket_name = bucket['name']
         client = get_obs_client(self.manager.session_factory, bucket)
-        self.log.debug("bucket [%s] new tag is %s" % (bucket_name, tags_list))
+        self.log.debug("[actions]-[tag] bucket [%s] new tag is %s" % (bucket_name, tags_list))
 
         action = "setBucketTagging"
         if tags_list:
@@ -694,8 +694,8 @@ class ObsTagAction(HuaweiCloudBaseAction):
             raise_exception(resp, action, bucket)
         else:
             bucket['tags'] = tags_list
-            log.info('[actions]-[remove-cross-account-config] The resource:[bucket]' +
-            ' with id:[%s] set bucket acl is success.' % bucket_name)
+            log.info('[actions]-[tag] The resource:[bucket]' +
+            ' with id:[%s] update bucket tags is success.' % bucket_name)
 
 
 # ----------------------OBS Fileter-------------------------------------------
