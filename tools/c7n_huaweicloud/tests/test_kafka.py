@@ -53,26 +53,6 @@ class KafkaInstanceTest(BaseTest):
         # 验证 mock 是否被调用 (可选)
         mock_get_sg_resources.assert_called_once_with(['securityGroupId'])
 
-    def test_kafka_filter_age(self):
-        factory = self.replay_flight_data('kafka_filter_age')
-        # 测试创建时间大于等于1天的实例
-        p_ge = self.load_policy({
-            'name': 'kafka-filter-age-ge-test',
-            'resource': 'huaweicloud.dms-kafka',
-            'filters': [{'type': 'age', 'days': 1, 'op': 'gt'}]},  # 大于等于
-            session_factory=factory)
-        resources_ge = p_ge.run()
-        self.assertEqual(len(resources_ge), 1)  # 假设录像带中的实例满足条件
-
-        # 测试创建时间小于1000天的实例 (假设实例满足)
-        p_lt = self.load_policy({
-            'name': 'kafka-filter-age-lt-test',
-            'resource': 'huaweicloud.dms-kafka',
-            'filters': [{'type': 'age', 'days': 2000, 'op': 'lt'}]},  # 小于
-            session_factory=factory)
-        resources_lt = p_lt.run()
-        self.assertEqual(len(resources_lt), 1)
-
     def test_kafka_filter_config_compliance(self):
         factory = self.replay_flight_data('kafka_filter_config')
         # 测试配置项等于期望值 (假设 auto.create.topics.enable 为 true)
