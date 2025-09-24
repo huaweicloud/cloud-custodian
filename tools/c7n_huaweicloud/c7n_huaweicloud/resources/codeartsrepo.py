@@ -93,8 +93,7 @@ class WatermarkFilter(Filter):
                 log.warning(
                     "[filters]-{codehub-project-filter-watermark} with request:[%s]"
                     "query project watermark no permission, cause: "
-                    "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                    request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                    "status_code[%s] request_id[%s]", request, e.status_code, e.request_id)
                 return {}, False
             log.error(
                 "[filters]-{codehub-project-filter-watermark} with request:[%s]"
@@ -161,8 +160,7 @@ class CodeaArtsRepoProjectOpenWaterMark(HuaweiCloudBaseAction):
                 log.warning(
                     "[actions]-{codehub-project-open-watermark} with request:[%s]"
                     "open project watermark no permission, cause: "
-                    "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                    request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                    "status_code[%s] request_id[%s]", request, e.status_code, e.request_id)
                 return {}, False
             log.error(
                 "[actions]-{codehub-project-open-watermark} with request:[%s]"
@@ -249,8 +247,7 @@ class ProtectedBranchFilter(Filter):
                     log.warning(
                         "[filter]-{codehub-project-protected-branches}  with request:[%s]"
                         "query project protected branches no permission, cause: "
-                        "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                        request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                        "status_code[%s] request_id[%s]", request, e.status_code, e.request_id)
                     return [], False
                 log.error(
                     "[filter]-{codehub-project-protected-branches}  with request:[%s]"
@@ -351,8 +348,7 @@ class CodeaArtsRepoProjectCreateProtectedBranches(HuaweiCloudBaseAction):
                 log.warning(
                     "[actions]-{codehub-project-create-protected-branches} with request:[%s]"
                     "create project protected branches no permission, cause: "
-                    "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                    request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                    "status_code[%s] request_id[%s]", request, e.status_code, e.request_id)
                 return [], False
             log.error(
                 "[actions]-{codehub-project-create-protected-branches} with request:[%s]"

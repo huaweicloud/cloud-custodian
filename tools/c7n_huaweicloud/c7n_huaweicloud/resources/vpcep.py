@@ -26,7 +26,8 @@ from huaweicloudsdkvpcep.v1 import (
     UpdateEndpointServiceRequest,
     UpdateEndpointServiceRequestBody,
     PolicyStatement,
-    ListServiceDescribeDetailsRequest
+    ListServiceDescribeDetailsRequest,
+    ListEndpointInfoDetailsRequest
 )
 
 from huaweicloudsdkorganizations.v1 import ShowOrganizationRequest
@@ -366,6 +367,33 @@ class VpcEndpointUtils():
         split_res = remaining_after_obs.split("/", 1)
         return split_res[1]
 
+    def get_ep_detail(self, ep_id):
+        ep_client = local_session(self.manager.session_factory).client("vpcep-ep")
+        request = ListEndpointInfoDetailsRequest()
+        request.vpc_endpoint_id = ep_id
+
+        try:
+            response = ep_client.list_endpoint_info_details(request)
+            log.info(f"get ep {ep_id} detail has succeeded.")
+            return response
+        except exceptions as e:
+            log.error(f"get ep {ep_id} detail failed. cause:{e}")
+            raise e
+
+    def wait_ep_can_processed(self, resource):
+        for i in range(20):
+            if resource.get('status') not in ('creating', 'deleting'):
+                return True
+            time.sleep(5)
+            ep_resource = self.get_ep_detail(resource.get('id'))
+            if ep_resource.status not in ('creating', 'deleting'):
+                return True
+            log.info(f"The resource:[vpcep-ep] "
+                     f"with id:[{resource.get('id')}] status {ep_resource.status}, "
+                     f"is not available, wait: {i}")
+            time.sleep(25)
+        raise ValueError("Ep status is creating or deleting, can not update, please retry")
+
 
 @VpcEndpoint.filter_registry.register('is-not-default-org-policy')
 class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
@@ -560,7 +588,7 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         new_resources = list(set(resources_strip))
 
         for resource in resources:
-            if _wait_ep_can_processed(resource):
+            if ep_util.wait_ep_can_processed(resource):
                 self.process_resource(resource, new_accounts, new_resources)
 
         return resources
@@ -585,7 +613,10 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
                             effect="Allow", action=["*"], resource=["*", "*/*"],
                             condition={"StringEquals": {"ResourceOwner": resource_owner}}),
             PolicyStatement(sid="allow-huaweicloud-public-data",
-                            effect="Allow", action=["*"], resource=new_resources)
+                            effect="Allow",
+                            action=["HeadBucket", "ListBucket", "GetBucketLocation",
+                                    "GetObject", "GetObjectVersion"],
+                            resource=new_resources)
         ]
 
         request = UpdateEndpointPolicyRequest(vpc_endpoint_id=ep_id)
@@ -617,6 +648,19 @@ def _is_principal_wildcards(statement):
             if ser == wildcards:
                 return True
     return False
+
+
+def isSameOrgId(condition, org_id):
+    string_equals = False
+    string_equals_if_exists = False
+    if condition.get('StringEquals') and condition.get('StringEquals').get("g:PrincipalOrgID"):
+        if condition.get('StringEquals').get("g:PrincipalOrgID") == org_id:
+            string_equals = True
+    if condition.get('StringEqualsIfExists') \
+            and condition.get('StringEqualsIfExists').get("g:ResourceOrgID"):
+        if condition.get('StringEqualsIfExists').get("g:ResourceOrgID") == org_id:
+            string_equals_if_exists = True
+    return string_equals and string_equals_if_exists
 
 
 @VpcEndpoint.filter_registry.register('policy-principal-wildcards')
@@ -658,10 +702,26 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
         statement = policy_document.get('Statement', [])
         if not statement:
             return False
+        if len(statement) != 1:
+            return False
         for item in statement:
-            if _is_principal_wildcards(item) and not item.get('Condition'):
+            if _is_principal_wildcards(item) and \
+                    (not item.get('Condition')
+                     or not isSameOrgId(item.get('Condition'), self._get_org_id())):
                 return False
         return True
+
+    def _get_org_id(self):
+        client = local_session(self.manager.session_factory).client("org-account")
+        try:
+            resp = client.show_organization(ShowOrganizationRequest())
+            log.info(f"[filters]-[policy-principal-wildcards]-query the service:"
+                      f"[/v1/organizations] has successed. Get org is: {resp}")
+            return resp.organization.id
+        except exceptions as e:
+            log.error(f"[filters]-[policy-principal-wildcards]-query the service:"
+                      f"[/v1/organizations] is failed.cause:{e}")
+            raise e
 
     def _get_need_check_policy_eps_ids(self, resources):
         huawei_eps_ids = []
@@ -694,17 +754,6 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
             raise e
 
 
-def _wait_ep_can_processed(resource):
-    for i in range(12):
-        if resource.get('status') not in ('creating', 'deleting'):
-            return True
-        log.debug(f"[actions]-[update-policy-document] The resource:[vpcep-ep] "
-                  f"with id:[{resource.get('id')}] status {resource.get('status')} "
-                  f"is not available, wait: {i}")
-        time.sleep(10)
-    raise ValueError("Ep status is creating or deleting, can not update, please retry")
-
-
 @VpcEndpoint.action_registry.register('update-policy-document')
 class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     """Update the endpoint policy.
@@ -725,9 +774,10 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     def process(self, resources):
         if not resources:
             return []
+        ep_util = VpcEndpointUtils(self.manager)
         expect_condition = self._get_expect_condition()
         for resource in resources:
-            if _wait_ep_can_processed(resource):
+            if ep_util.wait_ep_can_processed(resource):
                 self.process_resource(resource, expect_condition)
 
         return resources
@@ -737,24 +787,20 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         ep_id = resource.get("id", "")
         policy_document = resource.get('policy_document', {})
         statements = policy_document.get('Statement', [])
-        if not statements:
-            expect_statements.append(
-                {
-                    "Action": ["*"],
-                    "Condition": expect_condition,
-                    "Effect": "Allow", "Principal": "*", "Resource": ["*"]
-                })
-        else:
-            for statement in statements:
-                if _is_principal_wildcards(statement) and not statement.get('Condition'):
-                    statement["Condition"] = expect_condition
-                expect_statements.append(statement)
+        expect_statements.append(
+            {
+                "Action": ["*"],
+                "Condition": expect_condition,
+                "Effect": "Allow", "Principal": "*", "Resource": ["*"]
+            })
+
         expect_policy_document = {
             "Statement": expect_statements,
             "Version": "5.0"
         }
         log.info(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
-                 f"with id:[{ep_id}] policy is invalid.")
+                 f"with id:[{ep_id}] policy is invalid, "
+                 f"cur: {statements}, expect: {expect_statements}")
         self._update_policy(ep_id, expect_policy_document)
 
     def perform_action(self, resource):
@@ -765,6 +811,7 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
         expect_condition = {"StringEquals": {"g:PrincipalOrgID": org_id},
                             "StringEqualsIfExists": {"g:ResourceOrgID": org_id}
                             }
+        log.info(f"[actions]-[update-policy-document]-Get org is: {org_id}")
         return expect_condition
 
     def _get_org_id(self):
