@@ -34,6 +34,8 @@ class Alarm(QueryResourceManager):
     def get_resources(self, resource_ids):
         id_set = set()
         for raw in resource_ids:
+            id_set.update(raw.split(","))
+        for raw in resource_ids:
             # 获取普通告警规则资源
             if raw.startswith("al"):
                 all_resources = self.get_alarm_resources(resource_ids)
@@ -972,3 +974,4 @@ class CreateVpcEventAlarmRule(BaseAction):
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
                       f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
             raise e
+
