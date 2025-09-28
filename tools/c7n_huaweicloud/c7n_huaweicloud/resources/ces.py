@@ -107,9 +107,7 @@ class Alarm(QueryResourceManager):
                     if "alarm_id" in resource:  # 获取alarm_id
                         alarm_ids.append(resource["alarm_id"])
 
-                id_set = set()
-                for raw in alarm_ids:
-                    id_set.update(raw)
+                id_set = set(alarm_ids)
                 alarm_resources = self.get_alarm_resources(alarm_ids)
                 resources.extend([r for r in alarm_resources if r["alarm_id"] in id_set])
             except exceptions.ClientRequestException as e:
