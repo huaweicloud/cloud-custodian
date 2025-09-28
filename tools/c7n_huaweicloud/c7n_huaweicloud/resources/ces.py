@@ -107,7 +107,11 @@ class Alarm(QueryResourceManager):
                     if "alarm_id" in resource:  # 获取alarm_id
                         alarm_ids.append(resource["alarm_id"])
 
-                resources = self.get_alarm_resources(alarm_ids)
+                id_set = set()
+                for raw in alarm_ids:
+                    id_set.update(raw)
+                alarm_resources = self.get_alarm_resources(alarm_ids)
+                resources.append([r for r in alarm_resources if r["alarm_id"] in id_set])
             except exceptions.ClientRequestException as e:
                 log.error(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
                           f"with id:[] query alarm rules is failed. cause: {e.error_msg} ")
