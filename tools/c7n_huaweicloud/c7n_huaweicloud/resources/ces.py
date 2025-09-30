@@ -79,7 +79,8 @@ class Alarm(QueryResourceManager):
             except exceptions.ClientRequestException as e:
                 if e.status_code == 404:
                     log.warning(f"[actions]- list_alarm_rules - The resource:ces-alarm "
-                                f"with id:[{resource_ids}] query alarm rules is empty.")
+                                f"with id:[{resource_ids}] query alarm rules is empty."
+                                f" cause: alarm has been reset or deleted.")
                     return resources
                 log.error(f"[actions]- list_alarm_rules - The resource:ces-alarm "
                           f"with id:[{resource_ids}] query alarm rules is failed."
@@ -118,7 +119,8 @@ class Alarm(QueryResourceManager):
             except exceptions.ClientRequestException as e:
                 if e.status_code == 404:
                     log.warning(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
-                                f"with id:[{one_click_alarm_ids}] query alarm rules is empty.")
+                                f"with id:[{one_click_alarm_ids}] query alarm rules is empty."
+                                f" cause: one click alarm has been reset or deleted.")
                     return resources
                 log.error(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
                           f"with id:[{one_click_alarm_ids}] query alarm rules is failed."
