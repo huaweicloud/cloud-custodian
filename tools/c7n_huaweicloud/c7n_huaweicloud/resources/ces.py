@@ -77,8 +77,13 @@ class Alarm(QueryResourceManager):
                         resource["tag_resource_type"] = "CES-alarm"
                     resources.append(resource)
             except exceptions.ClientRequestException as e:
+                if e.status_code == 404:
+                    log.warning(f"[actions]- list_alarm_rules - The resource:ces-alarm "
+                                f"with id:[{resource_ids}] query alarm rules is empty.")
+                    return resources
                 log.error(f"[actions]- list_alarm_rules - The resource:ces-alarm "
-                          f"with id:[] query alarm rules is failed. cause: {e.error_msg} ")
+                          f"with id:[{resource_ids}] query alarm rules is failed."
+                          f" cause: {e.error_msg} ")
                 raise e
 
             offset += limit
@@ -111,8 +116,13 @@ class Alarm(QueryResourceManager):
                 alarm_resources = self.get_alarm_resources(alarm_ids)
                 resources.extend([r for r in alarm_resources if r["alarm_id"] in id_set])
             except exceptions.ClientRequestException as e:
+                if e.status_code == 404:
+                    log.warning(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
+                                f"with id:[{one_click_alarm_ids}] query alarm rules is empty.")
+                    return resources
                 log.error(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
-                          f"with id:[] query alarm rules is failed. cause: {e.error_msg} ")
+                          f"with id:[{one_click_alarm_ids}] query alarm rules is failed."
+                          f" cause: {e.error_msg} ")
                 raise e
         return resources
 
