@@ -18,6 +18,7 @@ from c7n_huaweicloud.actions.smn2 import register_smn2_actions
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.filters.exempted import register_exempted_filters
+from c7n_huaweicloud.filters.time import register_time_filters
 
 from c7n_huaweicloud.utils.marker_pagination import MarkerPagination
 
@@ -559,6 +560,7 @@ class QueryMeta(type):
         register_smn_actions(attrs["action_registry"])
         register_smn2_actions(attrs["action_registry"])
         register_exempted_filters(attrs["filter_registry"])
+        register_time_filters(attrs["filter_registry"])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
 
