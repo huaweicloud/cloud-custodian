@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import datetime
+import logging
 
 from dateutil.tz import tzutc
 from dateutil.parser import parse
@@ -10,6 +11,8 @@ from c7n.exceptions import PolicyValidationError
 from c7n.filters import AgeFilter
 
 from c7n.utils import type_schema
+
+log = logging.getLogger("custodian.filters.time")
 
 
 def register_time_filters(filters):
@@ -62,7 +65,12 @@ class ResourceTimeFilter(AgeFilter):
         if not v:
             raise PolicyValidationError("Not exist resource param '%s'" % self.date_attribute)
         if not isinstance(v, datetime.datetime):
-            v = parse(v)
+            try:
+                v = parse(v)
+            except ValueError as e:
+                log.error(f"[filters]-[resource-time] parse '{self.date_attribute}' param value "
+                          "to datetime failed, cause: invalid time format.")
+                raise e
         if not v.tzinfo:
             v = v.replace(tzinfo=tzutc())
         return v
