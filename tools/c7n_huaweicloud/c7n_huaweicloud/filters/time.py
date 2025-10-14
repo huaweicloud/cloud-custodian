@@ -1,9 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-import datetime
 import logging
 
+from datetime import datetime
 from dateutil.tz import tzutc
 from dateutil.parser import parse
 
@@ -42,7 +42,6 @@ class ResourceTimeFilter(AgeFilter):
                 minutes: 1
     """
 
-    # date_attribute = "created_at"
     schema = type_schema(
         "resource-time",
         time_attribute={"type": "string"},
@@ -62,15 +61,34 @@ class ResourceTimeFilter(AgeFilter):
 
     def get_resource_date(self, i):
         v = i.get(self.date_attribute, None)
+
         if not v:
             raise PolicyValidationError("Not exist resource param '%s'" % self.date_attribute)
-        if not isinstance(v, datetime.datetime):
+        if isinstance(v, datetime):
+            if not v.tzinfo:
+                v = v.astimezone(tzutc())
+            return v
+        if isinstance(v, str) and not v.isdigit():
             try:
-                v = parse(v)
+                return parse(v).astimezone(tzutc())
             except ValueError as e:
                 log.error(f"[filters]-[resource-time] parse '{self.date_attribute}' param value "
                           "to datetime failed, cause: invalid time format.")
                 raise e
-        if not v.tzinfo:
-            v = v.replace(tzinfo=tzutc())
+        return self.timestamp2datetime(v)
+
+    def timestamp2datetime(self, v, tz=tzutc()):
+        exceptions = (ValueError, TypeError, OverflowError)
+        if isinstance(v, (int, float, str)):
+            try:
+                v = datetime.fromtimestamp(float(v)).astimezone(tz)
+            except exceptions:
+                pass
+
+        if isinstance(v, (int, float, str)):
+            # try interpreting as milliseconds epoch
+            try:
+                v = datetime.fromtimestamp(float(v) / 1000).astimezone(tz)
+            except exceptions:
+                pass
         return v
