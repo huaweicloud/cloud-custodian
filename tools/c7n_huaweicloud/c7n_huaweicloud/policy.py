@@ -7,7 +7,7 @@ import re
 import pytz
 
 from c7n import utils
-from c7n.exceptions import PolicyValidationError
+from c7n.exceptions import PolicyValidationError, PolicyExecutionError
 from c7n.policy import execution, ServerlessExecutionMode, PullMode
 from c7n.utils import type_schema, local_session
 from c7n.version import version
@@ -271,7 +271,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
         if not resource_ids:
             log.warning("Could not find resource ids")
             return []
-        log.info(f'[{self.policy.execution_mode}]-The resources ID list is: {resource_ids}')
+        log.info(f'[{self.policy.execution_mode}]-The resources ID list are: '
+                 f'#[resource_ids@{resource_ids}]#')
         resources = self.policy.resource_manager.get_resources(resource_ids)
         if 'debug' in event:
             log.info("Resources %s", resources)
@@ -318,8 +319,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
         resources_list = []
         for resource in resources:
             resources_list.append(resource['id'])
-        log.info(f'[{self.policy.execution_mode}]-The filtered resources ID list is: '
-                 f'{resources_list}')
+        log.info(f'[{self.policy.execution_mode}]-The filtered resources ID list are: '
+                 f'#[filtered_ids@{resources_list}]#')
 
         return self.run_resource_set(event, resources)
 
@@ -339,28 +340,44 @@ class FunctionGraphMode(ServerlessExecutionMode):
             ctx.metrics.put_metric(
                 'ResourceCount', len(resources), 'Count', Scope="Policy", buffer=False
             )
-
-            if 'debug' in event:
-                self.policy.log.info(
-                    "Invoking actions %s", self.policy.resource_manager.actions
-                )
+            action_name_list = []
+            for action in self.policy.resource_manager.actions:
+                action_name_list.append(action.name)
+            self.policy.log.info(
+                "[%s]-Then the resources will be remediation by #[actions@%s]#",
+                self.policy.execution_mode,
+                action_name_list,
+            )
 
             ctx.output.write_file('resources.json', utils.dumps(resources, indent=2))
 
-            for action in self.policy.resource_manager.actions:
-                self.policy.log.info(
-                    "policy:%s invoking action:%s resources:%d",
-                    self.policy.name,
-                    action.name,
-                    len(resources),
+            try:
+                for action in self.policy.resource_manager.actions:
+                    self.policy.log.info(
+                        "policy:%s invoking action:%s resources:%d",
+                        self.policy.name,
+                        action.name,
+                        len(resources),
+                    )
+                    if isinstance(action, EventAction):
+                        results = action.process(resources, event)
+                    elif action.name in self.actions_without_resources:
+                        results = action.process(event)
+                    else:
+                        results = action.process(resources)
+
+                    ctx.output.write_file("action-%s" % action.name, utils.dumps(results))
+            except PolicyExecutionError as e:
+                log.error(
+                    "[%s]-The policy has executed: #[result@failed]#",
+                    self.policy.execution_mode,
                 )
-                if isinstance(action, EventAction):
-                    results = action.process(resources, event)
-                elif action.name in self.actions_without_resources:
-                    results = action.process(event)
-                else:
-                    results = action.process(resources)
-                ctx.output.write_file("action-%s" % action.name, utils.dumps(results))
+                raise e
+            else:
+                log.info(
+                    "[%s]-The policy has executed: #[result@success]#",
+                    self.policy.execution_mode,
+                )
         return resources
 
     @property
