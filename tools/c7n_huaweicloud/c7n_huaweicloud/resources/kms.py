@@ -191,11 +191,12 @@ policies:
                         break
                     sleep(1)
                     count += 1
-                if flag == False:
+                if not flag:
                     log.info(
                         "[action]-enable_key_rotation the resource:resourceType:KMS "
                         "with resourceId={} "
-                        "is failed, cause list_key_details 5 times,always disabled!".format(resourceId))
+                        "is failed, cause list_key_details 5 times,always disabled!"
+                        .format(resourceId))
 
             except Exception as e:
                 if e.status_code == 400:
