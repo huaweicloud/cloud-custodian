@@ -26,7 +26,8 @@ from huaweicloudsdkvpcep.v1 import (
     UpdateEndpointServiceRequest,
     UpdateEndpointServiceRequestBody,
     PolicyStatement,
-    ListServiceDescribeDetailsRequest
+    ListServiceDescribeDetailsRequest,
+    ListEndpointInfoDetailsRequest
 )
 
 from huaweicloudsdkorganizations.v1 import ShowOrganizationRequest
@@ -366,6 +367,33 @@ class VpcEndpointUtils():
         split_res = remaining_after_obs.split("/", 1)
         return split_res[1]
 
+    def get_ep_detail(self, ep_id):
+        ep_client = local_session(self.manager.session_factory).client("vpcep-ep")
+        request = ListEndpointInfoDetailsRequest()
+        request.vpc_endpoint_id = ep_id
+
+        try:
+            response = ep_client.list_endpoint_info_details(request)
+            log.info(f"get ep {ep_id} detail has succeeded.")
+            return response
+        except exceptions as e:
+            log.error(f"get ep {ep_id} detail failed. cause:{e}")
+            raise e
+
+    def wait_ep_can_processed(self, resource):
+        for i in range(20):
+            if resource.get('status') not in ('creating', 'deleting'):
+                return True
+            time.sleep(5)
+            ep_resource = self.get_ep_detail(resource.get('id'))
+            if ep_resource.status not in ('creating', 'deleting'):
+                return True
+            log.info(f"The resource:[vpcep-ep] "
+                     f"with id:[{resource.get('id')}] status {ep_resource.status}, "
+                     f"is not available, wait: {i}")
+            time.sleep(25)
+        raise ValueError("Ep status is creating or deleting, can not update, please retry")
+
 
 @VpcEndpoint.filter_registry.register('is-not-default-org-policy')
 class VpcEndpointObsCheckDefultOrgPolicyFilter(Filter):
@@ -560,7 +588,7 @@ class VpcEndpointUpdateObsEpPolicy(HuaweiCloudBaseAction):
         new_resources = list(set(resources_strip))
 
         for resource in resources:
-            if _wait_ep_can_processed(resource):
+            if ep_util.wait_ep_can_processed(resource):
                 self.process_resource(resource, new_accounts, new_resources)
 
         return resources
@@ -726,17 +754,6 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
             raise e
 
 
-def _wait_ep_can_processed(resource):
-    for i in range(12):
-        if resource.get('status') not in ('creating', 'deleting'):
-            return True
-        log.debug(f"[actions]-[update-policy-document] The resource:[vpcep-ep] "
-                  f"with id:[{resource.get('id')}] status {resource.get('status')} "
-                  f"is not available, wait: {i}")
-        time.sleep(10)
-    raise ValueError("Ep status is creating or deleting, can not update, please retry")
-
-
 @VpcEndpoint.action_registry.register('update-policy-document')
 class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     """Update the endpoint policy.
@@ -757,9 +774,10 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     def process(self, resources):
         if not resources:
             return []
+        ep_util = VpcEndpointUtils(self.manager)
         expect_condition = self._get_expect_condition()
         for resource in resources:
-            if _wait_ep_can_processed(resource):
+            if ep_util.wait_ep_can_processed(resource):
                 self.process_resource(resource, expect_condition)
 
         return resources

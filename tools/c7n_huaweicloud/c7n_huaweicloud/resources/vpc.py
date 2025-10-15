@@ -25,7 +25,8 @@ from huaweicloudsdkvpc.v2 import (
     UpdatePortRequestBody,
     DeleteVpcPeeringRequest,
     ListRouteTablesRequest,
-    ShowRouteTableRequest
+    ShowRouteTableRequest,
+    ShowPortRequest
 )
 from huaweicloudsdkvpc.v3 import (
     ListSecurityGroupsRequest,
@@ -46,6 +47,7 @@ from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 from c7n.filters import Filter, ValueFilter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from c7n_huaweicloud.actions.smn import NotifyMessageAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
@@ -198,9 +200,8 @@ class ENIIpNotTrust(Filter):
                 set_to_remove_sgs = set(to_remove_sgs)
                 set_raw_sgs = set(raw_sgs)
                 new_sgs = list(set_raw_sgs - set_to_remove_sgs)
-                if len(new_sgs) > 0:
-                    port['security_groups'] = new_sgs
-                    res_ports.append(port)
+                port['security_groups'] = new_sgs
+                res_ports.append(port)
         return res_ports
 
 
@@ -286,14 +287,80 @@ class PortUpdateSecurityGroups(HuaweiCloudBaseAction):
               - type: update-security-groups
     """
 
-    schema = type_schema("update-security-groups")
+    schema = type_schema("update-security-groups", rinherit={
+        'type': 'object',
+        'additionalProperties': False,
+        'required': ['type', 'subject', 'topic_urn_list'],
+        'properties': {
+            'type': {'enum': ['update-security-groups']},
+            "topic_urn_list": {
+                "type": "array",
+                "items": {"type": "string"}
+            },
+            'subject': {'type': 'string'},
+            'message': {'type': 'string'}
+        }
+    })
+
+    def process(self, resources):
+        for resource in resources:
+            self.process_action(resource)
+        new_data = copy.deepcopy(self.data)
+        new_data.pop('type', None)
+        message = ("The security groups associated with the ENI port is referenced by "
+                  "non-compliant security group rules. "
+                  "Please check and remove security groups from the eni port. "
+                  "ENI Resource list:{resource_details}")
+        new_data['message'] = message
+        notify_msg_action = NotifyMessageAction(new_data, self.manager)
+        notify_msg_action.process(resources)
+        return self.process_result(resources)
 
     def perform_action(self, resource):
+        new_sgs = resource.get('security_groups')
+        client = self.manager.get_client()
+        try:
+            request = ShowPortRequest()
+            request.port_id = resource['id']
+            response = client.show_port(request)
+            port = response.port.to_dict()
+            log.info("[actions]-[update-security-groups]-"
+                      "query the service:[VPC:show_port] succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error("[actions]-[update-security-groups]-"
+                      "The resource:[vpc-port] "
+                      "update security groups of the port failed, "
+                      f"cause: query port [{resource['id']}] failed, "
+                      f"error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
+            raise ex
+        raw_sgs = port['security_groups']
+        # If sgs in current is empty, send smn message alarm,
+        # cause: not allowed to set the sgs of the port to empty by api.
+        if not new_sgs:
+            new_data = copy.deepcopy(self.data)
+            new_data.pop('type', None)
+            message = ("All security groups associated with the network interface "
+                       f"[{resource['id']}] are referenced by non-compliant security group rules. "
+                       "Since each network interface is associated with at least one "
+                       "security group, it is not allowed to remove all security groups "
+                       "with the network interface automatically. Please replace "
+                       "the security groups associated to the network interface manually. "
+                       f"SG resource list: [{','.join(raw_sgs)}]")
+            new_data['message'] = message
+            log.warning("[actions]-[update-security-groups]-"
+                        f"The resource:[vpc-port] with id:[{resource['id']}] "
+                        "the associated security groups need to be replaced manually.")
+            notify_msg_action = NotifyMessageAction(new_data, self.manager)
+            notify_msg_action.process([])
+            log.info("[actions]-[update-security-groups]-"
+                     f"The resource:[vpc-port] with id:[{resource['id']}] "
+                     "send smn message success.")
+            return
+
         device_owner = resource.get('device_owner', '')
         is_subeni = ('compute:subeni' == device_owner)
         client = self.manager.get_resource_manager('vpc-security-group').get_client() \
                  if is_subeni else self.manager.get_client()
-        new_sgs = resource.get('security_groups')
         try:
             if not is_subeni:
                 port_body = UpdatePortOption(security_groups=new_sgs)
