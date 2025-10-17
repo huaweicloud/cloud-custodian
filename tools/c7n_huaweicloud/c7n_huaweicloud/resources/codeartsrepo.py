@@ -24,6 +24,7 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
 log = logging.getLogger("custodian.huaweicloud.resources.codeartsrepo-project")
+need_action_msg = "no identity-based policy allows"
 
 
 @resources.register("codeartsrepo-project")
@@ -89,7 +90,7 @@ class WatermarkFilter(Filter):
                 "query project watermark success, response: [%s]",
                 project_id, response)
         except exceptions.ClientRequestException as e:
-            if e.status_code == 403:
+            if e.status_code == 403 and need_action_msg not in e.error_msg:
                 log.warning(
                     "[filters]-{codehub-project-filter-watermark} with request:[%s]"
                     "query project watermark no permission, cause: "
@@ -156,7 +157,7 @@ class CodeaArtsRepoProjectOpenWaterMark(HuaweiCloudBaseAction):
                 "[actions]-{codehub-project-open-watermark} with project_id:[%s] "
                 "open project watermark success.", project_id)
         except exceptions.ClientRequestException as e:
-            if e.status_code == 403:
+            if e.status_code == 403 and need_action_msg not in e.error_msg:
                 log.warning(
                     "[actions]-{codehub-project-open-watermark} with request:[%s]"
                     "open project watermark no permission, cause: "
@@ -242,7 +243,7 @@ class ProtectedBranchFilter(Filter):
                     break
                 offset += limit
             except exceptions.ClientRequestException as e:
-                if e.status_code == 403:
+                if e.status_code == 403 and need_action_msg not in e.error_msg:
                     # user has no permission to process
                     log.warning(
                         "[filter]-{codehub-project-protected-branches}  with request:[%s]"
@@ -343,7 +344,7 @@ class CodeaArtsRepoProjectCreateProtectedBranches(HuaweiCloudBaseAction):
                 "[actions]-{codehub-project-create-protected-branches} with project_id:[%s] "
                 "create project protected branches success.", project_id)
         except exceptions.ClientRequestException as e:
-            if e.status_code == 403:
+            if e.status_code == 403 and need_action_msg not in e.error_msg:
                 # user has no permission to process
                 log.warning(
                     "[actions]-{codehub-project-create-protected-branches} with request:[%s]"
@@ -439,7 +440,7 @@ class CodeaArtsRepoProjectSetSettings(HuaweiCloudBaseAction):
                 "[actions]-{codehub-project-set-settings} with project_id:[%s] "
                 "set project settings success.", project_id)
         except exceptions.ClientRequestException as e:
-            if e.status_code == 403:
+            if e.status_code == 403 and need_action_msg not in e.error_msg:
                 log.warning(
                     "[actions]-{codehub-project-set-settings} has no permission to set settings "
                     "protected_branches and watermark with request:[%s]", request)
