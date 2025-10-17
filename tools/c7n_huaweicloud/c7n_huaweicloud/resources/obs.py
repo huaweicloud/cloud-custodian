@@ -28,6 +28,7 @@ class Obs(QueryResourceManager):
         enum_spec = ("listBuckets", 'body.buckets', None)
         id = 'name'
         tag = False
+        tag_resource_type = 'bucket'
 
     def augment(self, resources):
         resources = super().augment(resources)
@@ -43,6 +44,7 @@ class Obs(QueryResourceManager):
             return buckets
 
     def get_bucket_tags(self, bucket):
+        bucket['tag_resource_type'] = 'bucket'
         client = get_obs_client(self.session_factory, bucket)
         resp = client.getBucketTagging(bucket['name'])
         if resp.status < 300:

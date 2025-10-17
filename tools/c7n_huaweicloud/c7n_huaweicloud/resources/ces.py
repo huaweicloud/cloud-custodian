@@ -10,7 +10,8 @@ from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkces.v2 import UpdateAlarmNotificationsRequest, Notification, \
     PutAlarmNotificationReq, BatchEnableAlarmRulesRequest, BatchEnableAlarmsRequestBody, \
-    CreateAlarmRulesRequest, Policy, PostAlarmsReqV2, AlarmType, ListAlarmRulesRequest
+    CreateAlarmRulesRequest, Policy, PostAlarmsReqV2, AlarmType, ListAlarmRulesRequest, \
+    ListOneClickAlarmRulesRequest
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody, \
     ListTopicsRequest
@@ -28,15 +29,28 @@ class Alarm(QueryResourceManager):
         service = 'ces'
         enum_spec = ("list_alarm_rules", 'alarms', 'offset')
         id = 'alarm_id'
-        tag_resource_type = None
+        tag_resource_type = 'CES-alarm'
 
-    def get_resources(self, query):
-        return self.get_api_resources(query)
+    def get_resources(self, resource_ids):
+        id_set = set()
+        for raw in resource_ids:
+            id_set.update(raw.split(","))
+        for raw in resource_ids:
+            # 获取普通告警规则资源
+            if raw.startswith("al"):
+                all_resources = self.get_alarm_resources(resource_ids)
+                return [r for r in all_resources if r["alarm_id"] in id_set]
+            # 获取一键告警规则资源
+            elif raw.startswith("oca"):
+                return self.get_one_click_alarm_resources(resource_ids)
+
+        all_resources = self.get_alarm_resources(resource_ids)
+        return [r for r in all_resources if r["alarm_id"] in id_set]
 
     def _fetch_resources(self, query):
-        return self.get_api_resources(query)
+        return self.get_alarm_resources(query)
 
-    def get_api_resources(self, resource_ids):
+    def get_alarm_resources(self, resource_ids):
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
         resources = []
@@ -60,16 +74,58 @@ class Alarm(QueryResourceManager):
                         else:
                             log.warning(f"Resource missing both id and alarm_id: {resource}")
                             resource["id"] = f"generated_{hash(str(resource))}"
+                        resource["tag_resource_type"] = "CES-alarm"
                     resources.append(resource)
             except exceptions.ClientRequestException as e:
+                if e.status_code == 404:
+                    log.warning(f"[actions]- list_alarm_rules - The resource:ces-alarm "
+                                f"with id:[{resource_ids}] query alarm rules is empty."
+                                f" cause: alarm has been reset or deleted.")
+                    return resources
                 log.error(f"[actions]- list_alarm_rules - The resource:ces-alarm "
-                          f"with id:[] query alarm rules is failed. cause: {e.error_msg} ")
+                          f"with id:[{resource_ids}] query alarm rules is failed."
+                          f" cause: {e.error_msg} ")
                 raise e
 
             offset += limit
             if not response.count or offset >= len(response.alarms):
                 break
 
+        return resources
+
+    def get_one_click_alarm_resources(self, one_click_alarm_ids):
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+        alarm_ids = []
+        resources = []
+        for one_click_id in one_click_alarm_ids:
+            try:
+                request = ListOneClickAlarmRulesRequest()
+                request.one_click_alarm_id = one_click_id
+                response = client.list_one_click_alarm_rules(request)
+                current_resources = eval(
+                    str(response.alarms)
+                        .replace("null", "None")
+                        .replace("false", "False")
+                        .replace("true", "True")
+                )
+                for resource in current_resources:
+                    if "alarm_id" in resource:  # 获取alarm_id
+                        alarm_ids.append(resource["alarm_id"])
+
+                id_set = set(alarm_ids)
+                alarm_resources = self.get_alarm_resources(alarm_ids)
+                resources.extend([r for r in alarm_resources if r["alarm_id"] in id_set])
+            except exceptions.ClientRequestException as e:
+                if e.status_code == 404:
+                    log.warning(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
+                                f"with id:[{one_click_alarm_ids}] query alarm rules is empty."
+                                f" cause: one click alarm has been reset or deleted.")
+                    return resources
+                log.error(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
+                          f"with id:[{one_click_alarm_ids}] query alarm rules is failed."
+                          f" cause: {e.error_msg} ")
+                raise e
         return resources
 
 

@@ -32,10 +32,9 @@ class Stream(QueryResourceManager):
         request = ListLogGroupsRequest()
         stream_request = ListLogStreamRequest()
         response = client.list_log_groups(request)
+        log.debug("[event/period]-The resource_ids are [{}]".format(resource_ids))
         should_break = False
         for group in response.log_groups:
-            if group.log_group_name.startswith("functiongraph.log.group"):
-                continue
             time.sleep(0.5)
             stream_request.log_group_id = group.log_group_id
             try:
@@ -43,11 +42,14 @@ class Stream(QueryResourceManager):
                 for stream in stream_response.log_streams:
                     if stream.log_stream_id == resource_ids[0] and stream.whether_log_storage:
                         streamDict = {}
+                        streamDict["log_group_name"] = group.log_group_name
                         streamDict["log_group_id"] = group.log_group_id
                         streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
                         streamDict["id"] = stream.log_stream_id
                         streamDict["tags"] = stream.tag
+                        streamDict["id"] = stream.log_stream_id
+                        streamDict["tag_resource_type"] = "topics"
                         streams.append(streamDict)
                         should_break = True
                         break
@@ -59,6 +61,7 @@ class Stream(QueryResourceManager):
                 break
         log.info("[event/period]-The filtered resources has [{}]"
                  " in total. ".format(str(len(streams))))
+        log.debug("[event/period]-The filtered resources are [{}]".format(streams))
         return streams
 
 
@@ -83,8 +86,6 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
         request = ListLogStreamRequest()
         streams = []
         for group in resources:
-            if group["log_group_name"].startswith("functiongraph.log.group"):
-                continue
             request.log_group_id = group["log_group_id"]
             try:
                 time.sleep(0.5)
@@ -92,10 +93,12 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                 for stream in response.log_streams:
                     if stream.whether_log_storage:
                         streamDict = {}
+                        streamDict["log_group_name"] = group["log_group_name"]
                         streamDict["log_group_id"] = group["log_group_id"]
                         streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
                         streamDict["id"] = stream.log_stream_id
+                        streamDict["tag_resource_type"] = "topics"
                         streamDict["tags"] = stream.tag
                         streams.append(streamDict)
             except Exception as e:
@@ -104,6 +107,7 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                 raise
         log.info("[event/period]-The filtered resources has [{}]"
                     " in total. ".format(str(len(streams))))
+        log.debug("[event/period]-The filtered resources is [{}]".format(streams))
         return streams
 
 
@@ -122,10 +126,10 @@ class LtsDisableStreamStorage(HuaweiCloudBaseAction):
                 whether_log_storage=False
             )
             log.info("[actions]-[disable-stream-storage]: The resource:[stream] with"
-                     "id:[{}] modify storage is success".format(resource["log_stream_id"]))
+                     "id:[{}] modify storage successed".format(resource["log_stream_id"]))
             response = client.update_log_stream(request)
             return response
         except Exception as e:
             log.error("[actions]-[disable-stream-storage]-The resource:[stream] with id:"
-                      "[{}] modify sotrage failed. cause: {}".format(resource["log_stream_id"], e))
+                      "[{}] modify storage failed. cause: {}".format(resource["log_stream_id"], e))
             raise

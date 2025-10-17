@@ -59,6 +59,9 @@ ResourceMap = {
     "huaweicloud.ccm-ssl-certificate": "c7n_huaweicloud.resources.scm.Scm",
     "huaweicloud.swr": "c7n_huaweicloud.resources.swr.Swr",
     "huaweicloud.swr-image": "c7n_huaweicloud.resources.swr.SwrImage",
+    "huaweicloud.swr-ee": "c7n_huaweicloud.resources.swr_ee.SwrEe",
+    "huaweicloud.swr-ee-image": "c7n_huaweicloud.resources.swr_ee.SwrEeImage",
+    "huaweicloud.swr-ee-namespace": "c7n_huaweicloud.resources.swr_ee.SwrEeNamespace",
     "huaweicloud.eip": "c7n_huaweicloud.resources.eip.EIP",
     "huaweicloud.cc-cloud-connection": "c7n_huaweicloud.resources.cc.CloudConnection",
     "huaweicloud.cdn-domain": "c7n_huaweicloud.resources.cdn.CdnDomain",
@@ -85,5 +88,7 @@ ResourceMap = {
         "c7n_huaweicloud.resources.ram-shared-resource.RAMSharedResources",
     "huaweicloud.as-group": "c7n_huaweicloud.resources.as.AsGroup",
     "huaweicloud.as-config": "c7n_huaweicloud.resources.as.AsConfig",
-    "huaweicloud.as-policy": "c7n_huaweicloud.resources.as.AsPolicy"
+    "huaweicloud.as-policy": "c7n_huaweicloud.resources.as.AsPolicy",
+    "huaweicloud.codearts-build-job": "c7n_huaweicloud.resources.codearts-build.Job",
+    "huaweicloud.codeartsrepo-project": "c7n_huaweicloud.resources.codeartsrepo.CodeArtsRepoProject"
 }

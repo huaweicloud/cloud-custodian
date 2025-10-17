@@ -5,6 +5,8 @@ import logging
 import os
 import sys
 
+from huaweicloudsdkcodehub.v3.region.codehub_region import CodeHubRegion
+from huaweicloudsdkcodehub.v4 import CodeHubClient
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
 from huaweicloudsdkconfig.v1.region.config_region import ConfigRegion
 from huaweicloudsdkcore.auth.credentials import BasicCredentials, GlobalCredentials
@@ -165,7 +167,12 @@ from huaweicloudsdkas.v1 import (
 from huaweicloudsdkas.v1.region.as_region import AsRegion
 from huaweicloudsdkelb.v2 import ElbClient as ElbClientV2
 from huaweicloudsdkelb.v2.region.elb_region import ElbRegion as ElbRegionV2
-
+from huaweicloudsdkcodeartsbuild.v3.region.codeartsbuild_region import CodeArtsBuildRegion
+from huaweicloudsdkcodeartsbuild.v3 import (
+    CodeArtsBuildClient, ListJobRequest
+)
+from huaweicloudsdkprojectman.v4.region.projectman_region import ProjectManRegion
+from huaweicloudsdkprojectman.v4 import ProjectManClient, ListProjectsV4Request
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -176,6 +183,7 @@ class Session:
     def __init__(self, options=None):
         self.token = None
         self.domain_id = None
+        self.domain_name = None
         self.region = None
         self.ak = None
         self.sk = None
@@ -598,6 +606,28 @@ class Session:
                 .with_region(AsRegion.value_of(self.region))
                 .build()
             )
+        # use req api query projects for codeartesrepo.
+        elif service == "codeartsrepo-project":
+            client = (
+                ProjectManClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(ProjectManRegion.value_of("sa-brazil-1"))
+                .build()
+            )
+        elif service == "codeartsrepo":
+            client = (
+                CodeHubClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CodeHubRegion.value_of("sa-brazil-1"))
+                .build()
+            )
+        elif service == "codearts-build":
+            client = (
+                CodeArtsBuildClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(CodeArtsBuildRegion.value_of('sa-brazil-1'))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -781,6 +811,13 @@ class Session:
             request = ListScalingConfigsRequest()
         elif service == 'as-policy':
             request = ListAllScalingV2PoliciesRequest()
+        elif service == 'codearts-build':
+            request = ListJobRequest()
+        # req api query projects request for codeartsrepo.
+        elif service == "codeartsrepo-project":
+            request = ListProjectsV4Request()
+            # list all the projects of this tenant
+            request.query_type = "domain_projects"
         return request
 
 
