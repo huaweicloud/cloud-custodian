@@ -180,14 +180,6 @@ policies:
             count = 0
             flag = False
             try:
-                response = client.list_key_detail(requestDetail)
-                keyInfo = response.key_info
-                if keyInfo.key_rotation_enabled == "true":
-                    log.info(
-                        "[action]-enable_key_rotation the resource:resourceType:KMS with "
-                        "resourceId={} skip enable_key_rotation the key is enabled"
-                        .format(resourceId))
-                    return
                 client.enable_key_rotation(request)
                 log.info("[action]-enable_key_rotation the resource:resourceType:KMS "
                          "with resourceId={},"
