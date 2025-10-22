@@ -80,6 +80,23 @@ class Ecs(QueryResourceManager):
         id = "id"
         tag_resource_type = "ecs"
 
+    def augment(self, resources):
+        if not resources:
+            return []
+
+        default_value = "true"
+        for resource in resources:
+            if not resource['tags']:
+                continue
+            processed_tags = []
+            for tag in resource['tags']:
+                if '=' in tag:
+                    processed_tags.append(tag)
+                else:
+                    processed_tags.append(f"{tag}={default_value}")
+            resource['tags'] = processed_tags
+        return resources
+
 
 @Ecs.action_registry.register("fetch-job-status")
 class FetchJobStatus(HuaweiCloudBaseAction):
