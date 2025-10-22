@@ -185,7 +185,8 @@ policies:
                 if keyInfo.key_rotation_enabled == "true":
                     log.info(
                         "[action]-enable_key_rotation the resource:resourceType:KMS with "
-                        "resourceId={} skip enable_key_rotation the key is enabled".format(resourceId))
+                        "resourceId={} skip enable_key_rotation the key is enabled"
+                        .format(resourceId))
                     return
                 client.enable_key_rotation(request)
                 log.info("[action]-enable_key_rotation the resource:resourceType:KMS "
@@ -202,7 +203,8 @@ policies:
 
                     log.info(
                         "[action]-enable_key_rotation the resource:resourceType:KMS with "
-                        "resourceId={} list_key_detail the key is disable,retry {} times".format(resourceId, count))
+                        "resourceId={} list_key_detail the key is disable,retry {} times"
+                        .format(resourceId, count))
                     client.enable_key_rotation(request)
                     sleep(1)
                     count += 1
