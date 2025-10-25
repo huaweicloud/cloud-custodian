@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import uuid
+from datetime import datetime, timezone
 
 from c7n.config import Config
 from c7n.policy import PolicyCollection
@@ -23,6 +24,10 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def run(event, context=None):
+    start_time = datetime.now(timezone.utc)
+    start_time_str = start_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+    log.info('#[start_time@%s]#.', start_time_str)
+
     # policies file should always be valid in functions so do loading naively
     with open('/opt/function/code/config.json') as f:
         policy_config = json.load(f)
@@ -57,14 +62,20 @@ def run(event, context=None):
     if policies:
         for p in policies:
             log.info(f'[{p.execution_mode}]-User with account: '
-                     f'[{context.getUserData("DOMAIN_NAME")}/{context.getUserData("DOMAIN_ID")}] '
-                     f'influenced the [{p.resource_type}], and triggered the policy [{p.name}].')
+                     f'#[account@{context.getUserData("DOMAIN_NAME")}/'
+                     f'{context.getUserData("DOMAIN_ID")}]#')
+            log.info(f'[{p.execution_mode}]-generated a CTS event '
+                     f'#[cts_id@{event["cts"]["trace_id"]}]# influenced the [{p.resource_type}],')
+            log.info(f'[{p.execution_mode}]- and triggered the policy #[policy_name@{p.name}]#.')
             # Extend "account_name" in policy execution conditions with UserData
             p.conditions.env_vars['account_name'] = context.getUserData('DOMAIN_NAME')
             p.validate()
             p.push(event, context)
 
     reset_session_cache()
+    finish_time = datetime.now(timezone.utc)
+    finish_time_str = finish_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+    log.info('#[finish_time@%s]#.', finish_time_str)
     return True
 
 
