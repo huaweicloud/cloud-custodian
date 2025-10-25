@@ -1040,10 +1040,15 @@ class SecurityGroupRuleDelete(HuaweiCloudBaseAction):
             log.info(f"[actions]-[delete]-The resource:[vpc-security-group-rule] with id: "
                      f"[{resource['id']}] delete security group rule succeed.")
         except exceptions.ServiceResponseException as ex:
-            log.error(f"[actions]-[delete]-The resource:[vpc-security-group-rule] with id: "
-                      f"[{resource['id']}] delete security group rule failed, "
-                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
-            raise ex
+            if ex.status_code and ex.status_code == 404:
+                log.info("[actions]-[delete]-The resource:[vpc-security-group-rule] with id: "
+                         f"[{resource['id']}] security group rule has been deleted, skip.")
+                return
+            else:
+                log.error(f"[actions]-[delete]-The resource:[vpc-security-group-rule] with id: "
+                          f"[{resource['id']}] delete security group rule failed, "
+                          f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+                raise ex
         return response
 
 
