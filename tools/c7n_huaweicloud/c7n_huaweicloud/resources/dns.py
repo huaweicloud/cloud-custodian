@@ -1,0 +1,57 @@
+import logging
+from c7n.utils import type_schema, local_session
+from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from c7n_huaweicloud.provider import resources
+from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
+from huaweicloudsdkdns.v2 import *
+
+log = logging.getLogger("custodian.huaweicloud.dns")
+
+
+@resources.register("dns-publiczone")
+class DNS(QueryResourceManager):
+    class resource_type(TypeInfo):
+        service = "dns"
+        enum_spec = ("list_public_zones", "zones", None)
+        id = "id"
+        tag_resource_type = "dns"
+
+
+@DNS.action_registry.register("delete-public-zones")
+class PubLicZoneDelete(HuaweiCloudBaseAction):
+    """Delete Public Zone.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: HW_DNS_004
+            resource: dns-publiczone
+            mode:
+              type: cloudtrace
+              xrole: fgs_admin
+              eg_agency: EG_TARGET_AGENCY
+              enable_lts_log: true
+              events:
+                - source: "DNS.publicZone"
+                    event: "createpublicZone"
+                    ids: "resource_id"
+            actions:
+              - type: delete-public-zones
+    """
+
+    schema = type_schema("delete-public-zones", xrole={"type": "string"})
+
+    def perform_action(self, resource):
+        try:
+            client = self.manager.get_client()
+            request = DeletePublicZoneRequest()
+            request.zone_id = resource["id"]
+            response = client.delete_public_zone(request)
+            return response
+        except Exception as e:
+            log.error(
+                f"Error occurred while deleting public zone: {str(e)}")
+            return None
+
