@@ -12,7 +12,7 @@ log = logging.getLogger("custodian.huaweicloud.dns")
 class DNS(QueryResourceManager):
     class resource_type(TypeInfo):
         service = "dns"
-        enum_spec = ("list_public_zones", "zones", None)
+        enum_spec = ("list_public_zones", "zones", "offset")
         id = "id"
         tag_resource_type = "dns"
 
@@ -37,6 +37,10 @@ class PubLicZoneDelete(HuaweiCloudBaseAction):
                 - source: "DNS.publicZone"
                     event: "createpublicZone"
                     ids: "resource_id"
+            filters:
+              - type: exempted
+                field: tags
+                exempted_values: ["DNS_exempted"]
             actions:
               - type: delete-public-zones
     """
