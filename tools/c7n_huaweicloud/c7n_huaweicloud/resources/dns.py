@@ -17,7 +17,7 @@ class DNS(QueryResourceManager):
         tag_resource_type = "dns"
 
 
-@DNS.action_registry.register("delete-public-zones")
+@DNS.action_registry.register("delete_public_zones")
 class PubLicZoneDelete(HuaweiCloudBaseAction):
     """Delete Public Zone.
 
@@ -42,10 +42,10 @@ class PubLicZoneDelete(HuaweiCloudBaseAction):
                 field: tags
                 exempted_values: ["DNS_exempted"]
             actions:
-              - type: delete-public-zones
+              - type: delete_public_zones
     """
 
-    schema = type_schema("delete-public-zones", xrole={"type": "string"})
+    schema = type_schema("delete_public_zones", xrole={"type": "string"})
 
     def perform_action(self, resource):
         try:
