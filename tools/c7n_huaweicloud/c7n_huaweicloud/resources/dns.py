@@ -25,18 +25,36 @@ class PubLicZoneDelete(HuaweiCloudBaseAction):
 
     .. code-block:: yaml
 
+        # Example 1: Monitor the event of createpublicZone, and delete zones in real-time
         policies:
           - name: HW_DNS_004
             resource: dns-publiczone
             mode:
               type: cloudtrace
-              xrole: fgs_admin
+              xrole: custodian
               eg_agency: EG_TARGET_AGENCY
               enable_lts_log: true
               events:
                 - source: "DNS.publicZone"
                     event: "createpublicZone"
                     ids: "resource_id"
+            filters:
+              - type: exempted
+                field: tags
+                exempted_values: ["DNS_exempted"]
+            actions:
+              - type: delete_public_zones
+        
+        # Example 2: Delete all public zones periodically
+        policies:
+          - name: HW_DNS_004_Timer
+            resource: dns-publiczone
+            mode:
+              type: huaweicloud-periodic
+              xrole: custodian
+              enable_lts_log: true
+              schedule: "1m"
+              schedule_type: Rate
             filters:
               - type: exempted
                 field: tags
