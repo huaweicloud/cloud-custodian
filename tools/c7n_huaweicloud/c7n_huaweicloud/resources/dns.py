@@ -75,5 +75,4 @@ class PubLicZoneDelete(HuaweiCloudBaseAction):
         except Exception as e:
             log.error(
                 f"Error occurred while deleting public zone: {str(e)}")
-            return None
-
+            raise e
