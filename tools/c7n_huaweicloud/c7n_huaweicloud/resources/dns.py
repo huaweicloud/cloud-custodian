@@ -27,7 +27,7 @@ class PubLicZoneDelete(HuaweiCloudBaseAction):
 
         # Example 1: Monitor the event of createpublicZone, and delete zones in real-time
         policies:
-          - name: HW_DNS_004
+          - name: delete_public_zones_event
             resource: dns-publiczone
             mode:
               type: cloudtrace
@@ -47,7 +47,7 @@ class PubLicZoneDelete(HuaweiCloudBaseAction):
         
         # Example 2: Delete all public zones periodically
         policies:
-          - name: HW_DNS_004_Timer
+          - name: delete_public_zones_timer
             resource: dns-publiczone
             mode:
               type: huaweicloud-periodic
