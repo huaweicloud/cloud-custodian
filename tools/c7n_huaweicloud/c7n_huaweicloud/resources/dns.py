@@ -1,9 +1,9 @@
 import logging
-from c7n.utils import type_schema, local_session
+from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
-from huaweicloudsdkdns.v2 import *
+from huaweicloudsdkdns.v2 import DeletePublicZoneRequest
 
 log = logging.getLogger("custodian.huaweicloud.dns")
 
@@ -44,7 +44,7 @@ class PubLicZoneDelete(HuaweiCloudBaseAction):
                 exempted_values: ["DNS_exempted"]
             actions:
               - type: delete_public_zones
-        
+
         # Example 2: Delete all public zones periodically
         policies:
           - name: delete_public_zones_timer
