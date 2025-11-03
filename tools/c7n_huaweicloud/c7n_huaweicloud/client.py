@@ -638,7 +638,7 @@ class Session:
             client = (
                 DnsClient.new_builder()
                 .with_credentials(credentials)
-                .with_region(DnsRegion.value_of(self.region))
+                .with_region(DnsRegion.value_of("cn-north-4"))
                 .build()
             )
         return client
