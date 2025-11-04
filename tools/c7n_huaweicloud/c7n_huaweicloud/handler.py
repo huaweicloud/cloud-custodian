@@ -64,8 +64,10 @@ def run(event, context=None):
             log.info(f'[{p.execution_mode}]-User with account: '
                      f'#[account@{context.getUserData("DOMAIN_NAME")}/'
                      f'{context.getUserData("DOMAIN_ID")}]#')
-            log.info(f'[{p.execution_mode}]-generated a CTS event '
-                     f'#[cts_id@{event["cts"]["trace_id"]}]# influenced the [{p.resource_type}],')
+            if p.execution_mode == 'cloudtrace':
+                log.info(f'[{p.execution_mode}]-generated a CTS event '
+                         f'#[cts_id@{event.get("cts", {}).get("trace_id", "")}]# '
+                         f'influenced the [{p.resource_type}],')
             log.info(f'[{p.execution_mode}]- and triggered the policy #[policy_name@{p.name}]#.')
             # Extend "account_name" in policy execution conditions with UserData
             p.conditions.env_vars['account_name'] = context.getUserData('DOMAIN_NAME')
