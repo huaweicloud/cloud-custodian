@@ -178,7 +178,6 @@ from huaweicloudsdkdns.v2 import (
     ListPublicZonesRequest,
     DnsClient
 )
-from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
