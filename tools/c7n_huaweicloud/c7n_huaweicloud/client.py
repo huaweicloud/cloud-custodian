@@ -174,6 +174,12 @@ from huaweicloudsdkcodeartsbuild.v3 import (
 from huaweicloudsdkprojectman.v4.region.projectman_region import ProjectManRegion
 from huaweicloudsdkprojectman.v4 import ProjectManClient, ListProjectsV4Request
 
+from huaweicloudsdkdns.v2 import (
+    ListPublicZonesRequest,
+    DnsClient
+)
+from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
+
 log = logging.getLogger("custodian.huaweicloud.client")
 
 
@@ -628,6 +634,13 @@ class Session:
                 .with_region(CodeArtsBuildRegion.value_of('sa-brazil-1'))
                 .build()
             )
+        elif service == "dns":
+            client = (
+                DnsClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(DnsRegion.value_of("cn-north-4"))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -818,6 +831,8 @@ class Session:
             request = ListProjectsV4Request()
             # list all the projects of this tenant
             request.query_type = "domain_projects"
+        elif service == "dns":
+            request = ListPublicZonesRequest()
         return request
 
 
