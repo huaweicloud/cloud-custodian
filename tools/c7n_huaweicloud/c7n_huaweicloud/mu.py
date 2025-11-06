@@ -1265,65 +1265,73 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
 
     def add(self, func_urn):
         # Create FunctionGraph CTS trigger.
-        create_trigger_request = CreateFunctionTriggerRequest(function_urn=func_urn)
-        create_trigger_request.body = self.build_create_cts_trigger_request_body()
+        request_body_list = self.build_request_body_list()
+        for request_body in request_body_list:
+            create_trigger_request = CreateFunctionTriggerRequest(function_urn=func_urn)
+            create_trigger_request.body = request_body
 
-        try:
-            create_trigger_response = self.client.create_function_trigger(create_trigger_request)  # noqa: E501
-            log.info(f'Create CTS trigger for function[{func_urn}] success, '
-                     f'trigger id: [{create_trigger_response.trigger_id}, '
-                     f'trigger name: [{create_trigger_response.event_data.name}], '
-                     f'trigger status: [{create_trigger_response.trigger_status}].')
-            return create_trigger_response
-        except exceptions.ClientRequestException as e:
-            log.error(f'Create function trigger failed, '
-                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
-                      f'request id:[{e.request_id}], '
-                      f'status code:[{e.status_code}], '
-                      f'error code:[{e.error_code}], '
-                      f'error message:[{e.error_msg}].')
-            raise PolicyExecutionError(f'Create function trigger failed, '
-                                       f'account:[{self.session.domain_name}/'
-                                       f'{self.session.domain_id}], '
-                                       f'request id:[{e.request_id}], '
-                                       f'status code:[{e.status_code}], '
-                                       f'error code:[{e.error_code}], '
-                                       f'error message:[{e.error_msg}].')
+            try:
+                create_trigger_response = self.client.create_function_trigger(create_trigger_request)  # noqa: E501
+                log.info(f'Create CTS trigger for function[{func_urn}] success, '
+                         f'trigger id: [{create_trigger_response.trigger_id}, '
+                         f'trigger name: [{create_trigger_response.event_data.name}], '
+                         f'trigger status: [{create_trigger_response.trigger_status}].')
+                return create_trigger_response
+            except exceptions.ClientRequestException as e:
+                log.error(f'Create function trigger failed, '
+                          f'account:[{self.session.domain_name}/{self.session.domain_id}], '
+                          f'request id:[{e.request_id}], '
+                          f'status code:[{e.status_code}], '
+                          f'error code:[{e.error_code}], '
+                          f'error message:[{e.error_msg}].')
+                raise PolicyExecutionError(f'Create function trigger failed, '
+                                           f'account:[{self.session.domain_name}/'
+                                           f'{self.session.domain_id}], '
+                                           f'request id:[{e.request_id}], '
+                                           f'status code:[{e.status_code}], '
+                                           f'error code:[{e.error_code}], '
+                                           f'error message:[{e.error_msg}].')
 
-    def build_create_cts_trigger_request_body(self):
+    def build_request_body_list(self):
+        source_map = {}
+        for e in self.data.get('events', []):
+            source = e.get('source')
+            if not source:
+                continue
+            if source not in source_map.keys():
+                source_map[source] = []
+            event = e.get("event")
+            if event:
+                source_map[source].append(event)
+        request_body_list = []
+        for source, operation_list in source_map:
+            request_body = self.build_create_cts_trigger_request_body(source, operation_list)
+            if request_body:
+                request_body_list.append(request_body)
+
+        return request_body_list
+
+    def build_create_cts_trigger_request_body(self, source, operation_list):
         request_body = CreateFunctionTriggerRequestBody(
             trigger_type_code=self.trigger_type_code,
             trigger_status="ACTIVE",
         )
-        operations = []
-        source_map = {}
-        for e in self.data.get('events', []):
-            source = e.get('source')
-            if source:
-                service_type = source.split('.')[0]
-                resource_type = source.split('.')[1]
-            else:
-                continue
-            if service_type not in source_map.keys():
-                source_map[service_type] = {
-                    "resource_type_list": [],
-                    "trace_name_list": []
-                }
-            if resource_type not in source_map[service_type]["resource_type_list"]:
-                source_map[service_type]["resource_type_list"].append(resource_type)
-            event = e.get("event")
-            if event and (event not in source_map[service_type]["trace_name_list"]):
-                source_map[service_type]["trace_name_list"].append(event)
 
-        for service_type in source_map:
-            resource_types = ";".join(source_map[service_type]["resource_type_list"])
-            trace_names = ";".join(source_map[service_type]["trace_name_list"])
-            operation = f'{service_type}:{resource_types}:{trace_names}'
-            operations.append(operation)
+        operations = []
+
+        if source:
+            service_type = source.split('.')[0]
+            resource_type = source.split('.')[1]
+        else:
+            return
+
+        operation = f'{service_type}:{resource_type}:{";".join(operation_list)}'
+        operations.append(operation)
         request_body.event_data = {
             "name": self.data.get('trigger_name',
-                                  'custodian_cts_' + datetime.now().strftime("%Y%m%d%H%M%S")),
-            "operations": operations
+                                  f'custodian_cts_{service_type}_{resource_type}'
+                                  f'_{datetime.now().strftime("%Y%m%d%H%M%S")}'),
+            "operations": operations,
         }
 
         return request_body
