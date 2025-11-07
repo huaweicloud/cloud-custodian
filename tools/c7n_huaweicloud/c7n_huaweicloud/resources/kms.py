@@ -207,7 +207,6 @@ policies:
                         .format(resourceId))
                     client.enable_key_rotation(request)
 
-
             except Exception as e:
                 if e.status_code == 400:
                     log.info(
