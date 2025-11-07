@@ -185,7 +185,7 @@ policies:
                          "with resourceId={},"
                          "success"
                          .format(resourceId))
-
+                sleep(1)
                 while count < max_iterations:
                     response = client.list_key_detail(requestDetail)
                     keyInfo = response.key_info
@@ -197,7 +197,6 @@ policies:
                         "[action]-enable_key_rotation the resource:resourceType:KMS with "
                         "resourceId={} list_key_detail the key is disable,retry {} times"
                         .format(resourceId, count))
-                    client.enable_key_rotation(request)
                     sleep(1)
                     count += 1
                 if not flag:
@@ -206,6 +205,8 @@ policies:
                         "with resourceId={} "
                         "is failed, cause list_key_details 5 times,always disabled!"
                         .format(resourceId))
+                    client.enable_key_rotation(request)
+
 
             except Exception as e:
                 if e.status_code == 400:
