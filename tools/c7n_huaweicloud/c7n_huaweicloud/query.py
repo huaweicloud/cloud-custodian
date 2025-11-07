@@ -18,6 +18,7 @@ from c7n_huaweicloud.actions.smn2 import register_smn2_actions
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.filters.exempted import register_exempted_filters
+from c7n_huaweicloud.filters.missing_tag import register_missing_tag_filters
 from c7n_huaweicloud.filters.time import register_time_filters
 
 from c7n_huaweicloud.utils.marker_pagination import MarkerPagination
@@ -556,6 +557,7 @@ class QueryMeta(type):
         if getattr(m, "tag_resource_type", None):
             register_tms_actions(attrs["action_registry"])
             register_tms_filters(attrs["filter_registry"])
+            register_missing_tag_filters(attrs["filter_registry"])
 
         register_smn_actions(attrs["action_registry"])
         register_smn2_actions(attrs["action_registry"])

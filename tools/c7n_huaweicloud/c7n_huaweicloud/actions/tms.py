@@ -19,7 +19,7 @@ from c7n.utils import type_schema, chunks, local_session
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 
 MAX_WORKERS = 5
-MAX_TAGS_SIZE = 20
+MAX_TAGS_SIZE = 10
 RESOURCE_MAX_SIZE = 50
 DEFAULT_TAG = "mark-for-op-tag"
 
