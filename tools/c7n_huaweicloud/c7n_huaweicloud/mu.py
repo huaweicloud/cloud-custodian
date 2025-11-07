@@ -30,7 +30,7 @@ from huaweicloudsdkfunctiongraph.v2 import (
     ShowDependencyVersionRequest,
     UpdateFunctionConfigRequest,
     UpdateFunctionConfigRequestBody,
-    DeleteFunctionTriggerRequest,
+    BatchDeleteFunctionTriggersRequest,
     ShowFunctionAsyncInvokeConfigRequest,
     UpdateFunctionAsyncInvokeConfigRequest,
     UpdateFunctionAsyncInvokeConfigRequestBody,
@@ -371,24 +371,15 @@ class FunctionGraphManager:
 
     def publish(self, func, role=None):
         try:
-            result, changed, _ = self._create_or_update(func, role)
+            result = self._create_or_update(func, role)
         except PolicyExecutionError:
             raise
         func.func_urn = result.func_urn
 
-        if changed:
-            triggers = self.list_function_triggers(func.func_urn)
-            for e in func.get_events(self.session_factory):
-                if triggers is not None:
-                    for trigger in triggers:
-                        if trigger.trigger_type_code == e.trigger_type_code:
-                            update_trigger = e.remove(trigger.trigger_id, func.func_urn)
-                            if update_trigger:
-                                log.info(f'Delete trigger[{trigger.trigger_id}] success.')
-                create_trigger = e.add(func.func_urn)
-                if create_trigger:
-                    log.info(
-                        f'Created trigger[{create_trigger.trigger_id}] for function[{func.func_name}].')  # noqa: E501
+        try:
+            self._publish_triggers(func, role)
+        except PolicyExecutionError:
+            raise
 
         results = []
         if result:
@@ -402,14 +393,11 @@ class FunctionGraphManager:
         archive = func.get_archive()
         existing = self.show_function_config(func.func_name, is_public=True)
 
-        changed = False
         if existing:
             result = old_config = existing
             if self.calculate_sha512(archive) != old_config.digest:
                 log.info(f'Updating function[{func.func_name}] code...')
                 result = self.update_function_code(func, archive)
-                if result:
-                    changed = True
             need_update = self.compare_function_config(old_config, func)
             if need_update:
                 log.info(f'Updating function[{func.func_name}] config: [{need_update}]...')
@@ -427,14 +415,29 @@ class FunctionGraphManager:
                 'code_filename': 'custodian-code.zip'
             })
             result = self.create_function(params)
-            changed = True
 
         if result:
             self.process_async_invoke_config(func, result.func_urn)
         else:
             raise PolicyExecutionError("Create or update failed.")
 
-        return result, changed, existing
+        return result
+
+    def _publish_triggers(self, func, role=None):
+        for e in func.get_events(self.session_factory):
+            changed = e.compare(func.func_urn)
+            if changed is None:
+                pass
+            elif changed is True:
+                delete_triggers = e.remove(func.func_urn)
+                if delete_triggers:
+                    log.info("Batch delete function triggers success.")
+            else:
+                continue
+            create_trigger = e.add(func.func_urn)
+            if create_trigger:
+                log.info(
+                    f'Created trigger(s) for function[{func.func_name}].')  # noqa: E501
 
     @staticmethod
     def compare_function_config(old_config, func):
@@ -1233,20 +1236,21 @@ class FunctionGraphTriggerBase:
     def add(self, func_urn):
         raise NotImplementedError("subclass responsibility")
 
-    def remove(self, trigger_id, func_urn):
-        request = DeleteFunctionTriggerRequest(function_urn=func_urn,
-                                               trigger_type_code=self.trigger_type_code,
-                                               trigger_id=trigger_id)
+    def compare(self, func_urn):
+        raise NotImplementedError("subclass responsibility")
+
+    def remove(self, func_urn):
+        request = BatchDeleteFunctionTriggersRequest(function_urn=func_urn)
         try:
-            _ = self.client.delete_function_trigger(request)
+            _ = self.client.batch_delete_function_triggers(request)
         except exceptions.ClientRequestException as e:
-            log.error(f'Delete function trigger failed, '
+            log.error(f'Batch delete function triggers failed, '
                       f'account:[{self.session.domain_name}/{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
                       f'error message:[{e.error_msg}].')
-            raise PolicyExecutionError(f'Delete function trigger failed, '
+            raise PolicyExecutionError(f'Batch delete function triggers failed, '
                                        f'account:[{self.session.domain_name}/'
                                        f'{self.session.domain_id}], '
                                        f'request id:[{e.request_id}], '
@@ -1265,7 +1269,7 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
 
     def add(self, func_urn):
         # Create FunctionGraph CTS trigger.
-        request_body_list = self.build_request_body_list()
+        request_body_list = self._build_request_body_list()
         for request_body in request_body_list:
             create_trigger_request = CreateFunctionTriggerRequest(function_urn=func_urn)
             create_trigger_request.body = request_body
@@ -1276,7 +1280,6 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
                          f'trigger id: [{create_trigger_response.trigger_id}, '
                          f'trigger name: [{create_trigger_response.event_data.name}], '
                          f'trigger status: [{create_trigger_response.trigger_status}].')
-                return create_trigger_response
             except exceptions.ClientRequestException as e:
                 log.error(f'Create function trigger failed, '
                           f'account:[{self.session.domain_name}/{self.session.domain_id}], '
@@ -1291,8 +1294,20 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
                                            f'status code:[{e.status_code}], '
                                            f'error code:[{e.error_code}], '
                                            f'error message:[{e.error_msg}].')
+        return True
 
-    def build_request_body_list(self):
+    def _build_request_body_list(self):
+        source_map = self._get_source_map_from_event()
+        request_body_list = []
+
+        for source, operation_list in source_map.items():
+            request_body = self._build_create_cts_trigger_request_body(source, operation_list)
+            if request_body:
+                request_body_list.append(request_body)
+
+        return request_body_list
+
+    def _get_source_map_from_event(self):
         source_map = {}
         for e in self.data.get('events', []):
             source = e.get('source')
@@ -1303,15 +1318,10 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
             event = e.get("event")
             if event:
                 source_map[source].append(event)
-        request_body_list = []
-        for source, operation_list in source_map:
-            request_body = self.build_create_cts_trigger_request_body(source, operation_list)
-            if request_body:
-                request_body_list.append(request_body)
 
-        return request_body_list
+        return source_map
 
-    def build_create_cts_trigger_request_body(self, source, operation_list):
+    def _build_create_cts_trigger_request_body(self, source, operation_list):
         request_body = CreateFunctionTriggerRequestBody(
             trigger_type_code=self.trigger_type_code,
             trigger_status="ACTIVE",
@@ -1329,12 +1339,48 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
         operations.append(operation)
         request_body.event_data = {
             "name": self.data.get('trigger_name',
-                                  f'custodian_cts_{service_type}_{resource_type}'
+                                  f'cts_{service_type}_{resource_type}'
                                   f'_{datetime.now().strftime("%Y%m%d%H%M%S")}'),
             "operations": operations,
         }
 
         return request_body
+
+    def compare(self, func_urn):
+        list_function_triggers_request = ListFunctionTriggersRequest(function_urn=func_urn)
+        try:
+            triggers = self.client.list_function_triggers(
+                list_function_triggers_request).body
+        except exceptions.ClientRequestException as e:
+            log.error(f'List function triggers failed, '
+                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError(f'List function triggers failed, '
+                                       f'account:[{self.session.domain_name}/'
+                                       f'{self.session.domain_id}], '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
+        if not triggers:
+            return None
+        source_map_from_triggers = {}
+        for trigger in triggers:
+            if trigger.trigger_type_code != self.trigger_type_code:
+                continue
+            operations = trigger.to_dict().get("event_data", {}).get("operations", [])
+            for operation in operations:
+                service_type = operation.split(':')[0]
+                resource_type = operation.split(':')[1]
+                action_list = operation.split(':')[2].split(';')
+                source = f'{service_type}.{resource_type}'
+                source_map_from_triggers[source] = action_list
+        source_map_from_event = self._get_source_map_from_event()
+
+        return source_map_from_event != source_map_from_triggers
 
 
 class TimerServiceSource(FunctionGraphTriggerBase):
@@ -1346,7 +1392,7 @@ class TimerServiceSource(FunctionGraphTriggerBase):
     def add(self, func_urn):
         # Create FunctionGraph TIMER trigger.
         create_trigger_request = CreateFunctionTriggerRequest(function_urn=func_urn)
-        create_trigger_request.body = self.build_create_timer_trigger_request_body()
+        create_trigger_request.body = self._build_create_timer_trigger_request_body()
 
         try:
             create_trigger_response = self.client.create_function_trigger(create_trigger_request)  # noqa: E501
@@ -1354,7 +1400,6 @@ class TimerServiceSource(FunctionGraphTriggerBase):
                      f'trigger id: [{create_trigger_response.trigger_id}, '
                      f'trigger name: [{create_trigger_response.event_data.name}], '
                      f'trigger status: [{create_trigger_response.trigger_status}].')
-            return create_trigger_response
         except exceptions.ClientRequestException as e:
             log.error(f'Create function trigger failed, '
                       f'account:[{self.session.domain_name}/{self.session.domain_id}], '
@@ -1370,7 +1415,9 @@ class TimerServiceSource(FunctionGraphTriggerBase):
                                        f'error code:[{e.error_code}], '
                                        f'error message:[{e.error_msg}].')
 
-    def build_create_timer_trigger_request_body(self):
+        return True
+
+    def _build_create_timer_trigger_request_body(self):
         request_body = CreateFunctionTriggerRequestBody(
             trigger_type_code=self.trigger_type_code,
             trigger_status=self.data.get('status', 'ACTIVE'),
@@ -1388,6 +1435,48 @@ class TimerServiceSource(FunctionGraphTriggerBase):
         }
 
         return request_body
+
+    def compare(self, func_urn):
+        changed = True
+        list_function_triggers_request = ListFunctionTriggersRequest(function_urn=func_urn)
+        try:
+            triggers = self.client.list_function_triggers(
+                list_function_triggers_request).body
+        except exceptions.ClientRequestException as e:
+            log.error(f'List function triggers failed, '
+                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError(f'List function triggers failed, '
+                                       f'account:[{self.session.domain_name}/'
+                                       f'{self.session.domain_id}], '
+                                       f'request id:[{e.request_id}], '
+                                       f'status code:[{e.status_code}], '
+                                       f'error code:[{e.error_code}], '
+                                       f'error message:[{e.error_msg}].')
+        if not triggers:
+            return None
+
+        schedule_type_in_policy = self.data.get('schedule_type')
+        schedule_in_policy = self.data.get('schedule')
+        if self.data.get('schedule_type') == "Cron" \
+                and self.data.get('cron_tz', "") \
+                and not schedule_in_policy.startswith("@every"):
+            schedule_in_policy = f'CRON_TZ={self.data.get("cron_tz")} {schedule_in_policy}'
+
+        for trigger in triggers:
+            if trigger.trigger_type_code != self.trigger_type_code:
+                continue
+            event_data = trigger.to_dict().get("event_data", {})
+            schedule_in_trigger = event_data.get("schedule", "")
+            schedule_type_in_trigger = event_data.get("schedule_type", "")
+            if schedule_in_trigger == schedule_in_policy and \
+                    schedule_type_in_trigger == schedule_type_in_policy:
+                changed = False
+
+        return changed
 
 
 class EventGridServiceSource:
@@ -1513,3 +1602,6 @@ class EventGridServiceSource:
             sources=subscription_sources,
             targets=subscription_target
         )
+
+    def compare(self):
+        pass

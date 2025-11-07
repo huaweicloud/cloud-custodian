@@ -290,7 +290,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
             return
         actions = self.policy.resource_manager.actions
         # 判断actions，若只包含非资源类action无需查询资源
-        if self.only_actions_without_resources(actions):
+        if actions and self.only_actions_without_resources(actions):
             with self.policy.ctx as ctx:
                 if 'debug' in event:
                     self.policy.log.info(
