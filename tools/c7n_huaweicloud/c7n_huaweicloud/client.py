@@ -4,7 +4,10 @@
 import logging
 import os
 import sys
+import uuid
 
+from huaweicloudsdkaos.v1 import AosClient, ListStacksRequest
+from huaweicloudsdkaos.v1.region.aos_region import AosRegion
 from huaweicloudsdkcodehub.v3.region.codehub_region import CodeHubRegion
 from huaweicloudsdkcodehub.v4 import CodeHubClient
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
@@ -641,6 +644,13 @@ class Session:
                 .with_region(DnsRegion.value_of("cn-north-4"))
                 .build()
             )
+        elif service == "rfs":
+            client = (
+                AosClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AosRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -833,6 +843,8 @@ class Session:
             request.query_type = "domain_projects"
         elif service == "dns":
             request = ListPublicZonesRequest()
+        elif service == "rfs":
+            request = ListStacksRequest(client_request_id=str(uuid.uuid1()))
         return request
 
 
