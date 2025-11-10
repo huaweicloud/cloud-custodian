@@ -27,7 +27,7 @@ from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger("custodian.huaweicloud.query")
 
-DEFAULT_LIMIT_SIZE = 10
+DEFAULT_LIMIT_SIZE = 100
 DEFAULT_MAXITEMS_SIZE = 400
 
 RETRYABLE_EXCEPTIONS = (
