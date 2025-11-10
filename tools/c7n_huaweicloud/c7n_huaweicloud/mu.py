@@ -1299,6 +1299,7 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
     def _build_request_body_list(self):
         source_map = self._get_source_map_from_event()
         request_body_list = []
+        self.trigger_names = {}
 
         for source, operation_list in source_map.items():
             request_body = self._build_create_cts_trigger_request_body(source, operation_list)
@@ -1337,14 +1338,54 @@ class CloudTraceServiceSource(FunctionGraphTriggerBase):
 
         operation = f'{service_type}:{resource_type}:{";".join(operation_list)}'
         operations.append(operation)
+        default_trigger_name = self._get_default_cts_trigger_name(
+            service_type,
+            resource_type,
+        )
+        if default_trigger_name in self.trigger_names.keys():
+            tmp = default_trigger_name
+            if len(default_trigger_name) <= 62:
+                default_trigger_name = tmp + \
+                                       f'_{self.trigger_names[tmp] + 1}'
+            else:
+                default_trigger_name = tmp[:62] + \
+                                       f'_{self.trigger_names[tmp] + 1}'
+            self.trigger_names[tmp] += 1
+        else:
+            self.trigger_names[default_trigger_name] = 0
+
         request_body.event_data = {
-            "name": self.data.get('trigger_name',
-                                  f'cts_{service_type}_{resource_type}'
-                                  f'_{datetime.now().strftime("%Y%m%d%H%M%S")}'),
+            "name": self.data.get('trigger_name', default_trigger_name),
             "operations": operations,
         }
 
         return request_body
+
+    def _get_default_cts_trigger_name(self, service_type, resource_type):
+        """
+        获取默认CTS触发器参数。
+        命名格式:
+        CTS_'service_type'_'resource_type'_'time_now'
+        限制条件:
+        1. 只包含字母数字及下划线
+        2. 长度不超过64个字符
+        """
+        service_str = self._convert_special_chars(
+            f'{service_type}_{resource_type}'
+        )
+
+        # 最大长度为64字符, 默认必带字符串"CTS_..._20251110154000"为19字符
+        # 服务名称最长为45字符, 超出限制截断
+        if len(service_str) > 45:
+            service_str = service_str[:45]
+
+        return f'CTS_{service_str}_{datetime.now().strftime("%Y%m%d%H%M%S")}'
+
+    @staticmethod
+    def _convert_special_chars(text):
+        import re
+        # 将非字母数字字符替换为下划线
+        return re.sub(r'[^a-zA-Z0-9]', '_', text)
 
     def compare(self, func_urn):
         list_function_triggers_request = ListFunctionTriggersRequest(function_urn=func_urn)
