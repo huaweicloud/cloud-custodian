@@ -488,9 +488,10 @@ class ResourceQuery:
             page += 1
         return resources
 
+
 def _safe_replace_json_values(response_str):
     pattern = r'\b(null|true|false)\b'
-    
+
     def replacement(match):
         value = match.group(1)
         if value == 'null':
@@ -500,8 +501,9 @@ def _safe_replace_json_values(response_str):
         elif value == 'false':
             return 'False'
         return value
-    
+
     return re.sub(pattern, replacement, response_str)
+
 
 # abstract method for pagination
 class DefaultMarkerPagination(MarkerPagination):
