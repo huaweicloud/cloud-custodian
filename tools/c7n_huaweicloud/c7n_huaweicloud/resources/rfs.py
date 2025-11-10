@@ -21,7 +21,7 @@ class Stack(QueryResourceManager):
         resource_type_name = 'stack'
         enum_spec = ('list_stacks', 'stacks', 'marker')
         id = 'stack_id'
-    
+
     def augment(self, resources):
         client = self.get_client()
         result = []
@@ -45,7 +45,7 @@ class EnableDeletionProtection(HuaweiCloudBaseAction):
     """Action to enable deletion protection for stack.
 
     :example
-    
+
     .. code-block:: yaml
 
         policies:
