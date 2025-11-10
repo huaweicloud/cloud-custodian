@@ -3,6 +3,7 @@
 import json
 import logging
 import jmespath
+import re
 import sys
 import http.client
 import socket
@@ -26,7 +27,7 @@ from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger("custodian.huaweicloud.query")
 
-DEFAULT_LIMIT_SIZE = 100
+DEFAULT_LIMIT_SIZE = 10
 DEFAULT_MAXITEMS_SIZE = 400
 
 RETRYABLE_EXCEPTIONS = (
@@ -255,12 +256,7 @@ class ResourceQuery:
         resources = []
         while 1:
             response = self._invoke_client_enum(client, enum_op, request)
-            response = eval(
-                str(response)
-                .replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            )
+            response = eval(_safe_replace_json_values(str(response)))
             res = jmespath.search(path, response)
 
             # replace id with the specified one
@@ -492,6 +488,20 @@ class ResourceQuery:
             page += 1
         return resources
 
+def _safe_replace_json_values(response_str):
+    pattern = r'\b(null|true|false)\b'
+    
+    def replacement(match):
+        value = match.group(1)
+        if value == 'null':
+            return 'None'
+        elif value == 'true':
+            return 'True'
+        elif value == 'false':
+            return 'False'
+        return value
+    
+    return re.sub(pattern, replacement, response_str)
 
 # abstract method for pagination
 class DefaultMarkerPagination(MarkerPagination):
