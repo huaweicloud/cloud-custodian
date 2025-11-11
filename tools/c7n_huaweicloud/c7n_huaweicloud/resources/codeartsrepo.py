@@ -5,7 +5,7 @@ import json
 import logging
 import time
 
-from huaweicloudsdkcodehub.v4 import CreateProjectProtectedBranchesRequest
+from huaweicloudsdkcodehub.v4 import CreateProjectProtectedBranchesRequest, ShowProjectSettingsInheritCfgRequest
 from huaweicloudsdkcodehub.v4 import ListProjectProtectedBranchesRequest
 from huaweicloudsdkcodehub.v4 import ProjectSettingsInheritCfgDto
 from huaweicloudsdkcodehub.v4 import ProtectedActionBasicApiDto
@@ -354,6 +354,77 @@ class CodeaArtsRepoProjectCreateProtectedBranches(HuaweiCloudBaseAction):
             log.error(
                 "[actions]-{codehub-project-create-protected-branches} with request:[%s]"
                 "create project protected branches failed, cause: "
+                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                request, e.status_code, e.request_id, e.error_code, e.error_msg)
+            raise
+        return response, True
+
+
+@CodeArtsRepoProject.filter_registry.register('not-inherit')
+class ProjectSettingsFilter(Filter):
+    schema = type_schema("not-inherit")
+
+    def process(self, resources, event=None):
+        """ CodeArts Repo project settings not inherit filter
+        Filters the project that not open inherit
+        :example:
+        .. code-block:: yaml
+
+            policies:
+              - name: not-inherit
+              resource: huaweicloud.codeartsrepo-project
+              filters:
+                - type: not-inherit
+        """
+        results = []
+        for resource in resources:
+            time.sleep(1)
+            project_id = resource["id"]
+            # no permission
+            response, has_permission = self.query_project_settings_not_inherit(project_id)
+            if not has_permission:
+                continue
+            # parse response
+            response = json.loads(str(response))
+            configs = response.get("body")
+            inherit_disabled = "custom"
+            protected_branches_inherit = inherit_disabled
+            watermark_inherit = inherit_disabled
+            for conf in configs:
+                if conf["name"] == "protected_branches":
+                    protected_branches_inherit = conf["inherit_mod"]
+                    continue
+                if conf["name"] == "watermark":
+                    watermark_inherit = conf["inherit_mod"]
+                    continue
+            # inherit config has opened, skip
+            if protected_branches_inherit != inherit_disabled and watermark_inherit != inherit_disabled:
+                continue
+            results.append(resource)
+        return results
+
+    def get_codehub_client(self):
+        return local_session(self.manager.session_factory).client("codeartsrepo")
+
+    def query_project_settings_not_inherit(self, project_id):
+        request = ShowProjectSettingsInheritCfgRequest()
+        request.project_id = project_id
+        try:
+            response = self.get_codehub_client().show_project_settings_inherit_cfg(request)
+            log.info(
+                "[filters]-{codehub-project-filter-inherit} with project_id: [%s]"
+                "query project setting inherit success, response: [%s]",
+                project_id, response)
+        except exceptions.ClientRequestException as e:
+            if e.status_code == 403 and need_action_msg not in e.error_msg:
+                log.warning(
+                    "[filters]-{codehub-project-filter-inherit} with request:[%s]"
+                    "query project setting inherit no permission, cause: "
+                    "status_code[%s] request_id[%s]", request, e.status_code, e.request_id)
+                return {}, False
+            log.error(
+                "[filters]-{codehub-project-filter-inherit} with request:[%s]"
+                "query project setting inherit status failed, cause: "
                 "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                 request, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
