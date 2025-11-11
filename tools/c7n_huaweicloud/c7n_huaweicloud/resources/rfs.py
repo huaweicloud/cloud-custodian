@@ -19,7 +19,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.rfs")
 class Stack(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'rfs'
-        resource_type_name = 'stack'
+        resource_type_name = 'rfs-stack'
         enum_spec = ('list_stacks', 'stacks', 'marker')
         id = 'stack_id'
 
@@ -67,7 +67,7 @@ class EnableDeletionProtection(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         client = self.manager.get_client()
         try:
-            log.info(f"Stacrt enable deletion protection for stack {resource['stack_id']}")
+            log.info(f"Start enable deletion protection for stack {resource['stack_id']}")
             request_body = UpdateStackRequestBody(
                 enable_deletion_protection=True,
                 stack_id=resource['stack_id']
