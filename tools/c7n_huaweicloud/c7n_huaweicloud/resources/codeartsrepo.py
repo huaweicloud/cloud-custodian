@@ -5,7 +5,8 @@ import json
 import logging
 import time
 
-from huaweicloudsdkcodehub.v4 import CreateProjectProtectedBranchesRequest, ShowProjectSettingsInheritCfgRequest
+from huaweicloudsdkcodehub.v4 import CreateProjectProtectedBranchesRequest
+from huaweicloudsdkcodehub.v4 import ShowProjectSettingsInheritCfgRequest
 from huaweicloudsdkcodehub.v4 import ListProjectProtectedBranchesRequest
 from huaweicloudsdkcodehub.v4 import ProjectSettingsInheritCfgDto
 from huaweicloudsdkcodehub.v4 import ProtectedActionBasicApiDto
@@ -398,7 +399,8 @@ class ProjectSettingsFilter(Filter):
                     watermark_inherit = conf["inherit_mod"]
                     continue
             # inherit config has opened, skip
-            if protected_branches_inherit != inherit_disabled and watermark_inherit != inherit_disabled:
+            if (protected_branches_inherit != inherit_disabled
+                    and watermark_inherit != inherit_disabled):
                 continue
             results.append(resource)
         return results
