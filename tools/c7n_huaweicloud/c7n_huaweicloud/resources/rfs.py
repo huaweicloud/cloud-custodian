@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import logging
+import time
 import uuid
 
 from huaweicloudsdkaos.v1 import (UpdateStackRequestBody, UpdateStackRequest,
@@ -27,13 +28,16 @@ class Stack(QueryResourceManager):
         result = []
         for resource in resources:
             try:
+                time.sleep(0.4)
                 request = GetStackMetadataRequest(
                     client_request_id=str(uuid.uuid1()),
                     stack_name=resource['stack_name'],
                     stack_id=resource['id']
                 )
                 response = client.get_stack_metadata(request)
-                result.append(response.to_dict())
+                resource = response.to_dict()
+                resource['id'] = resource['stack_id']
+                result.append(resource)
             except Exception as e:
                 log.warning(f"Failed to fetch full metadata for stack {resource['id']}: {e}")
                 result.append(resource)
