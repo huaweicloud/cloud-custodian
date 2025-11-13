@@ -104,6 +104,8 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
         if '{resource_details}' not in message:
             return message
         resource_details_fields = self.data.get('resource_details_fields')
+        if resource_details_fields is None:
+            resource_details_fields = ['id']
         if not validate_resource_details_fields(resource_details_fields):
             self.log.warning(
                 f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
@@ -212,6 +214,8 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
         if '{resource_details}' not in message_structure:
             return message_structure
         resource_details_fields = self.data.get('resource_details_fields')
+        if resource_details_fields is None:
+            resource_details_fields = ['id']
         if not validate_resource_details_fields(resource_details_fields):
             self.log.warning(
                 f"[actions]-[notify-message-structure] The resource:{resource_type} with id:{ids} "
@@ -324,6 +328,8 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
         resource_type = self.manager.resource_type.service
         ids = get_resource_ids(resources)
         resource_details_fields = self.data.get('resource_details_fields')
+        if resource_details_fields is None:
+            resource_details_fields = ['id']
         if not validate_resource_details_fields(resource_details_fields):
             self.log.warning(
                 f"[actions]-[notify-message-template] The resource:{resource_type} with id:{ids} "
