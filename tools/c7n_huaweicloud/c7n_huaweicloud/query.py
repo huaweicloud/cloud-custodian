@@ -256,8 +256,7 @@ class ResourceQuery:
         resources = []
         while 1:
             response = self._invoke_client_enum(client, enum_op, request)
-            response = eval(_safe_replace_json_values(str(response)))
-            res = jmespath.search(path, response)
+            res = jmespath.search(path, _safe_json_parse(response))
 
             # replace id with the specified one
             if res is None or len(res) == 0:
@@ -489,20 +488,13 @@ class ResourceQuery:
         return resources
 
 
-def _safe_replace_json_values(response_str):
-    pattern = r'\b(null|true|false)\b'
-
-    def replacement(match):
-        value = match.group(1)
-        if value == 'null':
-            return 'None'
-        elif value == 'true':
-            return 'True'
-        elif value == 'false':
-            return 'False'
-        return value
-
-    return re.sub(pattern, replacement, response_str)
+def _safe_json_parse(response):
+    if isinstance(response, (dict, list)):
+        return response
+    try:
+        return json.loads(str(response))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON format: {e}")
 
 
 # abstract method for pagination

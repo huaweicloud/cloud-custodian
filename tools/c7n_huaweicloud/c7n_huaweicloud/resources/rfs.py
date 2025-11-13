@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import logging
+import random
 import time
 import uuid
 
@@ -20,6 +21,7 @@ class Stack(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'rfs'
         resource_type_name = 'rfs-stack'
+        tag_resource_type = ''
         enum_spec = ('list_stacks', 'stacks', 'marker')
         id = 'stack_id'
 
@@ -28,7 +30,6 @@ class Stack(QueryResourceManager):
         result = []
         for resource in resources:
             try:
-                time.sleep(0.4)
                 request = GetStackMetadataRequest(
                     client_request_id=str(uuid.uuid1()),
                     stack_name=resource['stack_name'],
@@ -39,8 +40,9 @@ class Stack(QueryResourceManager):
                 resource['id'] = resource['stack_id']
                 result.append(resource)
             except Exception as e:
-                log.warning(f"Failed to fetch full metadata for stack {resource['id']}: {e}")
-                result.append(resource)
+                log.error(f"Failed to fetch full metadata for stack {resource['id']}: {e}")
+                raise e
+            time.sleep(random.uniform(0.35, 0.45))
         return result
 
 
