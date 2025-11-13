@@ -4,6 +4,7 @@ import json
 import logging
 import re
 
+from c7n.exceptions import PolicyValidationError
 from c7n_huaweicloud.actions import HuaweiCloudBaseAction
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody
 
@@ -62,6 +63,10 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
         }
     })
 
+    def validate(self):
+        if not isinstance(self.data.get('topic_urn_list'), list):
+            raise PolicyValidationError("The type of the topic_urn_list parameter should be list.")
+
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = None
@@ -95,6 +100,7 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
             self.log.error(
                 f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
                 f"Publish message to SMN Topics is failed, cause:{e}")
+            raise e
         return self.process_result(resources)
 
     def build_message(self, resources):
@@ -170,6 +176,10 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
         }
     })
 
+    def validate(self):
+        if not isinstance(self.data.get('topic_urn_list'), list):
+            raise PolicyValidationError("The type of the topic_urn_list parameter should be list.")
+
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = None
@@ -203,6 +213,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
             self.log.error(
                 f"[actions]-[notify-message-structure] The resource:{resource_type} with id:{ids}"
                 f" Publish message structure to SMN Topics failed, cause:{e}")
+            raise e
         return self.process_result(resources)
 
     def build_message(self, resources):
@@ -284,6 +295,10 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
         }
     })
 
+    def validate(self):
+        if not isinstance(self.data.get('topic_urn_list'), list):
+            raise PolicyValidationError("The type of the topic_urn_list parameter should be list.")
+
     def process(self, resources):
         resource_type = self.manager.resource_type.service
         ids = None
@@ -318,6 +333,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
             self.log.error(
                 f"[actions]-[notify-message-template] The resource:{resource_type} with id:{ids} "
                 f"Publish message template to SMN Topics failed, cause:{e}")
+            raise e
         return self.process_result(resources)
 
     def build_message(self, resources):
