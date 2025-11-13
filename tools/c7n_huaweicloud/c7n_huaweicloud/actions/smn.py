@@ -36,6 +36,7 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
                    - urn:smn:cn-north-4:xxxx:test
                   subject: 'test subject'
                   message: 'test message'
+                  resource_detail_type: 'smn-topic'
                   resource_details_fields:
                    - id
                    - name
@@ -55,6 +56,7 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
             },
             'subject': {'type': 'string'},
             'message': {'type': 'string'},
+            'resource_detail_type': {'type': 'string'},
             'resource_details_fields': {
                 "type": "array",
                 "items": {"type": "string"}
@@ -63,7 +65,7 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
     })
 
     def process(self, resources):
-        resource_type = self.manager.resource_type.service
+        resource_detail_type = get_resource_detail_type(self.manager, self.data)
         ids = None
         response = None
         try:
@@ -84,7 +86,7 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
                     f"The request_id:{getattr(response, 'request_id', None)} "
                     f"and message_id:{getattr(response, 'message_id', None)}")
                 self.log.info(
-                    f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
+                    f"[actions]-[notify-message] The resource:{resource_detail_type} with id:{ids} "
                     f"Publish message is success")
         except Exception as e:
             if response is not None:
@@ -93,12 +95,12 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
                     f"The request_id:{getattr(response, 'request_id', None)} "
                     f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
-                f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
+                f"[actions]-[notify-message] The resource:{resource_detail_type} with id:{ids} "
                 f"Publish message to SMN Topics is failed, cause:{e}")
         return self.process_result(resources)
 
     def build_message(self, resources):
-        resource_type = self.manager.resource_type.service
+        resource_detail_type = get_resource_detail_type(self.manager, self.data)
         ids = get_resource_ids(resources)
         message = self.data.get('message')
         if '{resource_details}' not in message:
@@ -106,16 +108,17 @@ class NotifyMessageAction(HuaweiCloudBaseAction):
         resource_details_fields = self.data.get('resource_details_fields')
         if not validate_resource_details_fields(resource_details_fields):
             self.log.warning(
-                f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
+                f"[actions]-[notify-message] The resource:{resource_detail_type} with id:{ids} "
                 f"Validation of the resource_details_fields parameter failed, "
                 f"The resource detail field is set to 'id' by default.")
             resource_details_fields = ['id']
-        resource_details_str, empty_fields = generate_resource_details_str(resources, resource_type,
+        resource_details_str, empty_fields = generate_resource_details_str(resources,
+                                                                           resource_detail_type,
                                                                            resource_details_fields)
         if empty_fields:
             for item in empty_fields:
                 self.log.warning(
-                    f"[actions]-[notify-message] The resource:{resource_type} with id:{ids} "
+                    f"[actions]-[notify-message] The resource:{resource_detail_type} with id:{ids} "
                     f"The field value of the resource is empty, "
                     f"id: {item['id']}, field: {item['field']}")
         return message.replace('{resource_details}', resource_details_str)
@@ -144,6 +147,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                    - urn:smn:cn-north-4:xxxx:test
                   subject: 'test subject'
                   message_structure: '{\"default\": \"test\",\"sms\": \"test\",\"email\": \"test\"}'
+                  resource_detail_type: 'smn-topic'
                   resource_details_fields:
                    - id
                    - name
@@ -163,6 +167,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
             },
             'subject': {'type': 'string'},
             'message_structure': {'type': 'string'},
+            'resource_detail_type': {'type': 'string'},
             'resource_details_fields': {
                 "type": "array",
                 "items": {"type": "string"}
@@ -171,7 +176,7 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
     })
 
     def process(self, resources):
-        resource_type = self.manager.resource_type.service
+        resource_detail_type = get_resource_detail_type(self.manager, self.data)
         ids = None
         response = None
         try:
@@ -193,7 +198,8 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                     f"The request_id:{getattr(response, 'request_id', None)} "
                     f"and message_id:{getattr(response, 'message_id', None)}")
                 self.log.info(
-                    f"[actions]-[notify-message-structure] The resource:{resource_type} with id:"
+                    f"[actions]-[notify-message-structure] "
+                    f"The resource:{resource_detail_type} with id:"
                     f"{ids} Publish message structure success")
         except Exception as e:
             self.log.info(
@@ -201,12 +207,13 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
                 f"The request_id:{getattr(response, 'request_id', None)} "
                 f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
-                f"[actions]-[notify-message-structure] The resource:{resource_type} with id:{ids}"
+                f"[actions]-[notify-message-structure] "
+                f"The resource:{resource_detail_type} with id:{ids}"
                 f" Publish message structure to SMN Topics failed, cause:{e}")
         return self.process_result(resources)
 
     def build_message(self, resources):
-        resource_type = self.manager.resource_type.service
+        resource_detail_type = get_resource_detail_type(self.manager, self.data)
         ids = get_resource_ids(resources)
         message_structure = self.data.get('message_structure')
         if '{resource_details}' not in message_structure:
@@ -214,17 +221,19 @@ class NotifyMessageStructureAction(HuaweiCloudBaseAction):
         resource_details_fields = self.data.get('resource_details_fields')
         if not validate_resource_details_fields(resource_details_fields):
             self.log.warning(
-                f"[actions]-[notify-message-structure] The resource:{resource_type} with id:{ids} "
+                f"[actions]-[notify-message-structure] "
+                f"The resource:{resource_detail_type} with id:{ids} "
                 f"Validation of the resource_details_fields parameter failed, "
                 f"The resource detail field is set to 'id' by default.")
             resource_details_fields = ['id']
-        resource_details_str, empty_fields = generate_resource_details_str(resources, resource_type,
+        resource_details_str, empty_fields = generate_resource_details_str(resources,
+                                                                           resource_detail_type,
                                                                            resource_details_fields)
         if empty_fields:
             for item in empty_fields:
                 self.log.warning(
                     f"[actions]-[notify-message-structure] "
-                    f"The resource:{resource_type} with id:{ids} "
+                    f"The resource:{resource_detail_type} with id:{ids} "
                     f"The field value of the resource is empty, "
                     f"id: {item['id']}, field: {item['field']}")
         return message_structure.replace('{resource_details}',
@@ -257,6 +266,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                   message_template_variables:
                     key1: 123
                     key2: 456
+                  resource_detail_type: 'smn-topic'
                   resource_details_fields:
                    - id
                    - name
@@ -277,6 +287,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
             'subject': {'type': 'string'},
             'message_template_name': {'type': 'string'},
             'message_template_variables': {'type': 'object'},
+            'resource_detail_type': {'type': 'string'},
             'resource_details_fields': {
                 "type": "array",
                 "items": {"type": "string"}
@@ -285,7 +296,7 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
     })
 
     def process(self, resources):
-        resource_type = self.manager.resource_type.service
+        resource_detail_type = get_resource_detail_type(self.manager, self.data)
         ids = None
         response = None
         try:
@@ -308,7 +319,8 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                     f"The request_id:{getattr(response, 'request_id', None)} "
                     f"and message_id:{getattr(response, 'message_id', None)}")
                 self.log.info(
-                    f"[actions]-[notify-message-template] The resource:{resource_type} with id:"
+                    f"[actions]-[notify-message-template] "
+                    f"The resource:{resource_detail_type} with id:"
                     f"{ids} Publish message template success.")
         except Exception as e:
             self.log.info(
@@ -316,28 +328,30 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
                 f"The request_id:{getattr(response, 'request_id', None)} "
                 f"and message_id:{getattr(response, 'message_id', None)}")
             self.log.error(
-                f"[actions]-[notify-message-template] The resource:{resource_type} with id:{ids} "
+                f"[actions]-[notify-message-template] "
+                f"The resource:{resource_detail_type} with id:{ids} "
                 f"Publish message template to SMN Topics failed, cause:{e}")
         return self.process_result(resources)
 
     def build_message(self, resources):
-        resource_type = self.manager.resource_type.service
+        resource_detail_type = get_resource_detail_type(self.manager, self.data)
         ids = get_resource_ids(resources)
         resource_details_fields = self.data.get('resource_details_fields')
         if not validate_resource_details_fields(resource_details_fields):
             self.log.warning(
-                f"[actions]-[notify-message-template] The resource:{resource_type} with id:{ids} "
+                f"[actions]-[notify-message-template] "
+                f"The resource:{resource_detail_type} with id:{ids} "
                 f"Validation of the resource_details_fields parameter failed, "
                 f"The resource detail field is set to 'id' by default.")
             resource_details_fields = ['id']
         resource_details_str, empty_fields = generate_resource_details_str(resources,
-                                                                           resource_type,
+                                                                           resource_detail_type,
                                                                            resource_details_fields)
         if empty_fields:
             for item in empty_fields:
                 self.log.warning(
                     f"[actions]-[notify-message-template] "
-                    f"The resource:{resource_type} with id:{ids} "
+                    f"The resource:{resource_detail_type} with id:{ids} "
                     f"The field value of the resource is empty, "
                     f"id: {item['id']}, field: {item['field']}")
         message_template_variables = self.data.get('message_template_variables')
@@ -349,6 +363,13 @@ class NotifyMessageTemplateAction(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         pass
+
+
+def get_resource_detail_type(manager, data):
+    resource_detail_type = manager.type
+    if data.get('resource_detail_type') is not None:
+        resource_detail_type = data.get('resource_detail_type')
+    return resource_detail_type
 
 
 def get_resource_ids(resources):
@@ -369,7 +390,7 @@ def validate_resource_details_fields(resource_details_fields):
     return True
 
 
-def generate_resource_details_str(resources, resource_type, resource_details_fields):
+def generate_resource_details_str(resources, resource_detail_type, resource_details_fields):
     details = []
     empty_fields = []
     for resource in resources:
@@ -381,7 +402,7 @@ def generate_resource_details_str(resources, resource_type, resource_details_fie
             detail[field] = value
         details.append(detail)
     resource_details = {
-        'resource_type': resource_type,
+        'resource_type': resource_detail_type,
         'resource_details': details
     }
     return json.dumps(resource_details), empty_fields
