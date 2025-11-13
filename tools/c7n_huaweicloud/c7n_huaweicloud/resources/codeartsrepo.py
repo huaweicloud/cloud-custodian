@@ -86,10 +86,6 @@ class WatermarkFilter(Filter):
         request.project_id = project_id
         try:
             response = self.get_codehub_client().show_project_watermark(request)
-            log.info(
-                "[filters]-{codehub-project-filter-watermark} with project_id: [%s]"
-                "query project watermark success, response: [%s]",
-                project_id, response)
         except exceptions.ClientRequestException as e:
             if e.status_code == 403 and need_action_msg not in e.error_msg:
                 log.warning(
@@ -229,10 +225,6 @@ class ProtectedBranchFilter(Filter):
             request.limit = limit
             try:
                 response = self.get_codehub_client().list_project_protected_branches(request)
-                log.info(
-                    "[filter]-{codehub-project-protected-branches} with project_id: [%s]"
-                    "query project protected branches success, response: [%s]",
-                    project_id, response)
                 response = json.loads(str(response))
                 if response.get("body") is None:
                     break
@@ -413,10 +405,6 @@ class ProjectSettingsFilter(Filter):
         request.project_id = project_id
         try:
             response = self.get_codehub_client().show_project_settings_inherit_cfg(request)
-            log.info(
-                "[filters]-{codehub-project-filter-inherit} with project_id: [%s]"
-                "query project setting inherit success, response: [%s]",
-                project_id, response)
         except exceptions.ClientRequestException as e:
             if e.status_code == 403 and need_action_msg not in e.error_msg:
                 log.warning(
