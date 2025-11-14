@@ -86,9 +86,10 @@ class Port(QueryResourceManager):
         resourceTagDict = {}
         try:
             ecs_list = self.get_resource_manager("huaweicloud.ecs").resources()
-        except exceptions.ClientRequestException as ex:
+        except exceptions.ServiceResponseException as ex:
             log.error(f"Failed to query ecs tags, "
                       f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
+            raise ex
         for ecs in ecs_list:
             tag = ecs.get("tags", [])
             if tag:
@@ -562,10 +563,10 @@ class SecurityGroupRule(QueryResourceManager):
                     tag = tagResource.to_dict().get("tags", [])
                     if tag:
                         resourceTagDict[tagResource.resource_id] = tag
-            except exceptions.ClientRequestException as ex:
+            except exceptions.ServiceResponseException as ex:
                 log.error(f"Failed to query security group tags, "
                           f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
-                break
+                raise ex
 
             offset += limit
             if not responseTag.total_count or limit > len(responseTag.resources):
