@@ -117,15 +117,7 @@ class ResourceQuery:
             request.limit = limit
             request.offset = offset
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if path == "*":
                 data_json = json.loads(str(response))
@@ -163,15 +155,7 @@ class ResourceQuery:
             request.limit = limit
             request.start_number = start_number
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if path == "*":
                 data_json = json.loads(str(response))
@@ -220,15 +204,7 @@ class ResourceQuery:
                 return resources
             count = response.count
             next_marker = response.next_marker
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             # replace id with the specified one
             if res is not None:
@@ -293,15 +269,7 @@ class ResourceQuery:
         request = session.request(manager.service)
 
         response = getattr(client, enum_op)(request)
-        resources = jmespath.search(
-            path,
-            eval(
-                str(response)
-                .replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            ),
-        )
+        resources = jmespath.search(path, _safe_json_parse(response))
 
         # replace id with the specified one
         if resources is None or len(resources) == 0:
@@ -345,15 +313,7 @@ class ResourceQuery:
             request.limit = limit
             request.offset = page
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if path == "*":
                 resources.append(json.loads(str(response)))
@@ -397,15 +357,7 @@ class ResourceQuery:
             request.marker = marker
             request.owner = project_id
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
             if not res:
                 return resources
             for data in res:
@@ -432,15 +384,7 @@ class ResourceQuery:
             request = session.request(m.service)
             request.page_number = page
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if not res:
                 return resources
@@ -465,15 +409,7 @@ class ResourceQuery:
             request.page_index = page
             request.page_size = m.page_size
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if not res:
                 return resources
