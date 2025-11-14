@@ -3,7 +3,6 @@
 import json
 import logging
 import jmespath
-import re
 import sys
 import http.client
 import socket
