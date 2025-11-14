@@ -181,7 +181,6 @@ from huaweicloudsdkdns.v2 import (
     ListPublicZonesRequest,
     DnsClient
 )
-from huaweicloudsdkdns.v2.region.dns_region import DnsRegion
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -641,7 +640,7 @@ class Session:
             client = (
                 DnsClient.new_builder()
                 .with_credentials(credentials)
-                .with_region(DnsRegion.value_of("cn-north-4"))
+                .with_endpoint(endpoint='dns.myhuaweicloud.com')
                 .build()
             )
         elif service == "rfs":
