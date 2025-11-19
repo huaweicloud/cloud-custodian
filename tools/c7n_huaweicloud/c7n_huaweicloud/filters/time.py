@@ -70,7 +70,10 @@ class ResourceTimeFilter(AgeFilter):
             return v
         if isinstance(v, str) and not v.isdigit():
             try:
-                return parse(v).astimezone(tzutc())
+                pv = parse(v)
+                if not pv.tzinfo and 'T' in v:
+                    pv = pv.replace(tzinfo=tzutc())
+                return pv.astimezone(tzutc())
             except ValueError as e:
                 log.error(f"[filters]-[resource-time] parse '{self.date_attribute}' param value "
                           "to datetime failed, cause: invalid time format.")

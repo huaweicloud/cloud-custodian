@@ -4,7 +4,10 @@
 import logging
 import os
 import sys
+import uuid
 
+from huaweicloudsdkaos.v1 import AosClient, ListStacksRequest
+from huaweicloudsdkaos.v1.region.aos_region import AosRegion
 from huaweicloudsdkcodehub.v3.region.codehub_region import CodeHubRegion
 from huaweicloudsdkcodehub.v4 import CodeHubClient
 from huaweicloudsdkconfig.v1 import ConfigClient, ShowTrackerConfigRequest
@@ -173,6 +176,11 @@ from huaweicloudsdkcodeartsbuild.v3 import (
 )
 from huaweicloudsdkprojectman.v4.region.projectman_region import ProjectManRegion
 from huaweicloudsdkprojectman.v4 import ProjectManClient, ListProjectsV4Request
+
+from huaweicloudsdkdns.v2 import (
+    ListPublicZonesRequest,
+    DnsClient
+)
 
 log = logging.getLogger("custodian.huaweicloud.client")
 
@@ -628,6 +636,20 @@ class Session:
                 .with_region(CodeArtsBuildRegion.value_of('sa-brazil-1'))
                 .build()
             )
+        elif service == "dns":
+            client = (
+                DnsClient.new_builder()
+                .with_credentials(credentials)
+                .with_endpoint(endpoint='dns.myhuaweicloud.com')
+                .build()
+            )
+        elif service == "rfs":
+            client = (
+                AosClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(AosRegion.value_of(self.region))
+                .build()
+            )
         return client
 
     def region_client(self, service, region):
@@ -818,6 +840,10 @@ class Session:
             request = ListProjectsV4Request()
             # list all the projects of this tenant
             request.query_type = "domain_projects"
+        elif service == "dns":
+            request = ListPublicZonesRequest()
+        elif service == "rfs":
+            request = ListStacksRequest(client_request_id=str(uuid.uuid1()))
         return request
 
 

@@ -18,6 +18,7 @@ from c7n_huaweicloud.actions.smn2 import register_smn2_actions
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.filters.exempted import register_exempted_filters
+from c7n_huaweicloud.filters.missing_tag import register_missing_tag_filters
 from c7n_huaweicloud.filters.time import register_time_filters
 
 from c7n_huaweicloud.utils.marker_pagination import MarkerPagination
@@ -116,15 +117,7 @@ class ResourceQuery:
             request.limit = limit
             request.offset = offset
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if path == "*":
                 data_json = json.loads(str(response))
@@ -162,15 +155,7 @@ class ResourceQuery:
             request.limit = limit
             request.start_number = start_number
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if path == "*":
                 data_json = json.loads(str(response))
@@ -219,15 +204,7 @@ class ResourceQuery:
                 return resources
             count = response.count
             next_marker = response.next_marker
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             # replace id with the specified one
             if res is not None:
@@ -255,13 +232,7 @@ class ResourceQuery:
         resources = []
         while 1:
             response = self._invoke_client_enum(client, enum_op, request)
-            response = eval(
-                str(response)
-                .replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            )
-            res = jmespath.search(path, response)
+            res = jmespath.search(path, _safe_json_parse(response))
 
             # replace id with the specified one
             if res is None or len(res) == 0:
@@ -298,15 +269,7 @@ class ResourceQuery:
         request = session.request(manager.service)
 
         response = getattr(client, enum_op)(request)
-        resources = jmespath.search(
-            path,
-            eval(
-                str(response)
-                .replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            ),
-        )
+        resources = jmespath.search(path, _safe_json_parse(response))
 
         # replace id with the specified one
         if resources is None or len(resources) == 0:
@@ -350,15 +313,7 @@ class ResourceQuery:
             request.limit = limit
             request.offset = page
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if path == "*":
                 resources.append(json.loads(str(response)))
@@ -402,15 +357,7 @@ class ResourceQuery:
             request.marker = marker
             request.owner = project_id
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
             if not res:
                 return resources
             for data in res:
@@ -437,15 +384,7 @@ class ResourceQuery:
             request = session.request(m.service)
             request.page_number = page
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if not res:
                 return resources
@@ -470,15 +409,7 @@ class ResourceQuery:
             request.page_index = page
             request.page_size = m.page_size
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, _safe_json_parse(response))
 
             if not res:
                 return resources
@@ -491,6 +422,15 @@ class ResourceQuery:
             resources = resources + res
             page += 1
         return resources
+
+
+def _safe_json_parse(response):
+    if isinstance(response, (dict, list)):
+        return response
+    try:
+        return json.loads(str(response))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON format: {e}")
 
 
 # abstract method for pagination
@@ -556,6 +496,7 @@ class QueryMeta(type):
         if getattr(m, "tag_resource_type", None):
             register_tms_actions(attrs["action_registry"])
             register_tms_filters(attrs["filter_registry"])
+            register_missing_tag_filters(attrs["filter_registry"])
 
         register_smn_actions(attrs["action_registry"])
         register_smn2_actions(attrs["action_registry"])

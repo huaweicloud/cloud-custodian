@@ -90,5 +90,8 @@ ResourceMap = {
     "huaweicloud.as-config": "c7n_huaweicloud.resources.as.AsConfig",
     "huaweicloud.as-policy": "c7n_huaweicloud.resources.as.AsPolicy",
     "huaweicloud.codearts-build-job": "c7n_huaweicloud.resources.codearts-build.Job",
-    "huaweicloud.codeartsrepo-project": "c7n_huaweicloud.resources.codeartsrepo.CodeArtsRepoProject"
+    "huaweicloud.codeartsrepo-project":
+        "c7n_huaweicloud.resources.codeartsrepo.CodeArtsRepoProject",
+    "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
+    "huaweicloud.rfs-stack": "c7n_huaweicloud.resources.rfs.Stack"
 }

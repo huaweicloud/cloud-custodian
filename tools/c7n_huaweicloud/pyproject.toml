@@ -71,6 +71,7 @@ huaweicloudsdkcce = "^3.1.138"
 huaweicloudsdkprojectman = "3.1.164"
 huaweicloudsdkcodehub = "3.1.164"
 huaweicloudsdkcodeartsbuild = "3.1.162"
+huaweicloudsdkaos = "3.1.167"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "<8.0"
