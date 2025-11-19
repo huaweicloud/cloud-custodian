@@ -919,7 +919,7 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         volumes = list(resource["os-extended-volumes:volumes_attached"])
         for volume in volumes:
-            if volume["delete_on_termination"] == "True":
+            if volume["delete_on_termination"] == "true":
                 continue
             option = UpdateServerBlockDeviceOption(delete_on_termination=True)
             requestBody = UpdateServerBlockDeviceReq(block_device=option)
@@ -1499,7 +1499,7 @@ class InstanceVolumesNotCompliance(Filter):
         for resource in resources:
             volumes = list(resource["os-extended-volumes:volumes_attached"])
             for volume in volumes:
-                if volume["delete_on_termination"] == "False":
+                if volume["delete_on_termination"] == "false":
                     results.append(resource)
                     break
         return results
