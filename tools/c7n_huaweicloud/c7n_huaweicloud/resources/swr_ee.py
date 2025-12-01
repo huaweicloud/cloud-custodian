@@ -1381,6 +1381,15 @@ def _invoke_client_enum(client, enum_op, request):
     return _invoker(request)
 
 
+def _safe_json_parse(response):
+    if isinstance(response, (dict, list)):
+        return response
+    try:
+        return json.loads(str(response))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON format: {e}")
+
+
 def _pagination_limit_offset(client, enum_op, path, request):
     """Handle pagination for API requests with limit and offset.
 
@@ -1400,15 +1409,7 @@ def _pagination_limit_offset(client, enum_op, path, request):
         request.limit = request.limit or limit
         request.offset = offset
         response = _invoke_client_enum(client, enum_op, request)
-        res = jmespath.search(
-            path,
-            eval(
-                str(response)
-                .replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            ),
-        )
+        res = jmespath.search(path, _safe_json_parse(response))
 
         resources.extend(res)
         if len(res) == limit:
@@ -1437,15 +1438,7 @@ def _pagination_limit_marker(client, enum_op, path, request):
         request.limit = request.limit or limit
         request.marker = marker
         response = _invoke_client_enum(client, enum_op, request)
-        res = jmespath.search(
-            path,
-            eval(
-                str(response)
-                .replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            ),
-        )
+        res = jmespath.search(path, _safe_json_parse(response))
 
         resources.extend(res)
 
