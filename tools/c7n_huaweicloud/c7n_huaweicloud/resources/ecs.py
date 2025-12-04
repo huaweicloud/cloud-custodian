@@ -80,6 +80,23 @@ class Ecs(QueryResourceManager):
         id = "id"
         tag_resource_type = "ecs"
 
+    def augment(self, resources):
+        if not resources:
+            return []
+
+        default_value = "true"
+        for resource in resources:
+            if not resource['tags']:
+                continue
+            processed_tags = []
+            for tag in resource['tags']:
+                if '=' in tag:
+                    processed_tags.append(tag)
+                else:
+                    processed_tags.append(f"{tag}={default_value}")
+            resource['tags'] = processed_tags
+        return resources
+
 
 @Ecs.action_registry.register("fetch-job-status")
 class FetchJobStatus(HuaweiCloudBaseAction):
@@ -902,7 +919,7 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         volumes = list(resource["os-extended-volumes:volumes_attached"])
         for volume in volumes:
-            if volume["delete_on_termination"] == "True":
+            if volume["delete_on_termination"] == "true":
                 continue
             option = UpdateServerBlockDeviceOption(delete_on_termination=True)
             requestBody = UpdateServerBlockDeviceReq(block_device=option)
@@ -1482,7 +1499,7 @@ class InstanceVolumesNotCompliance(Filter):
         for resource in resources:
             volumes = list(resource["os-extended-volumes:volumes_attached"])
             for volume in volumes:
-                if volume["delete_on_termination"] == "False":
+                if volume["delete_on_termination"] == "false":
                     results.append(resource)
                     break
         return results

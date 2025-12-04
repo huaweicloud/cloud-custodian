@@ -579,7 +579,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
                   value: "white"
             actions:
               - type: set-acl-ipgroup
-                ipgroup_name: ["my-ipgroup"]
+                ipgroup_name: "my-ipgroup"
                 ipgroup_type: white
                 creation: "always"  # Create new ipgroup or not. Options are:
                                     # "no" - means do not create. Default is "no".
@@ -599,7 +599,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
 
     schema = type_schema(type_name="set-acl-ipgroup",
                          ipgroup_id={'type': 'array'},
-                         ipgroup_name={'type': 'array'},
+                         ipgroup_name={'type': 'string'},
                          enable={'type': 'boolean', 'default': True},
                          ipgroup_type={'type': 'string', 'enum': ['white', 'black']},
                          required=['ipgroup_type'],
@@ -625,7 +625,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
     @wrap_perform_action_log("huaweicloud.elb-listener")
     def perform_action(self, resource):
         ipgroup_ids = self.data.get("ipgroup_id", [])
-        ipgroup_names = self.data.get("ipgroup_name", [])
+        ipgroup_name = self.data.get("ipgroup_name", "")
         enable = self.data.get("enable", True)
         ipgroup_type = self.data.get("ipgroup_type", "white")
         creation = self.data.get("creation", "no")
@@ -633,8 +633,7 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         ip_list = self.data.get("ip_list", [])
         enterprise_project_name = self.data.get("enterprise_project_name", "default")
 
-        if (not ipgroup_ids or len(ipgroup_ids) == 0) \
-            and (not ipgroup_names or len(ipgroup_names) == 0):
+        if (not ipgroup_ids or len(ipgroup_ids) == 0) and ipgroup_name == "":
             log.error(
                 f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
                 "ipgroup_id or ipgroup_name must be provided "
@@ -642,19 +641,17 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
             )
             raise Exception("ipgroup_id or ipgroup_name must be provided"
                             " in the policy action type 'set-acl-ipgroup'.")
-
-        ipgroup_name = len(ipgroup_names) > 0 and ipgroup_names[0] or ""
         ipgroups = []
         if creation == "always":
             ipgroups = [self.create_ipgroup(
                 ipgroup_name, ip_list, enterprise_project_name, description)]
         elif creation == "create-if-absent":
-            all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
+            all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_name)
             if not all_finded:
                 ipgroups = [self.create_ipgroup(
                     ipgroup_name, ip_list, enterprise_project_name, description)]
         else:
-            all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_names)
+            all_finded, ipgroups = self.get_ipgroup(ipgroup_ids, ipgroup_name)
             if not all_finded:
                 raise Exception("Ipgroup does not exist and creation is set to 'no'."
                                 " Cannot set acl ipgroup.")
@@ -670,28 +667,26 @@ class ListenerSetAclIpgroupAction(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         client.update_listener(request)
 
-    def get_ipgroup(self, ipgroup_ids, ipgroup_names):
+    def get_ipgroup(self, ipgroup_ids, ipgroup_name):
         client = self.manager.get_client()
         ipgroup_request = ListIpGroupsRequest(
             enterprise_project_id=["all_granted_eps"],
-            name=ipgroup_names if ipgroup_names and len(ipgroup_names) > 0 else None,
+            name=[ipgroup_name] if ipgroup_name != "" else None,
             id=ipgroup_ids if ipgroup_ids and len(ipgroup_ids) > 0 else None
         )
         ipgroup_response = client.list_ip_groups(ipgroup_request)
         if not ipgroup_response.ipgroups:
             log.warning(
                 f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                f"No ip_groups found for name: {ipgroup_names} or id: {ipgroup_ids}"
+                f"No ip_groups found for name: {ipgroup_name} or id: {ipgroup_ids}"
             )
             return False, []
 
         all_name_finded = True
-        if (ipgroup_names and len(ipgroup_names) > 0
-                and len(ipgroup_response.ipgroups) < len(ipgroup_names) and
-                any(ipgroup.name not in ipgroup_names for ipgroup in ipgroup_response.ipgroups)):
+        if (ipgroup_name != "" and len(ipgroup_response.ipgroups) < 1):
             log.warning(
                 f"[actions]-[{self.data.get('type', 'UnknownAction')}] "
-                f"Some ip_groups not found for name: {ipgroup_names}"
+                f"Can not find ip_group: {ipgroup_name}"
             )
             all_name_finded = False
         all_id_finded = True
