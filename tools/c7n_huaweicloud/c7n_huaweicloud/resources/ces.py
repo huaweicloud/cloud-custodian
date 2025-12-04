@@ -989,4 +989,4 @@ class CreateVpcEventAlarmRule(BaseAction):
         except exceptions.ClientRequestException as e:
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
                       f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
-            raise
+            raise e
