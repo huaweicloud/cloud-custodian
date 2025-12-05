@@ -14,7 +14,7 @@ class DNS(QueryResourceManager):
         service = "dns"
         enum_spec = ("list_public_zones", "zones", "offset")
         id = "id"
-        tag_resource_type = "dns"
+        tag_resource_type = "DNS-public_zone"
 
 
 @DNS.action_registry.register("delete_public_zones")

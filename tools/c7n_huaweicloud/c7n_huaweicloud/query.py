@@ -442,7 +442,7 @@ class DefaultMarkerPagination(MarkerPagination):
         return {"limit": self.limit}
 
     def get_next_page_params(self, response):
-        page_info = jmespath.search("page_info", response)
+        page_info = jmespath.search("page_info", _safe_json_parse(response))
         if not page_info:
             return None
         next_marker = page_info.get("next_marker")
