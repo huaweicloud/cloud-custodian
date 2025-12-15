@@ -65,7 +65,6 @@ class Alarm(QueryResourceManager):
         resources = []
         offset, limit = 0, 100
         while True:
-
             request = ListAlarmRulesRequest()
             request.offset = offset
             request.limit = limit
