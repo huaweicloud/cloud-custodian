@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import jmespath
 import json
 import os
 
@@ -72,7 +71,7 @@ class Alarm(QueryResourceManager):
             request.limit = limit
             try:
                 response = client.list_alarm_rules(request)
-                current_resources = jmespath.search(path, _safe_json_parse(response))
+                current_resources = self._safe_json_parse(response)
                 for resource in current_resources:
                     if "id" not in resource:  # 检查是否缺少id字段
                         if "alarm_id" in resource:  # 使用alarm_id填充
@@ -109,7 +108,7 @@ class Alarm(QueryResourceManager):
                 request = ListOneClickAlarmRulesRequest()
                 request.one_click_alarm_id = one_click_id
                 response = client.list_one_click_alarm_rules(request)
-                current_resources = jmespath.search(path, _safe_json_parse(response))
+                current_resources = self._safe_json_parse(response)
                 for resource in current_resources:
                     if "alarm_id" in resource:  # 获取alarm_id
                         alarm_ids.append(resource["alarm_id"])
