@@ -193,8 +193,6 @@ class Alarm(QueryResourceManager):
                 raise e
         return resources
 
-
-
 Alarm.filter_registry.register('missing', Missing)
 Alarm.filter_registry.register('alarm-namespace-metric', AlarmNameSpaceAndMetricFilter)
 Alarm.filter_registry.register('alarm-notification', AlarmNotificationFilter)
