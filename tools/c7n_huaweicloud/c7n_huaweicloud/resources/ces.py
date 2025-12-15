@@ -44,10 +44,10 @@ class Alarm(QueryResourceManager):
             # 获取一键告警规则资源
             elif raw.startswith("oca"):
                 return self.get_one_click_alarm_resources(resource_ids)
-             # 获取资源分组关联的告警规则资源
+            # 获取资源分组关联的告警规则资源
             elif raw.startswith("rg"):
                 return self.get_resource_group_associate_alarm_resources(resource_ids)
-             # 获取告警模板关联的告警规则资源
+            # 获取告警模板关联的告警规则资源
             elif raw.startswith("at"):
                 return self.get_alarm_template_associate_alarm_resources(resource_ids)
         all_resources = self.get_alarm_resources(resource_ids)
@@ -75,7 +75,7 @@ class Alarm(QueryResourceManager):
             request.limit = limit
             try:
                 response = client.list_alarm_rules(request)
-                current_resources = safe_json_parse(response)
+                current_resources = self.safe_json_parse(response)
                 for resource in current_resources:
                     if "id" not in resource:  # 检查是否缺少id字段
                         if "alarm_id" in resource:  # 使用alarm_id填充
@@ -112,7 +112,7 @@ class Alarm(QueryResourceManager):
                 request = ListOneClickAlarmRulesRequest()
                 request.one_click_alarm_id = one_click_id
                 response = client.list_one_click_alarm_rules(request)
-                current_resources = safe_json_parse(response)
+                current_resources = self.safe_json_parse(response)
                 for resource in current_resources:
                     if "alarm_id" in resource:  # 获取alarm_id
                         alarm_ids.append(resource["alarm_id"])
@@ -142,7 +142,7 @@ class Alarm(QueryResourceManager):
                 request = ListAlarmTemplateAssociationAlarmsRequest()
                 request.template_id = alarm_template_id
                 response = client.list_alarm_template_association_alarms(request)
-                current_resources = safe_json_parse(response)
+                current_resources = self.safe_json_parse(response)
                 for resource in current_resources:
                     if "alarm_id" in resource:  # 获取alarm_id
                         alarm_ids.append(resource["alarm_id"])
@@ -171,7 +171,7 @@ class Alarm(QueryResourceManager):
                 request = ListAlarmRulesRequest()
                 request.resource_group_id = resource_group_id
                 response = client.list_alarm_rules(request)
-                current_resources = safe_json_parse(response)
+                current_resources = self.safe_json_parse(response)
                 for resource in current_resources:
                     if "id" not in resource:  # 检查是否缺少id字段
                         if "alarm_id" in resource:  # 使用alarm_id填充
