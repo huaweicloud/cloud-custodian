@@ -3,6 +3,7 @@
 
 import logging
 import jmespath
+import json
 import os
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -59,14 +60,12 @@ class Alarm(QueryResourceManager):
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON format: {e}")
 
-
     def get_alarm_resources(self, resource_ids):
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
         resources = []
         offset, limit = 0, 100
         while True:
-
 
             request = ListAlarmRulesRequest()
             request.offset = offset
