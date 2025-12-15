@@ -45,10 +45,10 @@ class Alarm(QueryResourceManager):
             elif raw.startswith("oca"):
                 return self.get_one_click_alarm_resources(resource_ids)
              # 获取资源分组关联的告警规则资源
-            if raw.startswith("rg"):
+            elif raw.startswith("rg"):
                 return self.get_resource_group_associate_alarm_resources(resource_ids)
              # 获取告警模板关联的告警规则资源
-            if raw.startswith("at"):
+            elif raw.startswith("at"):
                 return self.get_alarm_template_associate_alarm_resources(resource_ids)
 
 
