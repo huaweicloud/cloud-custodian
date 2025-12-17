@@ -44,6 +44,17 @@ class Stack(QueryResourceManager):
                 raise e
             time.sleep(random.uniform(0.35, 0.45))
         return result
+    
+    def get_resources(self, resource_ids):
+        resources = (
+                self.source.get_resources(self.get_resource_query()) or []
+        )
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        result = self.augment(result)
+        return result
 
 
 @Stack.action_registry.register('enable_deletion_protection')
