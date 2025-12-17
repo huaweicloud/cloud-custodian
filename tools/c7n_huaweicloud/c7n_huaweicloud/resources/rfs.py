@@ -42,7 +42,7 @@ class Stack(QueryResourceManager):
             except Exception as e:
                 log.error(f"Failed to fetch full metadata for stack {resource['id']}: {e}")
                 raise e
-            time.sleep(random.uniform(0.35, 0.45))
+            time.sleep(random.uniform(0.02, 0.03))
         return result
     
     def get_resources(self, resource_ids):
