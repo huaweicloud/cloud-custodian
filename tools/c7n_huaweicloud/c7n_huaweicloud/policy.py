@@ -369,10 +369,18 @@ class FunctionGraphMode(ServerlessExecutionMode):
                     ctx.output.write_file("action-%s" % action.name, utils.dumps(results))
             except PolicyExecutionError as e:
                 log.error(
-                    "[%s]-The policy has executed: #[result@failed]#",
+                    "[%s]-The policy has executed, policy execution error:{%s} #[result@failed]#",
                     self.policy.execution_mode,
+                    str(e),
                 )
-                raise e
+                raise
+            except BaseException as e:
+                log.error(
+                    "[%s]-The policy has executed, unknown error:{%s} #[result@failed]#",
+                    self.policy.execution_mode,
+                    str(e),
+                )
+                raise
             else:
                 log.info(
                     "[%s]-The policy has executed: #[result@success]#",
