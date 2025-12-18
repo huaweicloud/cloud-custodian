@@ -1053,4 +1053,3 @@ class CreateVpcEventAlarmRule(BaseAction):
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
                       f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
             raise e
-
