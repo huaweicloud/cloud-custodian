@@ -56,7 +56,7 @@ class Alarm(QueryResourceManager):
     def _fetch_resources(self, query):
         return self.get_alarm_resources(query)
 
-    def safe_json_parse(response):
+    def safe_json_parse(self, response):
         if isinstance(response, (dict, list)):
             return response
         try:
@@ -1053,3 +1053,4 @@ class CreateVpcEventAlarmRule(BaseAction):
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
                       f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
             raise e
+
