@@ -41,7 +41,7 @@ class Stack(QueryResourceManager):
                 log.error(f"Failed to fetch full metadata for stack {resource['id']}: {e}")
                 raise e
             # enable sleep here to prevent API rate limiting from cascading queries
-            # when timer policy is supported later 
+            # when timer policy is supported later
             # time.sleep(random.uniform(0.1, 0.2))
         return result
 
