@@ -1,8 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import logging
-import random
-import time
 import uuid
 
 from huaweicloudsdkaos.v1 import (UpdateStackRequestBody, UpdateStackRequest,
@@ -42,7 +40,8 @@ class Stack(QueryResourceManager):
             except Exception as e:
                 log.error(f"Failed to fetch full metadata for stack {resource['id']}: {e}")
                 raise e
-            # enable sleep here to prevent API rate limiting from cascading queries when timer policy is supported later 
+            # enable sleep here to prevent API rate limiting from cascading queries
+            # when timer policy is supported later 
             # time.sleep(random.uniform(0.1, 0.2))
         return result
 
