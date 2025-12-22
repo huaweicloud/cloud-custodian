@@ -108,6 +108,15 @@ def package_dependencies(zip_filename):
     return file_size, base64_data
 
 
+def _safe_json_parse(response):
+    if isinstance(response, (dict, list)):
+        return response
+    try:
+        return json.loads(str(response))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON format: {e}")
+
+
 class FunctionGraphManager:
 
     def __init__(self, session_factory):
@@ -143,10 +152,7 @@ class FunctionGraphManager:
                                            f'error message:[{e.error_msg}].')
             count = response.count
             next_marker = response.next_marker
-            functions += eval(str(response.functions).
-                              replace('null', 'None').
-                              replace('false', 'False').
-                              replace('true', 'True'))
+            functions += _safe_json_parse(response.functions)
             market = next_marker
             if next_marker >= count:
                 break
