@@ -1,8 +1,11 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import jmespath
 import logging
 import os
+import json
+
 
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.filters.ces import AlarmNameSpaceAndMetricFilter, AlarmNotificationFilter
@@ -66,7 +69,8 @@ class Alarm(QueryResourceManager):
             request.limit = limit
             try:
                 response = client.list_alarm_rules(request)
-                for resource in response.to_dict().get('alarms'):
+                current_resources = jmespath.search("alarms", _safe_json_parse(response))
+                for resource in current_resources:
                     if "id" not in resource:  # 检查是否缺少id字段
                         if "alarm_id" in resource:  # 使用alarm_id填充
                             resource["id"] = resource["alarm_id"]
@@ -102,7 +106,8 @@ class Alarm(QueryResourceManager):
                 request = ListOneClickAlarmRulesRequest()
                 request.one_click_alarm_id = one_click_id
                 response = client.list_one_click_alarm_rules(request)
-                for resource in response.to_dict().get('alarms'):
+                current_resources = jmespath.search("alarms", _safe_json_parse(response))
+                for resource in current_resources:
                     if "alarm_id" in resource:  # 获取alarm_id
                         alarm_ids.append(resource["alarm_id"])
 
@@ -131,7 +136,8 @@ class Alarm(QueryResourceManager):
                 request = ListAlarmTemplateAssociationAlarmsRequest()
                 request.template_id = alarm_template_id
                 response = client.list_alarm_template_association_alarms(request)
-                for resource in response.to_dict().get('alarms'):
+                current_resources = jmespath.search("alarms", _safe_json_parse(response))
+                for resource in current_resources:
                     if "alarm_id" in resource:  # 获取alarm_id
                         alarm_ids.append(resource["alarm_id"])
 
@@ -159,7 +165,8 @@ class Alarm(QueryResourceManager):
                 request = ListAlarmRulesRequest()
                 request.resource_group_id = resource_group_id
                 response = client.list_alarm_rules(request)
-                for resource in response.to_dict().get('alarms'):
+                current_resources = jmespath.search("alarms", _safe_json_parse(response))
+                for resource in current_resources:
                     if "id" not in resource:  # 检查是否缺少id字段
                         if "alarm_id" in resource:  # 使用alarm_id填充
                             resource["id"] = resource["alarm_id"]
@@ -1040,3 +1047,11 @@ class CreateVpcEventAlarmRule(BaseAction):
             log.error(f"[actions]- {actionName}- The resource:{resourceType} "
                       f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
             raise e
+
+def _safe_json_parse(response):
+    if isinstance(response, (dict, list)):
+        return response
+    try:
+        return json.loads(str(response))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON format: {e}")
