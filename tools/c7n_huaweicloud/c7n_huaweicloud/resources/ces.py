@@ -1048,6 +1048,7 @@ class CreateVpcEventAlarmRule(BaseAction):
                       f"with id:alarm-vpc-change  {doSomeThing}  is failed. cause: {e.error_msg} ")
             raise e
 
+
 def _safe_json_parse(response):
     if isinstance(response, (dict, list)):
         return response
