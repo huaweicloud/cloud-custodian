@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import json
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkapig.v2 import (
     # API interface related
@@ -111,12 +112,7 @@ class ApiResource(QueryResourceManager):
                 # Call client method to process request
                 try:
                     response = client.list_apis_v2(request)
-                    resource = eval(
-                        str(response.apis)
-                        .replace("null", "None")
-                        .replace("false", "False")
-                        .replace("true", "True")
-                    )
+                    resource = json.loads(str(response.apis))
                     for item in resource:
                         item["instance_id"] = instance_id
                     resources = resources + resource
@@ -481,12 +477,7 @@ class StageResource(QueryResourceManager):
             # Call client method to process request
             try:
                 response = client.list_environments_v2(request)
-                resource = eval(
-                    str(response.envs)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                )
+                resource = json.loads(str(response.envs))
                 for item in resource:
                     item["instance_id"] = instance_id
                 resources = resources + resource
@@ -716,12 +707,7 @@ class ApiGroupResource(QueryResourceManager):
                 # Call client method to process request
                 try:
                     response = client.list_api_groups_v2(request)
-                    resource = eval(
-                        str(response.groups)
-                        .replace("null", "None")
-                        .replace("false", "False")
-                        .replace("true", "True")
-                    )
+                    resource = json.loads(str(response.groups))
                     for item in resource:
                         item["instance_id"] = instance_id
                     resources = resources + resource
