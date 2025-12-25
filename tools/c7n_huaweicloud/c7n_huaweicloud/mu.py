@@ -109,7 +109,7 @@ def package_dependencies(zip_filename):
 
 
 def _safe_json_parse(response):
-    if isinstance(response, (dict, list)):
+    if isinstance(response, dict):
         return response
     try:
         return json.loads(str(response))
