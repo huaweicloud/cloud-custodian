@@ -1,5 +1,6 @@
 import json
 
+
 def safe_json_parse(response):
     if isinstance(response, dict):
         return response
