@@ -5,6 +5,10 @@ import jmespath
 import json
 
 from urllib.parse import quote_plus
+
+from huaweicloudsdkswr.v2 import ListInstanceSignPoliciesRequest, CreateInstanceSignPolicyRequest, \
+    CreateSignaturePolicyRequestBody, SignRuleSelector, SignScopeRule, UpdateSignaturePolicyRequestBody, \
+    UpdateInstanceSignPolicyRequest, ListSubResourceInstancesRequest, ListResourceInstancesRequestBody
 from retrying import retry
 
 from c7n.filters import Filter
@@ -48,6 +52,65 @@ from huaweicloudsdkswr.v2.model.list_instance_namespaces_request import \
     ListInstanceNamespacesRequest
 
 log = logging.getLogger('custodian.huaweicloud.swr-ee')
+
+
+class SwrEeBaseFilter(Filter):
+
+    def build_params_filters(self):
+        """Build parameter filters.
+
+        Returns:
+            dict: Dictionary of parameter filters
+        """
+        params_filters = {}
+        if 'params' in self.data:
+            for param_key, param_config in self.data.get('params', {}).items():
+                if isinstance(param_config, dict):
+                    filter_data = param_config.copy()
+                    if 'key' not in filter_data:
+                        filter_data['key'] = param_key
+                    if 'value_type' not in filter_data:
+                        filter_data['value_type'] = 'integer'
+                    params_filters[param_key] = ValueFilter(filter_data)
+                else:
+                    params_filters[param_key] = ValueFilter({
+                        'type': 'value',
+                        'key': param_key,
+                        'value': param_config,
+                        'value_type': 'integer'
+                    })
+        return params_filters
+
+    def build_matchers(self):
+        """Build generic matchers.
+
+        Returns:
+            list: List of value filter matchers
+        """
+        matchers = []
+        for matcher in self.data.get('match', []):
+            vf = ValueFilter(matcher)
+            vf.annotate = False
+            matchers.append(vf)
+        return matchers
+
+    def match_policy_with_matchers(self, policy, matchers):
+        """Check if policy matches using generic matchers.
+
+        Args:
+            policy (dict): Lifecycle policy to check
+            matchers (list): List of matchers to apply
+
+        Returns:
+            bool: True if policy matches all matchers, False otherwise
+        """
+        if not matchers:
+            return True
+
+        for matcher in matchers:
+            if not matcher(policy):
+                return False
+        return True
 
 
 @resources.register('swr-ee')
@@ -445,23 +508,22 @@ class SwrEeNamespace(QueryResourceManager):
         # 'body' is the field name in the response containing the instance list
         # 'offset' is the parameter name for pagination
         enum_spec = ('list_instance_namespaces', 'namespaces', 'offset')
-        id = 'uid'  # Specify resource unique identifier field name
+        id = 'id'  # Specify resource unique identifier field name
         name = 'name'  # Specify resource name field name
         filter_name = 'name'  # Field name for filtering by name
         filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
-        taggable = False  # Indicate that this resource doesn't support tagging directly
-        tag_resource_type = None
+        tag_resource_type = "namespace"
         date = 'created_at'  # Specify field name for resource creation time
 
     def _fetch_resources(self, query):
-        """Fetch all SWR Enterprise Edition repositories.
+        """Fetch all SWR Enterprise Edition namespaces.
 
         This method implements a two-level query:
         1. Query all SWR EE instances
-        2. For each instance, query its repositories
+        2. For each instance, query its namespaces
 
         :param query: Query parameters
-        :return: List of all SWR EE repositories
+        :return: List of all SWR EE namespaces
         """
         all_namespaces = []
         limit = 100
@@ -489,10 +551,31 @@ class SwrEeNamespace(QueryResourceManager):
                     )
                 )
 
+                # query namespace tags
+                tags = _pagination_limit_offset(
+                    client,
+                    "list_sub_resource_instances",
+                    "resources",
+                    ListSubResourceInstancesRequest(
+                        resource_type="instances",
+                        resource_id=instance["id"],
+                        sub_resource_type="namespaces",
+                        body=ListResourceInstancesRequestBody(),
+                        limit=limit
+                    )
+                )
+
                 for namespace in namespaces:
                     namespace['instance_id'] = instance['id']
-                    namespace['uid'] = f"{instance['id']}/{namespace['name']}"
+                    namespace['id'] = f"{instance['id']}/{namespace['name']}"
                     namespace['is_public'] = namespace["metadata"]["public"].lower() == "true"
+
+                    # add tags
+                    for tag in tags:
+                        if tag['resource_name'] == namespace['name']:
+                            namespace['tags'] = tag['tags']
+                            break
+
                     all_namespaces.append(namespace)
 
                 log.debug(
@@ -511,19 +594,23 @@ class SwrEeNamespace(QueryResourceManager):
     def get_resources(self, resource_ids):
 
         resources = []
-        for resource_id in resource_ids:
-            # resource_id: {instance_id}/{namespace_name}
-            resource_id_list = resource_id.split("/")
-            if len(resource_id_list) < 2:
-                continue
+        # 如果是删除镜像签名操作，需要查询全量的namespace
+        if 'deleteSignaturePolicy' in resource_ids or 'deleteRetention' in resource_ids:
+            resources = self._fetch_resources(query={})
+        else:
+            for resource_id in resource_ids:
+                # resource_id: {instance_id}/{namespace_name}
+                resource_id_list = resource_id.split("/")
+                if len(resource_id_list) < 2:
+                    continue
 
-            temp_resources = self._fetch_resources({
-                "instance_id": resource_id_list[0]
-            })
+                temp_resources = self._fetch_resources({
+                    "instance_id": resource_id_list[0]
+                })
 
-            for temp_resource in temp_resources:
-                if temp_resource["name"] == resource_id_list[1]:
-                    resources.append(temp_resource)
+                for temp_resource in temp_resources:
+                    if temp_resource["name"] == resource_id_list[1]:
+                        resources.append(temp_resource)
 
         return self.filter_resources(resources)
 
@@ -557,25 +644,25 @@ class SwrEeNamespaceAgeFilter(AgeFilter):
 
 
 @SwrEeNamespace.filter_registry.register('lifecycle-rule')
-class LifecycleRule(Filter):
+class LifecycleRule(SwrEeBaseFilter):
     """SWR repository lifecycle rule filter.
 
-    This filter allows filtering repositories based on their lifecycle rules.
+    This filter allows filtering namespaces based on their lifecycle rules.
     It supports filtering by:
     - Presence/absence of lifecycle rules
     - Specific rule properties
     - Tag selectors
     - Retention periods
 
-    The filter lazily loads lifecycle policies only for repositories that need to be
-    processed, improving efficiency when dealing with many repositories.
+    The filter lazily loads lifecycle policies only for namespaces that need to be
+    processed, improving efficiency when dealing with many namespaces.
 
     :example:
 
     .. code-block:: yaml
 
        policies:
-        # Filter repositories without lifecycle rules
+        # Filter namespaces without lifecycle rules
         - name: swr-no-lifecycle-rules
           resource: huaweicloud.swr-ee-namespace
           filters:
@@ -585,7 +672,7 @@ class LifecycleRule(Filter):
     .. code-block:: yaml
 
        policies:
-        # Filter repositories with specific lifecycle rules (path matching specific properties)
+        # Filter namespaces with specific lifecycle rules (path matching specific properties)
         - name: swr-with-specific-rule
           resource: huaweicloud.swr-ee-namespace
           filters:
@@ -600,7 +687,7 @@ class LifecycleRule(Filter):
     .. code-block:: yaml
 
        policies:
-        # Filter repositories with retention period greater than 30 days
+        # Filter namespaces with retention period greater than 30 days
         - name: swr-with-long-retention
           resource: huaweicloud.swr-ee-namespace
           filters:
@@ -616,7 +703,7 @@ class LifecycleRule(Filter):
     .. code-block:: yaml
 
        policies:
-        # Filter repositories using specific tag selector
+        # Filter namespaces using specific tag selector
         - name: swr-with-specific-tag-selector
           resource: huaweicloud.swr-ee-namespace
           filters:
@@ -729,62 +816,6 @@ class LifecycleRule(Filter):
                 results.append(resource)
 
         return results
-
-    def build_params_filters(self):
-        """Build parameter filters.
-
-        Returns:
-            dict: Dictionary of parameter filters
-        """
-        params_filters = {}
-        if 'params' in self.data:
-            for param_key, param_config in self.data.get('params', {}).items():
-                if isinstance(param_config, dict):
-                    filter_data = param_config.copy()
-                    if 'key' not in filter_data:
-                        filter_data['key'] = param_key
-                    if 'value_type' not in filter_data:
-                        filter_data['value_type'] = 'integer'
-                    params_filters[param_key] = ValueFilter(filter_data)
-                else:
-                    params_filters[param_key] = ValueFilter({
-                        'type': 'value',
-                        'key': param_key,
-                        'value': param_config,
-                        'value_type': 'integer'
-                    })
-        return params_filters
-
-    def build_matchers(self):
-        """Build generic matchers.
-
-        Returns:
-            list: List of value filter matchers
-        """
-        matchers = []
-        for matcher in self.data.get('match', []):
-            vf = ValueFilter(matcher)
-            vf.annotate = False
-            matchers.append(vf)
-        return matchers
-
-    def match_policy_with_matchers(self, policy, matchers):
-        """Check if policy matches using generic matchers.
-
-        Args:
-            policy (dict): Lifecycle policy to check
-            matchers (list): List of matchers to apply
-
-        Returns:
-            bool: True if policy matches all matchers, False otherwise
-        """
-        if not matchers:
-            return True
-
-        for matcher in matchers:
-            if not matcher(policy):
-                return False
-        return True
 
     def match_tag_selector(self, policy, tag_selector):
         """Check if policy tag selector matches the filter.
@@ -1370,6 +1401,527 @@ class SwrEeSetImmutability(HuaweiCloudBaseAction):
             f"[actions]-[set-immutability] Successfully updated immutable rule: "
             f"{instance_id}/{namespace_name}, ID: {imutable_dict['id']}"
         )
+
+
+@SwrEeNamespace.filter_registry.register('signature-rule')
+class SignatureRule(SwrEeBaseFilter):
+    """SWR repository signature rule filter.
+
+    This filter allows filtering namespaces based on their signature rules.
+    It supports filtering by:
+    - Presence/absence of signature rules
+    - Specific rule properties
+
+    The filter lazily loads signature policies only for namespaces that need to be
+    processed, improving efficiency when dealing with many namespaces.
+
+    :example:
+
+    .. code-block:: yaml
+
+       policies:
+        # Filter namespaces without signature rules
+        - name: swr-no-signature-rules
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+            - type: signature-rule
+              state: False  # Namespace without signature rules
+
+    .. code-block:: yaml
+
+       policies:
+        # Filter namespaces with specific signature rules (path matching specific properties)
+        - name: swr-with-specific-rule
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+            - type: lifecycle-rule
+              state: True  # namespace with signature rules
+              match:
+                - type: value
+                  key: rules[0].template
+                  value: latestPushedK   # latestPushedK, latestPulledN,
+                                        # nDaysSinceLastPush, nDaysSinceLastPull
+
+    .. code-block:: yaml
+
+       policies:
+        # Filter signature with retention period greater than 30 days
+        - name: swr-with-long-retention
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+            - type: signature-rule
+              state: True  # signature with lifecycle rules
+              match:
+                - type: value
+                  key: rules[0].params.nDaysSinceLastPull
+                  value_type: integer
+                  op: gte
+                  value: 30
+
+    .. code-block:: yaml
+
+       policies:
+        # Filter repositories using specific tag selector
+        - name: swr-with-specific-tag-selector
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+            - type: lifecycle-rule
+              tag_selector:
+                kind: doublestar
+                pattern: v5
+
+    .. code-block:: yaml
+
+       policies:
+        # Combined filter conditions: match both parameters and tag selector
+        - name: swr-with-combined-filters
+          resource: huaweicloud.swr-ee-namespace
+          filters:
+              tag_selector:
+                kind: doublestar
+                pattern: v5
+              match:
+                - type: value
+                  key: algorithm
+                  value: or
+    """
+
+    schema = type_schema(
+        'signature-rule',
+        state={'type': 'boolean'},
+        match={'type': 'array', 'items': {
+            'oneOf': [
+                {'$ref': '#/definitions/filters/value'},
+                {'type': 'object', 'minProperties': 1, 'maxProperties': 1},
+            ]}}
+    )
+    policy_annotation = 'c7n:signature-policy'
+
+    def process(self, resources, event=None):
+        """Process resources based on signature rule criteria.
+
+        This method lazily loads signature policies for each namespace
+        only when needed, improving efficiency.
+
+        Args:
+            resources (list): List of resources to filter
+            event (dict, optional): Event context
+
+        Returns:
+            list: Filtered resource list
+        """
+        client = local_session(self.manager.session_factory).client('swr')
+        limit = 100
+
+        instance_signatures = {}
+
+        for resource in resources:
+            if self.policy_annotation in resource:
+                continue
+
+            signatures = []
+            if resource["instance_id"] in instance_signatures:
+                signatures = instance_signatures[resource["instance_id"]]
+            else:
+                signatures = _pagination_limit_offset(
+                    client,
+                    "list_instance_sign_policies",
+                    "policies",
+                    ListInstanceSignPoliciesRequest(
+                        instance_id=resource["instance_id"],
+                        limit=limit
+                    )
+                )
+                instance_signatures[resource["instance_id"]] = signatures
+
+            signature_list = []
+            for signature in signatures:
+                if resource["namespace_id"] != signature["namespace_id"]:
+                    continue
+                signature_list.append(signature)
+
+            resource[self.policy_annotation] = signature_list
+
+        state = self.data.get('state', True)
+        results = []
+
+        matchers = self.build_matchers()
+
+        for resource in resources:
+            policies = resource.get(self.policy_annotation, [])
+
+            if not policies and not state:
+                results.append(resource)
+                continue
+
+            if not policies and state:
+                continue
+
+            rule_matches = False
+            for policy in policies:
+                if not self.match_policy_with_matchers(policy, matchers):
+                    continue
+
+                if policy.get('enabled', False):
+                    rule_matches = True
+                break
+
+            if rule_matches == state:
+                results.append(resource)
+
+        return results
+
+
+@SwrEeNamespace.action_registry.register('set-signature')
+class SetSignature(HuaweiCloudBaseAction):
+    """Set signature rules for SWR Namespaces.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+        # 配置镜像签名规则, 根据repository, tag过滤
+          - name: swr-set-signature
+            resource: huaweicloud.swr-ee-namespace
+            filters:
+              - type: signature-rule
+                state: False
+            actions:
+              - type: set-signature
+                rules:
+                  - scope_selectors:
+                      repository:
+                        - kind: doublestar
+                          pattern: '{repo1, repo2}'
+                    tag_selectors:
+                      - kind: doublestar
+                        pattern: '^release-.*$'
+
+    .. code-block:: yaml
+
+        policies:
+        # 配置老化规则
+          - name: swr-set-signature
+            resource: huaweicloud.swr-ee-namespace
+            filters:
+              - type: signature-rule
+                state: False
+            actions:
+              - type: set-signature
+                rules:
+                  - scope_selectors:
+                      repository:
+                        - kind: doublestar
+                          pattern: '**'
+                    tag_selectors:
+                      - kind: doublestar
+                        pattern: '**'
+
+    .. code-block:: yaml
+
+        policies:
+        # 取消老化规则
+          - name: swr-unset-signature
+            resource: huaweicloud.swr-ee-namespace
+            filters:
+              - type: signature-rule
+                state: True
+            actions:
+              - type: set-signature
+                state: False
+    """
+
+    schema = type_schema(
+        'set-signature',
+        state={'type': 'boolean', 'default': True},
+        rules={
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'required': ['scope_selectors', 'tag_selectors'],
+                'properties': {
+                    'scope_selectors': {
+                        'type': 'object',
+                        'required': ['repository'],
+                        'properties': {
+                            'repository': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'required': ['kind', 'pattern'],
+                                    'properties': {
+                                        'kind': {'type': 'string', 'enum': ['doublestar']},
+                                        'pattern': {'type': 'string'},
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'tag_selectors': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'required': ['kind', 'pattern'],
+                            'properties': {
+                                'kind': {'type': 'string', 'enum': ['doublestar']},
+                                'pattern': {'type': 'string'}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        signature_algorithm={'type': 'string', 'enum': ['ECDSA_SHA_256', 'ECDSA_SHA_384', 'SM2DSA_SM3']},
+        signature_key={'type': 'string'},
+    )
+
+    permissions = ('swr:repository:createSignPolicy', 'swr:repository:updateSignPolicy')
+
+    def validate(self):
+        """Validate action configuration.
+
+        Returns:
+            self: The action instance
+
+        Raises:
+            PolicyValidationError: If configuration is invalid
+        """
+        if self.data.get('state') is False and 'rules' in self.data:
+            raise PolicyValidationError(
+                "set-signature can't use rules and state: false")
+        elif self.data.get('state', True) and not self.data.get('rules'):
+            raise PolicyValidationError(
+                "set-signature requires rules with state: true")
+        return self
+
+    def process(self, resources):
+        """Process resources list, create lifecycle rules for each repository.
+
+        Args:
+            resources: List of resources to process
+
+        Returns:
+            Processed resources
+        """
+        is_set = self.data.get('state', True)
+
+        for resource in resources:
+            self._create_or_update_signature_policy(
+                resource['instance_id'],
+                resource['name'],
+                resource['namespace_id'],
+                is_set
+            )
+
+    def perform_action(self, resource):
+        pass
+
+    def _create_or_update_signature_policy(self, instance_id, namespace_name, namespace_id,
+                                           is_set):
+
+        client = self.manager.get_client()
+        policy_name = f"custodian-signature-{namespace_name}"
+
+        try:
+            # Query if the retention policy already exists
+            signature_policies = _pagination_limit_offset(
+                client,
+                "list_instance_sign_policies",
+                "policies",
+                ListInstanceSignPoliciesRequest(
+                    instance_id=instance_id,
+                    limit=100
+                )
+            )
+
+            find_policy = {}
+            for policy in signature_policies:
+                # If the namespace has already been manually configured with a policy,
+                # skip and do not create a new one
+                if policy["namespace_id"] == namespace_id:
+                    if policy["name"] != policy_name:
+                        log.warning(
+                            f"[actions]-[set-signature] instance: {instance_id}, "
+                            f"namespace: {namespace_name}, "
+                            f"policy has been manually created")
+                        return
+                    find_policy = policy
+
+            # If the policy does not exist and is_set is False (cancel), return directly
+            if not find_policy and not is_set:
+                return
+
+            # rule objects
+            rules = []
+            signature_algorithm = self.data.get('signature_algorithm', find_policy.get('signature_algorithm', ""))
+            signature_key = self.data.get('signature_key', find_policy.get('signature_key', ""))
+            config_rules = self.data.get('rules', find_policy.get('scope_rules', []))
+
+            for rule_data in config_rules:
+                # Create tag selectors
+                tag_selectors = []
+                for selector_data in rule_data.get('tag_selectors', []):
+                    # Ensure kind and pattern are string type
+                    kind = selector_data.get('kind')
+                    pattern = selector_data.get('pattern')
+
+                    if not kind or not pattern:
+                        log.warning(
+                            f"[actions]-[set-signature] Skipping invalid tag_selector: "
+                            f"{selector_data}"
+                        )
+                        continue
+
+                    selector = SignRuleSelector(
+                        kind=kind,
+                        decoration="matches",
+                        pattern=pattern
+                    )
+                    tag_selectors.append(selector)
+
+                # Ensure there are tag selectors
+                if not tag_selectors:
+                    log.warning(
+                        "[actions]-[set-signature] No valid tag_selectors,"
+                        " will use default empty tag selector")
+                    # Add a default tag selector to avoid API error
+                    tag_selectors.append(SignRuleSelector(
+                        kind="doublestar",
+                        decoration="matches",
+                        pattern="**"
+                    ))
+
+                # Create scope selectors
+                repository_selectors = []
+                for scope_data in rule_data.get('scope_selectors', {}).get('repository', []):
+                    # Ensure kind and pattern are string type
+                    kind = scope_data.get('kind')
+                    pattern = scope_data.get('pattern')
+
+                    if not kind or not pattern:
+                        log.warning(
+                            f"[actions]-[set-signature] Skipping invalid scope_selectors: "
+                            f"{scope_data}"
+                        )
+                        continue
+
+                    fin_pattern = pattern
+
+                    selector = SignRuleSelector(
+                        kind=kind,
+                        decoration="repoMatches",
+                        pattern=fin_pattern
+                    )
+                    repository_selectors.append(selector)
+
+                # Ensure there are scope selectors
+                if not repository_selectors:
+                    log.warning(
+                        "[actions]-[set-signature] No valid repository_selectors, "
+                        "will use default empty repository selector")
+                    # Add a default scope selector to avoid API error
+                    repository_selectors.append(SignRuleSelector(
+                        kind="doublestar",
+                        decoration="repoMatches",
+                        pattern="{}"
+                    ))
+
+                scope_selectors = {"repository": repository_selectors}
+
+                rule = SignScopeRule(
+                    tag_selectors=tag_selectors,
+                    scope_selectors=scope_selectors,
+                    repo_scope_mode='regular'
+                )
+                rules.append(rule)
+
+            # Log final generated rules
+            log.debug(f"[actions]-[set-signature] Final generated rules: {rules}")
+
+            trigger_setting = TriggerSetting(cron="")
+            trigger_config = TriggerConfig(type="event_based", trigger_settings=trigger_setting)
+
+            if len(find_policy) == 0:
+                # Create request body
+                body = CreateSignaturePolicyRequestBody(
+                    enabled=True,
+                    name=policy_name,
+                    description="created by custodian",
+                    scope_rules=rules,
+                    trigger=trigger_config,
+                    signature_method="KMS",
+                    signature_algorithm=signature_algorithm,
+                    signature_key=signature_key
+                )
+
+                request = CreateInstanceSignPolicyRequest(
+                    instance_id=instance_id,
+                    namespace_name=namespace_name,
+                    body=body
+                )
+
+                # Output complete request content for debugging
+                if hasattr(request, 'to_dict'):
+                    log.debug(f"[actions]-[set-signature] Complete request: {request.to_dict()}")
+
+                # Send request
+                log.debug(
+                    f"[actions]-[set-signature] Sending create signature rule request: "
+                    f"instance_id={instance_id}, namespace_name={namespace_name}"
+                )
+                response = client.create_instance_sign_policy(request)
+
+                # Process response
+                signature_policy_id = response.id
+
+                log.info(
+                    f"[actions]-[set-signature] Successfully created signature rule: "
+                    f"{instance_id}/{namespace_name}, ID: {signature_policy_id}"
+                )
+            else:
+                # Update request body
+                body = UpdateSignaturePolicyRequestBody(
+                    enabled=is_set,
+                    name=policy_name,
+                    description="created by custodian",
+                    scope_rules=rules,
+                    trigger=trigger_config,
+                    signature_method="KMS",
+                    signature_algorithm=signature_algorithm,
+                    signature_key=signature_key
+                )
+
+                request = UpdateInstanceSignPolicyRequest(
+                    instance_id=instance_id,
+                    namespace_name=namespace_name,
+                    policy_id=find_policy['id'],
+                    body=body
+                )
+
+                # Output complete request content for debugging
+                if hasattr(request, 'to_dict'):
+                    log.debug(f"[actions]-[set-signature] Complete request: {request.to_dict()}")
+
+                # Send request
+                log.info(
+                    f"[actions]-[set-signature] Sending update signature rule request: "
+                    f"instance_id={instance_id}, namespace_name={namespace_name}"
+                )
+                response = client.update_instance_sign_policy(request)
+
+                log.info(
+                    f"[actions]-[set-signature] Successfully updated signature rule: "
+                    f"{instance_id}/{namespace_name}, ID: {find_policy['id']}"
+                )
+
+        except Exception as e:
+            # Record detailed exception information
+            error_msg = str(e)
+            log.error(
+                f"[actions]-[set-signature] Failed to create signature rule: "
+                f"{instance_id}/{namespace_name}: {error_msg}"
+            )
 
 
 @retry(retry_on_exception=is_retryable_exception,
