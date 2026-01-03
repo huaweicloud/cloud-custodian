@@ -28,6 +28,7 @@ from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
+from c7n_huaweicloud.utils.json_parse import safe_json_parse
 
 log = logging.getLogger('custodian.huaweicloud.apig')
 
@@ -111,12 +112,7 @@ class ApiResource(QueryResourceManager):
                 # Call client method to process request
                 try:
                     response = client.list_apis_v2(request)
-                    resource = eval(
-                        str(response.apis)
-                        .replace("null", "None")
-                        .replace("false", "False")
-                        .replace("true", "True")
-                    )
+                    resource = safe_json_parse(response.apis)
                     for item in resource:
                         item["instance_id"] = instance_id
                     resources = resources + resource
@@ -481,12 +477,7 @@ class StageResource(QueryResourceManager):
             # Call client method to process request
             try:
                 response = client.list_environments_v2(request)
-                resource = eval(
-                    str(response.envs)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                )
+                resource = safe_json_parse(response.envs)
                 for item in resource:
                     item["instance_id"] = instance_id
                 resources = resources + resource
@@ -716,12 +707,7 @@ class ApiGroupResource(QueryResourceManager):
                 # Call client method to process request
                 try:
                     response = client.list_api_groups_v2(request)
-                    resource = eval(
-                        str(response.groups)
-                        .replace("null", "None")
-                        .replace("false", "False")
-                        .replace("true", "True")
-                    )
+                    resource = safe_json_parse(response.groups)
                     for item in resource:
                         item["instance_id"] = instance_id
                     resources = resources + resource
