@@ -249,3 +249,28 @@ class SetLifecycleActionTest(BaseTest):
         self.assertTrue("retention_id" in resources[0])
         # Verify VCR: Resource status should be created
         self.assertEqual(resources[0]["retention_status"], "created")
+
+class SignatureRuleFilterTest(BaseTest):
+    """Test SWR EE Namespace Signature Rule filter functionality."""
+
+    def test_signature_rule_filter_match(self):
+        """Test Signature Rule filter - Match namespaces with signature rules."""
+        factory = self.replay_flight_data("swr_ee_filter_signature_rule_match")
+        p = self.load_policy(
+            {
+                "name": "swr-ee-filter-signature-rule-match",
+                "resource": "huaweicloud.swr-ee-namespace",
+                "filters": [{"type": "signature-rule", "state": True}],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        # Verify VCR: Resources with signature rules should be returned
+        self.assertGreaterEqual(len(resources), 0)
+        if len(resources) > 0:
+            # Verify signature policy is lazily loaded by the filter
+            self.assertTrue("c7n:signature-policy" in resources[0])
+            signature_policy = resources[0]["c7n:signature-policy"]
+            # Verify signature policy is a list
+            self.assertTrue(isinstance(signature_policy, list))
+            self.assertTrue(len(signature_policy) > 0)

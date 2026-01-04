@@ -6,9 +6,12 @@ import json
 
 from urllib.parse import quote_plus
 
-from huaweicloudsdkswr.v2 import ListInstanceSignPoliciesRequest, CreateInstanceSignPolicyRequest, \
-    CreateSignaturePolicyRequestBody, SignRuleSelector, SignScopeRule, UpdateSignaturePolicyRequestBody, \
-    UpdateInstanceSignPolicyRequest, ListSubResourceInstancesRequest, ListResourceInstancesRequestBody
+from huaweicloudsdkswr.v2 import (
+    ListInstanceSignPoliciesRequest, CreateInstanceSignPolicyRequest,
+    CreateSignaturePolicyRequestBody, SignRuleSelector, SignScopeRule,
+    UpdateSignaturePolicyRequestBody, UpdateInstanceSignPolicyRequest,
+    ListSubResourceInstancesRequest, ListResourceInstancesRequestBody
+)
 from retrying import retry
 
 from c7n.filters import Filter
@@ -20,6 +23,7 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.actions.base import is_retryable_exception
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
+from c7n_huaweicloud.utils.json_parse import safe_json_parse
 
 # Centralized imports for HuaweiCloud SDK modules
 from huaweicloudsdkswr.v2.model.list_instance_request import ListInstanceRequest
@@ -1672,7 +1676,10 @@ class SetSignature(HuaweiCloudBaseAction):
                 }
             }
         },
-        signature_algorithm={'type': 'string', 'enum': ['ECDSA_SHA_256', 'ECDSA_SHA_384', 'SM2DSA_SM3']},
+        signature_algorithm={
+            'type': 'string',
+            'enum': ['ECDSA_SHA_256', 'ECDSA_SHA_384', 'SM2DSA_SM3']
+        },
         signature_key={'type': 'string'},
     )
 
@@ -1754,8 +1761,14 @@ class SetSignature(HuaweiCloudBaseAction):
 
             # rule objects
             rules = []
-            signature_algorithm = self.data.get('signature_algorithm', find_policy.get('signature_algorithm', ""))
-            signature_key = self.data.get('signature_key', find_policy.get('signature_key', ""))
+            signature_algorithm = self.data.get(
+                'signature_algorithm',
+                find_policy.get('signature_algorithm', "")
+            )
+            signature_key = self.data.get(
+                'signature_key',
+                find_policy.get('signature_key', "")
+            )
             config_rules = self.data.get('rules', find_policy.get('scope_rules', []))
 
             for rule_data in config_rules:
@@ -1933,15 +1946,6 @@ def _invoke_client_enum(client, enum_op, request):
     return _invoker(request)
 
 
-def _safe_json_parse(response):
-    if isinstance(response, (dict, list)):
-        return response
-    try:
-        return json.loads(str(response))
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON format: {e}")
-
-
 def _pagination_limit_offset(client, enum_op, path, request):
     """Handle pagination for API requests with limit and offset.
 
@@ -1961,7 +1965,7 @@ def _pagination_limit_offset(client, enum_op, path, request):
         request.limit = request.limit or limit
         request.offset = offset
         response = _invoke_client_enum(client, enum_op, request)
-        res = jmespath.search(path, _safe_json_parse(response))
+        res = jmespath.search(path, safe_json_parse(response))
 
         resources.extend(res)
         if len(res) == limit:
@@ -1990,7 +1994,7 @@ def _pagination_limit_marker(client, enum_op, path, request):
         request.limit = request.limit or limit
         request.marker = marker
         response = _invoke_client_enum(client, enum_op, request)
-        res = jmespath.search(path, _safe_json_parse(response))
+        res = jmespath.search(path, safe_json_parse(response))
 
         resources.extend(res)
 

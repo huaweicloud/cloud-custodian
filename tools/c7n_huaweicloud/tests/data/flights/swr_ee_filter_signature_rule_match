@@ -1,0 +1,118 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T022319Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/459f01a3f326432db5a72f8f56527926/instances
+  response:
+    body:
+      string: '{"total":1,"instances":[{"id":"729c5ab5-826f-11f0-98fa-0255ac1001c4","name":"test-30013969a","description":"","vpc_id":"62e9e54c-21e2-4b2c-bc87-f23161f7f6c3","vpc_name":"vpc-7862","vpc_cidr":"192.168.0.0/16","subnet_id":"bda63294-d62b-4907-9ab6-0b31e8e86506","subnet_name":"subnet-7869","subnet_cidr":"192.168.0.0/24","project_id":"459f01a3f326432db5a72f8f56527926","order_id":"","product_id":"459f01a3f326432db5a72f8f56527926","project_name":"sa-brazil-1","spec":"swr.ee.professional","version":"25.6.7","obs_bucket_name":"swr-ee-729c5ab5-826f-11f0-98fa-0255ac1001c4-registry","obs_in_resaccount":false,"charge_mode":"postPaid","access_address":"test-30013969a-wzr35j.swr-pro.myhuaweicloud.com","mirror_address":"test-30013969a-wzr35j-mirror.swr-pro.myhuaweicloud.com","enterprise_project_id":"0","created_at":"2025-08-26T19:26:02.435223+08:00","updated_at":"2026-01-05T09:04:36.576508+08:00","expires_at":"0001-01-01T00:00:00Z","status":"Running","user_def_obs":false,"vpcep_service_id":"11f82a14-2a70-4173-8b04-5586afbfde71"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Range:
+      - 0-1/1
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 03 Apr 2025 04:43:25 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 078d8acc403c245ea4aa7c2d6991fdf3
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T033356Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/459f01a3f326432db5a72f8f56527926/instances/729c5ab5-826f-11f0-98fa-0255ac1001c4/namespaces?limit=12&offset=0
+  response:
+    body:
+      string: '{"total":4,"namespaces":[{"metadata":{"public":"false"},"name":"iii","repo_count":0,"namespace_id":16,"created_at":"2025-08-27T02:28:31.771Z","updated_at":"2025-08-27T02:28:31.771Z"},{"metadata":{"public":"false"},"name":"laoyi","repo_count":11,"namespace_id":2,"created_at":"2025-08-26T11:33:55.486Z","updated_at":"2025-08-26T11:33:55.486Z"},{"metadata":{"public":"true"},"name":"library","repo_count":0,"namespace_id":1,"created_at":"2025-08-26T11:30:32.062Z","updated_at":"2025-08-26T11:30:32.062Z"},{"metadata":{"public":"false"},"name":"testlaoyi","repo_count":8,"namespace_id":3,"created_at":"2025-08-26T11:34:02.889Z","updated_at":"2025-08-26T11:34:02.889Z"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 03:33:56 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 1ea37ea86ad0ad2620906d79066f71ea
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250430T033356Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/459f01a3f326432db5a72f8f56527926/instances/729c5ab5-826f-11f0-98fa-0255ac1001c4/signature/policies?offset=0&limit=10
+  response:
+    body:
+      string: '{"total":0,"policies":[]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Apr 2025 03:33:56 GMT
+      Server:
+      - api-gateway
+      X-Request-Id:
+      - 1ea37ea86ad0ad2620906d79066f71ea
+    status:
+      code: 200
+      message: OK
+version: 1
