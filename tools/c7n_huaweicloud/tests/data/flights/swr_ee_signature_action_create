@@ -61,7 +61,8 @@ interactions:
       Host:
       - swr-api.ap-southeast-1.myhuaweicloud.com
       User-Agent:
-      - python-requests/2.29.0
+      - huaweicloud-usdk-python/3.0; os/Windows#10.0.17763#AMD64 python/3.14.2 impl/CPython;
+        app/2e1c9375-948c-4af0-a499-12d953432bb0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
@@ -111,7 +112,8 @@ interactions:
       Host:
       - swr-api.ap-southeast-1.myhuaweicloud.com
       User-Agent:
-      - python-requests/2.29.0
+      - huaweicloud-usdk-python/3.0; os/Windows#10.0.17763#AMD64 python/3.14.2 impl/CPython;
+        app/2e1c9375-948c-4af0-a499-12d953432bb0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
@@ -159,7 +161,8 @@ interactions:
       Host:
       - swr-api.ap-southeast-1.myhuaweicloud.com
       User-Agent:
-      - python-requests/2.29.0
+      - huaweicloud-usdk-python/3.0; os/Windows#10.0.17763#AMD64 python/3.14.2 impl/CPython;
+        app/2e1c9375-948c-4af0-a499-12d953432bb0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
@@ -180,8 +183,6 @@ interactions:
       - api-gateway
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -194,5 +195,62 @@ interactions:
       - 1; mode=block;
     status:
       code: 200
+      message: Ok
+- request:
+    body: '{"name": "custodian-signature-iii", "description": "created by custodian",
+      "enabled": true, "signature_method": "KMS", "signature_algorithm": "ECDSA_SHA_256",
+      "signature_key": "test-key-id", "trigger": {"type": "event_based", "trigger_settings":
+      {"cron": ""}}, "scope_rules": [{"tag_selectors": [{"kind": "doublestar", "decoration":
+      "matches", "pattern": "**"}], "scope_selectors": {"repository": [{"kind": "doublestar",
+      "decoration": "repoMatches", "pattern": "**"}]}, "repo_scope_mode": "regular"}]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '501'
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0; os/Windows#10.0.17763#AMD64 python/3.14.2 impl/CPython;
+        app/2e1c9375-948c-4af0-a499-12d953432bb0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260105T063308Z
+    method: POST
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances/729c5ab5-826f-11f0-98fa-0255ac1001c4/namespaces/iii/signature/policies
+  response:
+    body: null
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 05 Jan 2026 06:33:08 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7bf898b79e5fd984178b455dd593c8ce
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 201
       message: Ok
 version: 1

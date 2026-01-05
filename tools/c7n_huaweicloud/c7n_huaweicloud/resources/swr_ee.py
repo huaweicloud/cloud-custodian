@@ -10,20 +10,28 @@ from huaweicloudsdkswr.v2 import (
     ListInstanceSignPoliciesRequest, CreateInstanceSignPolicyRequest,
     CreateSignaturePolicyRequestBody, SignRuleSelector, SignScopeRule,
     UpdateSignaturePolicyRequestBody, UpdateInstanceSignPolicyRequest,
-    ListSubResourceInstancesRequest, ListResourceInstancesRequestBody
+    ListSubResourceInstancesRequest, ListResourceInstancesRequestBody,
+    CreateSubResourceTagsRequest, CreateResourceTagsRequestBody,
+    DeleteSubResourceTagsRequest, DeleteResourceTagsRequestBody,
+    ResourceTag
 )
 from retrying import retry
 
 from c7n.filters import Filter
 from c7n.filters.core import ValueFilter, AgeFilter
 from c7n.utils import local_session, type_schema
-from c7n.exceptions import PolicyValidationError
+from c7n.exceptions import PolicyValidationError, PolicyExecutionError
+from huaweicloudsdkcore.exceptions import exceptions
 
+from c7n_huaweicloud.filters.exempted import get_obs_name, get_obs_server, get_file_path
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.actions.base import is_retryable_exception
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.utils.json_parse import safe_json_parse
+from c7n_huaweicloud.actions.tms import CreateResourceTagAction, DeleteResourceTagAction, \
+    RenameResourceTagAction, NormalizeResourceTagAction, CreateResourceTagDelayedAction, \
+    TrimResourceTagAction
 
 # Centralized imports for HuaweiCloud SDK modules
 from huaweicloudsdkswr.v2.model.list_instance_request import ListInstanceRequest
@@ -98,7 +106,7 @@ class SwrEeBaseFilter(Filter):
             matchers.append(vf)
         return matchers
 
-    def match_policy_with_matchers(self, policy, matchers):
+    def match_policy_with_matchers(self, policy, matchers, match_op):
         """Check if policy matches using generic matchers.
 
         Args:
@@ -110,11 +118,16 @@ class SwrEeBaseFilter(Filter):
         """
         if not matchers:
             return True
-
-        for matcher in matchers:
-            if not matcher(policy):
-                return False
-        return True
+        if match_op == 'and':
+            for matcher in matchers:
+                if not matcher(policy):
+                    return False
+            return True
+        else:
+            for matcher in matchers:
+                if matcher(policy):
+                    return True
+            return False
 
 
 @resources.register('swr-ee')
@@ -145,7 +158,7 @@ class SwrEe(QueryResourceManager):
         # 'body' is the field name in the response containing the instance list
         # 'offset' is the parameter name for pagination
         enum_spec = ('list_instance_repositories', 'body', 'offset')
-        id = 'uid'  # Specify resource unique identifier field name
+        id = 'id'  # Specify resource unique identifier field name
         name = 'name'  # Specify resource name field name
         filter_name = 'name'  # Field name for filtering by name
         filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
@@ -206,7 +219,7 @@ class SwrEe(QueryResourceManager):
 
                 for repository in repositories:
                     repository['instance_id'] = instance['id']
-                    repository['uid'] = f"{instance['id']}/{repository['name']}"
+                    repository['id'] = f"{instance['id']}/{repository['name']}"
                     repository['is_public'] = namespaces_public_mapping.get(
                         repository['namespace_id'], False
                     )
@@ -298,7 +311,7 @@ class SwrEeImage(QueryResourceManager):
         """
         service = 'swr'
         enum_spec = ('list_instance_all_artifacts', 'body', 'offset')
-        id = 'uid'
+        id = 'id'
         name = 'tag'
         filter_name = 'tag'
         filter_type = 'scalar'
@@ -376,7 +389,7 @@ class SwrEeImage(QueryResourceManager):
 
         for artifact in artifacts:
             artifact['instance_id'] = instance['id']
-            artifact['uid'] = f"{instance['id']}/{artifact['id']}"
+            artifact['id'] = f"{instance['id']}/{artifact['id']}"
 
         return artifacts
 
@@ -408,7 +421,7 @@ class SwrEeImage(QueryResourceManager):
             )
             for artifact in artifacts:
                 artifact['instance_id'] = repo['instance_id']
-                artifact['uid'] = f"{repo['instance_id']}/{artifact['id']}"
+                artifact['id'] = f"{repo['instance_id']}/{artifact['id']}"
 
             all_artifacts.extend(artifacts)
             log.debug(
@@ -516,7 +529,8 @@ class SwrEeNamespace(QueryResourceManager):
         name = 'name'  # Specify resource name field name
         filter_name = 'name'  # Field name for filtering by name
         filter_type = 'scalar'  # Filter type (scalar for simple value comparison)
-        tag_resource_type = "namespace"
+        taggable = False  # Indicate that this resource doesn't support tagging directly
+        tag_resource_type = None
         date = 'created_at'  # Specify field name for resource creation time
 
     def _fetch_resources(self, query):
@@ -531,18 +545,26 @@ class SwrEeNamespace(QueryResourceManager):
         """
         all_namespaces = []
         limit = 100
+        instances = []
 
         try:
             client = self.get_client()
             if query and 'instance_id' in query:
                 instances = [{"id": query['instance_id']}]
             else:
-                instances = _pagination_limit_offset(
+                temp_instances = _pagination_limit_offset(
                     client,
                     "list_instance",
                     "instances",
                     ListInstanceRequest(limit=limit)
                 )
+
+                # exclude shared instances
+                for temp_instance in temp_instances:
+                    if temp_instance['project_id'] != client.get_credentials().project_id:
+                        continue
+
+                    instances.append(temp_instance)
 
             for instance_index, instance in enumerate(instances):
                 namespaces = _pagination_limit_offset(
@@ -573,11 +595,13 @@ class SwrEeNamespace(QueryResourceManager):
                     namespace['instance_id'] = instance['id']
                     namespace['id'] = f"{instance['id']}/{namespace['name']}"
                     namespace['is_public'] = namespace["metadata"]["public"].lower() == "true"
+                    namespace['tag_resource_type'] = 'namespaces'
+                    namespace['tags'] = {}
 
                     # add tags
                     for tag in tags:
                         if tag['resource_name'] == namespace['name']:
-                            namespace['tags'] = tag['tags']
+                            namespace['tags'] = {d["key"]: d["value"] for d in tag.get('tags', [])}
                             break
 
                     all_namespaces.append(namespace)
@@ -598,8 +622,9 @@ class SwrEeNamespace(QueryResourceManager):
     def get_resources(self, resource_ids):
 
         resources = []
-        # 如果是删除镜像签名操作，需要查询全量的namespace
-        if 'deleteSignaturePolicy' in resource_ids or 'deleteRetention' in resource_ids:
+        # 如果是删除/更新镜像签名、老化策略操作，需要查询全量的namespace，并且还原回来策略
+        if ('deleteSignaturePolicy' in resource_ids or 'deleteRetention' in resource_ids or
+                'updateSignaturePolicy' in resource_ids or 'updateRetention' in resource_ids):
             resources = self._fetch_resources(query={})
         else:
             for resource_id in resource_ids:
@@ -740,6 +765,7 @@ class LifecycleRule(SwrEeBaseFilter):
                 {'$ref': '#/definitions/filters/value'},
                 {'type': 'object', 'minProperties': 1, 'maxProperties': 1},
             ]}},
+        match_op={'type': 'string', 'enum': ['or', 'and'], 'default': 'and'},
         tag_selector={'type': 'object'}
     )
     policy_annotation = 'c7n:lifecycle-policy'
@@ -793,6 +819,7 @@ class LifecycleRule(SwrEeBaseFilter):
         results = []
 
         tag_selector = self.data.get('tag_selector')
+        match_op = self.data.get('match_op')
         matchers = self.build_matchers()
 
         for resource in resources:
@@ -807,7 +834,7 @@ class LifecycleRule(SwrEeBaseFilter):
 
             rule_matches = False
             for policy in policies:
-                if not self.match_policy_with_matchers(policy, matchers):
+                if not self.match_policy_with_matchers(policy, matchers, match_op):
                     continue
 
                 if tag_selector and not self.match_tag_selector(policy, tag_selector):
@@ -1174,7 +1201,7 @@ class SetLifecycle(HuaweiCloudBaseAction):
                     f"{instance_id}/{namespace_name}, ID: {retention_id}"
                 )
             else:
-                # Create request body
+                # Update request body
                 body = UpdateRetentionPolicyRequestBody(
                     enabled=True,
                     algorithm=self.data.get('algorithm', 'or'),
@@ -1433,61 +1460,16 @@ class SignatureRule(SwrEeBaseFilter):
 
     .. code-block:: yaml
 
-       policies:
-        # Filter namespaces with specific signature rules (path matching specific properties)
-        - name: swr-with-specific-rule
-          resource: huaweicloud.swr-ee-namespace
-          filters:
-            - type: lifecycle-rule
-              state: True  # namespace with signature rules
-              match:
-                - type: value
-                  key: rules[0].template
-                  value: latestPushedK   # latestPushedK, latestPulledN,
-                                        # nDaysSinceLastPush, nDaysSinceLastPull
-
-    .. code-block:: yaml
-
-       policies:
-        # Filter signature with retention period greater than 30 days
-        - name: swr-with-long-retention
-          resource: huaweicloud.swr-ee-namespace
-          filters:
-            - type: signature-rule
-              state: True  # signature with lifecycle rules
-              match:
-                - type: value
-                  key: rules[0].params.nDaysSinceLastPull
-                  value_type: integer
-                  op: gte
-                  value: 30
-
-    .. code-block:: yaml
-
-       policies:
-        # Filter repositories using specific tag selector
-        - name: swr-with-specific-tag-selector
-          resource: huaweicloud.swr-ee-namespace
-          filters:
-            - type: lifecycle-rule
-              tag_selector:
-                kind: doublestar
-                pattern: v5
-
-    .. code-block:: yaml
-
-       policies:
-        # Combined filter conditions: match both parameters and tag selector
-        - name: swr-with-combined-filters
-          resource: huaweicloud.swr-ee-namespace
-          filters:
-              tag_selector:
-                kind: doublestar
-                pattern: v5
-              match:
-                - type: value
-                  key: algorithm
-                  value: or
+        policies:
+          - name: swr-ee-signature-alg-filter
+            resource: huaweicloud.swr-ee-namespace
+            filters:
+              - type: signature-rule
+                state: True
+                match:
+                  - type: value
+                    key: signature_algorithm
+                    value: ECDSA_SHA_384
     """
 
     schema = type_schema(
@@ -1497,7 +1479,8 @@ class SignatureRule(SwrEeBaseFilter):
             'oneOf': [
                 {'$ref': '#/definitions/filters/value'},
                 {'type': 'object', 'minProperties': 1, 'maxProperties': 1},
-            ]}}
+            ]}},
+        match_op={'type': 'string', 'enum': ['or', 'and'], 'default': 'and'}
     )
     policy_annotation = 'c7n:signature-policy'
 
@@ -1550,6 +1533,7 @@ class SignatureRule(SwrEeBaseFilter):
         results = []
 
         matchers = self.build_matchers()
+        match_op = self.data.get('match_op')
 
         for resource in resources:
             policies = resource.get(self.policy_annotation, [])
@@ -1563,7 +1547,7 @@ class SignatureRule(SwrEeBaseFilter):
 
             rule_matches = False
             for policy in policies:
-                if not self.match_policy_with_matchers(policy, matchers):
+                if not self.match_policy_with_matchers(policy, matchers, match_op):
                     continue
 
                 if policy.get('enabled', False):
@@ -1585,35 +1569,15 @@ class SetSignature(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-        # 配置镜像签名规则, 根据repository, tag过滤
-          - name: swr-set-signature
+          - name: swr-ee-set-signature-filter
             resource: huaweicloud.swr-ee-namespace
             filters:
               - type: signature-rule
                 state: False
             actions:
               - type: set-signature
-                rules:
-                  - scope_selectors:
-                      repository:
-                        - kind: doublestar
-                          pattern: '{repo1, repo2}'
-                    tag_selectors:
-                      - kind: doublestar
-                        pattern: '^release-.*$'
-
-    .. code-block:: yaml
-
-        policies:
-        # 配置老化规则
-          - name: swr-set-signature
-            resource: huaweicloud.swr-ee-namespace
-            filters:
-              - type: signature-rule
-                state: False
-            actions:
-              - type: set-signature
-                rules:
+                state: True
+                scope_rules:
                   - scope_selectors:
                       repository:
                         - kind: doublestar
@@ -1621,25 +1585,14 @@ class SetSignature(HuaweiCloudBaseAction):
                     tag_selectors:
                       - kind: doublestar
                         pattern: '**'
-
-    .. code-block:: yaml
-
-        policies:
-        # 取消老化规则
-          - name: swr-unset-signature
-            resource: huaweicloud.swr-ee-namespace
-            filters:
-              - type: signature-rule
-                state: True
-            actions:
-              - type: set-signature
-                state: False
+                signature_key: a8b3757e-6d3b-4799-8d33-6612439f202b
+                signature_algorithm: ECDSA_SHA_384
     """
 
     schema = type_schema(
         'set-signature',
         state={'type': 'boolean', 'default': True},
-        rules={
+        scope_rules={
             'type': 'array',
             'items': {
                 'type': 'object',
@@ -1681,6 +1634,7 @@ class SetSignature(HuaweiCloudBaseAction):
             'enum': ['ECDSA_SHA_256', 'ECDSA_SHA_384', 'SM2DSA_SM3']
         },
         signature_key={'type': 'string'},
+        obs_url={'type': 'string'}
     )
 
     permissions = ('swr:repository:createSignPolicy', 'swr:repository:updateSignPolicy')
@@ -1694,12 +1648,21 @@ class SetSignature(HuaweiCloudBaseAction):
         Raises:
             PolicyValidationError: If configuration is invalid
         """
-        if self.data.get('state') is False and 'rules' in self.data:
+        if self.data.get('state') is False and 'scope_rules' in self.data:
             raise PolicyValidationError(
-                "set-signature can't use rules and state: false")
-        elif self.data.get('state', True) and not self.data.get('rules'):
+                "set-signature can't use scope_rules and state: false")
+        elif self.data.get('state', True) and not self.data.get('scope_rules'):
             raise PolicyValidationError(
-                "set-signature requires rules with state: true")
+                "set-signature requires scope_rules with state: true")
+
+        if self.data.get('state', True):
+            signature_algorithm = self.data.get('signature_algorithm', "")
+            signature_key = self.data.get('signature_key', "")
+            obs_url = self.data.get('obs_url', "")
+            if signature_algorithm == "" and signature_key == "" and obs_url == "":
+                raise PolicyValidationError(
+                    "set-signature requires signature_algorithm&signature_key or obs_url")
+
         return self
 
     def process(self, resources):
@@ -1769,7 +1732,17 @@ class SetSignature(HuaweiCloudBaseAction):
                 'signature_key',
                 find_policy.get('signature_key', "")
             )
-            config_rules = self.data.get('rules', find_policy.get('scope_rules', []))
+            obs_url = self.data.get('obs_url', '')
+            if obs_url != '':
+                context = self.get_file_content(obs_url)
+                if 'signature_algorithm' in context and 'signature_key' in context:
+                    log.info(f"[actions]-[set-signature] instance: {instance_id}, "
+                             f"namespace: {namespace_name}, "
+                             f"signature_algorithm and signature_key from obs")
+                    signature_algorithm = context['signature_algorithm']
+                    signature_key = context['signature_key']
+
+            config_rules = self.data.get('scope_rules', find_policy.get('scope_rules', []))
 
             for rule_data in config_rules:
                 # Create tag selectors
@@ -1935,6 +1908,448 @@ class SetSignature(HuaweiCloudBaseAction):
                 f"[actions]-[set-signature] Failed to create signature rule: "
                 f"{instance_id}/{namespace_name}: {error_msg}"
             )
+
+    def get_file_content(self, obs_url):
+        if not obs_url:
+            return {}
+        obs_client = local_session(self.manager.session_factory).client("obs")
+        protocol_end = len("https://")
+        path_without_protocol = obs_url[protocol_end:]
+        obs_bucket_name = get_obs_name(path_without_protocol)
+        obs_server = get_obs_server(path_without_protocol)
+        obs_file = get_file_path(path_without_protocol)
+        obs_client.server = obs_server
+        try:
+            resp = obs_client.getObject(bucketName=obs_bucket_name,
+                                        objectKey=obs_file,
+                                        loadStreamInMemory=True)
+            if resp.status < 300:
+                log.debug(f"[action]-[set-signature]-"
+                          f"query the service:[OBS:getObject] with obs_url:[{obs_url}] succeed.")
+                content = json.loads(resp.body.buffer)
+                return content
+            else:
+                log.error(f"[filters]-[set-signature]-"
+                          f"cause: get obs object with obs_url:[{obs_url}] failed, "
+                          f"error_code[{resp.errorCode}], error_msg[{resp.errorMessage}].")
+                raise PolicyExecutionError("Get obs object failed, "
+                                           f"error_code[{resp.errorCode}], "
+                                           f"error_msg[{resp.errorMessage}]")
+        except exceptions.ServiceResponseException as ex:
+            log.error(f"[filters]-[set-signature]-"
+                      f"cause: get obs object with obs_url:[{obs_url}] failed, "
+                      f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
+
+
+@SwrEeNamespace.action_registry.register('mark')
+@SwrEeNamespace.action_registry.register('tag')
+class CreateNamespaceTagAction(CreateResourceTagAction):
+    """Action to create tag(s) on namespace
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: tag-namespace
+                resource: huaweicloud.swr-ee-namespace
+              filters:
+                - type: value
+                  key: name
+                  value: "test"
+                actions:
+                  - type: tag
+                    key: target-tag
+                    value: target-value
+    """
+    permissions = ('swr:instance:createResourceTags',)
+
+    def process_resource_set(self, client, resource_batch, tags, project_id):
+
+        client = self.manager.get_client()
+        failed_resource_ids = []
+        for resource in resource_batch:
+            resource_id_list = resource['resource_id'].split("/")
+            if len(resource_id_list) != 2:
+                log.warning("invalid resource id: %s", resource['resource_id'])
+                failed_resource_ids.append(resource['resource_id'])
+                continue
+
+            instance_id = resource_id_list[0]
+            namespace_name = resource_id_list[1]
+            swr_tags = [ResourceTag(tag.get('key'), tag.get('value')) for tag in tags]
+
+            try:
+                client.create_sub_resource_tags(CreateSubResourceTagsRequest(
+                    resource_type='instances', resource_id=instance_id,
+                    sub_resource_type='namespaces', sub_resource_id=namespace_name,
+                    body=CreateResourceTagsRequestBody(tags=swr_tags)
+                ))
+            except exceptions.ClientRequestException as ex:
+                failed_resource_ids.append(resource['resource_id'])
+                self.log.error(f"[actions]-tag create tag is failed."
+                               f"cause: : {ex.error_msg}, "
+                               f"status: {ex.status_code}, "
+                               f"requestId: {ex.request_id}")
+
+        return [resource for resource in resource_batch if
+                resource["resource_id"] in failed_resource_ids]
+
+
+@SwrEeNamespace.action_registry.register('unmark')
+@SwrEeNamespace.action_registry.register('untag')
+@SwrEeNamespace.action_registry.register('remove-tag')
+class DeleteNamespaceTagAction(DeleteResourceTagAction):
+    """Action to delete tag(s) on namespace
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: tag-namespace
+                resource: huaweicloud.swr-ee-namespace
+              filters:
+                - type: value
+                  key: name
+                  value: "test"
+                actions:
+                  - type: remove-tag
+                    tags:
+                      - owner
+                      - owner2
+    """
+    permissions = ('swr:instance:deleteResourceTags',)
+
+    def process_resource_set(self, client, resource_batch, tags, project_id):
+
+        client = self.manager.get_client()
+        failed_resource_ids = []
+        for resource in resource_batch:
+            resource_id_list = resource['resource_id'].split("/")
+            if len(resource_id_list) != 2:
+                log.warning("invalid resource id: %s", resource['resource_id'])
+                failed_resource_ids.append(resource['resource_id'])
+                continue
+
+            instance_id = resource_id_list[0]
+            namespace_name = resource_id_list[1]
+            swr_tags = [ResourceTag(tag.get('key'), tag.get('value')) for tag in tags]
+
+            try:
+                client.delete_sub_resource_tags(DeleteSubResourceTagsRequest(
+                    resource_type='instances', resource_id=instance_id,
+                    sub_resource_type='namespaces', sub_resource_id=namespace_name,
+                    body=DeleteResourceTagsRequestBody(tags=swr_tags)
+                ))
+            except exceptions.ClientRequestException as ex:
+                failed_resource_ids.append(resource['resource_id'])
+                self.log.error(f"[actions]-remove-tag delete tag is failed."
+                               f"cause: : {ex.error_msg}, "
+                               f"status: {ex.status_code}, "
+                               f"requestId: {ex.request_id}")
+
+        return [resource for resource in resource_batch if
+                resource["resource_id"] in failed_resource_ids]
+
+
+def delete_and_create_tag(resource, client, delete_tags, new_tags):
+    resource_id_list = resource['id'].split("/")
+    if len(resource_id_list) != 2:
+        log.error("invalid resource id/name: %s/%s", resource['id'], resource['name'])
+        return
+
+    instance_id = resource_id_list[0]
+    namespace_name = resource_id_list[1]
+
+    try:
+        client.delete_sub_resource_tags(DeleteSubResourceTagsRequest(
+            resource_type='instances', resource_id=instance_id,
+            sub_resource_type='namespaces', sub_resource_id=namespace_name,
+            body=DeleteResourceTagsRequestBody(tags=delete_tags)
+        ))
+    except exceptions.ClientRequestException as ex:
+        log.error(f"delete_and_create_tag delete tag is failed."
+                       f"cause: : {ex.error_msg}, "
+                       f"status: {ex.status_code}, "
+                       f"requestId: {ex.request_id}")
+        raise
+
+    try:
+        client.create_sub_resource_tags(CreateSubResourceTagsRequest(
+            resource_type='instances', resource_id=instance_id,
+            sub_resource_type='namespaces', sub_resource_id=namespace_name,
+            body=CreateResourceTagsRequestBody(tags=new_tags)
+        ))
+    except exceptions.ClientRequestException as ex:
+        log.error(f"[actions]-rename-tag create tag is failed."
+                       f"cause: : {ex.error_msg}, "
+                       f"status: {ex.status_code}, "
+                       f"requestId: {ex.request_id}")
+        raise
+
+
+@SwrEeNamespace.action_registry.register('rename-tag')
+class RenameNamespaceTagAction(RenameResourceTagAction):
+    """Action to rename tag(s) on namespace
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: tag-namespace
+                resource: huaweicloud.swr-ee-namespace
+              filters:
+                - "tag:test-key": present
+                actions:
+                  - type: rename-tag
+                    old_key: owner-old
+                    new_key: owner-new
+    """
+    permissions = ('swr:instance:createResourceTags', 'swr:instance:deleteResourceTags')
+
+    def process_resource(self, resource, old_key, new_key, value):
+
+        if value is None:
+            value = self.get_value_by_key(resource, old_key)
+        if value is None:
+            self.log.warning(
+                f"[actions]-rename-tag The resource:{self.manager.ctx.policy.resource_type} "
+                f"with id:[{resource['id']} rename tag is failed. "
+                f"cause: No value of key {old_key}")
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+            return
+
+        delete_tags = [ResourceTag(old_key, value)]
+        new_tags = [ResourceTag(new_key, value)]
+        client = self.manager.get_client()
+
+        try:
+            delete_and_create_tag(resource, client, delete_tags, new_tags)
+        except exceptions.ClientRequestException as ex:
+            self.log.error(f"[actions]-rename-tag delete tag is failed."
+                           f"cause: : {ex.error_msg}, "
+                           f"status: {ex.status_code}, "
+                           f"requestId: {ex.request_id}")
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+            return
+        except Exception:
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+            raise
+
+
+@SwrEeNamespace.action_registry.register('normalize-tag')
+class NormalizeNamespaceTagAction(NormalizeResourceTagAction):
+    """Normalize the specified tags from the specified resources.
+    Set the tag value to uppercase, title, lowercase, replace, or strip text
+    from a tag key
+
+    :example:
+
+        . code-block :: yaml
+
+            policies:
+            - name: multiple-normalize-tag-example
+              resource: huaweicloud.swr-ee-namespace
+              filters:
+                - "tag:test-key": present
+              actions:
+              - type: normalize-tag
+                key: test-key
+                action: lower
+
+            policies:
+            - name: multiple-normalize-tag-example
+              resource: huaweicloud.swr-ee-namespace
+              filters:
+                - "tag:test-key": present
+              actions:
+              - type: normalize-tag
+                key: test-key
+                action: strip
+                old_sub_str: a
+
+            policies:
+            - name: multiple-normalize-tag-example
+              resource: huaweicloud.swr-ee-namespace
+              filters:
+                - "tag:test-key": present
+              actions:
+              - type: normalize-tag
+                key: strip_key
+                action: replace
+                old_sub_str: a
+                new_sub_str: b
+
+    """
+    permissions = ('swr:instance:createResourceTags', 'swr:instance:deleteResourceTags')
+
+    def process_resource(self, resource):
+        if self.old_value is None:
+            old_value = self.get_value_by_key(resource, self.key)
+        else:
+            old_value = self.old_value
+        if self.old_value is None and old_value is None:
+            self.log.warning(
+                f"[actions]-normalize-tag The resource:{self.manager.ctx.policy.resource_type} "
+                f"with id:[{resource['id']} normalize tag is failed. "
+                f"cause: No value of key {self.key}.")
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+            return
+
+        new_value = self.get_new_value(old_value, self.action, self.old_sub_str,
+                                       self.new_sub_str)
+        if new_value is None:
+            self.log.warning(
+                f"[actions]-normalize-tag The resource:{self.manager.ctx.policy.resource_type} "
+                f"with id:[{resource['id']} normalize tag is failed. "
+                f"cause: Can not get new value of key {self.key}.")
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+            return
+
+        delete_tags = [ResourceTag(self.key, old_value)]
+        new_tags = [ResourceTag(self.key, new_value)]
+        client = self.manager.get_client()
+
+        try:
+            delete_and_create_tag(resource, client, delete_tags, new_tags)
+        except exceptions.ClientRequestException as ex:
+            self.log.error(f"[actions]-normalize-tag delete tag is failed."
+                           f"cause: : {ex.error_msg}, "
+                           f"status: {ex.status_code}, "
+                           f"requestId: {ex.request_id}")
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+            return
+        except Exception:
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+            raise
+
+
+@SwrEeNamespace.action_registry.register('tag-trim')
+class TrimNamespaceTagAction(TrimResourceTagAction):
+    """Trim the specified tags from the specified resources.
+
+    :example:
+
+        . code-block :: yaml
+
+            policies:
+            - name: multiple-tag-trim-example
+              resource: huaweicloud.swr-ee-namespace
+              filters:
+                - type: value
+                  key: "length(tags)"
+                  op: ge
+                  value: 2
+              actions:
+                - type: tag-trim
+                  space: 3
+                  preserve:
+                    - owner1
+                    - owner2
+    """
+
+    permissions = ('swr:instance:deleteResourceTags',)
+
+    def process_resource(self, resource, space, preserve):
+        try:
+            tags = self.get_tags_from_resource(resource)
+            delete_keys = self.get_delete_keys(tags, space, preserve, resource["id"])
+            if len(delete_keys) == 0:
+                self.log.info("No need to tag-trim of %s", resource['id'])
+                return
+
+            resource_id_list = resource['id'].split("/")
+            if len(resource_id_list) != 2:
+                log.error("invalid resource id: %s", resource['id'])
+                self.handle_exception(failed_resources=[resource], resources=self.resources)
+                return
+
+            instance_id = resource_id_list[0]
+            namespace_name = resource_id_list[1]
+
+            delete_tags = [ResourceTag(key, tags[key]) for key in delete_keys]
+            client = self.manager.get_client()
+
+            try:
+                client.delete_sub_resource_tags(DeleteSubResourceTagsRequest(
+                    resource_type='instances', resource_id=instance_id,
+                    sub_resource_type='namespaces', sub_resource_id=namespace_name,
+                    body=DeleteResourceTagsRequestBody(tags=delete_tags)
+                ))
+            except exceptions.ClientRequestException as ex:
+                self.log.warning(
+                    f"[actions]-tag-trim The resource:{self.manager.ctx.policy.resource_type} "
+                    f"with id:[{resource['id']}] tag trim is failed. "
+                    f"cause: : {ex.error_msg}, "
+                    f"status: {ex.status_code}, "
+                    f"requestId: {ex.request_id}")
+                return
+
+        except Exception:
+            self.handle_exception(failed_resources=[resource], resources=self.resources)
+            raise
+
+
+@SwrEeNamespace.action_registry.register('mark-for-op')
+class CreateNamespaceTagDelayedAction(CreateResourceTagDelayedAction):
+    """Tag resources for future action.
+
+        The optional 'tz' parameter can be used to adjust the clock to align
+        with a given timezone. The default value is 'utc'.
+
+        If neither 'days' nor 'hours' is specified, Cloud Custodian will default
+        to marking the resource for action 4 days in the future.
+
+        . code-block :: yaml
+
+          policies:
+            - name: multiple-tags-example
+              resource: huaweicloud.swr-ee-namespace
+              filters:
+                - type: value
+                  key: name
+                  value: "test"
+              actions:
+                - type: mark-for-op
+                  tag: test-key
+                  op: set-lifecycle
+                  days: 4
+    """
+    permissions = ('swr:instance:createResourceTags',)
+
+    def process_resource_set(self, client, resource_batch, tags, project_id):
+
+        client = self.manager.get_client()
+        failed_resource_ids = []
+        for resource in resource_batch:
+            resource_id_list = resource['resource_id'].split("/")
+            if len(resource_id_list) != 2:
+                log.warning("invalid resource id: %s", resource['resource_id'])
+                failed_resource_ids.append(resource['resource_id'])
+                continue
+
+            instance_id = resource_id_list[0]
+            namespace_name = resource_id_list[1]
+            swr_tags = [ResourceTag(tag.get('key'), tag.get('value')) for tag in tags]
+
+            try:
+                client.create_sub_resource_tags(CreateSubResourceTagsRequest(
+                    resource_type='instances', resource_id=instance_id,
+                    sub_resource_type='namespaces', sub_resource_id=namespace_name,
+                    body=CreateResourceTagsRequestBody(tags=swr_tags)
+                ))
+            except exceptions.ClientRequestException as ex:
+                failed_resource_ids.append(resource['resource_id'])
+                self.log.error(f"[actions]-mark-for-op create tag is failed."
+                               f"cause: : {ex.error_msg}, "
+                               f"status: {ex.status_code}, "
+                               f"requestId: {ex.request_id}")
+
+        return [resource for resource in resource_batch if
+                resource["resource_id"] in failed_resource_ids]
 
 
 @retry(retry_on_exception=is_retryable_exception,
