@@ -250,6 +250,7 @@ class SetLifecycleActionTest(BaseTest):
         # Verify VCR: Resource status should be created
         self.assertEqual(resources[0]["retention_status"], "created")
 
+
 class SignatureRuleFilterTest(BaseTest):
     """Test SWR EE Namespace Signature Rule filter functionality."""
 
