@@ -7,9 +7,10 @@ from c7n.filters import Filter
 from c7n.utils import type_schema, local_session
 
 from c7n_huaweicloud.provider import resources
-from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
+from c7n_huaweicloud.query import QueryResourceManager, ResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from huaweicloudsdkworkspace.v2 import BatchDeleteDesktopsRequest
+from huaweicloudsdkworkspace.v2 import BatchDeleteDesktopsRequest, SetUserEventsLtsConfigurationsRequest, \
+    SetUserEventsLtsConfigurationsRequestBody
 
 log = logging.getLogger('custodian.huaweicloud.workspace')
 
@@ -20,6 +21,7 @@ class Workspace(QueryResourceManager):
 
     This resource type manages cloud desktop instances in Huawei Cloud Workspace service.
     """
+
     class resource_type(TypeInfo):
         service = 'workspace'
         enum_spec = ('list_desktops_detail', 'desktops', 'offset')
@@ -188,3 +190,81 @@ class DeleteWorkspace(HuaweiCloudBaseAction):
 
     def perform_action(self, resource):
         return super().perform_action(resource)
+
+
+@resources.register('workspace-user-event-lts-status')
+class WorkspaceUserEventLtsStatus(ResourceManager):
+    class resource_type(TypeInfo):
+        id = 'id'
+        name = 'status'
+
+    def resources(self, query=None):
+
+        session = local_session(self.session_factory)
+        client = session.client('workspace')
+
+        try:
+            request = ListUserEventsLtsConfigurationsRequest()
+            response = client.list_user_events_lts_configurations(request)
+
+            enable_status = getattr(response, 'enable', False)
+            log_group_id = getattr(response, 'log_group_id', None)
+            log_stream_id = getattr(response, 'log_stream_id', None)
+
+            status_resource = {
+                'id': 'workspace-user-event-lts-status-singleton',
+                'status': 'enabled' if enable_status else 'disabled',
+                'enable': enable_status,
+                'log_group_id': log_group_id,
+                'log_stream_id': log_stream_id,
+            }
+
+            return [status_resource]
+
+        except Exception as e:
+            self.log.error(f"Failed to fetch Workspace User Event LTS status: {e}")
+            return []
+
+
+@WorkspaceUserEventLtsStatus.action_registry.register('enable-user-event-lts')
+class EnableUserEventLts(HuaweiCloudBaseAction):
+    schema = {
+        'type': 'object',
+        'properties': {
+            'type': {'enum': ['enable-user-event-lts']},
+            'log_group_id': {'type': 'string'},
+            'log_stream_id': {'type': 'string'},
+        },
+        'required': ['type', 'log_group_id', 'log_stream_id']
+    }
+
+    def process(self, resources):
+        for r in resources:
+            self.perform_action(r)
+        return []
+
+    def perform_action(self, resource):
+        session = local_session(self.manager.session_factory)
+        client = session.client('workspace')
+
+        if resource.get('enable') is True:
+            self.log.info(f"Skipping resource {resource.get('id')}: LTS already enabled.")
+            return
+
+        enable_value = True
+        log_group_id = self.data.get('log_group_id') or resource.get('log_group_id')
+        log_stream_id = self.data.get('log_stream_id') or resource.get('log_stream_id')
+
+        if not log_group_id or not log_stream_id:
+            raise Exception("log_group_id and log_stream_id must be provided.")
+
+        request_body_model = SetUserEventsLtsConfigurationsRequestBody(
+            enable=enable_value,
+            log_group_id=log_group_id,
+            log_stream_id=log_stream_id
+        )
+
+        request = SetUserEventsLtsConfigurationsRequest(body=request_body_model)
+        response = client.set_user_events_lts_configurations(request)
+
+        self.log.info(f"Successfully submitted set user event LTS configuration.")
