@@ -177,9 +177,9 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                               f"{vaults[vault_num]['id']} success.")
             except exceptions.ClientRequestException as e:
                 if e.error_code == "BackupService.6302":
-                    log.warning(f"[actions]-[{self.action_name}] "
-                              f"add resource id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
-                              f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
+                    log.warning(f"[actions]-[{self.action_name}] add resource "
+                                f"id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
+                                f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
                     m = re.search(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
                                   e.error_msg, re.IGNORECASE)
                     if m:
@@ -191,8 +191,8 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                                         f"rejoin resource{server_ids} failed")
                     continue
                 else:
-                    log.error(f"[actions]-[{self.action_name}] "
-                              f"add resource id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
+                    log.error(f"[actions]-[{self.action_name}] add resource "
+                              f"id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
                               f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
                 raise
             vault_num += 1
@@ -208,10 +208,12 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                 vault_billing['is_multi_az'] = vaults[0]['billing']['is_multi_az']
             vault_prefix = self.data.get('name') or 'vault'
             vault_index = self.get_exist_vault_index_by_prefix(vaults, vault_prefix)
-            self.bind_resource_to_new_vault(resources, policy_id, vault_billing, vault_prefix, vault_index)
+            self.bind_resource_to_new_vault(resources, policy_id,
+                                            vault_billing, vault_prefix, vault_index)
 
 
-    def bind_resource_to_new_vault(self, resources, policy_id, vault_billing, vault_prefix, vault_index):
+    def bind_resource_to_new_vault(self, resources, policy_id,
+                                   vault_billing, vault_prefix, vault_index):
         offset = vault_index + 1
         resources = list(resources)
         while resources:
