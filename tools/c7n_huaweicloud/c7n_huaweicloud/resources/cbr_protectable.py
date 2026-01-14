@@ -211,7 +211,6 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
             self.bind_resource_to_new_vault(resources, policy_id,
                                             vault_billing, vault_prefix, vault_index)
 
-
     def bind_resource_to_new_vault(self, resources, policy_id,
                                    vault_billing, vault_prefix, vault_index):
         offset = vault_index + 1
