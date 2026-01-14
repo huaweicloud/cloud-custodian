@@ -1,6 +1,8 @@
 import logging
 import random
 import time
+import re
+import uuid
 from datetime import datetime
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkcbr.v1 import (
@@ -140,7 +142,9 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
         policy_id = self.get_policy_for_new_vault(vaults)
 
         vault_num = 0
+        server_ids = []
         while resources and vault_num < len(vaults):
+            server_ids.clear()
             try:
                 request = AddVaultResourceRequest()
                 request.vault_id = vaults[vault_num]['id']
@@ -151,6 +155,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                               f"unable to add resource to {vaults[vault_num]['id']},"
                               "because the number of instances in the vault"
                               f" {vaults[vault_num]['id']} has reached the upper limit.")
+                    time.sleep(1)
                 else:
                     listResourcesbody = []
                     server_ids = []
@@ -171,32 +176,63 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                               f" with id:{server_ids} associate to vault:"
                               f"{vaults[vault_num]['id']} success.")
             except exceptions.ClientRequestException as e:
-                log.error(f"[actions]-[{self.action_name}] "
-                          f"add resource id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
-                          f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
+                if e.error_code == "BackupService.6302":
+                    log.warning(f"[actions]-[{self.action_name}] "
+                              f"add resource id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
+                              f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
+                    m = re.search(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+                                  e.error_msg, re.IGNORECASE)
+                    if m:
+                        try:
+                            error_resource = str(uuid.UUID(m.group()))
+                            resources.extend([sid for sid in server_ids if sid != error_resource])
+                        except ValueError:
+                            log.warning(f"[actions]-[{self.action_name}] "
+                                        f"rejoin resource{server_ids} failed")
+                    continue
+                else:
+                    log.error(f"[actions]-[{self.action_name}] "
+                              f"add resource id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
+                              f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
                 raise
             vault_num += 1
-        vault_billing = {}
-        if len(vaults) > 0:
-            vault_billing['consistent_level'] = vaults[0]['billing']['consistent_level']
-            vault_billing['object_type'] = vaults[0]['billing']['object_type']
-            vault_billing['protect_type'] = vaults[0]['billing']['protect_type']
-            vault_billing['size'] = vaults[0]['billing']['size']
-            vault_billing['charging_mode'] = vaults[0]['billing']['charging_mode']
-            vault_billing['is_multi_az'] = vaults[0]['billing']['is_multi_az']
 
-        offset = 1
+        if resources:
+            vault_billing = {}
+            if len(vaults) > 0:
+                vault_billing['consistent_level'] = vaults[0]['billing']['consistent_level']
+                vault_billing['object_type'] = vaults[0]['billing']['object_type']
+                vault_billing['protect_type'] = vaults[0]['billing']['protect_type']
+                vault_billing['size'] = vaults[0]['billing']['size']
+                vault_billing['charging_mode'] = vaults[0]['billing']['charging_mode']
+                vault_billing['is_multi_az'] = vaults[0]['billing']['is_multi_az']
+            vault_prefix = self.data.get('name') or 'vault'
+            vault_index = self.get_exist_vault_index_by_prefix(vaults, vault_prefix)
+            self.bind_resource_to_new_vault(resources, policy_id, vault_billing, vault_prefix, vault_index)
+
+
+    def bind_resource_to_new_vault(self, resources, policy_id, vault_billing, vault_prefix, vault_index):
+        offset = vault_index + 1
+        resources = list(resources)
         while resources:
-            log.debug(f"[actions]-[{self.action_name}] all existing vaults are "
-                      "unable to be associated, a new vault will be created.")
-            server_list = []
-            for _ in range(self.max_count):
-                if resources:
-                    server_list.append(resources.pop())
-            vault_name = self.get_new_vault_name(vaults, offset)
+            server_list = resources[:self.max_count]
+            del resources[:self.max_count]
+            vault_name = f"{vault_prefix}{offset:04d}"
             offset += 1
-            response = self.create_new_vault(server_list, policy_id, vault_name, vault_billing)
-        return response
+            log.debug(f"[actions]-[{self.action_name}] all existing vaults are "
+                      f"unable to be associated, a new vault[{vault_name}] will be created.")
+            self.create_new_vault(server_list, policy_id, vault_name, vault_billing)
+
+    def get_exist_vault_index_by_prefix(self, exist_vaults, prefix):
+        serial_number = -1
+        for exist_vault in exist_vaults:
+            if str(exist_vault['name']).startswith(prefix):
+                suffix = str(exist_vault['name'])[len(prefix):]
+                if suffix.isdigit():
+                    index = int(suffix)
+                    if serial_number <= index:
+                        serial_number = index
+        return serial_number
 
     def create_new_vault(self, resources, policy_id, vault_name, vault_billing):
         client = self.manager.get_client()
@@ -267,24 +303,6 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                       f"request id:{e.request_id}, status code:{e.status_code}, msg:{e.error_msg}")
             raise
         return response
-
-    def get_new_vault_name(self, vaults, offset):
-        """generate the next vault name based on the config prefix"""
-        vault_prefix = self.data.get('name')
-        if vault_prefix is None or vault_prefix == '':
-            vault_prefix = 'vault'
-        new_index = 0
-        for vault in vaults:
-            if str(vault['name']).startswith(vault_prefix):
-                suffix = str(vault['name'])[len(vault_prefix):]
-                if suffix.isdigit():
-                    index = int(suffix)
-                    if new_index <= index:
-                        new_index = index
-        new_index += offset
-        vault_name = f"{vault_prefix}{new_index:04d}"
-        log.debug(f"[actions]-[{self.action_name}] create new vault name:{vault_name} success.")
-        return vault_name
 
     def get_policy_for_new_vault(self, vaults):
         '''
