@@ -91,6 +91,7 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
 
     '''
     max_count = 200  # the maximum count of instance of vault
+    UUID_PATTERN = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
     action_name = "associate_server_with_vault"
     resource_type = "cbr-protectable"
 
@@ -176,25 +177,20 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                               f" with id:{server_ids} associate to vault:"
                               f"{vaults[vault_num]['id']} success.")
             except exceptions.ClientRequestException as e:
-                if e.error_code == "BackupService.6302":
+                if str(e.error_code) == "BackupService.6302":
                     log.warning(f"[actions]-[{self.action_name}] add resource "
                                 f"id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
                                 f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
-                    m = re.search(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
-                                  e.error_msg, re.IGNORECASE)
+                    m = re.search(self.UUID_PATTERN, e.error_msg, re.IGNORECASE)
                     if m:
-                        try:
-                            error_resource = str(uuid.UUID(m.group()))
-                            resources.extend([sid for sid in server_ids if sid != error_resource])
-                        except ValueError:
-                            log.warning(f"[actions]-[{self.action_name}] "
-                                        f"rejoin resource{server_ids} failed")
-                    continue
+                        error_resource = str(uuid.UUID(m.group()))
+                        resources.extend([sid for sid in server_ids if sid != error_resource])
+                        continue
                 else:
                     log.error(f"[actions]-[{self.action_name}] add resource "
                               f"id:[{server_ids}] to vault id:{vaults[vault_num]['id']}"
                               f" failed, cause request id:{e.request_id}, msg:{e.error_msg}")
-                raise
+                    raise
             vault_num += 1
 
         if resources:
@@ -219,10 +215,22 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
             server_list = resources[:self.max_count]
             del resources[:self.max_count]
             vault_name = f"{vault_prefix}{offset:04d}"
-            offset += 1
             log.debug(f"[actions]-[{self.action_name}] all existing vaults are "
                       f"unable to be associated, a new vault[{vault_name}] will be created.")
-            self.create_new_vault(server_list, policy_id, vault_name, vault_billing)
+            try:
+                self.create_new_vault(server_list, policy_id, vault_name, vault_billing)
+            except exceptions.ClientRequestException as e:
+                log.warning(f"[actions]-[{self.action_name}] add resource id:[{server_list}] to "
+                            f"vault failed, cause request id:{e.request_id}, msg:{e.error_msg}")
+                if str(e.error_code) == "BackupService.6302":
+                    m = re.search(self.UUID_PATTERN, e.error_msg, re.IGNORECASE)
+                    if m:
+                        error_resource = str(uuid.UUID(m.group()))
+                        resources.extend([sid for sid in server_list if sid != error_resource])
+                        continue
+                else:
+                    raise
+            offset += 1
 
     def get_exist_vault_index_by_prefix(self, exist_vaults, prefix):
         serial_number = -1
