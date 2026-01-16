@@ -156,7 +156,6 @@ class CbrAssociateServerVault(HuaweiCloudBaseAction):
                               f"unable to add resource to {vaults[vault_num]['id']},"
                               "because the number of instances in the vault"
                               f" {vaults[vault_num]['id']} has reached the upper limit.")
-                    time.sleep(1)
                 else:
                     listResourcesbody = []
                     server_ids = []
