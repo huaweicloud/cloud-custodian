@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import re
+
+from c7n.filters import Filter
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -20,7 +23,9 @@ from huaweicloudsdkcce.v3 import (
     NodePoolUpdate, NodePoolMetadataUpdate, NodePoolSpecUpdate,
     ClusterInformation, ClusterInformationSpec, ClusterMetadataForUpdate,
     ContainerNetworkUpdate, EniNetworkUpdate, ClusterInformationSpecHostNetwork,
-    NodePoolNodeAutoscaling
+    NodePoolNodeAutoscaling, UpdateClusterLogConfigRequest, ClusterLogConfig, ShowClusterConfigRequest, CceClient,
+    ShowClusterConfigResponse, ClusterLogConfigLogConfigs, ListAddonTemplatesRequest, ListAddonTemplatesResponse,
+    Versions, SupportVersions, CreateAddonInstanceRequest, InstanceRequest, AddonMetadata, InstanceRequestSpec
 )
 
 log = logging.getLogger("custodian.huaweicloud.cce")
@@ -476,6 +481,334 @@ class UpdateCceCluster(HuaweiCloudBaseAction):
                 "Error occurred while updating"
                 f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
             return None
+
+
+@CceCluster.action_registry.register("update-cluster-log-config")
+class UpdateClusterLogConfig(HuaweiCloudBaseAction):
+    """
+    Update Cluster Log Config
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: update-cluster-log-config
+            resource: huaweicloud.cce-cluster
+            actions:
+              - type: update-cluster-log-config
+                ttl_in_days: 30
+                enable: true
+    """
+
+    action_name = "update-cluster-log-config"
+    schema = type_schema(
+        "update-cluster-log-config",
+        ttl_in_days={"type": "integer", "default": 30},
+        enable={"type": "boolean", "default": False},
+
+    )
+
+    permissions = ('cce:updateClusterLogConfig',)
+    components: set = {"audit", "kube-apiserver", "kube-controller-manager", "kube-scheduler"}
+
+    def perform_action(self, resource):
+        """Perform updateClusterLogConfig operation on a single CCE cluster"""
+        cluster_id = resource.get('metadata', {}).get('uid')
+        cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
+
+        if not cluster_id:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot update cluster log config. cause:  missing cluster ID")
+            return None
+
+        client = self.manager.get_client()
+
+        try:
+            body = ClusterLogConfig()
+            body.ttl_in_days = self.data.get('ttl_in_days', 30)
+            body.log_configs = self.generate_log_configs(self.data.get("enable", False))
+            request = UpdateClusterLogConfigRequest(cluster_id, body)
+            response = client.update_cluster_log_config(request)
+            log.info(
+                f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] update cluster log config successes. ")
+            return response
+        except exceptions.ClientRequestException as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] update cluster log config failed."
+                f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
+        except Exception as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] update cluster log config failed."
+                f" cause: {str(e)}")
+            raise
+
+    def generate_log_configs(self, enable: bool) -> list[ClusterLogConfigLogConfigs]:
+        return list([ClusterLogConfigLogConfigs(d, enable) for d in self.components])
+
+
+@CceCluster.filter_registry.register("cluster-log-enabled")
+class ClusterLogEnabledFilter(Filter):
+    """
+    Filter the cce clusters which kubernetes logs enabled
+
+    :example:
+
+    . code-block:: YAML
+        policies:
+          - name: update-cluster-log-config
+            resource: huaweicloud.cce-cluster
+            filters:
+              - type: cluster-log-enabled
+                enabled: true
+
+    """
+    filter_name = 'cluster-log-enabled'
+    schema = type_schema("cluster-log-enabled", enabled={"type": "boolean", "default": True})
+    components: set = {"audit", "kube-apiserver", "kube-controller-manager", "kube-scheduler"}
+
+    def __call__(self, resource):
+        excepted = self.data.get("enabled", False)
+        cluster_id = resource["id"] if "id" in resource else None
+        if not cluster_id:
+            return False
+
+        try:
+            client: CceClient = self.manager.get_client()
+            request = ShowClusterConfigRequest()
+            request.cluster_id = cluster_id
+
+            response = client.show_cluster_config(request)
+            return excepted == self.all_enabled(response)
+        except exceptions.ClientRequestException as e:
+            log.error(f"[filters]- the filter:[{self.filter_name}] query cluster logs-config failed,"
+                      f" cause request id:{e.request_id},"
+                      f" status code:{e.status_code}, msg:{e.error_msg}")
+            raise
+
+    def all_enabled(self, response: ShowClusterConfigResponse) -> bool:
+        enabled_components = set(d.name for d in response.log_configs if d.enable == True)
+        return enabled_components.issuperset(self.components)
+
+
+@CceCluster.filter_registry.register("cluster-encrypted")
+class ClusterEncryptedFilter(Filter):
+    """
+    Filter the cce clusters which secret encrypted
+
+    :example:
+
+    . code-block:: YAML
+        policies:
+          - name: cluster-encrypted
+            resource: huaweicloud.cce-cluster
+            filters:
+              - type: cluster-encrypted
+                encrypted: true
+
+    """
+    filter_name = 'cluster-encrypted'
+    schema = type_schema("cluster-encrypted", encrypted={"type": "boolean", "default": True})
+
+    def __call__(self, resource):
+        encrypted = self.data.get("encrypted", False)
+        actual = resource.get("spec", {}).get("encryptionConfig", {}).get("mode", "Default")
+        return encrypted == (actual != "Default")
+
+
+@CceCluster.filter_registry.register("cluster-signature-enabled")
+class ClusterSignatureEnabledFilter(Filter):
+    """
+    Filter cluster enable the container image signature verification
+    :example:
+
+    . code-block:: YAML
+        policies:
+          - name: cluster-signature-enabled
+            resource: huaweicloud.cce-cluster
+            filters:
+              - type: cluster-signature-enabled
+                enabled: true
+    """
+    filter_name = "cluster-signature-enabled"
+    plugin_name = "swr-cosign"
+    schema = type_schema("cluster-signature-enabled", enabled={"type": "boolean", "default": True})
+
+    def __call__(self, resource):
+        excepted = self.data.get("enabled", False)
+        cluster_id = resource["id"] if "id" in resource else None
+        if not cluster_id:
+            return False
+
+        try:
+            client: CceClient = self.manager.get_client()
+            request = ListAddonInstancesRequest()
+            request.cluster_id = cluster_id
+
+            response = client.list_addon_instances(request)
+            installed = False
+            for _, item in enumerate(response.items):
+                if self.plugin_name == item.metadata.name:
+                    installed = True
+
+            return excepted == installed
+        except exceptions.ClientRequestException as e:
+            log.error(f"[filters]- the filter:[{self.filter_name}] query cluster addon instances failed,"
+                      f" cause request id:{e.request_id},"
+                      f" status code:{e.status_code}, msg:{e.error_msg}")
+            raise
+
+
+def if_version_support(cluster_version: str, cluster_type: str, support_versions: list[SupportVersions]) -> bool:
+    for _, support_version in enumerate(support_versions):
+        if support_version.cluster_type != cluster_type:
+            continue
+        for _, ver in enumerate(support_version.cluster_version):
+            p = re.compile(ver)
+            if p.match(cluster_version):
+                return True
+    return False
+
+
+def version_key(version: str) -> list[int]:
+    return [int(v) for v in version.split('.')]
+
+
+def get_matched_flavor(cluster_flavor, flavors):
+    custom = {}
+    for k, v in flavors.items():
+        if "flavor" not in k:
+            continue
+        if v["size"] in cluster_flavor:
+            return v
+        if v["size"] == "custom":
+            custom = v
+    return custom
+
+
+@CceCluster.action_registry.register("enable-cluster-signature")
+class EnableClusterSignature(HuaweiCloudBaseAction):
+    """
+    Enable the container image signature verification
+
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: enable-cluster-signature
+            resource: huaweicloud.cce-cluster
+            actions:
+              - type: enable-cluster-signature
+                public_key: 'xxx'
+
+    """
+
+    action_name = "enable-cluster-signature"
+    plugin_name = "swr-cosign"
+    schema = type_schema("enable-cluster-signature", public_key={"type": "string", "default": ''})
+    permissions = ('cce:enableClusterSignature',)
+
+    def perform_action(self, resource):
+        """Perform updateClusterLogConfig operation on a single CCE cluster"""
+        cluster_id = resource.get('metadata', {}).get('uid')
+        cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
+        cluster_version = resource.get('spec', {}).get('version')
+        cluster_type = resource.get('spec', {}).get('type')
+        cluster_flavor = resource.get('spec', {}).get('flavor')
+
+        if not cluster_id:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  missing cluster ID")
+            raise Exception(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  missing cluster ID")
+
+        if not cluster_version:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  unknown cluster version"
+            )
+            raise Exception(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  unknown cluster version")
+
+        if not cluster_type:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  unknown cluster type"
+            )
+            raise Exception(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  unknown cluster type")
+
+        client = self.manager.get_client()
+
+        try:
+
+            version = self.get_latest_plugin(cluster_id, cluster_version, cluster_type)
+            spec = InstanceRequestSpec(version=version.version, cluster_id=cluster_id,
+                                       addon_template_name=self.plugin_name)
+            basic = version.input.get('basic', {})
+            basic["rbac_enabled"] = True
+            basic["cluster_version"] = cluster_version
+            custom = version.input.get('parameters', {}).get('custom')
+            custom["cosignPub"] = self.data.get('public_key', '')
+            custom["globs"] = ["*"]
+
+            spec.values = {
+                "basic": basic,
+                "flavor": get_matched_flavor(cluster_flavor, version.input.get('parameters', {})),
+                "custom": custom,
+            }
+            metadata = AddonMetadata(annotations={"addon.install/type": "install"})
+            body = InstanceRequest("Addon", "v3", metadata, spec)
+            request = CreateAddonInstanceRequest(body)
+            response = client.create_addon_instance(request)
+            log.info(
+                f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature successes. ")
+            return response
+        except exceptions.ClientRequestException as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature failed."
+                f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
+        except Exception as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature failed."
+                f" cause: {str(e)}")
+            raise
+
+    def get_latest_plugin(self, cluster_id: str, cluster_version: str, cluster_type: str):
+        client = self.manager.get_client()
+        try:
+            request = ListAddonTemplatesRequest(self.plugin_name)
+            response: ListAddonTemplatesResponse = client.list_addon_templates(request)
+
+            versions: list[Versions] = []
+
+            for _, plugin in enumerate(response.items):
+                if plugin.metadata.name != self.plugin_name:
+                    continue
+                for _, version in enumerate(plugin.spec.versions):
+                    if if_version_support(cluster_version, cluster_type, version.support_versions):
+                        versions.append(version)
+
+            if len(versions) == 0:
+                raise Exception("no available plugin version")
+
+            versions = sorted(versions, key=lambda v: version_key(v.version))
+
+            return versions[-1]
+        except exceptions.ClientRequestException as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature failed."
+                f" cause: install {self.plugin_name} failed,"
+                f" {e.error_msg} (status code: {e.status_code})")
+            raise
+        except Exception as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature failed."
+                f" cause: install {self.plugin_name} failed,"
+                f" {str(e)}")
+            raise
 
 
 @resources.register("cce-nodepool")

@@ -1,0 +1,56 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0; os/Windows#10.0.26100#AMD64 python/3.11.8 impl/CPython;
+        app/25ca91b0-679a-4b3d-8d3a-448671137d92
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260119T082406Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+  response:
+    body:
+      string: '{"error_msg":"The API does not exist or has not been published in the
+        environment","error_code":"APIGW.0101","request_id":"5efd5cf8004051483fed473cd290ded0"}
+
+        '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Jan 2026 08:24:06 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 5efd5cf8004051483fed473cd290ded0
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 404
+      message: Not Found
+version: 1
