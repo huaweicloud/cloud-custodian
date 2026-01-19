@@ -23,9 +23,12 @@ from huaweicloudsdkcce.v3 import (
     NodePoolUpdate, NodePoolMetadataUpdate, NodePoolSpecUpdate,
     ClusterInformation, ClusterInformationSpec, ClusterMetadataForUpdate,
     ContainerNetworkUpdate, EniNetworkUpdate, ClusterInformationSpecHostNetwork,
-    NodePoolNodeAutoscaling, UpdateClusterLogConfigRequest, ClusterLogConfig, ShowClusterConfigRequest, CceClient,
-    ShowClusterConfigResponse, ClusterLogConfigLogConfigs, ListAddonTemplatesRequest, ListAddonTemplatesResponse,
-    Versions, SupportVersions, CreateAddonInstanceRequest, InstanceRequest, AddonMetadata, InstanceRequestSpec
+    NodePoolNodeAutoscaling, UpdateClusterLogConfigRequest,
+    ClusterLogConfig, ShowClusterConfigRequest, CceClient,
+    ShowClusterConfigResponse, ClusterLogConfigLogConfigs,
+    ListAddonTemplatesRequest, ListAddonTemplatesResponse,
+    Versions, SupportVersions, CreateAddonInstanceRequest,
+    InstanceRequest, AddonMetadata, InstanceRequestSpec
 )
 
 log = logging.getLogger("custodian.huaweicloud.cce")
@@ -519,7 +522,8 @@ class UpdateClusterLogConfig(HuaweiCloudBaseAction):
 
         if not cluster_id:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot update cluster log config. cause:  missing cluster ID")
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}] cannot update cluster log config. cause:  missing cluster ID")
             return None
 
         client = self.manager.get_client()
@@ -531,16 +535,19 @@ class UpdateClusterLogConfig(HuaweiCloudBaseAction):
             request = UpdateClusterLogConfigRequest(cluster_id, body)
             response = client.update_cluster_log_config(request)
             log.info(
-                f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] update cluster log config successes. ")
+                f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] update cluster log config successes. ")
             return response
         except exceptions.ClientRequestException as e:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] update cluster log config failed."
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] update cluster log config failed."
                 f" cause: {e.error_msg} (status code: {e.status_code})")
             raise
         except Exception as e:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] update cluster log config failed."
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] update cluster log config failed."
                 f" cause: {str(e)}")
             raise
 
@@ -582,13 +589,14 @@ class ClusterLogEnabledFilter(Filter):
             response = client.show_cluster_config(request)
             return excepted == self.all_enabled(response)
         except exceptions.ClientRequestException as e:
-            log.error(f"[filters]- the filter:[{self.filter_name}] query cluster logs-config failed,"
-                      f" cause request id:{e.request_id},"
-                      f" status code:{e.status_code}, msg:{e.error_msg}")
+            log.error(
+                f"[filters]- the filter:[{self.filter_name}] query cluster logs-config failed,"
+                f" cause request id:{e.request_id},"
+                f" status code:{e.status_code}, msg:{e.error_msg}")
             raise
 
     def all_enabled(self, response: ShowClusterConfigResponse) -> bool:
-        enabled_components = set(d.name for d in response.log_configs if d.enable == True)
+        enabled_components = set(d.name for d in response.log_configs if d.enable)
         return enabled_components.issuperset(self.components)
 
 
@@ -654,13 +662,15 @@ class ClusterSignatureEnabledFilter(Filter):
 
             return excepted == installed
         except exceptions.ClientRequestException as e:
-            log.error(f"[filters]- the filter:[{self.filter_name}] query cluster addon instances failed,"
-                      f" cause request id:{e.request_id},"
-                      f" status code:{e.status_code}, msg:{e.error_msg}")
+            log.error(
+                f"[filters]- the filter:[{self.filter_name}] query cluster addon instances failed,"
+                f" cause request id:{e.request_id},"
+                f" status code:{e.status_code}, msg:{e.error_msg}")
             raise
 
 
-def if_version_support(cluster_version: str, cluster_type: str, support_versions: list[SupportVersions]) -> bool:
+def if_version_support(cluster_version: str, cluster_type: str,
+                       support_versions: list[SupportVersions]) -> bool:
     for _, support_version in enumerate(support_versions):
         if support_version.cluster_type != cluster_type:
             continue
@@ -708,7 +718,8 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
 
     action_name = "enable-cluster-signature"
     plugin_name = "swr-cosign"
-    schema = type_schema("enable-cluster-signature", public_key={"type": "string", "default": ''})
+    schema = type_schema("enable-cluster-signature",
+                         public_key={"type": "string", "default": ''})
     permissions = ('cce:enableClusterSignature',)
 
     def perform_action(self, resource):
@@ -721,23 +732,35 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
 
         if not cluster_id:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  missing cluster ID")
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
+                f"missing cluster ID")
             raise Exception(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  missing cluster ID")
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
+                f"missing cluster ID")
 
         if not cluster_version:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  unknown cluster version"
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
+                f"unknown cluster version"
             )
             raise Exception(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  unknown cluster version")
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
+                f"unknown cluster version")
 
         if not cluster_type:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  unknown cluster type"
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
+                f"unknown cluster type"
             )
             raise Exception(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}] cannot enable cluster container image signature. cause:  unknown cluster type")
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
+                f"unknown cluster type")
 
         client = self.manager.get_client()
 
@@ -763,16 +786,19 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
             request = CreateAddonInstanceRequest(body)
             response = client.create_addon_instance(request)
             log.info(
-                f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature successes. ")
+                f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature successes. ")
             return response
         except exceptions.ClientRequestException as e:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature failed."
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature failed."
                 f" cause: {e.error_msg} (status code: {e.status_code})")
             raise
         except Exception as e:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature failed."
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature failed."
                 f" cause: {str(e)}")
             raise
 
@@ -799,13 +825,15 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
             return versions[-1]
         except exceptions.ClientRequestException as e:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature failed."
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature failed."
                 f" cause: install {self.plugin_name} failed,"
                 f" {e.error_msg} (status code: {e.status_code})")
             raise
         except Exception as e:
             log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with id:[{cluster_id}] enable cluster container image signature failed."
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature failed."
                 f" cause: install {self.plugin_name} failed,"
                 f" {str(e)}")
             raise
