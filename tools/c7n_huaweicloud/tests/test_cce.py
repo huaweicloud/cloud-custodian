@@ -223,7 +223,7 @@ class CceClusterTest(BaseTest):
             'actions': [
                 {
                     'type': 'enable-cluster-signature',
-                    'public_key': "",
+                    'public_key': "xxx",
                 }
             ]
         }, session_factory=factory)

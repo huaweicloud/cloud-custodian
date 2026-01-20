@@ -1,8 +1,10 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-
+import base64
 import logging
 import re
+
+from huaweicloudsdkkms.v2 import ShowPublicKeyRequest, OperateKeyRequestBody, ShowPublicKeyResponse
 
 from c7n.filters import Filter
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -719,7 +721,8 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
     action_name = "enable-cluster-signature"
     plugin_name = "swr-cosign"
     schema = type_schema("enable-cluster-signature",
-                         public_key={"type": "string", "default": ''})
+                         public_key={"type": "string", "default": ''},
+                         kms_id={"type": "string", "default": ''})
     permissions = ('cce:enableClusterSignature',)
 
     def perform_action(self, resource):
@@ -773,8 +776,8 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
             basic["rbac_enabled"] = True
             basic["cluster_version"] = cluster_version
             custom = version.input.get('parameters', {}).get('custom')
-            custom["cosignPub"] = self.data.get('public_key', '')
-            custom["globs"] = ["*"]
+            custom["cosignPub"] = self.get_base64_decode_public_key(cluster_id)
+            custom["globs"] = ["**"]
 
             spec.values = {
                 "basic": basic,
@@ -800,6 +803,44 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
                 f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
                 f"id:[{cluster_id}] enable cluster container image signature failed."
                 f" cause: {str(e)}")
+            raise
+
+    def get_base64_decode_public_key(self, cluster_id: str) -> str:
+        if self.data.get("public_key"):
+            return self.data.get('public_key')
+        public_id = self.data.get('kms_id', '')
+
+        if public_id is None or len(public_id) == 0:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature failed."
+                f" cause: public_key and public_id empty")
+            raise Exception(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature failed."
+                f" cause: public_key and public_id empty")
+
+        session = local_session(self.manager.session_factory)
+        client = session.client("kms")
+
+        try:
+            request = ShowPublicKeyRequest(OperateKeyRequestBody(public_id))
+            response: ShowPublicKeyResponse = client.show_public_key(request)
+            public_key = response.public_key
+            return base64.b64encode(public_key.encode()).decode()
+        except exceptions.ClientRequestException as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature failed."
+                f" cause: get public key id:[{public_id}] failed,"
+                f" {e.error_msg} (status code: {e.status_code})")
+            raise
+        except Exception as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_id}] enable cluster container image signature failed."
+                f" cause: get public key id:[{public_id}] failed,"
+                f" {str(e)}")
             raise
 
     def get_latest_plugin(self, cluster_id: str, cluster_version: str, cluster_type: str):

@@ -79,7 +79,7 @@ interactions:
       X-Sdk-Date:
       - 20250619T104721Z
     method: DELETE
-    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters/cluster-delete-test-id-123?delete_eni=true&delete_evs=true&delete_net=false&delete_obs=false
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters/cluster-delete-test-id-123?delete_efs=true&delete_eni=true&delete_evs=true&delete_net=false&delete_obs=false&delete_sfs=true&delete_sfs30=true&lts_reclaim_policy=Delete_Master_Log_Stream&ondemand_node_policy=delete&periodic_node_policy=retain
   response:
     body:
       string: ''
