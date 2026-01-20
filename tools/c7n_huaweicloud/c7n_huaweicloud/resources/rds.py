@@ -19,7 +19,8 @@ from huaweicloudsdkrds.v3 import (
     UpdateInstanceConfigurationRequest, UpdateInstanceConfigurationRequestBody, BackupPolicy,
     SetAutoEnlargePolicyRequest, UpgradeDbVersionNewRequest,
     ListPostgresqlHbaInfoRequest, ModifyPostgresqlHbaConfRequest,
-    UpdateTdeStatusRequest
+    UpdateTdeStatusRequest, MigrateFollowerRequest, ListFlavorsRequest, PostgresqlHbaConf,
+    DeletePostgresqlHbaConfRequest, ListSmallVersionRequest
 )
 from huaweicloudsdkcore.exceptions import exceptions
 
@@ -1280,3 +1281,289 @@ class EnableTDEAction(HuaweiCloudBaseAction):
             self.log.error(f"Failed to enable TDE feature for RDS SQL Server "
                            f"instance {resource['name']} (ID: {instance_id}): {e}")
             raise
+
+
+@RDS.filter_registry.register('az_same')
+class AZFilter(Filter):
+    """Filter HA RDS instances in the same AZ.
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: rds-with-same-az
+            resource: huaweicloud.rds
+            filters:
+              - type: az_same
+    """
+    schema = type_schema(
+        'az_same'
+    )
+
+    def process(self, resources, event=None):
+        matched = []
+        for resource in resources:
+            if resource.get('type') == 'Ha':
+                self.log.info(f"[filters]- The filter:[AZFilter] RDS resource nodes"
+                              f"{resource.get('nodes')} ")
+                nodes = resource.get('nodes')
+                if len(nodes) == 2 and nodes[0].get('availability_zone') == nodes[1].get('availability_zone'):
+                    matched.append(resource)
+        return matched
+
+
+@RDS.filter_registry.register('need_upgrade')
+class DbVersionFilter(Filter):
+    """Filter RDS instances need to upgrade.
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: rds-need-upgrade
+            resource: huaweicloud.rds
+            filters:
+                  - type: need_upgrade
+    """
+    schema = type_schema(
+        'need_upgrade'
+    )
+
+    def process(self, resources, event=None):
+        client = local_session(self.manager.session_factory).client("rds")
+        matched = []
+        version_favored_dict = {}
+        for resource in resources:
+            if resource.get('datastore', {}).get('type', '').lower() != 'postgresql':
+                continue
+
+            instance_id = resource['id']
+            version = resource.get('datastore').get('version')
+            complete_version = resource.get('datastore').get('complete_version')
+            try:
+                if version in version_favored_dict:
+                    target_db_version = version_favored_dict.get(version)
+                else:
+                    # Query instance parameter template
+                    # API Document: https://console.huaweicloud.com/apiexplorer/#/openapi/RDS/doc?api=ListSmallVersion
+                    # GET /v3/{project_id}/datastores/{database_name}/small-version
+                    request = ListSmallVersionRequest(database_name='PostgreSQL', version=version)
+                    request.instance_id = instance_id
+                    response = client.list_small_version(request)
+                    data_stores = response.data_stores
+
+                    target_db_version = None
+                    for db_version in data_stores:
+                        if db_version.favored:
+                            target_db_version = db_version.name
+                            version_favored_dict[version] = target_db_version
+                            break
+
+                if target_db_version is not None:
+                    target_db_parts = list(map(int, target_db_version.split('.')))
+                    current_version_parts = list(map(int, complete_version.split('.')))
+
+                    # complete version number length
+                    max_len = max(len(target_db_parts), len(current_version_parts))
+                    target_db_parts.extend([0] * (max_len - len(target_db_parts)))
+                    current_version_parts.extend([0] * (max_len - len(current_version_parts)))
+
+                    for i in range(max_len):
+                        if target_db_parts[i] < current_version_parts[i]:
+                            break
+                        elif target_db_parts[i] > current_version_parts[i]:
+                            matched.append(resource)
+                            break
+            except Exception as e:
+                self.log.error(
+                    f"[filters]- The filter:[dbVersionFilter] Failed for RDS instance "
+                    f"{resource['name']} (ID: {instance_id}): {e}")
+        return matched
+
+
+@RDS.action_registry.register('migrate-follower')
+class MigrateFollowerAction(HuaweiCloudBaseAction):
+    """Migrate the follower of the RDS instance
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: rds-migrate-follower
+            resource: huaweicloud.rds
+            filters:
+              - type: az_same
+            actions:
+              - type: migrate-follower
+                azCode: "sa-brazil-1b"
+    """
+    schema = type_schema(
+        'migrate-follower',
+        required=['azCode'],
+        azCode={'type': 'string'}
+    )
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        instance_id = resource['id']
+        az_code = self.data['azCode']
+        nodes = resource.get('nodes')
+        if len(nodes) == 2 and nodes[0].get('availability_zone') == nodes[1].get('availability_zone'):
+            current_az_code = nodes[0].get('availability_zone')
+            if az_code == current_az_code:
+                self.log.error(
+                    f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: {instance_id})] migrate az failed. cause: selected AZ is the same as the AZ of the current instance.")
+                return
+        else:
+            self.log.info(
+                f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: {instance_id})] migrate az failed. cause: instance is already an Multi-AZ instance or a single instance.")
+            return
+        try:
+            # API Document: https://support.huaweicloud.com/api-rds/rds_05_0015.html
+            # POST /v3/{project_id}/instances/{instance_id}/migrateslave
+            request = MigrateFollowerRequest()
+            # Construct the request body
+            node_id = None
+            for node in nodes:
+                if node.get('role') == 'slave':
+                    node_id = node.get('id')
+            request_body = {
+                'nodeId': node_id,
+                'azCode': az_code
+            }
+            request.instance_id = instance_id
+            request.body = request_body
+            response = client.migrate_follower(request)
+            self.log.info(f"[actions]- [MigrateFollowerAction] Successfully migrate follower for RDS instance "
+                          f"{resource['name']} (ID: {instance_id}) to {az_code}")
+            return response
+        except exceptions.ClientRequestException as e:
+            self.log.error(f"[actions]- [MigrateFollowerAction] Failed to migrate follower for RDS instance "
+                           f"{resource['name']} (ID: {instance_id}): {e}")
+            raise
+
+
+@RDS.filter_registry.register('has_not_ssl_hba')
+class PostgresqlSslFilter(Filter):
+    """Filter PostgreSQL RDS instances based on pg_hba.conf configuration
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: rds-pg-ssl-check
+            resource: huaweicloud.rds
+            filters:
+              - type: has_not_ssl_hba
+    """
+    schema = type_schema(
+        'postgresql-hba-conf'
+    )
+
+    def process(self, resources, event=None):
+        client = local_session(self.manager.session_factory).client("rds")
+        matched_resources = []
+
+        for resource in resources:
+            # Process only PostgreSQL instances
+            if resource.get('datastore', {}).get('type', '').lower() != 'postgresql':
+                continue
+
+            instance_id = resource['id']
+            try:
+                # Query the pg_hba.conf file configuration of the instance
+                # API Document: https://support.huaweicloud.com/api-rds/rds_11_0020.html
+                request = ListPostgresqlHbaInfoRequest()
+                request.instance_id = instance_id
+                response = client.list_postgresql_hba_info(request)
+
+                # configs = response.hba_conf_items
+                # match_found = False
+
+                # Check if each configuration matches the filter conditions
+                no_ssl_configs = []
+                for config in response.body:
+                    if getattr(config, 'type', None) == 'host':
+                        config = {'type': config.type, 'database': config.database,
+                                  'user': config.user, 'address': config.address,
+                                  'mask': config.mask, 'method': config.method, 'priority': config.priority}
+                        no_ssl_configs.append(config)
+                if no_ssl_configs:
+                    math_resource = {'filter_hba_config': no_ssl_configs, 'name': resource.get('name'),
+                                     'id': resource.get('id'), 'datastore': resource.get('datastore')}
+                    matched_resources.append(math_resource)
+            except Exception as e:
+                self.log.error(
+                    f"[filter]- [PostgresqlSslFilter] Failed to get the pg_hba.conf configuration for RDS PostgreSQL instance "
+                    f"{resource['name']} (ID: {instance_id}): {e}")
+        return matched_resources
+
+
+@RDS.action_registry.register('delete-pg-hba-conf')
+class DeletePgHbaConfAction(HuaweiCloudBaseAction):
+    """Delete one or more configurations in the pg_hba.conf file
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: rds-delete-pg-hba-conf
+            resource: huaweicloud.rds
+            filters:
+              - type: has_not_ssl_hba
+            actions:
+              - type: delete-pg-hba-conf
+    """
+    schema = type_schema(
+        'delete-pg-hba-conf',
+        configs={
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'required': ['type', 'database', 'user', 'address', 'method'],
+                'properties': {
+                    'type': {'type': 'string'},
+                    'database': {'type': 'string'},
+                    'user': {'type': 'string'},
+                    'address': {'type': 'string'},
+                    'mask': {'type': 'string'},
+                    'method': {'type': 'string'},
+                    'priority': {'type': 'integer'}
+                }
+            }
+        }
+    )
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        instance_id = resource['id']
+        configs = self.data.get('configs', [])
+        if resource.get('filter_hba_config'):
+            configs = resource.get('filter_hba_config')
+
+        # Process only PostgreSQL instances
+        if resource.get('datastore', {}).get('type', '').lower() != 'postgresql' or not configs:
+            self.log.warning(f"[actions]- [DeletePgHbaConfAction] Instance {resource['name']}"
+                             f" (ID: {instance_id}) is not a PostgreSQL instance, "
+                             f"skipping delete of pg_hba.conf")
+            return
+
+        try:
+            # Modify the pg_hba.conf file configuration
+            # API Document: https://support.huaweicloud.com/api-rds/rds_11_0023.html
+            request = DeletePostgresqlHbaConfRequest()
+            request.instance_id = instance_id
+            request.body = configs
+
+            response = client.delete_postgresql_hba_conf(request)
+            self.log.info(f"[actions]- [DeletePgHbaConfAction] Successfully delete RDS PostgreSQL instance {resource['name']}"
+                          f" (ID: {instance_id})'s pg_hba.conf configuration")
+            return response
+        except Exception as e:
+            self.log.error(f"[actions]- [DeletePgHbaConfAction] Failed to delete RDS PostgreSQL instance {resource['name']}"
+                           f" (ID: {instance_id})'s pg_hba.conf configuration: {e}")
+            raise
+
