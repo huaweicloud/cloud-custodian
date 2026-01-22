@@ -1457,13 +1457,19 @@ class PostgresqlSslFilter(Filter):
             resource: huaweicloud.rds
             filters:
               - type: has_not_ssl_hba
+                hba_types:
+                  - host
+                  - hostnossl    
     """
     schema = type_schema(
-        'postgresql-hba-conf'
+        'has_not_ssl_hba',
+        required=['hba_types'],
+        hba_types={'type': 'array', 'items': {'type': 'string'}}
     )
 
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client("rds")
+        hba_types = self.data.get('hba_types', [])
         matched_resources = []
 
         for resource in resources:
@@ -1485,11 +1491,11 @@ class PostgresqlSslFilter(Filter):
                 # Check if each configuration matches the filter conditions
                 no_ssl_configs = []
                 for config in response.body:
-                    if getattr(config, 'type', None) == 'host':
+                    if getattr(config, 'type', None) in hba_types:
                         config = {'type': config.type, 'database': config.database,
                                   'user': config.user, 'address': config.address,
                                   'mask': config.mask, 'method': config.method, 'priority': config.priority}
-                        no_ssl_configs.append(config)
+                        no_ssl_configs.append(config)                
                 if no_ssl_configs:
                     math_resource = {'filter_hba_config': no_ssl_configs, 'name': resource.get('name'),
                                      'id': resource.get('id'), 'datastore': resource.get('datastore')}
