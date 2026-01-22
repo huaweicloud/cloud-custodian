@@ -580,7 +580,7 @@ class SetInstanceProfile(HuaweiCloudBaseAction):
                      "set instance:[%s] profile(metadata) successful.", request, resource['name'])
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{set-instance-profile} The resource:[ecs] with request:[%s] "
-                      "set instance:[%s] profile(metadata) is failed, cause: "
+                      "set instance:[%s] profile(metadata) failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       request, resource['name'], e.status_code,
                       e.request_id, e.error_code, e.error_msg)
@@ -1052,7 +1052,7 @@ class InstancUpdateMetadataOptions(HuaweiCloudBaseAction):
             except exceptions.ClientRequestException as e:
                 log.error("[actions]-{instance-update-imds-token} "
                           "The resource:[ecs] with request:[%s] "
-                          "instance:[%s] update metadata options is failed, cause: "
+                          "instance:[%s] update metadata options failure, cause: "
                           "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                           request, resource['name'], e.status_code,
                           e.request_id, e.error_code, e.error_msg)
