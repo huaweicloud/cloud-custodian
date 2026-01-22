@@ -1,9 +1,11 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import jmespath
 import logging
 import os
 
+from c7n_huaweicloud.utils.json_parse import safe_json_parse
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.filters.ces import AlarmNameSpaceAndMetricFilter, AlarmNotificationFilter
 from c7n_huaweicloud.provider import resources
@@ -11,7 +13,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkces.v2 import UpdateAlarmNotificationsRequest, Notification, \
     PutAlarmNotificationReq, BatchEnableAlarmRulesRequest, BatchEnableAlarmsRequestBody, \
     CreateAlarmRulesRequest, Policy, PostAlarmsReqV2, AlarmType, ListAlarmRulesRequest, \
-    ListOneClickAlarmRulesRequest
+    ListOneClickAlarmRulesRequest, ListAlarmTemplateAssociationAlarmsRequest
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdksmn.v2 import PublishMessageRequest, PublishMessageRequestBody, \
     ListTopicsRequest
@@ -43,7 +45,12 @@ class Alarm(QueryResourceManager):
             # 获取一键告警规则资源
             elif raw.startswith("oca"):
                 return self.get_one_click_alarm_resources(resource_ids)
-
+            # 获取资源分组关联的告警规则资源
+            elif raw.startswith("rg"):
+                return self.get_resource_group_associate_alarm_resources(resource_ids)
+            # 获取告警模板关联的告警规则资源
+            elif raw.startswith("at"):
+                return self.get_alarm_template_associate_alarm_resources(resource_ids)
         all_resources = self.get_alarm_resources(resource_ids)
         return [r for r in all_resources if r["alarm_id"] in id_set]
 
@@ -61,12 +68,7 @@ class Alarm(QueryResourceManager):
             request.limit = limit
             try:
                 response = client.list_alarm_rules(request)
-                current_resources = eval(
-                    str(response.alarms)
-                        .replace("null", "None")
-                        .replace("false", "False")
-                        .replace("true", "True")
-                )
+                current_resources = jmespath.search("alarms", safe_json_parse(response))
                 for resource in current_resources:
                     if "id" not in resource:  # 检查是否缺少id字段
                         if "alarm_id" in resource:  # 使用alarm_id填充
@@ -103,12 +105,7 @@ class Alarm(QueryResourceManager):
                 request = ListOneClickAlarmRulesRequest()
                 request.one_click_alarm_id = one_click_id
                 response = client.list_one_click_alarm_rules(request)
-                current_resources = eval(
-                    str(response.alarms)
-                        .replace("null", "None")
-                        .replace("false", "False")
-                        .replace("true", "True")
-                )
+                current_resources = jmespath.search("alarms", safe_json_parse(response))
                 for resource in current_resources:
                     if "alarm_id" in resource:  # 获取alarm_id
                         alarm_ids.append(resource["alarm_id"])
@@ -124,6 +121,67 @@ class Alarm(QueryResourceManager):
                     return resources
                 log.error(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
                           f"with id:[{one_click_alarm_ids}] query alarm rules is failed."
+                          f" cause: {e.error_msg} ")
+                raise e
+        return resources
+
+    def get_alarm_template_associate_alarm_resources(self, alarm_template_ids):
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+        alarm_ids = []
+        resources = []
+        for alarm_template_id in alarm_template_ids:
+            try:
+                request = ListAlarmTemplateAssociationAlarmsRequest()
+                request.template_id = alarm_template_id
+                response = client.list_alarm_template_association_alarms(request)
+                current_resources = jmespath.search("alarms", safe_json_parse(response))
+                for resource in current_resources:
+                    if "alarm_id" in resource:  # 获取alarm_id
+                        alarm_ids.append(resource["alarm_id"])
+
+                id_set = set(alarm_ids)
+                alarm_resources = self.get_alarm_resources(alarm_ids)
+                resources.extend([r for r in alarm_resources if r["alarm_id"] in id_set])
+            except exceptions.ClientRequestException as e:
+                if e.status_code == 404:
+                    log.warning(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
+                                f"with id:[{alarm_template_ids}] query alarm rules is empty."
+                                f" cause: one click alarm has been reset or deleted.")
+                    return resources
+                log.error(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
+                          f"with id:[{alarm_template_ids}] query alarm rules is failed."
+                          f" cause: {e.error_msg} ")
+                raise e
+        return resources
+
+    def get_resource_group_associate_alarm_resources(self, resource_group_ids):
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+        resources = []
+        for resource_group_id in resource_group_ids:
+            try:
+                request = ListAlarmRulesRequest()
+                request.resource_group_id = resource_group_id
+                response = client.list_alarm_rules(request)
+                current_resources = jmespath.search("alarms", safe_json_parse(response))
+                for resource in current_resources:
+                    if "id" not in resource:  # 检查是否缺少id字段
+                        if "alarm_id" in resource:  # 使用alarm_id填充
+                            resource["id"] = resource["alarm_id"]
+                        else:
+                            log.warning(f"Resource missing both id and alarm_id: {resource}")
+                            resource["id"] = f"generated_{hash(str(resource))}"
+                        resource["tag_resource_type"] = "CES-alarm"
+                    resources.append(resource)
+            except exceptions.ClientRequestException as e:
+                if e.status_code == 404:
+                    log.warning(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
+                                f"with id:[{resource_group_ids}] query alarm rules is empty."
+                                f" cause: one click alarm has been reset or deleted.")
+                    return resources
+                log.error(f"[actions]- list_one_click_alarm_rules - The resource:ces-alarm "
+                          f"with id:[{resource_group_ids}] query alarm rules is failed."
                           f" cause: {e.error_msg} ")
                 raise e
         return resources

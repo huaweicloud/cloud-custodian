@@ -9,10 +9,13 @@ import base64
 import site
 import zipfile
 import os
+import random
+import re
 
 from c7n.mu import get_exec_options, custodian_archive as base_archive
 from c7n.utils import local_session
 from c7n.exceptions import PolicyExecutionError
+from c7n_huaweicloud.utils.json_parse import safe_json_parse
 
 from huaweicloudsdkfunctiongraph.v2 import (
     ListFunctionsRequest,
@@ -143,10 +146,7 @@ class FunctionGraphManager:
                                            f'error message:[{e.error_msg}].')
             count = response.count
             next_marker = response.next_marker
-            functions += eval(str(response.functions).
-                              replace('null', 'None').
-                              replace('false', 'False').
-                              replace('true', 'True'))
+            functions += safe_json_parse(response.functions)
             market = next_marker
             if next_marker >= count:
                 break
@@ -1464,6 +1464,11 @@ class TimerServiceSource(FunctionGraphTriggerBase):
             trigger_status=self.data.get('status', 'ACTIVE'),
         )
         schedule = self.data.get('schedule')
+        random_offset_time = self.data.get('random_offset_time', [])
+        if random_offset_time:
+            log.info(f'Original cron schedule in policy: {schedule}.')
+            schedule = self._get_new_schedule_by_random_offset(schedule, random_offset_time)
+            log.info(f'New cron schedule by random offset: {schedule}.')
         if self.data.get('schedule_type') == "Cron" \
                 and self.data.get('cron_tz', "") \
                 and not schedule.startswith("@every"):
@@ -1476,6 +1481,115 @@ class TimerServiceSource(FunctionGraphTriggerBase):
         }
 
         return request_body
+
+    def _get_new_schedule_by_random_offset(self, schedule, random_offset_time):
+        offset_min, offset_max = 0, 0
+        if isinstance(random_offset_time, list):
+            offset_min = random_offset_time[0]
+            offset_max = random_offset_time[1]
+        elif isinstance(random_offset_time, str):
+            offset_max = int(random_offset_time)
+        elif isinstance(random_offset_time, int):
+            offset_max = random_offset_time
+
+        # 生成随机延迟秒数
+        random_delay = random.randint(offset_min, offset_max)
+        log.info(f'Cron schedule will delay {random_delay}s, '
+                 f'in range [{offset_min}, {offset_max}].')
+        # 如果延迟为0，直接返回原cron表达式
+        if random_delay == 0:
+            return schedule
+
+        # 解析cron表达式
+        fields = schedule.strip().split()
+
+        if len(fields) not in [6, 7]:
+            raise ValueError("cron表达式必须是6或7个字段")
+
+        second_field = fields[0]
+        minute_field = fields[1]
+        hour_field = fields[2]
+
+        delay_seconds = random_delay % 60
+        delay_minutes = (random_delay // 60) % 60
+        delay_hours = random_delay // 3600
+
+        def add_to_field(field, value, max_value):
+            """向cron字段添加值，处理列表和范围"""
+            if field.isdigit():
+                new_value = (int(field) + value) % (max_value + 1)
+                return str(new_value)
+
+            if field == '*':
+                if value % (max_value + 1) == 0:
+                    return '*'
+                return str(value % (max_value + 1))
+
+            step_match = re.match(r'\*/(\d+)', field)
+            if step_match:
+                step = int(step_match.group(1))
+                if value % step == 0:
+                    return field
+                return str(value % (max_value + 1))
+
+            if ',' in field:
+                parts = field.split(',')
+                try:
+                    nums = [int(p) for p in parts]
+                    new_nums = [(num + value) % (max_value + 1) for num in nums]
+                    return ','.join(str(n) for n in sorted(set(new_nums)))
+                except ValueError:
+                    return field
+
+            range_match = re.match(r'(\d+)-(\d+)', field)
+            if range_match:
+                start = int(range_match.group(1))
+                end = int(range_match.group(2))
+                new_start = (start + value) % (max_value + 1)
+                new_end = (end + value) % (max_value + 1)
+                if new_start <= new_end:
+                    return f"{new_start}-{new_end}"
+                else:
+                    return f"{new_start}-{max_value},{0}-{new_end}"
+
+            return field
+
+        new_second = add_to_field(second_field, delay_seconds, 59)
+
+        minute_carry = 0
+        if second_field.isdigit():
+            old_second = int(second_field)
+            if old_second + delay_seconds > 59:
+                minute_carry = 1
+        elif second_field == '*':
+            if delay_seconds > 0:
+                minute_carry = 1
+        else:
+            minute_carry = (delay_seconds // 60)
+
+        total_minute_add = delay_minutes + minute_carry
+        new_minute = add_to_field(minute_field, total_minute_add % 60, 59)
+
+        hour_carry = 0
+        if minute_field.isdigit():
+            old_minute = int(minute_field)
+            if old_minute + total_minute_add > 59:
+                hour_carry = 1
+        elif minute_field == '*':
+            if total_minute_add >= 60:
+                hour_carry = 1
+        else:
+            hour_carry = total_minute_add // 60
+
+        total_hour_add = delay_hours + hour_carry
+        new_hour = add_to_field(hour_field, total_hour_add % 24, 23)
+
+        new_fields = fields.copy()
+        new_fields[0] = new_second
+        new_fields[1] = new_minute
+        new_fields[2] = new_hour
+
+        return ' '.join(new_fields)
 
     def compare(self, func_urn):
         changed = True
@@ -1502,6 +1616,9 @@ class TimerServiceSource(FunctionGraphTriggerBase):
 
         schedule_type_in_policy = self.data.get('schedule_type')
         schedule_in_policy = self.data.get('schedule')
+        random_offset_time = self.data.get('random_offset_time', [])
+        if random_offset_time:
+            return True
         if self.data.get('schedule_type') == "Cron" \
                 and self.data.get('cron_tz', "") \
                 and not schedule_in_policy.startswith("@every"):
