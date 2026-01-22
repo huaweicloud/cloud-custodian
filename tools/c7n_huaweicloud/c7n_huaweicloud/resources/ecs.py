@@ -901,7 +901,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
                       "post cbr service:{/v3/project_id/checkpoints} successful.", request)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-snapshot} The resource:[ecs] with request:[%s] "
-                      "post cbr service:{/v3/project_id/checkpoints} failured, cause: "
+                      "post cbr service:{/v3/project_id/checkpoints} failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       backup, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
