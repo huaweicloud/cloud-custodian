@@ -172,15 +172,16 @@ class EcsStart(HuaweiCloudBaseAction):
             return
         client = self.manager.get_client()
         request = self.init_request(instances)
+        names = [item['name'] for item in resources]
         try:
             response = client.batch_start_servers(request)
             log.info("[actions]-{instance-start} The resource:[ecs] with request:[%s] "
-                     "instances start is success.", request)
+                     "instances:%s startup successful.", request, names)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-start} The resource:[ecs] with request:[%s] "
-                      "instances start is failed, cause: "
+                      "instances:%s startup failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                      request, names, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return json.dumps(response.to_dict())
 
@@ -232,15 +233,16 @@ class EcsStop(HuaweiCloudBaseAction):
             return
         client = self.manager.get_client()
         request = self.init_request(instances)
+        names = [item['name'] for item in resources]
         try:
             response = client.batch_stop_servers(request)
             log.info("[actions]-{instance-stop} The resource:[ecs] with request:[%s] "
-                     "instances stop is success.", request)
+                     "instances:%s shutdown successful.", request, names)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-stop} The resource:[ecs] with request:[%s] "
-                      "instances stop is failed, cause: "
+                      "instances:%s shutdown failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                      request, names, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return json.dumps(response.to_dict())
 
@@ -283,7 +285,7 @@ class EcsReboot(HuaweiCloudBaseAction):
     def process(self, resources):
         instances = self.filter_resources(resources, "status", self.valid_origin_states)
         if not instances:
-            log.warning("[actions]-{instance-reboot} No instance need stop: "
+            log.warning("[actions]-{instance-reboot} No instance need reboot: "
                         "All instances status are stopped.")
             return None
         if len(instances) > 1000:
@@ -292,15 +294,16 @@ class EcsReboot(HuaweiCloudBaseAction):
             return
         client = self.manager.get_client()
         request = self.init_request(instances)
+        names = [item['name'] for item in resources]
         try:
             response = client.batch_reboot_servers(request)
             log.info("[actions]-{instance-reboot} The resource:[ecs] with request:[%s] "
-                     "instances reboot is success.", request)
+                     "instances:%s reboot successful.", request, names)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-reboot} The resource:[ecs] with request:[%s] "
-                      "instances reboot is failed, cause: "
+                      "instances:%s reboot failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                      request, names, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return json.dumps(response.to_dict())
 
@@ -351,15 +354,16 @@ class EcsTerminate(HuaweiCloudBaseAction):
         requestBody = DeleteServersRequestBody(delete_publicip=delete_publicip,
                                                delete_volume=delete_volume, servers=serverIds)
         request = DeleteServersRequest(body=requestBody)
+        names = [item['name'] for item in resources]
         try:
             response = client.delete_servers(request)
             log.info("[actions]-{instance-terminate} The resource:[ecs] with request:[%s] "
-                     "instances terminate is success.", request)
+                     "instances:%s terminate successful.", request, names)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-terminate} The resource:[ecs] with request:[%s] "
-                      "instances terminate is failed, cause: "
+                      "instances:%s terminate failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                      request, names, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
         return json.dumps(response.to_dict())
 
@@ -383,7 +387,8 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
                 key: id
                 value: "your server id"
             actions:
-              - instance-add-security-groups
+              - type: instance-add-security-groups
+                name: "default"
     """
 
     schema = type_schema(
@@ -406,13 +411,14 @@ class AddSecurityGroup(HuaweiCloudBaseAction):
             response = client.nova_associate_security_group(request)
             log.info("[actions]-{instance-add-security-groups} "
                      "The resource:[ecs] with request:[%s] "
-                     "instance add security groups is success.", request)
+                     "instance:[%s] add security groups successful.", request, resource['name'])
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-add-security-groups} "
                       "The resource:[ecs] with request:[%s] "
-                      "instance add security groups is failed, cause: "
+                      "instance:[%s] add security groups failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                      request, resource['name'], e.status_code,
+                      e.request_id, e.error_code, e.error_msg)
             raise
         return response
 
@@ -457,13 +463,14 @@ class DeleteSecurityGroup(HuaweiCloudBaseAction):
             response = client.nova_disassociate_security_group(request)
             log.info("[actions]-{instance-delete-security-groups} "
                      "The resource:[ecs] with request:[%s] "
-                     "instance delete security groups is success.", request)
+                     "instance:[%s] delete security groups successful.", request, resource['name'])
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-delete-security-groups} "
                       "The resource:[ecs] with request:[%s] "
-                      "instance delete security groups is failed, cause: "
+                      "instance:[%s] delete security groups failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                      request, resource['name'], e.status_code,
+                      e.request_id, e.error_code, e.error_msg)
             raise
         return response
 
@@ -526,12 +533,13 @@ class Resize(HuaweiCloudBaseAction):
         try:
             response = client.resize_server(request)
             log.info("[actions]-{instance-resize} The resource:[ecs] with request:[%s] "
-                     "instance resize is success.", request)
+                     "instance:[%s] resize successful.", request, resource['name'])
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-resize} The resource:[ecs] with request:[%s] "
-                      "instances resize is failed, cause: "
+                      "instance:[%s] resize failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                      request, resource['name'], e.status_code,
+                      e.request_id, e.error_code, e.error_msg)
             raise
         return response
 
@@ -569,12 +577,13 @@ class SetInstanceProfile(HuaweiCloudBaseAction):
         try:
             response = client.update_server_metadata(request)
             log.info("[actions]-{set-instance-profile} The resource:[ecs] with request:[%s] "
-                     "set instance profile(metadata) is success.", request)
+                     "set instance:[%s] profile(metadata) successful.", request, resource['name'])
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{set-instance-profile} The resource:[ecs] with request:[%s] "
-                      "set instance profile(metadata) is failed, cause: "
+                      "set instance:[%s] profile(metadata) is failed, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                      request, resource['name'], e.status_code,
+                      e.request_id, e.error_code, e.error_msg)
             raise
         return response
 
@@ -625,7 +634,8 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
                         "Error creating whole image on instance set %s", f.exception())
                 results.append(f.result())
                 log.info("[actions]-{instance-whole-image} The resource:[ecs] with id:[%s] "
-                        "instance whole image is success.", instance_set[0]['id'])
+                        "instance:[%s] create whole image successful.",
+                        instance_set[0]['id'], instance_set[0]['name'])
         return results
 
     def create_whole_image(self, r, ims_client):
@@ -639,16 +649,16 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
             response = ims_client.create_whole_image(request)
             if response.status_code != 200:
                 log.error("[actions]-{instance-whole-image} "
-                        "create whole image for instance %s failed, cause: "
+                        "create whole image for instance %s failure, cause: "
                         "post ims service:{/v1/cloudimages/wholeimages/action} status_code != 200",
                         self.data.get("instance_id"))
                 return False
             log.debug("[actions]-{instance-whole-image} "
-                      "post ims service:{/v1/cloudimages/wholeimages/action} success.")
+                      "post ims service:{/v1/cloudimages/wholeimages/action} successful.")
             return self.wait_backup(response.job_id, ims_client)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-whole-image} The resource:[ecs] with request:[%s] "
-                      "instance whole image is failed, cause: "
+                      "instance whole image failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       request, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -675,10 +685,10 @@ class InstanceWholeImage(HuaweiCloudBaseAction):
         try:
             response = ims_client.show_job_progress(request)
             log.debug("[actions]-{instance-whole-image} "
-                      "query ims service:{/v1/cloudimages/job/%s} success.", job_id)
+                      "query ims service:{/v1/cloudimages/job/%s} successful.", job_id)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-whole-image} The resource:[ecs] with request:[%s] "
-                      "query ims service:{/v1/cloudimages/job/%s} is failed, cause: "
+                      "query ims service:{/v1/cloudimages/job/%s} failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       request, job_id, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -718,7 +728,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
 
     def process(self, resources):
         if self.data.get("vault_id", None) is None:
-            log.error("[actions]-{instance-snapshot} The resource:[ecs] is failed, "
+            log.error("[actions]-{instance-snapshot} The resource:[ecs] failure, "
                       "cause: vault_id con not be None.")
             return []
         cbr_backup_client = local_session(self.manager.session_factory).client(
@@ -743,6 +753,9 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
                     self.log.error("[actions]-{instance-snapshot} The resource:[ecs] "
                         "Error creating instance snapshot on instance set %s", f.exception())
                 results.append(f.result())
+                log.info("[actions]-{instance-snapshot} The resource:[ecs] with id:[%s] "
+                        "instance:[%s] create snapshot successful.",
+                        instance_set[0]['id'], instance_set[0]['name'])
         return results
 
     def snapshot(self, r, vaults_resource_ids, cbr_backup_client):
@@ -758,7 +771,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
                 )
                 if add_resource_response.status_code != 200:
                     log.error("[actions]-{instance-snapshot} The resource:[ecs] "
-                              "add instance %s to vault is failed, cause: "
+                              "add instance %s to vault failure, cause: "
                               "post cbr service add vault resources status_code != 200, code:[%s]",
                               server_id, add_resource_response.status_code)
                     return False
@@ -803,7 +816,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         )
         if checkpoint_response.status_code != 200:
             log.error("[actions]-{instance-snapshot} The resource:[ecs] "
-                      "instance %s backup is failed, cause: "
+                      "instance %s backup failure, cause: "
                       "create checkpoint for instance status_code != 200, code:[%s]",
                       server_id, checkpoint_response.status_code)
             return False
@@ -837,10 +850,10 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
                 "huaweicloud.cbr-vault"
             ).resources()
             log.debug("[actions]-{instance-snapshot} The resource:[ecs] "
-                      "query cbr service:{/v3/project_id/vaults} success.")
+                      "query cbr service:{/v3/project_id/vaults} successful.")
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-snapshot} The resource:[ecs] "
-                      "query cbr service:{/v3/project_id/vaults} is failed, cause: "
+                      "query cbr service:{/v3/project_id/vaults} failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -856,7 +869,7 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
                       vault_id)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-snapshot} The resource:[ecs] with request:[%s] "
-                      "post cbr service:{/v3/project_id/vaults/%s/addresources} is failed, cause: "
+                      "post cbr service:{/v3/project_id/vaults/%s/addresources} failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       request, vault_id, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -869,11 +882,11 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         try:
             response = cbr_client.list_op_logs(request)
             log.debug("[actions]-{instance-snapshot} The resource:[ecs] with vault_id:[%s]"
-                      "query cbr service:{/v3/project_id/opperation-logs} success.",
+                      "query cbr service:{/v3/project_id/opperation-logs} successful.",
                       vault_id)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-snapshot} The resource:[ecs] with request:[%s] "
-                      "query cbr service:{/v3/project_id/opperation-logs} is failed, cause: "
+                      "query cbr service:{/v3/project_id/opperation-logs} failure, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       request, vault_id, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -885,10 +898,10 @@ class InstanceSnapshot(HuaweiCloudBaseAction):
         try:
             response = cbr_client.create_checkpoint(request)
             log.debug("[actions]-{instance-snapshot} The resource:[ecs] with request:[%s] "
-                      "post cbr service:{/v3/project_id/checkpoints} success.", request)
+                      "post cbr service:{/v3/project_id/checkpoints} successful.", request)
         except exceptions.ClientRequestException as e:
             log.error("[actions]-{instance-snapshot} The resource:[ecs] with request:[%s] "
-                      "post cbr service:{/v3/project_id/checkpoints} is failed, cause: "
+                      "post cbr service:{/v3/project_id/checkpoints} failured, cause: "
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       backup, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
@@ -930,14 +943,15 @@ class InstanceVolumesCorrections(HuaweiCloudBaseAction):
                 response = client.update_server_block_device(request)
                 log.info("[actions]-{instance-volumes-corrections} "
                          "The resource:[ecs] with request:[%s] "
-                         "update server block device is success.", request)
+                         "update instance:[%s] block device successful.", request, resource['name'])
                 results.append(response)
             except exceptions.ClientRequestException as e:
                 log.error("[actions]-{instance-volumes-corrections} "
                           "The resource:[ecs] with request:[%s] "
-                          "update server block device is failed, cause: "
+                          "update instance:[%s] block device failure, cause: "
                           "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                          request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                          request, resource['name'], e.status_code,
+                          e.request_id, e.error_code, e.error_msg)
                 continue
         return results
 
@@ -979,13 +993,14 @@ class InstanceDeleteMetadataKey(HuaweiCloudBaseAction):
                 response = client.delete_server_metadata(request)
                 log.info("[actions]-{instance-delete-metadata-key} "
                          "The resource:[ecs] with request:[%s] "
-                         "delete server metadata is success.", request)
+                         "delete instance:[%s] metadata successful.", request, resource['name'])
             except exceptions.ClientRequestException as e:
                 log.error("[actions]-{instance-delete-metadata-key} "
                           "The resource:[ecs] with request:[%s] "
-                          "delete server metadata is failed, cause: "
+                          "delete instance:[%s] metadata failure, cause: "
                           "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                          request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                          request, resource['name'], e.status_code,
+                          e.request_id, e.error_code, e.error_msg)
                 continue
             results.append(json.dumps(response.to_dict()))
         return results
@@ -1032,13 +1047,15 @@ class InstancUpdateMetadataOptions(HuaweiCloudBaseAction):
                 response = client.update_metadata_options(request)
                 log.info("[actions]-{instance-update-imds-token} "
                          "The resource:[ecs] with request:[%s] "
-                         "update metadata options is success.", request)
+                         "instance:[%s] update metadata options successful.",
+                         request, resource['name'])
             except exceptions.ClientRequestException as e:
                 log.error("[actions]-{instance-update-imds-token} "
                           "The resource:[ecs] with request:[%s] "
-                          "update metadata options is failed, cause: "
+                          "instance:[%s] update metadata options is failed, cause: "
                           "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                          request, e.status_code, e.request_id, e.error_code, e.error_msg)
+                          request, resource['name'], e.status_code,
+                          e.request_id, e.error_code, e.error_msg)
                 continue
             results.append(json.dumps(response.to_dict()))
         return results
