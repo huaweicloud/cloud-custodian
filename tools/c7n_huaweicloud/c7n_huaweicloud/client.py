@@ -514,8 +514,8 @@ class Session:
                 .with_region(RocketMQRegion.value_of(self.region))
                 .build()
             )
-        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups', 
-                                              'apig-instance','apig-plugin', 'apig-vpc-endpoint', 
+        elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
+                                              'apig-instance', 'apig-plugin', 'apig-vpc-endpoint',
                                               'apig-signature-key']:
             client = (
                 ApigClient.new_builder()
