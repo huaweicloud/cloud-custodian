@@ -470,6 +470,11 @@ class PeriodicMode(FunctionGraphMode, PullMode):
         trigger_name={'type': 'string'},
         status={'type': 'string', 'enum': ['ACTIVE', 'DISABLED']},
         cron_tz={'type': 'string'},
+        random_offset_time={'oneOf': [
+            {'type': 'array', 'items': {'type': 'integer', 'minimum': 0}},
+            {'type': 'integer', 'minimum': 0},
+            {'type': 'string'},
+        ]},
         required=['schedule', 'schedule_type'],
     )
 
@@ -485,6 +490,42 @@ class PeriodicMode(FunctionGraphMode, PullMode):
                 "Custodian FunctionGraph policies[%s] has a invalid schedule_type [%s]." % (
                     self.policy.name,
                     schedule_type,
+                )
+            )
+
+        random_offset_time = mode.get('random_offset_time', [])
+        if random_offset_time and schedule_type != 'Cron':
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] random_offset_time only support in Cron." % (
+                    self.policy.name,
+                )
+            )
+        if isinstance(random_offset_time, list):
+            if random_offset_time and len(random_offset_time) != 2:
+                raise PolicyValidationError(
+                    "Custodian FunctionGraph policies[%s] has a invalid random_offset_time %s." % (
+                        self.policy.name,
+                        random_offset_time,
+                    )
+                )
+        elif isinstance(random_offset_time, str):
+            try:
+                random_offset_time = int(random_offset_time)
+            except ValueError as e:
+                raise PolicyValidationError(
+                    "Custodian FunctionGraph policies[%s] has a invalid random_offset_time, "
+                    "error: %s." % (
+                        self.policy.name,
+                        e,
+                    )
+                )
+        elif isinstance(random_offset_time, int):
+            pass
+        else:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid random_offset_time %s." % (
+                    self.policy.name,
+                    random_offset_time,
                 )
             )
 

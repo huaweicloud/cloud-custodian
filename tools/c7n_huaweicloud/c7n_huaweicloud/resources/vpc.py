@@ -531,7 +531,6 @@ class SecurityGroupRule(QueryResourceManager):
         service = 'vpc'
         enum_spec = ('list_security_group_rules', 'security_group_rules', 'marker')
         id = 'id'
-        tag_resource_type = ''
 
     def get_resources(self, resource_ids):
         resources = self.get_api_resources()

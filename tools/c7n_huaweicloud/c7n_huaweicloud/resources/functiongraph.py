@@ -8,6 +8,7 @@ from c7n.resolver import ValuesFrom
 from c7n.utils import type_schema, parse_date, local_session
 from c7n.filters import ValueFilter, OPERATORS
 from c7n.exceptions import PolicyExecutionError
+from c7n_huaweicloud.utils.json_parse import safe_json_parse
 
 from huaweicloudsdkfunctiongraph.v2 import (
     ShowFunctionConfigRequest,
@@ -60,7 +61,7 @@ class FunctionGraph(QueryResourceManager):
                                                f'error code:[{e.error_code}], '
                                                f'error message:[{e.error_msg}].')
 
-            func_config = _safe_json_parse(response)
+            func_config = safe_json_parse(response)
             if "id" not in func_config:
                 func_config["id"] = func_config["func_urn"]
             if "tag_resource_type" not in func_config:
@@ -121,7 +122,7 @@ class ReservedConcurrency(ValueFilter):
                 for reserved_instance in reserved_instances:
                     if reserved_instance.function_urn == f'{r["func_urn"]}:{r["version"]}':
                         # change result to Python dict
-                        r[self.annotation_key] = _safe_json_parse(reserved_instance)
+                        r[self.annotation_key] = safe_json_parse(reserved_instance)
             except exceptions.ClientRequestException as e:
                 log.error(f'List reserved instance config[{r["func_urn"]}] failed, '
                           f'request id:[{e.request_id}], '
@@ -191,7 +192,7 @@ class FunctionTrigger(ValueFilter):
                 if triggers is None:
                     return None
                 # change result to Python dict
-                r[self.annotation_key] = _safe_json_parse(triggers)
+                r[self.annotation_key] = safe_json_parse(triggers)
             except exceptions.ClientRequestException as e:
                 log.error(f'List function triggers[{r["func_urn"]}] failed, '
                           f'request id:[{e.request_id}], '
@@ -754,12 +755,3 @@ class InvokeFunction(HuaweiCloudBaseAction):
                                            f'status code:[{e.status_code}], '
                                            f'error code:[{e.error_code}], '
                                            f'error message:[{e.error_msg}].')
-
-
-def _safe_json_parse(response):
-    if isinstance(response, (dict, list)):
-        return response
-    try:
-        return json.loads(str(response))
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON format: {e}")
