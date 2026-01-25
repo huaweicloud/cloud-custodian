@@ -213,7 +213,10 @@ class CreatePluginAction(HuaweiCloudBaseAction):
                 plugin_name: "rate_limit_plugin"
                 plugin_type: "rate_limit"
                 plugin_scope: "global"
-                plugin_content: "{\"scope\":\"basic\",\"default_interval\":1,\"default_time_unit\":\"minute\",\"api_limit\":1000,\"algorithm\":\"counter\"}"
+                plugin_content: >-
+                  {"scope":"basic","default_interval":1,
+                  "default_time_unit":"minute","api_limit":1000,
+                  "algorithm":"counter"}
                 remark: "Rate limiting plugin for API protection"
     """
 
@@ -403,10 +406,14 @@ class CreateCustomAuthorizerAction(HuaweiCloudBaseAction):
                 name: "test_authorizer"
                 custom_authorizer_type: "BACKEND"
                 authorizer_type: "FUNC"
-                authorizer_uri: "urn:fss:xx-xxx-1:08e31c7f5e00f4732ffdc009030ab25d:function:default:test"
+                authorizer_uri: >-
+                  urn:fss:xx-xxx-1:08e31c7f5e00f4732ffdc009030ab25d:
+                  function:default:test
                 network_type: "V1"
                 authorizer_version: "latest"
-                authorizer_alias_uri: "urn:fss:xx-xxx-4:106506b9a92342df9a5025fc12351cfc:function:defau:apigDemo"
+                authorizer_alias_uri: >-
+                  urn:fss:xx-xxx-4:106506b9a92342df9a5025fc12351cfc:
+                  function:defau:apigDemo
                 ttl: 300
                 user_data: "Custom authorizer for frontend authentication"
     """
@@ -1284,7 +1291,8 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
             group_name = resource.get('name')
             log.error(
                 "[actions]-{update-domain} The resource:[apig-api-groups] "
-                "with id:[%s] name:[%s] update domain security policy (domain_id: %s) is failed, cause: "
+                "with id:[%s] name:[%s] update domain security policy "
+                "(domain_id: %s) is failed, cause: "
                 "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                 group_id, group_name, domain_id,
                 e.status_code, e.request_id, e.error_code, e.error_msg)
@@ -1352,13 +1360,17 @@ class UpdateSLDomainSettingAction(HuaweiCloudBaseAction):
             group_name = resource.get('name')
             access_status = "enabled" if self.data['sl_domain_access_enabled'] else "disabled"
             log.info(
-                "[actions]-{update-sl-domain-setting} The resource:[apig-api-groups] "
-                "with id:[%s] name:[%s] update SL domain setting (debug domain access %s) is success.",
+                "[actions]-{update-sl-domain-setting} "
+                "The resource:[apig-api-groups] "
+                "with id:[%s] name:[%s] update SL domain setting "
+                "(debug domain access %s) is success.",
                 group_id, group_name, access_status)
             return response
         except exceptions.ClientRequestException as e:
             group_name = resource.get('name')
-            access_status = "enable" if self.data.get('sl_domain_access_enabled', False) else "disable"
+            access_status = (
+                "enable" if self.data.get('sl_domain_access_enabled', False)
+                else "disable")
             log.error(
                 "[actions]-{update-sl-domain-setting} The resource:[apig-api-groups] "
                 "with id:[%s] name:[%s] %s debug domain access is failed, cause: "
@@ -1432,8 +1444,10 @@ class ApigVpcEndpointResource(QueryResourceManager):
         # Ensure instance_id is properly set
         if not instance_ids:
             log.error(
-                "[filters]-{get-vpc-endpoint-resources} The resource:[apig-vpc-endpoint] "
-                "query VPC endpoint connections is failed, cause: Unable to get valid APIG instance ID")
+                "[filters]-{get-vpc-endpoint-resources} "
+                "The resource:[apig-vpc-endpoint] "
+                "query VPC endpoint connections is failed, cause: "
+                "Unable to get valid APIG instance ID")
             return []
 
         resources = []
@@ -1541,8 +1555,10 @@ class AcceptOrRejectVpcEndpointConnectionAction(HuaweiCloudBaseAction):
             action_desc = "accept" if self.data['action'] == 'receive' else "reject"
             endpoints_str = ", ".join(endpoints)
             log.error(
-                "[actions]-{accept-or-reject-vpcep-connection} The resource:[apig-vpc-endpoint] "
-                "with instance_id:[%s] %s VPC endpoint connection (endpoints: %s) is failed, cause: "
+                "[actions]-{accept-or-reject-vpcep-connection} "
+                "The resource:[apig-vpc-endpoint] "
+                "with instance_id:[%s] %s VPC endpoint connection "
+                "(endpoints: %s) is failed, cause: "
                 "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                 instance_id, action_desc, endpoints_str,
                 e.status_code, e.request_id, e.error_code, e.error_msg)
@@ -1821,10 +1837,13 @@ class SignatureKeyResource(QueryResourceManager):
                     resources = resources + resource
                 except exceptions.ClientRequestException as e:
                     log.error(
-                        "[filters]-{get-signature-keys-resources} The resource:[apig-signature-key] "
+                        "[filters]-{get-signature-keys-resources} "
+                        "The resource:[apig-signature-key] "
                         "query signature key list is failed, cause: "
-                        "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                        e.status_code, e.request_id, e.error_code, e.error_msg, exc_info=True)
+                        "status_code[%s] request_id[%s] error_code[%s] "
+                        "error_msg[%s]",
+                        e.status_code, e.request_id, e.error_code, e.error_msg,
+                        exc_info=True)
                     break
 
                 offset += limit
