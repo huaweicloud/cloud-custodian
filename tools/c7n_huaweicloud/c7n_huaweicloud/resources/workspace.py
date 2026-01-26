@@ -385,7 +385,7 @@ class WorkspacePolicyGroup(QueryResourceManager):
                         opacity_str = options.get('opacity_setting')
                         if opacity_str is not None:
                             try:
-                                opacity_setting_value = int(opacity_str)
+                                opacity_setting_value = float(opacity_str)
                             except (TypeError, ValueError):
                                 opacity_setting_value = None
 
