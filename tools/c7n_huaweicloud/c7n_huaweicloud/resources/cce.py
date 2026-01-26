@@ -103,6 +103,8 @@ class CceCluster(QueryResourceManager):
                 # If no clusterTags found, initialize empty tags dict
                 resource['tags'] = {}
 
+            resource['name'] = resource.get('metadata', {}).get('name', '')
+
         return resources
 
 
