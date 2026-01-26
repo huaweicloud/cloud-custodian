@@ -174,28 +174,38 @@ class ENIIpNotTrust(Filter):
         new_data = copy.deepcopy(self.data)
         new_data.pop('type', None)
         rule_filter = SecurityGroupRuleAllowRiskPort(new_data, self.manager)
+
+        remote_sgs = []
+        valid_ports = []
         for port in resources:
             device_owner = port['device_owner']
             if device_owner and not device_owner.startswith('compute'):
                 continue
-            raw_sgs = port['security_groups']
-            try:
-                request = ListSecurityGroupRulesRequest(remote_group_id=raw_sgs,
-                                                        direction=direction)
-                response = client.list_security_group_rules(request)
-                log.debug("[filters]-[eni-ip-not-trust] query the service:"
-                          "[VPC:list_security_group_rules] succeed.")
-            except exceptions.ServiceResponseException as ex:
-                log.error("[filters]-[eni-ip-not-trust]-The resource:[vpc-port] "
-                          "filter security group rules failed, "
-                          "cause: query remote rules of security groups associated to "
-                          f"the port [{port['id']}] failed, "
-                          f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
-                raise ex
-            rules_object = response.security_group_rules
-            rules = [r.to_dict() for r in rules_object]
+            valid_ports.append(port)
+            remote_sgs += port['security_groups']
 
-            rule_filter_result = rule_filter.process(rules)
+        remote_sgs = list(set(remote_sgs))
+        try:
+            request = ListSecurityGroupRulesRequest(remote_group_id=remote_sgs,
+                                                    direction=direction)
+            response = client.list_security_group_rules(request)
+            log.debug("[filters]-[eni-ip-not-trust] query the service:"
+                      "[VPC:list_security_group_rules] succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error("[filters]-[eni-ip-not-trust]-The resource:[vpc-port] "
+                      "filter security group rules failed, "
+                      "cause: query remote rules of security groups associated to "
+                      f"network interfaces failed, "
+                      f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
+        rules_object = response.security_group_rules
+        all_rules = [r.to_dict() for r in rules_object]
+
+        for port in valid_ports:
+            ip = self._get_port_ip(port)
+            raw_sgs = port['security_groups']
+            rules = [r for r in all_rules if r.get("remote_group_id") in raw_sgs]
+            rule_filter_result = self._filter_risk_rules(rule_filter, rules, ip)
             if rule_filter_result:
                 to_remove_sgs = [rule.get('remote_group_id') for rule in rule_filter_result]
                 set_to_remove_sgs = set(to_remove_sgs)
@@ -204,6 +214,42 @@ class ENIIpNotTrust(Filter):
                 port['security_groups'] = new_sgs
                 res_ports.append(port)
         return res_ports
+
+    def _get_port_ip(self, port):
+        port_ip = ""
+        fixed_ips = port.get("fixed_ips", [])
+        if len(fixed_ips) == 1:
+            port_ip = fixed_ips[0].get("ip_address")
+        elif len(fixed_ips) == 2:
+            for fixed_ip in fixed_ips:
+                ip_address = fixed_ip.get("ip_address")
+                if ':' not in ip_address:
+                    port_ip = ip_address
+        return port_ip
+
+    def _filter_risk_rules(self, rule_filter, rules, ip):
+        if not rule_filter._init_config() or not rule_filter.risk_ports_obj:
+            return []
+        results = []
+        for rule in rules:
+            protocol = rule.get('protocol')
+            # allow all protocol and ports, rule is in risk
+            if not protocol:
+                results.append(rule)
+                continue
+            # risk ports
+            risk_rule_ports = rule_filter._handle_risk_ports(rule)
+            if not risk_rule_ports:
+                continue
+            # trust sg
+            risk_rule_ports = rule_filter._handle_trust_port(
+                protocol, rule.get('security_group_id'), risk_rule_ports, trust_ip=False)
+            # trust ip
+            risk_rule_ports = rule_filter._handle_trust_port(
+                protocol, int(netaddr.IPAddress(ip)), risk_rule_ports, trust_ip=True)
+            if risk_rule_ports:
+                results.append(rule)
+        return results
 
 
 @Port.action_registry.register("disable-port-forwarding")
@@ -358,6 +404,9 @@ class PortUpdateSecurityGroups(HuaweiCloudBaseAction):
                      "send smn message success.")
             return
 
+        set_raw_sgs = set(raw_sgs)
+        set_new_sgs = set(new_sgs)
+        to_remove_sgs = list(set_raw_sgs - set_new_sgs)
         device_owner = resource.get('device_owner', '')
         is_subeni = ('compute:subeni' == device_owner)
         client = self.manager.get_resource_manager('vpc-security-group').get_client() \
@@ -376,8 +425,9 @@ class PortUpdateSecurityGroups(HuaweiCloudBaseAction):
                 request.body = UpdateSubNetworkInterfaceRequestBody(
                     sub_network_interface=subeni_body)
                 response = client.update_sub_network_interface(request)
-                log.info(f"[actions]-[update-security-groups]-The resource:[vpc-port] with id: "
-                         f"[{resource['id']}] update network interface succeed.")
+            log.info(f"[actions]-[update-security-groups]-The resource:[vpc-port] with id: "
+                     f"[{resource['id']}] update network interface succeed, "
+                     f"removed security group(s): [{','.join(to_remove_sgs)}].")
         except exceptions.ServiceResponseException as ex:
             log.error(f"[actions]-[update-security-groups]-The resource:[vpc-port] with id: "
                       f"[{resource['id']}] update network interface failed, "
@@ -1315,27 +1365,18 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                          trust_ip_path={'type': 'string'},
                          required=['direction', 'risk_ports_path'])
 
+    risk_ports_obj = {}
+    extend_trust_sg_obj = {}
+    extend_trust_ip_obj = {}
+
     def process(self, resources, event=None):
         results = []
-        risk_ports_path = self.data.get('risk_ports_path')
-        trust_sg_path = self.data.get('trust_sg_path')
-        trust_ip_path = self.data.get('trust_ip_path')
         direction = self.data.get('direction')
-        if not risk_ports_path:
-            log.error("risk-ports-path is required")
+        if not self._init_config():
             return []
-        risk_ports_obj = self.get_file_content(risk_ports_path)
-        trust_sg_obj = self.get_file_content(trust_sg_path)
-        trust_ip_obj = self.get_file_content(trust_ip_path)
         # {sg_id : deny_rules}
         deny_rule_map = {}
-        extend_trust_ip_obj = {}
-        extend_trust_sg_obj = {}
-        if risk_ports_obj:
-            if trust_ip_obj:
-                extend_trust_ip_obj = self._extend_ip_map(trust_ip_obj)
-            if trust_sg_obj:
-                extend_trust_sg_obj = self._extend_sg_map(trust_sg_obj)
+        if self.risk_ports_obj:
             for rule in resources:
                 if rule.get('direction') != direction or rule.get('action') != 'allow':
                     continue
@@ -1344,39 +1385,18 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                 if not protocol:
                     results.append(rule)
                     continue
-                risk_ports = self._extend_ports(risk_ports_obj.get(protocol))
-                ports = rule.get('multiport')
-                port_list = []
-                if ports:
-                    ports = ports.split(',')
-                    port_list = self._extend_ports(ports, valid_check=False)
-                    risk_rule_ports = [p for p in port_list if p in risk_ports]
-                else:
-                    risk_rule_ports = risk_ports
+
+                # risk port
+                risk_rule_ports = self._handle_risk_ports(rule)
+                # deny rules
+                risk_rule_ports = self._handle_deny_rules(
+                    rule, deny_rule_map, direction, risk_rule_ports)
                 if not risk_rule_ports:
                     continue
-                sg = rule['security_group_id']
-                # deny rules high priority
-                if sg not in deny_rule_map:
-                    deny_rules = self.get_deny_rules(sg, direction)
-                    new_sg = {sg: deny_rules}
-                    deny_rule_map.update(new_sg)
-                deny_rules = deny_rule_map.get(sg)
-                ethertype = rule.get('ethertype')
-                for deny_rule in deny_rules:
-                    if protocol == deny_rule.get('protocol') and \
-                       ethertype == deny_rule.get('ethertype'):
-                        deny_ports = deny_rule.get('multiport')
-                        if not deny_ports:
-                            risk_rule_ports = []
-                            break
-                        deny_ports = self._extend_ports(deny_ports.split(','), valid_check=False)
-                        risk_rule_ports = [p for p in risk_rule_ports if p not in deny_ports]
+
                 # trust sg
-                risk_rule_ports = self._handle_trust_port(extend_trust_sg_obj,
-                                                          protocol,
-                                                          sg,
-                                                          risk_rule_ports)
+                risk_rule_ports = self._handle_trust_port(
+                    protocol, rule.get('security_group_id'), risk_rule_ports, trust_ip=False)
                 if not risk_rule_ports:
                     continue
                 # trust ip
@@ -1387,20 +1407,16 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     # rule_ip is a specific ip
                     if rule_ip.endswith('/32'):
                         rule_ip_int = int(netaddr.IPAddress(rule_ip[:-3]))
-                        risk_rule_ports = self._handle_trust_port(extend_trust_ip_obj,
-                                                                  protocol,
-                                                                  rule_ip_int,
-                                                                  risk_rule_ports)
+                        risk_rule_ports = self._handle_trust_port(
+                            protocol, rule_ip_int, risk_rule_ports, trust_ip=True)
                     # rule_ip is a cidr
                     else:
                         try:
                             network = netaddr.IPNetwork(rule_ip)
                             for ip in network:
                                 ip_int = int(ip)
-                                tmp_risk_ports = self._handle_trust_port(extend_trust_ip_obj,
-                                                                         protocol,
-                                                                         ip_int,
-                                                                         risk_rule_ports)
+                                tmp_risk_ports = self._handle_trust_port(
+                                    protocol, ip_int, risk_rule_ports, trust_ip=True)
                                 if tmp_risk_ports:
                                     break
                             risk_rule_ports = tmp_risk_ports
@@ -1434,10 +1450,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                                 network = netaddr.IPNetwork(ip)
                                 for ip_item in network:
                                     ip_int = int(ip_item)
-                                    if self._handle_trust_port(extend_trust_ip_obj,
-                                                               protocol,
-                                                               ip_int,
-                                                               risk_rule_ports):
+                                    if self._handle_trust_port(
+                                        protocol, ip_int, risk_rule_ports, trust_ip=True):
                                         trust_all_ips = False
                                         break
                                 if not trust_all_ips:
@@ -1448,8 +1462,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                         else:
                             ip = ip[:-3] if ip.endswith('/32') else ip
                             ip_int = int(netaddr.IPAddress(ip))
-                            if self._handle_trust_port(extend_trust_ip_obj, protocol,
-                                                       ip_int, risk_rule_ports):
+                            if self._handle_trust_port(
+                                protocol, ip_int, risk_rule_ports, trust_ip=True):
                                 trust_all_ips = False
                                 break
                     if trust_all_ips:
@@ -1474,6 +1488,7 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     ports = [p.to_dict() for p in ports_object]
                     port_ips = []
                     # get ip of ports
+                    ethertype = rule.get('ethertype')
                     for port in ports:
                         fixed_ips = port.get("fixed_ips", [])
                         if len(fixed_ips) == 1:
@@ -1488,8 +1503,8 @@ class SecurityGroupRuleAllowRiskPort(Filter):
                     # check port ips trust
                     for ip in port_ips:
                         ip_int = int(netaddr.IPAddress(ip))
-                        if self._handle_trust_port(extend_trust_ip_obj, protocol,
-                                                   ip_int, risk_rule_ports):
+                        if self._handle_trust_port(
+                            protocol, ip_int, risk_rule_ports, trust_ip=True):
                             trust_all_ips = False
                             break
                     if trust_all_ips:
@@ -1500,7 +1515,59 @@ class SecurityGroupRuleAllowRiskPort(Filter):
 
         return results
 
-    def _handle_trust_port(self, trust_obj, protocol, key, risk_rule_ports):
+    def _init_config(self):
+        risk_ports_path = self.data.get('risk_ports_path')
+        if not risk_ports_path:
+            log.error("risk-ports-path is required")
+            return False
+        trust_sg_path = self.data.get('trust_sg_path')
+        trust_ip_path = self.data.get('trust_ip_path')
+
+        # get config object from obs
+        self.risk_ports_obj = self.get_file_content(risk_ports_path)
+        trust_sg_obj = self.get_file_content(trust_sg_path)
+        trust_ip_obj = self.get_file_content(trust_ip_path)
+        if trust_ip_obj:
+            self.extend_trust_ip_obj = self._extend_ip_map(trust_ip_obj)
+        if trust_sg_obj:
+            self.extend_trust_sg_obj = self._extend_sg_map(trust_sg_obj)
+        return True
+
+    def _handle_risk_ports(self, rule):
+        # risk ports
+        protocol = rule.get('protocol')
+        risk_ports = self._extend_ports(self.risk_ports_obj.get(protocol))
+        ports = rule.get('multiport')
+        port_list = []
+        if ports:
+            ports = ports.split(',')
+            port_list = self._extend_ports(ports, valid_check=False)
+            risk_rule_ports = [p for p in port_list if p in risk_ports]
+        else:
+            risk_rule_ports = risk_ports
+        return risk_rule_ports
+
+    def _handle_deny_rules(self, rule, deny_rule_map, direction, risk_rule_ports):
+        # deny rules high priority
+        sg = rule.get('security_group_id')
+        if sg not in deny_rule_map:
+            deny_rules = self.get_deny_rules(sg, direction)
+            new_sg = {sg: deny_rules}
+            deny_rule_map.update(new_sg)
+        deny_rules = deny_rule_map.get(sg)
+        for deny_rule in deny_rules:
+            if rule.get('protocol') == deny_rule.get('protocol') and \
+                rule.get('ethertype') == deny_rule.get('ethertype'):
+                deny_ports = deny_rule.get('multiport')
+                if not deny_ports:
+                    risk_rule_ports = []
+                    break
+                deny_ports = self._extend_ports(deny_ports.split(','), valid_check=False)
+                risk_rule_ports = [p for p in risk_rule_ports if p not in deny_ports]
+        return risk_rule_ports
+
+    def _handle_trust_port(self, protocol, key, risk_rule_ports, trust_ip=True):
+        trust_obj = self.extend_trust_ip_obj if trust_ip else self.extend_trust_sg_obj
         if key not in trust_obj:
             return risk_rule_ports
         trust_map = trust_obj.get(key)
@@ -1564,35 +1631,6 @@ class SecurityGroupRuleAllowRiskPort(Filter):
         remaining_after_obs = obs_url[last_obs_index:]
         split_res = remaining_after_obs.split("/", 1)
         return split_res[1]
-
-    def get_multiport(self, risk_ports):
-        multiport = ''
-        if len(risk_ports) == 1:
-            multiport = str(risk_ports[0])
-            return multiport
-        order_ports = risk_ports
-        order_ports.sort()
-        start = order_ports[0]
-        end = order_ports[0]
-        port_len = len(order_ports)
-        for i in range(0, port_len - 1):
-            if order_ports[i + 1] == order_ports[i] + 1:
-                end = order_ports[i + 1]
-            else:
-                end = order_ports[i]
-                if start == end:
-                    port_item_str = str(start)
-                else:
-                    port_item_str = str(start) + '-' + str(end)
-                multiport += port_item_str + ','
-                start = order_ports[i + 1]
-        if end == order_ports[-1]:
-            port_item_str = str(start) + '-' + str(end)
-            multiport += port_item_str
-        else:
-            port_item_str = str(start)
-            multiport += port_item_str
-        return multiport
 
     def get_deny_rules(self, sg_id, direction):
         client = self.manager.get_resource_manager('vpc-security-group-rule').get_client()
