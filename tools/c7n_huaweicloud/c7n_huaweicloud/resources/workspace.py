@@ -217,7 +217,7 @@ class WorkspaceUserEventLtsStatus(QueryResourceManager):
             self.log.info(
                 f"Fetched user events lts config: enable={enable_status}, log_group_id={log_group_id}, log_stream_id={log_stream_id}")
             status_resource = {
-                'id': 'SetUserEventsLtsConfigurations',
+                'id': 'Workspace',
                 'status': 'enabled' if enable_status else 'disabled',
                 'enable': enable_status,
                 'log_group_id': log_group_id,
@@ -382,7 +382,12 @@ class WorkspacePolicyGroup(QueryResourceManager):
 
                     options = watermark.get('options')
                     if options:
-                        opacity_setting_value = options.get('opacity_setting')
+                        opacity_str = options.get('opacity_setting')
+                        if opacity_str is not None:
+                            try:
+                                opacity_setting_value = int(opacity_str)
+                            except (TypeError, ValueError):
+                                opacity_setting_value = None
 
             r['watermark_enable'] = watermark_enable_value
             r['opacity_setting'] = opacity_setting_value
