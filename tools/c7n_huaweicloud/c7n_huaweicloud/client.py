@@ -112,7 +112,9 @@ from huaweicloudsdkram.v1 import (
     SearchSharedResourcesRequest, SearchSharedResourcesReqBody,
 )
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
+from huaweicloudsdkgaussdbfornosql.v3 import GaussDBforNoSQLClient, ListInstancesRequest as GeminiDBListInstancesRequest
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
+from huaweicloudsdkgaussdbfornosql.v3.region.gaussdbfornosql_region import GaussDBforNoSQLRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkrocketmq.v2 import (
     RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
@@ -568,6 +570,13 @@ class Session:
                 .with_region(RdsRegion.value_of(self.region))
                 .build()
             )
+        elif service == "geminidb":
+            client = (
+                GaussDBforNoSQLClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(GaussDBforNoSQLRegion.value_of(self.region))
+                .build()
+            )
         elif service == 'aom':
             client = (
                 AomClient.new_builder()
@@ -792,6 +801,8 @@ class Session:
             request = ListBareMetalServerDetailsRequest()
         elif service == 'rds':
             request = RdsListInstancesRequest()
+        elif service == 'geminidb':
+            request = GeminiDBListInstancesRequest()
         elif service == 'eg':
             request = ListSubscriptionsRequest()
         elif service == 'aom':
