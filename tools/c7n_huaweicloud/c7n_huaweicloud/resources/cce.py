@@ -16,7 +16,6 @@ from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n.utils import local_session, type_schema
 from huaweicloudsdkcore.exceptions import exceptions
 from c7n_huaweicloud.filters.exempted import get_obs_name, get_obs_server, get_file_path
-from c7n.exceptions import PolicyExecutionError
 
 # Import Huawei Cloud CCE SDK related request and response classes
 from huaweicloudsdkcce.v3 import (
@@ -164,17 +163,18 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
         cluster_id = resource.get('metadata', {}).get('uid')
         cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
 
-        if not cluster_id:
-            log.error(
-                f"Cannot delete CCE cluster, missing cluster ID: {cluster_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+            if not cluster_id:
+                raise Exception("empty cluster id")
 
             cluster_status = resource.get("status", {}).get("phase")
             if cluster_status == "Deleting":
+                log.info(
+                    f"[actions]- [delete] The resource:[huaweicloud.cce-cluster] with id:["
+                    f"{cluster_name}/{cluster_id}] delete cluster skipped. cause: already "
+                    f"Deleting.")
                 return None
             elif (cluster_status != "Available" and cluster_status != "Error" and
                   cluster_status != "Unavailable"):
@@ -203,17 +203,21 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
             # Execute delete operation
             response = client.delete_cluster(request)
             log.info(
-                f"Started deleting CCE cluster {cluster_name} ({cluster_id})")
+                f"[actions]- [delete] The resource:[huaweicloud.cce-cluster] with id:["
+                f"{cluster_name}/{cluster_id}] delete cluster succeeded.")
             return response
-
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to delete CCE cluster {cluster_name} ({cluster_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] delete cluster failed."
+                f" cause: {e.error_msg} (status code: {e.status_code}).")
+            raise
         except Exception as e:
-            log.error("Error occurred while deleting"
-                      f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
-            return None
+            log.error(
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] delete cluster failed."
+                f" cause: {str(e)}.")
+            raise
 
 
 @CceCluster.action_registry.register("hibernate")
@@ -246,17 +250,18 @@ class HibernateCceCluster(HuaweiCloudBaseAction):
         cluster_id = resource.get('metadata', {}).get('uid')
         cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
 
-        if not cluster_id:
-            log.error(
-                f"Cannot hibernate CCE cluster, missing cluster ID: {cluster_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+            if not cluster_id:
+                raise Exception("empty cluster id")
+
             cluster_status = resource.get("status", {}).get("phase", '')
-            if (cluster_status == "Hibernating" or cluster_status == "Hibernation" or
-                    cluster_status == "Deleting" or cluster_status == "Error"):
+            if (cluster_status == "Hibernating" or cluster_status == "Hibernation"):
+                log.info(
+                    f"[actions]- [hibernate] The resource:[huaweicloud.cce-cluster] with id:["
+                    f"{cluster_name}/{cluster_id}] hibernate cluster skipped. "
+                    f"cause: already Hibernating.")
                 return None
             elif cluster_status == "Awaking":
                 wait_cluster_status_ready(client, cluster_id, "Available", 20, 30, 600)
@@ -270,18 +275,22 @@ class HibernateCceCluster(HuaweiCloudBaseAction):
 
             response = client.hibernate_cluster(request)
             log.info(
-                f"Started hibernating CCE cluster {cluster_name} ({cluster_id})")
+                f"[actions]- [hibernate] The resource:[huaweicloud.cce-cluster] with id:["
+                f"{cluster_name}/{cluster_id}] hibernate cluster succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to hibernate CCE cluster {cluster_name} ({cluster_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [hibernate]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] hibernate cluster failed."
+                f" cause: {e.error_msg} (status code: {e.status_code}).")
+            raise
         except Exception as e:
             log.error(
-                "Error occurred while hibernating"
-                f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
-            return None
+                f"[actions]- [hibernate]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] hibernate cluster failed."
+                f" cause: {str(e)}.")
+            raise
 
 
 @CceCluster.action_registry.register("awake")
@@ -313,31 +322,33 @@ class AwakeCceCluster(HuaweiCloudBaseAction):
         cluster_id = resource.get('metadata', {}).get('uid')
         cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
 
-        if not cluster_id:
-            log.error(
-                f"Cannot awake CCE cluster, missing cluster ID: {cluster_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+            if not cluster_id:
+                raise Exception("empty cluster id")
+
             request = AwakeClusterRequest()
             request.cluster_id = cluster_id
 
             response = client.awake_cluster(request)
             log.info(
-                f"Started awakening CCE cluster {cluster_name} ({cluster_id})")
+                f"[actions]- [awake] The resource:[huaweicloud.cce-cluster] with id:["
+                f"{cluster_name}/{cluster_id}] awake cluster succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to awake CCE cluster {cluster_name} ({cluster_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [awake]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] awake cluster failed."
+                f" cause: {e.error_msg} (status code: {e.status_code}).")
+            raise
         except Exception as e:
             log.error(
-                "Error occurred while awaking"
-                f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
-            return None
+                f"[actions]- [awake]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] awake cluster failed."
+                f" cause: {str(e)}.")
+            raise
 
 
 @CceCluster.action_registry.register("update")
@@ -428,14 +439,12 @@ class UpdateCceCluster(HuaweiCloudBaseAction):
         cluster_id = resource.get('metadata', {}).get('uid')
         cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
 
-        if not cluster_id:
-            log.error(
-                f"Cannot update CCE cluster, missing cluster ID: {cluster_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+            if not cluster_id:
+                raise Exception("empty cluster id")
+
             # Build update cluster request
             request = UpdateClusterRequest()
             request.cluster_id = cluster_id
@@ -501,18 +510,22 @@ class UpdateCceCluster(HuaweiCloudBaseAction):
 
             response = client.update_cluster(request)
             log.info(
-                f"Started updating CCE cluster {cluster_name} ({cluster_id})")
+                f"[actions]- [update] The resource:[huaweicloud.cce-cluster] with id:["
+                f"{cluster_name}/{cluster_id}] update cluster succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to update CCE cluster {cluster_name} ({cluster_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [update]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] update cluster failed."
+                f" cause: {e.error_msg} (status code: {e.status_code}).")
+            raise
         except Exception as e:
             log.error(
-                "Error occurred while updating"
-                f" CCE cluster {cluster_name} ({cluster_id}): {str(e)}")
-            return None
+                f"[actions]- [update]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] update cluster failed."
+                f" cause: {str(e)}.")
+            raise
 
 
 @CceCluster.action_registry.register("update-cluster-log-config")
@@ -550,15 +563,11 @@ class UpdateClusterLogConfig(HuaweiCloudBaseAction):
         cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
         cluster_status = resource.get("status", {}).get("phase", '')
 
-        if not cluster_id:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}] cannot update cluster log config. cause:  missing cluster ID")
-            return None
-
         client = self.manager.get_client()
 
         try:
+            if not cluster_id:
+                raise Exception("empty cluster id")
 
             if cluster_status == "Creating":
                 wait_cluster_status_ready(client, cluster_id, "Available", 20, 30, 600)
@@ -569,32 +578,32 @@ class UpdateClusterLogConfig(HuaweiCloudBaseAction):
 
             @retry(times=3, interval=30)
             def _retry():
-                self.update_cluster_log_config(cluster_id)
+                self.update_cluster_log_config(cluster_id, cluster_name)
 
             _retry()
+            log.info(
+                f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] update cluster log config succeeded.")
         except exceptions.ClientRequestException as e:
             log.error(
                 f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] update cluster log config failed."
+                f"id:[{cluster_name}/{cluster_id}] update cluster log config failed."
                 f" cause: {e.error_msg} (status code: {e.status_code})")
             raise
         except Exception as e:
             log.error(
                 f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] update cluster log config failed."
+                f"id:[{cluster_name}/{cluster_id}] update cluster log config failed."
                 f" cause: {str(e)}")
             raise
 
-    def update_cluster_log_config(self, cluster_id: str):
+    def update_cluster_log_config(self, cluster_id: str, cluster_name: str):
         client = self.manager.get_client()
         body = ClusterLogConfig()
         body.ttl_in_days = self.data.get('ttl_in_days', 30)
         body.log_configs = self.generate_log_configs(self.data.get("enable", False))
         request = UpdateClusterLogConfigRequest(cluster_id, body)
         response = client.update_cluster_log_config(request)
-        log.info(
-            f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
-            f"id:[{cluster_id}] update cluster log config successes. ")
         return response
 
     def generate_log_configs(self, enable: bool) -> list[ClusterLogConfigLogConfigs]:
@@ -628,21 +637,28 @@ class ClusterLogEnabledFilter(Filter):
         if cluster_status != "Available":
             return not excepted
 
-        if not cluster_id:
-            return False
-
         try:
+            if not cluster_id:
+                raise Exception("empty cluster_id")
+
             client: CceClient = self.manager.get_client()
             request = ShowClusterConfigRequest()
             request.cluster_id = cluster_id
 
             response = client.show_cluster_config(request)
+            log.info(
+                f"[filters]- The filter:[{self.filter_name}] query cluster logs-config succeeded.")
             return excepted == self.all_enabled(response)
         except exceptions.ClientRequestException as e:
             log.error(
-                f"[filters]- the filter:[{self.filter_name}] query cluster logs-config failed,"
-                f" cause request id:{e.request_id},"
+                f"[filters]- the filter:[{self.filter_name}] query cluster logs-config failed."
+                f" cause: request id:{e.request_id},"
                 f" status code:{e.status_code}, msg:{e.error_msg}")
+            raise
+        except Exception as e:
+            log.error(
+                f"[filters]- the filter:[{self.filter_name}] query cluster logs-config failed."
+                f" cause: {str(e)}.")
             raise
 
     def all_enabled(self, response: ShowClusterConfigResponse) -> bool:
@@ -707,14 +723,25 @@ class ClusterSignatureEnabledFilter(Filter):
             client: CceClient = self.manager.get_client()
             plugin_status = get_plugin_status(client, cluster_id, self.plugin_name)
             installed = plugin_status not in ["deleting", "deleteFailed", "deleteSuccess"]
+            log.error(
+                f"[filters]- the filter:[{self.filter_name}] query cluster addon instances "
+                f"succeeded")
             return excepted == installed
         except PluginNotInstalled:
+            log.error(
+                f"[filters]- the filter:[{self.filter_name}] query cluster addon instances "
+                f"succeeded")
             return not excepted
         except exceptions.ClientRequestException as e:
             log.error(
-                f"[filters]- the filter:[{self.filter_name}] query cluster addon instances failed,"
-                f" cause request id:{e.request_id},"
+                f"[filters]- the filter:[{self.filter_name}] query cluster addon instances failed."
+                f" cause: request id:{e.request_id},"
                 f" status code:{e.status_code}, msg:{e.error_msg}")
+            raise
+        except Exception as e:
+            log.error(
+                f"[filters]- the filter:[{self.filter_name}] query cluster addon instances failed."
+                f" cause: {str(e)}.")
             raise
 
 
@@ -754,60 +781,38 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
         cluster_flavor = resource.get('spec', {}).get('flavor')
         cluster_status = resource.get("status", {}).get("phase", '')
 
-        if not cluster_id:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
-                f"missing cluster ID")
-            raise Exception(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
-                f"missing cluster ID")
-
-        if not cluster_version:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
-                f"unknown cluster version"
-            )
-            raise Exception(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
-                f"unknown cluster version")
-
-        if not cluster_type:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
-                f"unknown cluster type"
-            )
-            raise Exception(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}] cannot enable cluster container image signature. cause:  "
-                f"unknown cluster type")
-
         client = self.manager.get_client()
 
         try:
 
+            if not cluster_id:
+                raise Exception("empty cluster ID")
+
+            if not cluster_version:
+                raise Exception("unknown cluster version")
+
+            if not cluster_type:
+                raise Exception("unknown cluster type")
+
             if cluster_status == "Creating":
                 wait_cluster_status_ready(client, cluster_id, "Available", 20, 30, 600)
             elif cluster_status == "Deleting" or cluster_status == "Error":
+                log.info(
+                    f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
+                    f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature "
+                    f"skipped. cause: invalid cluster status: {cluster_status}")
                 return None
             elif cluster_status != "Available":
-                raise Exception(
-                    f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                    f"id:[{cluster_name}] cannot enable image signature. cause:  invalid "
-                    f"cluster status {cluster_status}")
+                raise Exception(f"invalid cluster status {cluster_status}")
 
-            version = self.get_latest_plugin(cluster_id, cluster_version, cluster_type)
+            version = self.get_latest_plugin(cluster_version, cluster_type)
             spec = InstanceRequestSpec(version=version.version, cluster_id=cluster_id,
                                        addon_template_name=self.plugin_name)
             basic = version.input.get('basic', {})
             basic["rbac_enabled"] = True
             basic["cluster_version"] = cluster_version
             custom = version.input.get('parameters', {}).get('custom')
-            custom["cosignPub"] = self.get_base64_decode_public_key(cluster_id)
+            custom["cosignPub"] = self.get_base64_decode_public_key()
             custom["globs"] = ["**"]
 
             spec.values = {
@@ -821,22 +826,23 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
             response = client.create_addon_instance(request)
             log.info(
                 f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature successes. ")
+                f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature "
+                f"succeeded. ")
             return response
         except exceptions.ClientRequestException as e:
             log.error(
                 f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature failed."
+                f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature failed."
                 f" cause: {e.error_msg} (status code: {e.status_code})")
             raise
         except Exception as e:
             log.error(
                 f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature failed."
+                f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature failed."
                 f" cause: {str(e)}")
             raise
 
-    def get_base64_decode_public_key(self, cluster_id: str) -> str:
+    def get_base64_decode_public_key(self) -> str:
         if self.data.get("public_key"):
             return self.data.get('public_key')
         public_id = self.data.get('kms_id', '')
@@ -848,77 +854,44 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
                 public_id = context['signature_key']
 
         if public_id is None or len(public_id) == 0:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature failed."
-                f" cause: public_key and public_id empty")
-            raise Exception(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature failed."
-                f" cause: public_key and public_id empty")
+            raise Exception("public_id empty")
 
         session = local_session(self.manager.session_factory)
         client = session.client("kms")
 
-        try:
-            request = ShowPublicKeyRequest(OperateKeyRequestBody(public_id))
-            response: ShowPublicKeyResponse = client.show_public_key(request)
-            public_key = response.public_key
-            return base64.b64encode(public_key.encode()).decode()
-        except exceptions.ClientRequestException as e:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature failed."
-                f" cause: get public key id:[{public_id}] failed,"
-                f" {e.error_msg} (status code: {e.status_code})")
-            raise
-        except Exception as e:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature failed."
-                f" cause: get public key id:[{public_id}] failed,"
-                f" {str(e)}")
-            raise
+        request = ShowPublicKeyRequest(OperateKeyRequestBody(public_id))
+        response: ShowPublicKeyResponse = client.show_public_key(request)
+        log.debug(
+            f"[actions]-{self.action_name} query the service:["
+            f"/v1.0/project_id/kms/get-publickey] succeeded.")
+        public_key = response.public_key
+        return base64.b64encode(public_key.encode()).decode()
 
-    def get_latest_plugin(self, cluster_id: str, cluster_version: str, cluster_type: str):
+    def get_latest_plugin(self, cluster_version: str, cluster_type: str):
         client = self.manager.get_client()
-        try:
-            request = ListAddonTemplatesRequest(self.plugin_name)
-            response: ListAddonTemplatesResponse = client.list_addon_templates(request)
+        request = ListAddonTemplatesRequest(self.plugin_name)
+        response: ListAddonTemplatesResponse = client.list_addon_templates(request)
+        log.debug(
+            f"[actions]-{self.action_name} query the service:[/api/v3/addontemplates] succeeded.")
+        versions: list[Versions] = []
 
-            versions: list[Versions] = []
+        for _, plugin in enumerate(response.items):
+            if plugin.metadata.name != self.plugin_name:
+                continue
+            for _, version in enumerate(plugin.spec.versions):
+                if if_version_support(cluster_version, cluster_type, version.support_versions):
+                    versions.append(version)
 
-            for _, plugin in enumerate(response.items):
-                if plugin.metadata.name != self.plugin_name:
-                    continue
-                for _, version in enumerate(plugin.spec.versions):
-                    if if_version_support(cluster_version, cluster_type, version.support_versions):
-                        versions.append(version)
+        if len(versions) == 0:
+            raise Exception("no available plugin version")
 
-            if len(versions) == 0:
-                raise Exception("no available plugin version")
+        versions = sorted(versions, key=lambda v: version_key(v.version))
 
-            versions = sorted(versions, key=lambda v: version_key(v.version))
-
-            return versions[-1]
-        except exceptions.ClientRequestException as e:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature failed."
-                f" cause: install {self.plugin_name} failed,"
-                f" {e.error_msg} (status code: {e.status_code})")
-            raise
-        except Exception as e:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_id}] enable cluster container image signature failed."
-                f" cause: install {self.plugin_name} failed,"
-                f" {str(e)}")
-            raise
+        return versions[-1]
 
     def get_file_content(self, obs_url):
         if not obs_url:
-            return {}
+            raise Exception("empty obs_url")
         obs_client = local_session(self.manager.session_factory).client("obs")
         protocol_end = len("https://")
         path_without_protocol = obs_url[protocol_end:]
@@ -926,27 +899,12 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
         obs_server = get_obs_server(path_without_protocol)
         obs_file = get_file_path(path_without_protocol)
         obs_client.server = obs_server
-        try:
-            resp = obs_client.getObject(bucketName=obs_bucket_name,
-                                        objectKey=obs_file,
-                                        loadStreamInMemory=True)
-            if resp.status < 300:
-                log.debug(f"[action]-[{self.action_name}]-"
-                          f"query the service:[OBS:getObject] with obs_url:[{obs_url}] succeed.")
-                content = json.loads(resp.body.buffer)
-                return content
-            else:
-                log.error(f"[filters]-[{self.action_name}]-"
-                          f"cause: get obs object with obs_url:[{obs_url}] failed, "
-                          f"error_code[{resp.errorCode}], error_msg[{resp.errorMessage}].")
-                raise PolicyExecutionError("Get obs object failed, "
-                                           f"error_code[{resp.errorCode}], "
-                                           f"error_msg[{resp.errorMessage}]")
-        except exceptions.ServiceResponseException as ex:
-            log.error(f"[filters]-[{self.action_name}]-"
-                      f"cause: get obs object with obs_url:[{obs_url}] failed, "
-                      f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
-            raise ex
+        resp = obs_client.getObject(bucketName=obs_bucket_name,
+                                    objectKey=obs_file,
+                                    loadStreamInMemory=True)
+        log.debug(f"[actions]-{self.action_name} query the service:[{obs_url}] succeeded.")
+        content = json.loads(resp.body.buffer)
+        return content
 
 
 @resources.register("cce-nodepool")
@@ -1045,32 +1003,38 @@ class DeleteCceNodePool(HuaweiCloudBaseAction):
         nodepool_name = resource.get('metadata', {}).get('name', 'Unknown')
         cluster_id = resource.get('clusterId')
 
-        if not nodepool_id or not cluster_id:
-            log.error(
-                f"Cannot delete node pool, missing required ID: {nodepool_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+
+            if not cluster_id:
+                raise Exception("empty cluster id")
+
+            if not nodepool_id:
+                raise Exception("empty nodepool id")
+
             request = DeleteNodePoolRequest()
             request.cluster_id = cluster_id
             request.nodepool_id = nodepool_id
 
             response = client.delete_node_pool(request)
             log.info(
-                f"Started deleting CCE node pool {nodepool_name} ({nodepool_id})")
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-nodepool] with "
+                f"id:[{nodepool_name}/{nodepool_id}] delete nodepool succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to delete CCE node pool {nodepool_name} ({nodepool_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-nodepool] with "
+                f"id:[{nodepool_name}/{nodepool_id}] delete nodepool failed. "
+                f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
         except Exception as e:
             log.error(
-                "Error occurred while deleting"
-                f" CCE node pool {nodepool_name} ({nodepool_id}): {str(e)}")
-            return None
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-nodepool] with "
+                f"id:[{nodepool_name}/{nodepool_id}] delete nodepool failed. "
+                f" cause: {str(e)}")
+            raise
 
 
 @CceNodePool.action_registry.register("update")
@@ -1217,14 +1181,16 @@ class UpdateCceNodePool(HuaweiCloudBaseAction):
         nodepool_name = resource.get('metadata', {}).get('name', 'Unknown')
         cluster_id = resource.get('clusterId')
 
-        if not nodepool_id or not cluster_id:
-            log.error(
-                f"Cannot update node pool, missing required ID: {nodepool_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+
+            if not cluster_id:
+                raise Exception("empty cluster id")
+
+            if not nodepool_id:
+                raise Exception("empty nodepool id")
+
             request = UpdateNodePoolRequest()
             request.cluster_id = cluster_id
             request.nodepool_id = nodepool_id
@@ -1362,21 +1328,24 @@ class UpdateCceNodePool(HuaweiCloudBaseAction):
 
             # Set request body
             request.body = node_pool_update
-
-            log.info(
-                f"Started updating CCE node pool {nodepool_name} ({nodepool_id})")
             response = client.update_node_pool(request)
+            log.info(
+                f"[actions]- [update]- The resource:[huaweicloud.cce-nodepool] with "
+                f"id:[{nodepool_name}/{nodepool_id}] update nodepool succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to update CCE node pool {nodepool_name} ({nodepool_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [update]- The resource:[huaweicloud.cce-nodepool] with "
+                f"id:[{nodepool_name}/{nodepool_id}] update nodepool failed. "
+                f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
         except Exception as e:
             log.error(
-                "Error occurred while updating"
-                f" CCE node pool {nodepool_name} ({nodepool_id}): {str(e)}")
-            return None
+                f"[actions]- [update]- The resource:[huaweicloud.cce-nodepool] with "
+                f"id:[{nodepool_name}/{nodepool_id}] update nodepool failed. "
+                f" cause: {str(e)}")
+            raise
 
 
 @resources.register("cce-node")
@@ -1474,29 +1443,38 @@ class DeleteCceNode(HuaweiCloudBaseAction):
         node_name = resource.get('metadata', {}).get('name', 'Unknown')
         cluster_id = resource.get('clusterId')
 
-        if not node_id or not cluster_id:
-            log.error(f"Cannot delete node, missing required ID: {node_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+
+            if not cluster_id:
+                raise Exception("empty cluster id")
+
+            if not node_id:
+                raise Exception("empty node id")
+
             request = DeleteNodeRequest()
             request.cluster_id = cluster_id
             request.node_id = node_id
 
             response = client.delete_node(request)
-            log.info(f"Started deleting CCE node {node_name} ({node_id})")
+            log.info(
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-node] with "
+                f"id:[{node_name}/{node_id}] delete node succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to delete CCE node {node_name} ({node_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-node] with "
+                f"id:[{node_name}/{node_id}] delete node failed. "
+                f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
         except Exception as e:
             log.error(
-                f"Error occurred while deleting CCE node {node_name} ({node_id}): {str(e)}")
-            return None
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-node] with "
+                f"id:[{node_name}/{node_id}] delete node failed. "
+                f" cause: {str(e)}")
+            raise
 
 
 @resources.register("cce-addontemplate")
@@ -1657,14 +1635,12 @@ class DeleteCceAddonInstance(HuaweiCloudBaseAction):
         addon_name = resource.get('metadata', {}).get('name', 'Unknown')
         cluster_id = resource.get('clusterId')
 
-        if not addon_id:
-            log.error(
-                f"Cannot delete addon instance, missing required ID: {addon_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+            if not addon_id:
+                raise Exception("empty addon id")
+
             request = DeleteAddonInstanceRequest()
             request.id = addon_id
             # Set cluster_id if available (optional parameter for delete operation)
@@ -1673,18 +1649,22 @@ class DeleteCceAddonInstance(HuaweiCloudBaseAction):
 
             response = client.delete_addon_instance(request)
             log.info(
-                f"Started deleting CCE addon instance {addon_name} ({addon_id})")
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-addoninstance] with "
+                f"id:[{addon_name}/{addon_id}] delete addoninstance succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to delete CCE addon instance {addon_name} ({addon_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-addoninstance] with "
+                f"id:[{addon_name}/{addon_id}] delete addoninstance failed. "
+                f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
         except Exception as e:
             log.error(
-                "Error occurred while deleting"
-                f"CCE addon instance {addon_name} ({addon_id}): {str(e)}")
-            return None
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-addoninstance] with "
+                f"id:[{addon_name}/{addon_id}] delete addoninstance failed. "
+                f" cause: {str(e)}")
+            raise
 
 
 @resources.register("cce-chart")
@@ -1740,28 +1720,32 @@ class DeleteCceChart(HuaweiCloudBaseAction):
         chart_id = resource.get('id')
         chart_name = resource.get('name', 'Unknown')
 
-        if not chart_id:
-            log.error(f"Cannot delete chart, missing chart ID: {chart_name}")
-            return None
-
         client = self.manager.get_client()
 
         try:
+            if not chart_id:
+                raise Exception("empty chart id")
             request = DeleteChartRequest()
             request.chart_id = chart_id
 
             response = client.delete_chart(request)
-            log.info(f"Started deleting CCE chart {chart_name} ({chart_id})")
+            log.info(
+                f"[actions]- [update]- The resource:[huaweicloud.cce-chart] with "
+                f"id:[{chart_name}/{chart_id}] delete chart succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to delete CCE chart {chart_name} ({chart_id}): "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [update]- The resource:[huaweicloud.cce-chart] with "
+                f"id:[{chart_name}/{chart_id}] delete chart failed. "
+                f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
         except Exception as e:
             log.error(
-                f"Error occurred while deleting CCE chart {chart_name} ({chart_id}): {str(e)}")
-            return None
+                f"[actions]- [update]- The resource:[huaweicloud.cce-chart] with "
+                f"id:[{chart_name}/{chart_id}] delete chart failed. "
+                f" cause: {str(e)}")
+            raise
 
 
 @resources.register("cce-release")
@@ -1868,17 +1852,22 @@ class DeleteCceRelease(HuaweiCloudBaseAction):
 
             response = client.delete_release(request)
             log.info(
-                f"Started deleting CCE release {release_name} in cluster {cluster_id}")
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-release] with "
+                f"id:[{release_name}] delete release succeeded.")
             return response
 
         except exceptions.ClientRequestException as e:
-            log.error(f"Failed to delete CCE release {release_name}: "
-                      f"{e.error_msg} (status code: {e.status_code})")
-            return None
+            log.error(
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-release] with "
+                f"id:[{release_name}] delete release failed. "
+                f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
         except Exception as e:
             log.error(
-                f"Error occurred while deleting CCE release {release_name}: {str(e)}")
-            return None
+                f"[actions]- [delete]- The resource:[huaweicloud.cce-release] with "
+                f"id:[{release_name}] delete release failed. "
+                f" cause: {str(e)}")
+            raise
 
 
 class NoRetry(Exception):
