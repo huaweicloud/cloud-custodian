@@ -9,12 +9,20 @@ from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from huaweicloudsdkworkspace.v2 import (BatchDeleteDesktopsRequest,
-                                        SetUserEventsLtsConfigurationsRequest, \
-    SetUserEventsLtsConfigurationsRequestBody, ListUserEventsLtsConfigurationsRequest,
-                                        ListPolicyDetailInfoByIdRequest, \
-    UpdatePolicyGroupRequest, ModifyPolicyGroupRequest, PolicyGroupForUpdate)
-from huaweicloudsdklts.v2 import ListLogGroupsRequest, ListLogStreamRequest
+from huaweicloudsdkworkspace.v2 import (
+    BatchDeleteDesktopsRequest,
+    SetUserEventsLtsConfigurationsRequest,
+    SetUserEventsLtsConfigurationsRequestBody,
+    ListUserEventsLtsConfigurationsRequest,
+    ListPolicyDetailInfoByIdRequest,
+    UpdatePolicyGroupRequest,
+    ModifyPolicyGroupRequest,
+    PolicyGroupForUpdate
+)
+from huaweicloudsdklts.v2 import (
+    ListLogGroupsRequest,
+    ListLogStreamRequest
+)
 
 log = logging.getLogger('custodian.huaweicloud.workspace')
 
