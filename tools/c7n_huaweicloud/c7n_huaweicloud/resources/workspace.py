@@ -215,7 +215,8 @@ class WorkspaceUserEventLtsStatus(QueryResourceManager):
             log_group_id = getattr(response, 'log_group_id', None)
             log_stream_id = getattr(response, 'log_stream_id', None)
             self.log.info(
-                f"Fetched user events lts config: enable={enable_status}, log_group_id={log_group_id}, log_stream_id={log_stream_id}")
+                f"Fetched user events lts config: enable={enable_status}, log_group_id={log_group_id}, "
+                f"log_stream_id={log_stream_id}")
             status_resource = {
                 'id': 'Workspace',
                 'status': 'enabled' if enable_status else 'disabled',
@@ -294,7 +295,8 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
 
         log_stream_id = self._get_log_stream_id_by_name(lts_client, log_group_id, log_stream_name)
         if not log_stream_id:
-            self.log.error(f"Log stream with name '{log_stream_name}' not found in log group '{log_group_name}'.")
+            self.log.error(f"Log stream with name '{log_stream_name}' not found "
+                           f"in log group '{log_group_name}'.")
             raise Exception(f"Log stream name '{log_stream_name}' does not find")
 
         self.resolved_log_group_id = log_group_id
@@ -325,7 +327,8 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
                 if getattr(stream, 'log_stream_name', '') == name:
                     return getattr(stream, 'log_stream_id', None)
         except Exception as e:
-            self.log.error(f"Error querying log stream by name '{name}' in group '{log_group_id}': {e}")
+            self.log.error(f"Error querying log stream by name '{name}' "
+                           f"in group '{log_group_id}': {e}")
         return None
 
     def perform_action(self, resource):
@@ -475,7 +478,8 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
         if requested_opacity_setting is not None:
             if not isinstance(requested_opacity_setting, str):
                 self.log.error(
-                    f"Invalid opacity_setting value '{requested_opacity_setting}' provided in action configuration for policy group {policy_group_id}. Must be a string.")
+                    f"Invalid opacity_setting value '{requested_opacity_setting}' provided "
+                    f"in action configuration for policy group {policy_group_id}. Must be a string.")
                 return False
 
         self.log.info(f"Attempting to enable watermark for policy group {policy_group_id}.")
@@ -490,7 +494,8 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
             full_policy_group_obj = getattr(show_response, 'policy_group', None)
             if not full_policy_group_obj:
                 self.log.error(
-                    f"Could not retrieve detailed info for policy group {policy_group_id}. Response structure unexpected or empty 'policy_group'.")
+                    f"Could not retrieve detailed info for policy group {policy_group_id}. "
+                    f"Response structure unexpected or empty 'policy_group'.")
                 return False
 
             policies_obj_or_dict = getattr(full_policy_group_obj, self.POLICIES_KEY, {})
@@ -500,20 +505,23 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
                 policies = policies_obj_or_dict
             else:
                 self.log.error(
-                    f"Policies attribute for policy group {policy_group_id} is neither a dict nor has to_dict(). Type: {type(policies_obj_or_dict)}")
+                    f"Policies attribute for policy group {policy_group_id} is neither a dict "
+                    f"nor has to_dict(). Type: {type(policies_obj_or_dict)}")
                 return False
 
             watermark = policies.get(self.WATERMARK_KEY, {})
             if not watermark:
                 self.log.warning(
-                    f"'{self.WATERMARK_KEY}' section missing in policies for policy group {policy_group_id}. Creating new section.")
+                    f"'{self.WATERMARK_KEY}' section missing in policies for "
+                    f"policy group {policy_group_id}. Creating new section.")
 
             watermark[self.WATERMARK_ENABLE_KEY] = True
 
             if requested_opacity_setting is not None:
                 watermark['options'][self.WATERMARK_OPACITY_KEY] = requested_opacity_setting
                 self.log.debug(
-                    f"Set '{self.WATERMARK_OPACITY_KEY}' to '{requested_opacity_setting}' for policy group {policy_group_id}.")
+                    f"Set '{self.WATERMARK_OPACITY_KEY}' to '{requested_opacity_setting}' "
+                    f"for policy group {policy_group_id}.")
 
             policies[self.WATERMARK_KEY] = watermark
 
