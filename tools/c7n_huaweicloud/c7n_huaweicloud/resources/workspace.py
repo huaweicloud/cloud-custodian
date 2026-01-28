@@ -365,10 +365,17 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
             log_stream_id=log_stream_id
         )
 
-        request = SetUserEventsLtsConfigurationsRequest(body=request_body_model)
-        client.set_user_events_lts_configurations(request)
+        try:
+            request = SetUserEventsLtsConfigurationsRequest(body=request_body_model)
+            response =  client.set_user_events_lts_configurations(request)
+            self.log.info(f"[actions]-[enable-user-event-lts] The resource:[workspace-user-event-lts-status] "
+                          f"with id:[{resource.get('id')}] enable succeeded.")
 
-        self.log.info("Successfully submitted set user event LTS configuration.")
+        except Exception as e:
+            self.log.error(f"[actions]-[enable-user-event-lts] The resource:[workspace-user-event-lts-status] "
+                           f"with id:[{resource.get('id')}] enable failed. Cause: {str(e)}")
+            raise Exception(f"[actions]-[enable-user-event-lts] The resource:[workspace-user-event-lts-status] "
+                           f"with id:[{resource.get('id')}] enable failed.")
 
 
 @resources.register('workspace-policy-group')
@@ -545,15 +552,12 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
             )
 
             client.update_policy_group(update_request)
-            self.log.info(f"Successfully submitted update for "
-                          f"policy group {policy_group_id} to enable watermark.")
+            self.log.info(f"[actions]-[enable-watermark] The resource:[workspace-policy-group] "
+                          f"with id:[{policy_group_id}] enable succeeded.")
             return True
 
-        except AttributeError as e:
-            self.log.error(f"Attribute error while processing "
-                           f"policy group {policy_group_id}: {e}")
-            return False
         except Exception as e:
-            self.log.error(f"Unexpected error while updating "
-                           f"watermark for policy group {policy_group_id}: {e}")
-            return False
+            self.log.error(f"[actions]-[enable-watermark] The resource:[workspace-policy-group] "
+                           f"with id:[{policy_group_id}] enable failed. Cause: {str(e)}")
+            raise Exception(f"[actions]-[enable-watermark] The resource:[workspace-policy-group] "
+                            f"with id:[{policy_group_id}] enable failed.")
