@@ -367,14 +367,17 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
 
         try:
             request = SetUserEventsLtsConfigurationsRequest(body=request_body_model)
-            response =  client.set_user_events_lts_configurations(request)
-            self.log.info(f"[actions]-[enable-user-event-lts] The resource:[workspace-user-event-lts-status] "
+            client.set_user_events_lts_configurations(request)
+            self.log.info(f"[actions]-[enable-user-event-lts] The resource:"
+                          f"[workspace-user-event-lts-status] "
                           f"with id:[{resource.get('id')}] enable succeeded.")
 
         except Exception as e:
-            self.log.error(f"[actions]-[enable-user-event-lts] The resource:[workspace-user-event-lts-status] "
+            self.log.error(f"[actions]-[enable-user-event-lts] The resource:"
+                           f"[workspace-user-event-lts-status] "
                            f"with id:[{resource.get('id')}] enable failed. Cause: {str(e)}")
-            raise Exception(f"[actions]-[enable-user-event-lts] The resource:[workspace-user-event-lts-status] "
+            raise Exception(f"[actions]-[enable-user-event-lts] The resource:"
+                            f"[workspace-user-event-lts-status] "
                            f"with id:[{resource.get('id')}] enable failed.")
 
 
