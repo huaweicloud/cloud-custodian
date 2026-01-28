@@ -1,0 +1,170 @@
+policies:
+  - name: HW_Workspace_005_Timer
+    comment: "Enable the Workspace end user activity event logging and Integrated with ITAU SIEM system"
+    resource: huaweicloud.workspace-user-event-lts-status
+    conditions:
+      - type: value
+        key: account_name
+        op: in
+        value: ["hwstaff_intl_wks_dev"]
+    mode:
+      type: huaweicloud-periodic
+      xrole: CustodianExecutionForFunctionAgency
+      enable_lts_log: true
+      log_level: INFO
+      user_data_encrypt_kms_key_id: "8692685b-4cb8-4b2c-bfce-762725b487ca"
+      code_encrypt_kms_key_id: "8692685b-4cb8-4b2c-bfce-762725b487ca"
+      description: "test"
+      log_config:
+        group_name: "lts-group-7eht"
+        stream_name: "lts-topic-myxb"
+      func_vpc:
+        vpc_name: "vpc-default-smb"
+        subnet_name: "subnet-default-smb"
+        cidr: "192.168.0.0/20"
+      schedule: "0 55 23 * * *"
+      schedule_type: Cron
+      cron_tz: "America/Sao_Paulo"
+    filters:
+      - type: value
+        key: "enable"
+        value: false
+        op: eq
+    actions:
+      - type: enable-user-event-lts
+        log_group_name: "lts-group-for-workspace"
+        log_stream_name: "lts-topic-for-workspace"
+
+  - name: HW_Workspace_008_Timer
+    comment: "Enable the desktop watermark for all Workspace instances"
+    resource: huaweicloud.workspace-policy-group
+    conditions:
+      - type: value
+        key: account_name
+        op: in
+        value: ["hwstaff_intl_wks_dev"]
+    mode:
+      type: huaweicloud-periodic
+      xrole: CustodianExecutionForFunctionAgency
+      enable_lts_log: true
+      log_level: INFO
+      user_data_encrypt_kms_key_id: "8692685b-4cb8-4b2c-bfce-762725b487ca"
+      code_encrypt_kms_key_id: "8692685b-4cb8-4b2c-bfce-762725b487ca"
+      description: "test"
+      log_config:
+        group_name: "lts-group-7eht"
+        stream_name: "lts-topic-myxb"
+      func_vpc:
+        vpc_name: "vpc-default-smb"
+        subnet_name: "subnet-default-smb"
+        cidr: "192.168.0.0/20"
+      schedule: "0 55 23 * * *"
+      schedule_type: Cron
+      cron_tz: "America/Sao_Paulo"
+    filters:
+      - or:
+          - type: value
+            key: "watermark_enable"
+            value: false
+            op: eq
+          - type: value
+            key: "opacity_setting"
+            op: lt
+            value: 20
+    actions:
+      - type: enable-watermark
+        opacity_setting: "20"
+
+  - name: HW_Workspace_005_Event
+    comment: "Enable the Workspace end user activity event logging and Integrated with ITAU SIEM system"
+    resource: huaweicloud.workspace-user-event-lts-status
+    conditions:
+      - type: value
+        key: account_name
+        op: in
+        value: ["hwstaff_intl_wks_dev"]
+    mode:
+      type: cloudtrace
+      xrole: CustodianExecutionForFunctionAgency
+      enable_lts_log: true
+      log_level: INFO
+      user_data_encrypt_kms_key_id: "8692685b-4cb8-4b2c-bfce-762725b487ca"
+      code_encrypt_kms_key_id: "8692685b-4cb8-4b2c-bfce-762725b487ca"
+      description: "test"
+      log_config:
+        group_name: "lts-group-7eht"
+        stream_name: "lts-topic-myxb"
+      func_vpc:
+        vpc_name: "vpc-default-smb"
+        subnet_name: "subnet-default-smb"
+        cidr: "192.168.0.0/20"
+      events:
+        - source: "Workspace.workspace"
+          event: "SetUserEventsLtsConfigurations"
+          ids: "service_type"
+          code: 200
+        - source: "Workspace.workspace"
+          event: "applyWorkspace"
+          ids: "service_type"
+    filters:
+      - type: value
+        key: "enable"
+        value: false
+        op: eq
+    actions:
+      - type: enable-user-event-lts
+        log_group_name: "lts-group-for-workspace"
+        log_stream_name: "lts-topic-for-workspace"
+
+  - name: HW_Workspace_008_Event
+    comment: "Enable the desktop watermark for all Workspace instances"
+    resource: huaweicloud.workspace-policy-group
+    conditions:
+      - type: value
+        key: account_name
+        op: in
+        value: ["hwstaff_intl_wks_dev"]
+    mode:
+      type: cloudtrace
+      xrole: CustodianExecutionForFunctionAgency
+      enable_lts_log: true
+      log_level: INFO
+      user_data_encrypt_kms_key_id: "8692685b-4cb8-4b2c-bfce-762725b487ca"
+      code_encrypt_kms_key_id: "8692685b-4cb8-4b2c-bfce-762725b487ca"
+      description: "test"
+      log_config:
+        group_name: "lts-group-7eht"
+        stream_name: "lts-topic-myxb"
+      func_vpc:
+        vpc_name: "vpc-default-smb"
+        subnet_name: "subnet-default-smb"
+        cidr: "192.168.0.0/20"
+      events:
+        - source: "Workspace.workspace"
+          event: "updatePolicyGroup"
+          ids: "resource_id"
+          code: 200
+        - source: "Workspace.workspace"
+          event: "createPolicyGroup"
+          ids: "resource_id"
+          code: 201
+        - source: "Workspace.workspace"
+          event: "importPolicyGroup"
+          ids: "service_type"
+          code: 200
+        - source: "Workspace.workspace"
+          event: "applyWorkspace"
+          ids: "service_type"
+    filters:
+      - or:
+          - type: value
+            key: "watermark_enable"
+            value: false
+            op: eq
+          - type: value
+            key: "opacity_setting"
+            op: lt
+            value: 20
+    actions:
+      - type: enable-watermark
+        opacity_setting: "20"

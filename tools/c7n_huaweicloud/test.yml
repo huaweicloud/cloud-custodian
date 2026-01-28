@@ -1,0 +1,17 @@
+policies:
+  - name: test-enable-workspace-user-event-lts
+    description: "test"
+    resource: huaweicloud.workspace-policy-group
+    filters:
+      - or:
+          - type: value
+            key: "watermark_enable"
+            value: false
+            op: eq
+          - type: value
+            key: "opacity_setting"
+            op: lt
+            value: 20
+    actions:
+      - type: enable-watermark
+        opacity_setting: "20"
