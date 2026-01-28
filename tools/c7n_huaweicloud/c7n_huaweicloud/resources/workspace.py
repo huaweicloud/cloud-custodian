@@ -9,9 +9,11 @@ from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
-from huaweicloudsdkworkspace.v2 import BatchDeleteDesktopsRequest, SetUserEventsLtsConfigurationsRequest, \
-    SetUserEventsLtsConfigurationsRequestBody, ListUserEventsLtsConfigurationsRequest, ListPolicyDetailInfoByIdRequest, \
-    UpdatePolicyGroupRequest, ModifyPolicyGroupRequest, PolicyGroupForUpdate
+from huaweicloudsdkworkspace.v2 import (BatchDeleteDesktopsRequest,
+                                        SetUserEventsLtsConfigurationsRequest, \
+    SetUserEventsLtsConfigurationsRequestBody, ListUserEventsLtsConfigurationsRequest,
+                                        ListPolicyDetailInfoByIdRequest, \
+    UpdatePolicyGroupRequest, ModifyPolicyGroupRequest, PolicyGroupForUpdate)
 from huaweicloudsdklts.v2 import ListLogGroupsRequest, ListLogStreamRequest
 
 log = logging.getLogger('custodian.huaweicloud.workspace')
@@ -215,7 +217,8 @@ class WorkspaceUserEventLtsStatus(QueryResourceManager):
             log_group_id = getattr(response, 'log_group_id', None)
             log_stream_id = getattr(response, 'log_stream_id', None)
             self.log.info(
-                f"Fetched user events lts config: enable={enable_status}, log_group_id={log_group_id}, "
+                f"Fetched user events lts config: enable={enable_status}, "
+                f"log_group_id={log_group_id}, "
                 f"log_stream_id={log_stream_id}")
             status_resource = {
                 'id': 'Workspace',
@@ -357,7 +360,7 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
         request = SetUserEventsLtsConfigurationsRequest(body=request_body_model)
         client.set_user_events_lts_configurations(request)
 
-        self.log.info(f"Successfully submitted set user event LTS configuration.")
+        self.log.info("Successfully submitted set user event LTS configuration.")
 
 
 @resources.register('workspace-policy-group')
@@ -479,7 +482,8 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
             if not isinstance(requested_opacity_setting, str):
                 self.log.error(
                     f"Invalid opacity_setting value '{requested_opacity_setting}' provided "
-                    f"in action configuration for policy group {policy_group_id}. Must be a string.")
+                    f"in action configuration for "
+                    f"policy group {policy_group_id}. Must be a string.")
                 return False
 
         self.log.info(f"Attempting to enable watermark for policy group {policy_group_id}.")
@@ -533,12 +537,15 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
             )
 
             client.update_policy_group(update_request)
-            self.log.info(f"Successfully submitted update for policy group {policy_group_id} to enable watermark.")
+            self.log.info(f"Successfully submitted update for "
+                          f"policy group {policy_group_id} to enable watermark.")
             return True
 
         except AttributeError as e:
-            self.log.error(f"Attribute error while processing policy group {policy_group_id}: {e}")
+            self.log.error(f"Attribute error while processing "
+                           f"policy group {policy_group_id}: {e}")
             return False
         except Exception as e:
-            self.log.error(f"Unexpected error while updating watermark for policy group {policy_group_id}: {e}")
+            self.log.error(f"Unexpected error while updating "
+                           f"watermark for policy group {policy_group_id}: {e}")
             return False
