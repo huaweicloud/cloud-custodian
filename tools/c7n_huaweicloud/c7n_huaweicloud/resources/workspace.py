@@ -7,7 +7,7 @@ from c7n.filters import Filter
 from c7n.utils import type_schema, local_session
 
 from c7n_huaweicloud.provider import resources
-from c7n_huaweicloud.query import QueryResourceManager, ResourceManager, TypeInfo
+from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from huaweicloudsdkworkspace.v2 import BatchDeleteDesktopsRequest, SetUserEventsLtsConfigurationsRequest, \
     SetUserEventsLtsConfigurationsRequestBody, ListUserEventsLtsConfigurationsRequest, ListPolicyDetailInfoByIdRequest, \
@@ -245,9 +245,9 @@ class WorkspaceUserEventLtsStatus(QueryResourceManager):
 
         return found_resources
 
+
 @WorkspaceUserEventLtsStatus.action_registry.register('enable-user-event-lts')
 class EnableUserEventLts(HuaweiCloudBaseAction):
-
     """Enable LTS for user events in workspace.
 
     This action updates the user event LTS status.
@@ -352,7 +352,7 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
         )
 
         request = SetUserEventsLtsConfigurationsRequest(body=request_body_model)
-        response = client.set_user_events_lts_configurations(request)
+        client.set_user_events_lts_configurations(request)
 
         self.log.info(f"Successfully submitted set user event LTS configuration.")
 
@@ -373,7 +373,7 @@ class WorkspacePolicyGroup(QueryResourceManager):
                 r['id'] = r[self.resource_type.id]
 
             watermark_enable_value = None
-            opacity_setting_value  = None
+            opacity_setting_value = None
             policies = r.get('policies')
             if policies:
                 watermark = policies.get('watermark')
@@ -414,9 +414,9 @@ class WorkspacePolicyGroup(QueryResourceManager):
 
         return found_resources
 
+
 @WorkspacePolicyGroup.action_registry.register('enable-watermark')
 class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
-
     """Enable watermark for a workspace policy group
 
     This action retrieves the current policy settings for a workspace policy group,
@@ -466,15 +466,16 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
 
         policy_group_id = resource.get('policy_group_id')
         if not policy_group_id:
-             self.log.error(f"Resource missing 'policy_group_id': {resource}")
-             return False
+            self.log.error(f"Resource missing 'policy_group_id': {resource}")
+            return False
 
         requested_opacity_setting = self.data.get('opacity_setting')
 
         # Validate opacity_setting if it's provided
         if requested_opacity_setting is not None:
             if not isinstance(requested_opacity_setting, str):
-                self.log.error(f"Invalid opacity_setting value '{requested_opacity_setting}' provided in action configuration for policy group {policy_group_id}. Must be a string.")
+                self.log.error(
+                    f"Invalid opacity_setting value '{requested_opacity_setting}' provided in action configuration for policy group {policy_group_id}. Must be a string.")
                 return False
 
         self.log.info(f"Attempting to enable watermark for policy group {policy_group_id}.")
@@ -488,7 +489,8 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
 
             full_policy_group_obj = getattr(show_response, 'policy_group', None)
             if not full_policy_group_obj:
-                self.log.error(f"Could not retrieve detailed info for policy group {policy_group_id}. Response structure unexpected or empty 'policy_group'.")
+                self.log.error(
+                    f"Could not retrieve detailed info for policy group {policy_group_id}. Response structure unexpected or empty 'policy_group'.")
                 return False
 
             policies_obj_or_dict = getattr(full_policy_group_obj, self.POLICIES_KEY, {})
@@ -497,12 +499,14 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
             elif isinstance(policies_obj_or_dict, dict):
                 policies = policies_obj_or_dict
             else:
-                self.log.error(f"Policies attribute for policy group {policy_group_id} is neither a dict nor has to_dict(). Type: {type(policies_obj_or_dict)}")
+                self.log.error(
+                    f"Policies attribute for policy group {policy_group_id} is neither a dict nor has to_dict(). Type: {type(policies_obj_or_dict)}")
                 return False
 
             watermark = policies.get(self.WATERMARK_KEY, {})
             if not watermark:
-                 self.log.warning(f"'{self.WATERMARK_KEY}' section missing in policies for policy group {policy_group_id}. Creating new section.")
+                self.log.warning(
+                    f"'{self.WATERMARK_KEY}' section missing in policies for policy group {policy_group_id}. Creating new section.")
 
             watermark[self.WATERMARK_ENABLE_KEY] = True
 
@@ -520,7 +524,7 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
                 body=modify_request_body
             )
 
-            update_response = client.update_policy_group(update_request)
+            client.update_policy_group(update_request)
             self.log.info(f"Successfully submitted update for policy group {policy_group_id} to enable watermark.")
             return True
 
