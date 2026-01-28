@@ -6,10 +6,12 @@ import re
 import functools
 import time
 import json
+import copy
 
 from huaweicloudsdkkms.v2 import ShowPublicKeyRequest, OperateKeyRequestBody, ShowPublicKeyResponse
 
 from c7n.filters import Filter
+from c7n_huaweicloud.actions.smn import NotifyMessageAction
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
@@ -767,9 +769,22 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
     action_name = "enable-cluster-signature"
     plugin_name = "swr-cosign"
     schema = type_schema("enable-cluster-signature",
-                         public_key={"type": "string", "default": ''},
-                         kms_id={"type": "string", "default": ''},
-                         obs_url={"type": "string", "default": ''})
+                         rinherit={
+                             'type': 'object',
+                             'additionalProperties': False,
+                             'required': ['type', 'message', 'topic_urn_list'],
+                             'properties': {
+                                 'type': {'enum': ['enable-cluster-signature']},
+                                 "topic_urn_list": {
+                                     "type": "array",
+                                     "items": {"type": "string"}
+                                 },
+                                 'subject': {'type': 'string'},
+                                 'public_key': {'type': 'string'},
+                                 'kms_id': {'type': 'string'},
+                                 'obs_url': {'type': 'string'}
+                             }
+                         })
     permissions = ('cce:enableClusterSignature',)
 
     def perform_action(self, resource):
@@ -824,6 +839,8 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
             body = InstanceRequest("Addon", "v3", metadata, spec)
             request = CreateAddonInstanceRequest(body)
             response = client.create_addon_instance(request)
+            log.debug(f"[actions]-{self.action_name} query the service:[/api/v3/addons] succeeded.")
+            self.wait_plugin_installing_ready(cluster_id, cluster_name)
             log.info(
                 f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
                 f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature "
@@ -834,6 +851,13 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
                 f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
                 f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature failed."
                 f" cause: {e.error_msg} (status code: {e.status_code})")
+            raise
+        except PluginInstallFailed as e:
+            self.notify_install_failed_message(resource, str(e))
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature failed."
+                f" cause: {str(e)}")
             raise
         except Exception as e:
             log.error(
@@ -905,6 +929,49 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
         log.debug(f"[actions]-{self.action_name} query the service:[{obs_url}] succeeded.")
         content = json.loads(resp.body.buffer)
         return content
+
+    def wait_plugin_installing_ready(self, cluster_id: str, cluster_name: str):
+        try:
+            @retry(times=5, interval=60, timeout=300)
+            def _wait():
+                client: CceClient = self.manager.get_client()
+                plugin_status = get_plugin_status(client, cluster_id, self.plugin_name)
+                log.debug(
+                    f"[actions]- the action:[{self.action_name}] query the service:["
+                    f"GET:/api/v3/addons] succeeded.")
+                assert plugin_status not in ["installing",
+                                             "installFailed"], f"invalid status {plugin_status}"
+
+            _wait()
+        except Exception as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] install plugin failed."
+                f" cause: {str(e)}")
+            raise PluginInstallFailed(self.plugin_name)
+
+    def notify_install_failed_message(self, resource, msg):
+        cluster_id = resource.get('metadata', {}).get('uid')
+        cluster_name = resource.get('metadata', {}).get('name', 'Unknown')
+        try:
+            new_data = copy.deepcopy(self.data)
+            new_data.pop('type', None)
+            message = (f"[actions]-[{self.action_name}]-"
+                       f"The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}/"
+                       f"{cluster_id}] enable cluster container image signature failed."
+                       f"cause: {msg}")
+            new_data['message'] = message
+            log.warning(f"[actions]-[{self.action_name}]-"
+                        f"The resource:[huaweicloud.cce-cluster] with id:[{cluster_name}/"
+                        f"{cluster_id}] enable cluster container image signature failed."
+                        f"cause: {msg}")
+            notify_msg_action = NotifyMessageAction(new_data, self.manager)
+            notify_msg_action.process([resource])
+        except Exception as e:
+            log.error(
+                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+                f"id:[{cluster_name}/{cluster_id}] notify plugin install error failed."
+                f" cause: {str(e)}")
 
 
 @resources.register("cce-nodepool")
@@ -1886,6 +1953,15 @@ class PluginNotInstalled(Exception):
 
     def __str__(self):
         return "Plugin (name=%s) Not Installed" % self.name
+
+
+class PluginInstallFailed(Exception):
+    def __init__(self, name):
+        super(PluginInstallFailed, self).__init__(name)
+        self.name = name
+
+    def __str__(self):
+        return "Plugin (name=%s) Install Failed" % self.name
 
 
 def retry(times=-1, interval=5, timeout=-1):
