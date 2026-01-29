@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import math
 from time import sleep
 
 from c7n.filters import Filter
@@ -14,6 +15,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkgaussdbfornosql.v3 import (
     ShowBackupPoliciesRequest, SetBackupPolicyRequest,
     SetBackupPolicyRequestBody, BackupPolicy,
+    ListInstancesByTagsRequest, ListInstancesByTagsResponse
 )
 from huaweicloudsdkcore.exceptions import exceptions
 
@@ -64,6 +66,73 @@ class GeminiDB(QueryResourceManager):
         taggable = True
         tag_resource_type = 'nosql'
 
+    def get_resources(self, resource_ids):
+        self.log.info(f"Successfully get resource_ids"
+                      f"{resource_ids}")
+        resources = self.augment_tags(self.source.get_resources(self.get_resource_query())) or []
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
+
+    def augment_tags(self, resources):
+        if not resources:
+            return resources
+
+        self.log.info(f"Successfully get GeminiDB instance to augment the tags"
+                      f"{resources}")
+
+        resources_and_tag = self.get_resources_and_tag()
+        instance_id_to_tags_map = {
+            item.instance_id: [{"key": tag.key, "value": tag.value} for tag in item.tags or []]
+            for item in resources_and_tag
+        }
+
+        for resource in resources:
+            if not resource["tags"]:
+                instance_id = resource["id"]
+                tags_of_instance = instance_id_to_tags_map.get(instance_id, [])
+                resource["tags"] = tags_of_instance
+
+        self.log.info(f"Successfully get augmented resources"
+                      f"{resources}")
+        return resources
+
+    def get_resources_and_tag(self):
+        client = local_session(self.session_factory).client('geminidb')
+        count_req = ListInstancesByTagsRequest()
+        count_req.body = {
+            "action": 'count'
+        }
+        count_rsp = client.list_instances_by_tags(count_req)
+        total_count = count_rsp.total_count
+
+        LIMIT = 20
+        total_page = math.ceil(total_count / LIMIT)
+        all_instances_with_tags = []
+
+        for i in range(total_page):
+            offset = i * LIMIT
+            req = ListInstancesByTagsRequest()
+            try:
+                req.body = {
+                    "limit": LIMIT,
+                    "offset": offset,
+                    "action": 'filter'
+                }
+                rsp = client.list_instances_by_tags(req)
+                instances = rsp.instances
+
+                all_instances_with_tags.extend(instances)
+            except Exception as e:
+                log.error(
+                    f"[query resources with tags failed, req: [{req}] "
+                    f"cause:{e}")
+
+        self.log.info(f"Successfully get resources_with_tags"
+                      f"{all_instances_with_tags}")
+        return all_instances_with_tags
 
 @GeminiDB.filter_registry.register('geminidb-list')
 class GeminiDBListFilter(Filter):
