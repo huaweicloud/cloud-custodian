@@ -22,7 +22,7 @@ interactions:
     uri: https://gaussdb-nosql.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
   response:
     body:
-      string: '{"instances": [{"id": "geminidb-instance-for-backup-policy", "name": "geminidb-test-instance",
+      string: '{"instances": [{"id": "geminidb-instance-for-backup-policy","actions":[],"name": "geminidb-test-instance",
         "status": "ACTIVE", "port": 3306, "type": "Single", "region": "ap-southeast-1",
         "datastore": {"type": "Cassandra", "version": "5.7"}, "created": "2023-01-15T08:00:00+0000",
         "updated": "2023-01-16T10:30:00+0000", "private_ips": ["192.168.0.10"], "public_ips":
@@ -107,7 +107,7 @@ interactions:
     status:
       code: 200
       message: success
-  - request:
+- request:
     body: null
     headers:
       Accept:
