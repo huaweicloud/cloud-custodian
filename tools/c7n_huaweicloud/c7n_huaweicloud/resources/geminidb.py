@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+from time import sleep
+
 from c7n.filters import Filter
 from c7n.filters.core import type_schema
 from c7n.utils import local_session
@@ -107,6 +109,8 @@ class BackupPolicyDisabledFilter(Filter):
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client("geminidb")
         matched_resources = []
+        invoke_count = 0
+        invoke_count_batch = 10
 
         for resource in resources:
             instance_id = resource['id']
@@ -125,18 +129,24 @@ class BackupPolicyDisabledFilter(Filter):
                 response = client.show_backup_policies(request)
 
                 # Check if auto backup is enabled
-                # If keep_days is 0 or backup_type is empty, it is considered
-                # that auto backup is not enabled
+                # If keep_days is 0, it is considered that auto backup is not enabled
                 keep_days = response.backup_policy.keep_days
 
                 if keep_days == 0:
                     matched_resources.append(resource)
+
+                # When API invocation count reaches batch size, reset invocation count to 0 and sleep 30 seconds to avoid API throttling
+                if invoke_count >= invoke_count_batch:
+                    invoke_count = 0
+                    sleep(30)
             except Exception as e:
                 self.log.error(
                     f"Failed to get backup policy for GeminiDB instance "
                     f"{resource['name']} (ID: {instance_id}): {e}")
-                # If the backup policy cannot be obtained, assume it is not enabled
-                matched_resources.append(resource)
+                raise
+            finally:
+                # Increase API invocation count by 1
+                invoke_count = invoke_count + 1
 
         return matched_resources
 
@@ -239,7 +249,6 @@ class MultiAzDeploymentDisabledFilter(Filter):
                 self.log.error(
                     f"Failed to get availability zone for GeminiDB instance "
                     f"{resource['name']} (ID: {instance_id}): {e}")
-                # If the instance availability zone cannot be obtained, assume it is not multi availability zone deployed
-                matched_resources.append(resource)
+                raise
 
         return matched_resources
