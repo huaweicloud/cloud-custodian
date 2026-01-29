@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import time
 import logging
 from c7n.filters import Filter
 from c7n.filters.core import OPERATORS, type_schema
@@ -12,7 +13,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkrds.v3 import (
     SetSecurityGroupRequest, SwitchSslRequest,
     UpdatePortRequest, CustomerModifyAutoEnlargePolicyReq, AttachEipRequest,
-    CustomerUpgradeDatabaseVersionReq,
+    CustomerUpgradeDatabaseVersionReqNew,
     SetAuditlogPolicyRequest, ShowAuditlogPolicyRequest, ListDatastoresRequest,
     ShowAutoEnlargePolicyRequest, ShowBackupPolicyRequest, SetBackupPolicyRequest,
     SetBackupPolicyRequestBody, ShowInstanceConfigurationRequest,
@@ -20,8 +21,9 @@ from huaweicloudsdkrds.v3 import (
     SetAutoEnlargePolicyRequest, UpgradeDbVersionNewRequest,
     ListPostgresqlHbaInfoRequest, ModifyPostgresqlHbaConfRequest,
     UpdateTdeStatusRequest, MigrateFollowerRequest, ListFlavorsRequest, PostgresqlHbaConf,
-    DeletePostgresqlHbaConfRequest, ListSmallVersionRequest
+    DeletePostgresqlHbaConfRequest, ListSmallVersionRequest, SetLogLtsConfigsRequest, AddLogConfigResponseBody, AddLogConfigs
 )
+from huaweicloudsdklts.v2 import ListLogGroupsRequest, ListLogStreamsRequest
 from huaweicloudsdkcore.exceptions import exceptions
 
 log = logging.getLogger("custodian.huaweicloud.resources.rds")
@@ -783,8 +785,8 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
             request.instance_id = instance_id
 
             # Set upgrade parameters
-            upgrade_req = CustomerUpgradeDatabaseVersionReq()
-            upgrade_req.delay = is_delayed
+            upgrade_req = CustomerUpgradeDatabaseVersionReqNew()
+            upgrade_req.is_delayed = is_delayed
 
             # If a target version is specified, set the target version
             if target_version:
@@ -828,8 +830,14 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
                 f"Successfully submitted database version upgrade request for RDS instance "
                 f"{resource['name']} (ID: {instance_id})")
 
-            return response
+            return ;
         except exceptions.ClientRequestException as e:
+            if e.error_code == "DBS.200971":
+                self.log.info(
+                    f"Already submitted database version upgrade delayed request for RDS instance "
+                    f"{resource['name']} (ID: {instance_id})")
+                return
+ 
             self.log.error(
                 f"Failed to upgrade database version for RDS instance "
                 f"{resource['name']} (ID: {instance_id}): {e}")
@@ -857,13 +865,17 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
                   - INSERT
                   - UPDATE
                   - DELETE
+                log_group_name: log_group_name
+                log_topic_name: log_topic_name
     """
     schema = type_schema(
         'set-audit-log-policy',
         required=['keep_days'],
         keep_days={'type': 'integer', 'minimum': 0, 'maximum': 732},
         reserve_auditlogs={'type': 'boolean'},
-        audit_types={'type': 'array', 'items': {'type': 'string'}}
+        audit_types={'type': 'array', 'items': {'type': 'string'}},
+        log_group_name={'type': 'string'},
+        log_topic_name={'type': 'string'},
     )
 
     def perform_action(self, resource):
@@ -872,6 +884,8 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
         keep_days = self.data['keep_days']
         reserve_auditlogs = self.data.get('reserve_auditlogs', True)
         audit_types = self.data.get('audit_types', [])
+        log_group_name = self.data.get('log_group_name')
+        log_topic_name = self.data.get('log_topic_name')
 
         try:
             request = SetAuditlogPolicyRequest()
@@ -885,6 +899,34 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
             if audit_types and keep_days > 0:
                 request.body['audit_types'] = audit_types
 
+            if log_group_name and log_topic_name:
+                resp_log_group_id, resp_log_stream_id = self.get_group_and_stream_id_by_name(
+                    log_group_name, log_topic_name
+                )
+                if not resp_log_group_id or not resp_log_stream_id:
+                    raise Exception("Log group or log topic does not exist and "
+                                    "creation is set to 'no'. Cannot enable logging.")
+                self.log.info(f"[actions]- [SetAuditLogPolicyAction] log_group_id: {resp_log_group_id}, log_group_id: {resp_log_stream_id}")
+
+                request_lts = SetLogLtsConfigsRequest()
+                request_lts.engine = resource.get('datastore', {}).get('type', '').lower()
+                list_log_configsbody = [
+                    AddLogConfigs(
+                        instance_id=instance_id,
+                        log_type="audit_log",
+                        lts_group_id=resp_log_group_id,
+                        lts_stream_id=resp_log_stream_id
+                    )
+                ]
+                request_lts.body = AddLogConfigResponseBody(
+                    log_configs=list_log_configsbody
+                )
+                client.set_log_lts_configs(request_lts)
+                self.log.info(
+                    f"Successfully connected to LTS for audit log"
+                    f"for RDS instance {resource['name']} (ID: {instance_id})")
+                time.sleep(10)
+
             response = client.set_auditlog_policy(request)
             self.log.info(
                 f"Successfully {'enabled' if keep_days > 0 else 'disabled'} audit log policy "
@@ -895,6 +937,50 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
                 f"Failed to set audit log policy for RDS instance "
                 f"{resource['name']} (ID: {instance_id}): {e}")
             raise
+
+    def get_group_and_stream_id_by_name(self, group_name, stream_name):
+        lts_client_v2 = local_session(self.manager.session_factory).client("lts-stream")
+        list_groups_request = ListLogGroupsRequest()
+        try:
+            log_groups = lts_client_v2.list_log_groups(list_groups_request).log_groups
+        except exceptions.ClientRequestException as e:
+            log.error(f'Get group_id by group_name failed, '
+                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError("Get group_id by group_name failed")
+        group_id = ""
+        for log_group in log_groups:
+            if log_group.log_group_name == group_name or \
+                    log_group.log_group_name_alias == group_name:
+                group_id = log_group.log_group_id
+                break
+        if not group_id:
+            raise PolicyExecutionError(f'Get group_id by group_name[{group_name}] failed')
+
+        list_streams_request = ListLogStreamsRequest(
+            log_group_name=group_name,
+            log_stream_name=stream_name,
+        )
+        try:
+            log_streams = lts_client_v2.list_log_streams(list_streams_request).log_streams
+        except exceptions.ClientRequestException as e:
+            log.error(f'Get stream_id by stream_name failed, '
+                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError("Get stream_id by stream_name failed")
+        stream_id = ""
+        for log_stream in log_streams:
+            stream_id = log_stream.log_stream_id
+        if not stream_id:
+            raise PolicyExecutionError(f'Get stream_id by stream_name[{stream_name}] failed')
+
+        return group_id, stream_id
 
 
 @RDS.action_registry.register('set-backup-policy')
@@ -1396,48 +1482,62 @@ class MigrateFollowerAction(HuaweiCloudBaseAction):
               - type: az_same
             actions:
               - type: migrate-follower
-                azCode: "sa-brazil-1b"
     """
     schema = type_schema(
-        'migrate-follower',
-        required=['azCode'],
-        azCode={'type': 'string'}
+        'migrate-follower'
     )
 
     def perform_action(self, resource):
         client = self.manager.get_client()
         instance_id = resource['id']
-        az_code = self.data['azCode']
         nodes = resource.get('nodes')
-        if len(nodes) == 2 and nodes[0].get('availability_zone') == nodes[1].get('availability_zone'):
-            current_az_code = nodes[0].get('availability_zone')
-            if az_code == current_az_code:
-                self.log.error(
-                    f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: {instance_id})] migrate az failed. cause: selected AZ is the same as the AZ of the current instance.")
-                return
-        else:
+        node_id = None
+        master_az_code = None
+        slave_az_code = None
+        for node in nodes:
+            if node.get('role') == 'slave':
+                node_id = node.get('id')
+                slave_az_code = node.get('availability_zone')
+            elif node.get('role') == 'master':
+                master_az_code = node.get('availability_zone')
+
+        if master_az_code != slave_az_code:
             self.log.info(
-                f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: {instance_id})] migrate az failed. cause: instance is already an Multi-AZ instance or a single instance.")
+                    f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: {instance_id})] does not need to be migrated to the standby node.")
             return
         try:
+            # API: https://support.huaweicloud.com/api-rds/rds_06_0002.html
+            # GET /v3/{project_id}/flavors/{database_name}?version_name={version_name}&spec_code={spec_code}&is_serverless={is_serverless}
+            request_flavor = ListFlavorsRequest()
+            request_flavor.database_name = resource.get('datastore', {}).get('type', '').lower()
+            request_flavor.version_name = resource.get('datastore', {}).get('version', '')
+            request_flavor.spec_code = resource.get('flavor_ref', '')
+            response_flavor = client.list_flavors(request_flavor)
+            az_status = response_flavor.flavors[0].az_status
+            self.log.info(f"[actions]- [MigrateFollowerAction] response_flavor :{response_flavor}, az_status:{az_status}")
+            new_slave_az_code = None
+            for az, status in az_status.items():
+                if az != master_az_code and status == 'normal':
+                    new_slave_az_code = az
+            if new_slave_az_code is None:
+                self.log.error(
+                    f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: {instance_id})] failed, casued: no available availability zone to migration.")
+                return
+            self.log.info(f"[actions]- [MigrateFollowerAction] new_slave_az_code :{new_slave_az_code}")
             # API Document: https://support.huaweicloud.com/api-rds/rds_05_0015.html
             # POST /v3/{project_id}/instances/{instance_id}/migrateslave
             request = MigrateFollowerRequest()
             # Construct the request body
-            node_id = None
-            for node in nodes:
-                if node.get('role') == 'slave':
-                    node_id = node.get('id')
             request_body = {
                 'nodeId': node_id,
-                'azCode': az_code
+                'azCode': new_slave_az_code
             }
             request.instance_id = instance_id
             request.body = request_body
             response = client.migrate_follower(request)
             self.log.info(f"[actions]- [MigrateFollowerAction] Successfully migrate follower for RDS instance "
-                          f"{resource['name']} (ID: {instance_id}) to {az_code}")
-            return response
+                          f"{resource['name']} (ID: {instance_id}) to {new_slave_az_code}")
+            return request_flavor
         except exceptions.ClientRequestException as e:
             self.log.error(f"[actions]- [MigrateFollowerAction] Failed to migrate follower for RDS instance "
                            f"{resource['name']} (ID: {instance_id}): {e}")
@@ -1497,8 +1597,8 @@ class PostgresqlSslFilter(Filter):
                                   'mask': config.mask, 'method': config.method, 'priority': config.priority}
                         no_ssl_configs.append(config)                
                 if no_ssl_configs:
-                    math_resource = {'filter_hba_config': no_ssl_configs, 'name': resource.get('name'),
-                                     'id': resource.get('id'), 'datastore': resource.get('datastore')}
+                    math_resource = resource.copy()
+                    math_resource['filter_hba_config'] = no_ssl_configs 
                     matched_resources.append(math_resource)
             except Exception as e:
                 self.log.error(
