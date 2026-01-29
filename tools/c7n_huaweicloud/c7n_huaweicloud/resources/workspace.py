@@ -239,7 +239,9 @@ class WorkspaceUserEventLtsStatus(QueryResourceManager):
             return [status_resource]
 
         except Exception as e:
-            self.log.error(f"Failed to fetch Workspace User Event LTS status: {e}")
+            self.log.error(f"[actions]-[enable-user-event-lts] The resource:"
+                           f"[workspace-user-event-lts-status] "
+                           f"get resources failed. Cause: {str(e)}")
             return []
 
     def get_resources(self, resource_ids):
@@ -252,8 +254,6 @@ class WorkspaceUserEventLtsStatus(QueryResourceManager):
         for rid in resource_ids:
             if rid in resource_map:
                 found_resources.append(resource_map[rid])
-            else:
-                self.log.warning(f"Resource ID '{rid}' not found for type '{self.type}'. Skipping.")
 
         return found_resources
 
@@ -326,7 +326,9 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
                 if getattr(group, 'log_group_name', '') == name:
                     return getattr(group, 'log_group_id', None)
         except Exception as e:
-            self.log.error(f"Error querying log group by name '{name}': {e}")
+            self.log.error(f"[actions]-[enable-user-event-lts] The resource:"
+                           f"[workspace-user-event-lts-status] "
+                           f"query log group by name failed. Cause: {str(e)}")
         return None
 
     def _get_log_stream_id_by_name(self, client, log_group_id, name):
@@ -338,8 +340,9 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
                 if getattr(stream, 'log_stream_name', '') == name:
                     return getattr(stream, 'log_stream_id', None)
         except Exception as e:
-            self.log.error(f"Error querying log stream by name '{name}' "
-                           f"in group '{log_group_id}': {e}")
+            self.log.error(f"[actions]-[enable-user-event-lts] The resource:"
+                           f"[workspace-user-event-lts-status] "
+                           f"query log stram by name failed. Cause: {str(e)}")
         return None
 
     def perform_action(self, resource):
@@ -347,14 +350,12 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
         log_stream_id = self.resolved_log_stream_id
 
         if not log_group_id or not log_stream_id:
-            self.log.error("Log group or stream ID not resolved. Cannot perform action.")
             return
 
         session = local_session(self.manager.session_factory)
         client = session.client('workspace')
 
         if resource.get('enable') is True:
-            self.log.info(f"Skipping resource {resource.get('id')}: LTS already enabled.")
             return
 
         enable_value = True
@@ -370,15 +371,18 @@ class EnableUserEventLts(HuaweiCloudBaseAction):
             client.set_user_events_lts_configurations(request)
             self.log.info(f"[actions]-[enable-user-event-lts] The resource:"
                           f"[workspace-user-event-lts-status] "
-                          f"with id:[{resource.get('id')}] enable succeeded.")
+                          f"with id:[{resource.get('name')}/{resource.get('id')}] "
+                          f"enable succeeded.")
 
         except Exception as e:
             self.log.error(f"[actions]-[enable-user-event-lts] The resource:"
                            f"[workspace-user-event-lts-status] "
-                           f"with id:[{resource.get('id')}] enable failed. Cause: {str(e)}")
+                           f"with id:[{resource.get('name')}/{resource.get('id')}] "
+                           f"enable failed. Cause: {str(e)}")
             raise Exception(f"[actions]-[enable-user-event-lts] The resource:"
                             f"[workspace-user-event-lts-status] "
-                           f"with id:[{resource.get('id')}] enable failed.")
+                           f"with id:[{resource.get('name')}/{resource.get('id')}] "
+                            f"enable failed.")
 
 
 @resources.register('workspace-policy-group')
@@ -422,7 +426,6 @@ class WorkspacePolicyGroup(QueryResourceManager):
     def get_resources(self, resource_ids):
         self.log.info(f"start get resources.resource_ids='{resource_ids}'")
         if "Workspace" in resource_ids:
-            self.log.info("No resource IDs provided to get_resources, returning all resources.")
             return self.resources()
 
         all_resources = self.resources()
@@ -433,8 +436,6 @@ class WorkspacePolicyGroup(QueryResourceManager):
         for rid in resource_ids:
             if rid in resource_map:
                 found_resources.append(resource_map[rid])
-            else:
-                self.log.warning(f"Resource ID '{rid}' not found for type '{self.type}'. Skipping.")
 
         return found_resources
 
@@ -489,6 +490,7 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
     def perform_action(self, resource):
 
         policy_group_id = resource.get('policy_group_id')
+        policy_group_name = resource.get('policy_group_name')
         if not policy_group_id:
             self.log.error(f"Resource missing 'policy_group_id': {resource}")
             return False
@@ -498,13 +500,11 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
         # Validate opacity_setting if it's provided
         if requested_opacity_setting is not None:
             if not isinstance(requested_opacity_setting, str):
-                self.log.error(
-                    f"Invalid opacity_setting value '{requested_opacity_setting}' provided "
-                    f"in action configuration for "
-                    f"policy group {policy_group_id}. Must be a string.")
+                self.log.error(f"[actions]-[enable-watermark] "
+                               f"The resource:[workspace-policy-group] "
+                               f"with id:[{policy_group_name}/{policy_group_id}] "
+                               f"opacity_setting is invalid.")
                 return False
-
-        self.log.info(f"Attempting to enable watermark for policy group {policy_group_id}.")
 
         session = local_session(self.manager.session_factory)
         client = session.client('workspace')
@@ -514,36 +514,19 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
             show_response = client.list_policy_detail_info_by_id(show_request)
 
             full_policy_group_obj = getattr(show_response, 'policy_group', None)
-            if not full_policy_group_obj:
-                self.log.error(
-                    f"Could not retrieve detailed info for policy group {policy_group_id}. "
-                    f"Response structure unexpected or empty 'policy_group'.")
-                return False
 
             policies_obj_or_dict = getattr(full_policy_group_obj, self.POLICIES_KEY, {})
             if hasattr(policies_obj_or_dict, 'to_dict'):
                 policies = policies_obj_or_dict.to_dict()
             elif isinstance(policies_obj_or_dict, dict):
                 policies = policies_obj_or_dict
-            else:
-                self.log.error(
-                    f"Policies attribute for policy group {policy_group_id} is neither a dict "
-                    f"nor has to_dict(). Type: {type(policies_obj_or_dict)}")
-                return False
 
             watermark = policies.get(self.WATERMARK_KEY, {})
-            if not watermark:
-                self.log.warning(
-                    f"'{self.WATERMARK_KEY}' section missing in policies for "
-                    f"policy group {policy_group_id}. Creating new section.")
 
             watermark[self.WATERMARK_ENABLE_KEY] = True
 
             if requested_opacity_setting is not None:
                 watermark['options'][self.WATERMARK_OPACITY_KEY] = requested_opacity_setting
-                self.log.debug(
-                    f"Set '{self.WATERMARK_OPACITY_KEY}' to '{requested_opacity_setting}' "
-                    f"for policy group {policy_group_id}.")
 
             policies[self.WATERMARK_KEY] = watermark
 
@@ -556,11 +539,12 @@ class UpdateWatermarkEnableAction(HuaweiCloudBaseAction):
 
             client.update_policy_group(update_request)
             self.log.info(f"[actions]-[enable-watermark] The resource:[workspace-policy-group] "
-                          f"with id:[{policy_group_id}] enable succeeded.")
+                          f"with id:[{policy_group_name}/{policy_group_id}] enable succeeded.")
             return True
 
         except Exception as e:
             self.log.error(f"[actions]-[enable-watermark] The resource:[workspace-policy-group] "
-                           f"with id:[{policy_group_id}] enable failed. Cause: {str(e)}")
+                           f"with id:[{policy_group_name}/{policy_group_id}] "
+                           f"enable failed. Cause: {str(e)}")
             raise Exception(f"[actions]-[enable-watermark] The resource:[workspace-policy-group] "
-                            f"with id:[{policy_group_id}] enable failed.")
+                            f"with id:[{policy_group_name}/{policy_group_id}] enable failed.")
