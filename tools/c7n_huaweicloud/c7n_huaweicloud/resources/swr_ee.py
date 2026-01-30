@@ -1547,6 +1547,8 @@ class SignatureRule(SwrEeBaseFilter):
 
             rule_matches = False
             for policy in policies:
+                if policy['name'] != f"custodian-signature-{policy['namespace_name']}":
+                    continue
                 if not self.match_policy_with_matchers(policy, matchers, match_op):
                     continue
 
@@ -1714,8 +1716,8 @@ class SetSignature(HuaweiCloudBaseAction):
                         log.warning(
                             f"[actions]-[set-signature] instance: {instance_id}, "
                             f"namespace: {namespace_name}, "
-                            f"policy has been manually created")
-                        return
+                            f"policy: {policy['name']} has been manually created")
+                        continue
                     find_policy = policy
 
             # If the policy does not exist and is_set is False (cancel), return directly
@@ -2071,9 +2073,9 @@ def delete_and_create_tag(resource, client, delete_tags, new_tags):
         ))
     except exceptions.ClientRequestException as ex:
         log.error(f"delete_and_create_tag delete tag is failed."
-                       f"cause: : {ex.error_msg}, "
-                       f"status: {ex.status_code}, "
-                       f"requestId: {ex.request_id}")
+                  f"cause: : {ex.error_msg}, "
+                  f"status: {ex.status_code}, "
+                  f"requestId: {ex.request_id}")
         raise
 
     try:
@@ -2084,9 +2086,9 @@ def delete_and_create_tag(resource, client, delete_tags, new_tags):
         ))
     except exceptions.ClientRequestException as ex:
         log.error(f"[actions]-rename-tag create tag is failed."
-                       f"cause: : {ex.error_msg}, "
-                       f"status: {ex.status_code}, "
-                       f"requestId: {ex.request_id}")
+                  f"cause: : {ex.error_msg}, "
+                  f"status: {ex.status_code}, "
+                  f"requestId: {ex.request_id}")
         raise
 
 
