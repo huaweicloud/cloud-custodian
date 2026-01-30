@@ -90,7 +90,7 @@ class GeminiDB(QueryResourceManager):
         }
 
         for resource in resources:
-            if not resource["tags"]:
+            if "tags" not in resource:
                 instance_id = resource["id"]
                 tags_of_instance = instance_id_to_tags_map.get(instance_id, [])
                 resource["tags"] = tags_of_instance
