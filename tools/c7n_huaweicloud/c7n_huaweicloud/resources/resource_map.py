@@ -97,5 +97,6 @@ ResourceMap = {
     "huaweicloud.codeartsrepo-project":
         "c7n_huaweicloud.resources.codeartsrepo.CodeArtsRepoProject",
     "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
-    "huaweicloud.rfs-stack": "c7n_huaweicloud.resources.rfs.Stack"
+    "huaweicloud.rfs-stack": "c7n_huaweicloud.resources.rfs.Stack",
+    "huaweicloud.geminidb": "c7n_huaweicloud.resources.geminidb.GeminiDB"
 }
