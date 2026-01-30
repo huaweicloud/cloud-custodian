@@ -1,0 +1,251 @@
+interactions:
+  - request:
+      body: null
+      headers:
+        Accept:
+          - '*/*'
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        Content-Type:
+          - application/json
+        Host:
+          - cce.ap-southeast-1.myhuaweicloud.com
+        User-Agent:
+          - huaweicloud-usdk-python/3.0; os/Windows#10.0.26100#AMD64 python/3.11.8 impl/CPython;
+            app/25ca91b0-679a-4b3d-8d3a-448671137d92
+        X-Project-Id:
+          - ap-southeat-1
+        X-Sdk-Date:
+          - 20260119T094136Z
+      method: GET
+      uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+    response:
+      body:
+        string: "{\"kind\":\"Cluster\",\"apiVersion\":\"v3\",\"items\":[{\"kind\":\"Cluster\",\"apiVersion\":\"v3\",\"metadata\":{\"name\":\"test-cluster-awaken\",\"uid\":\"cluster-awaken-test-id-789\",\"creationTimestamp\":\"2023-01-15T08:00:00Z\",\"updateTimestamp\":\"2023-01-16T10:30:00Z\"},\"spec\":{\"type\":\"VirtualMachine\",\"flavor\":\"cce.s1.small\",\"version\":\"v1.30\",\"platformVersion\":\"3.1.0\",\"description\":\"\u6D4B\u8BD5\u96C6\u7FA4\u5F00\u542Ftls\u65E5\u5FD7\",\"customSan\":[],\"enableMasterVolumeEncryption\":false},\"status\":{\"phase\":\"Available\",\"jobID\":\"\",\"reason\":\"\",\"message\":\"\",\"endpoints\":[]}}]}"
+      headers:
+        Connection:
+          - keep-alive
+        Content-Type:
+          - application/json
+        Date:
+          - Mon, 19 Jan 2026 09:41:36 GMT
+        Server:
+          - api-gateway
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubdomains;
+        X-Content-Type-Options:
+          - nosniff
+        X-Download-Options:
+          - noopen
+        X-Frame-Options:
+          - SAMEORIGIN
+        X-Request-Id:
+          - b4377a654f8f9a953f4ac26573b16f48
+        X-XSS-Protection:
+          - 1; mode=block;
+      status:
+        code: 200
+        message: Ok
+  - request:
+      body: null
+      headers:
+        Accept:
+          - '*/*'
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        Content-Type:
+          - application/json
+        Host:
+          - cce.ap-southeast-1.myhuaweicloud.com
+        User-Agent:
+          - huaweicloud-usdk-python/3.0; os/Windows#10.0.26100#AMD64 python/3.11.8 impl/CPython;
+            app/25ca91b0-679a-4b3d-8d3a-448671137d92
+        X-Project-Id:
+          - ap-southeat-1
+        X-Sdk-Date:
+          - 20260119T094243Z
+      method: GET
+      uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addontemplates?addon_template_name=swr-cosign
+    response:
+      body:
+        string: "{\"kind\":\"Addon\",\"apiVersion\":\"v3\",\"items\":[{\"kind\":\"Addon\",\"apiVersion\":\"v3\",\"metadata\":{\"uid\":\"swr-cosign\",\"name\":\"swr-cosign\",\"alias\":\"swr-cosign\",\"maxInstanceNum\":1,\"creationTimestamp\":\"2024-08-06T11:50:25Z\",\"updateTimestamp\":\"2025-12-30T12:45:56Z\"},\"spec\":{\"type\":\"helm\",\"labels\":[\"Maintenance\"],\"description\":\"the
+        policy-controller admission controller can be used to enforce policy on a
+        Kubernetes cluster based on verifiable supply-chain metadata from cosign.\",\"versions\":[{\"version\":\"1.0.2\",\"input\":{\"basic\":{\"swr_addr\":\"swr.cn-north-7.myhuaweicloud.com\",\"swr_cosign_image_version\":\"22.12.006\",\"swr_user\":\"hwofficial\"},\"parameters\":{\"custom\":{\"cosignPub\":\"\",\"globs\":[],\"hashAlgorithm\":\"\"},\"flavor1\":{\"description\":\"Has
+        only one instance\",\"name\":\"Single\",\"replicas\":1,\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}]},\"flavor2\":{\"description\":\"High
+        cosign\",\"name\":\"HA\",\"replicas\":2,\"resources\":[{\"limitsCpu\":\"1000m\",\"limitsMem\":\"1000Mi\",\"name\":\"swr-cosign\",\"requestsCpu\":\"500m\",\"requestsMem\":\"500Mi\"}]},\"flavor3\":{\"description\":\"custom
+        resources\",\"name\":\"custom-resources\",\"replicas\":2,\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}]}}},\"stable\":true,\"translate\":{\"en_US\":{\"addon\":{\"changeLog\":\"Support
+        check for signed images\",\"description\":\"Support check for signed images.\"},\"description\":{\"Parameters.flavor1.description\":\"Deploy
+        one instance.\",\"Parameters.flavor1.name\":\"Single\",\"Parameters.flavor2.description\":\"Deploy
+        multi instances.\",\"Parameters.flavor2.name\":\"HA\",\"Parameters.flavor3.description\":\"Deploy
+        a custom number of instances.\",\"Parameters.flavor3.name\":\"Custom\"}},\"zh_CN\":{\"addon\":{\"changeLog\":\"\u652F\u6301\u955C\u50CF\u9A8C\u7B7E\",\"description\":\"\u955C\u50CF\u9A8C\u7B7E\u63D2\u4EF6\"},\"description\":{\"Parameters.flavor1.description\":\"\u5355\u5B9E\u4F8B\u90E8\u7F72\",\"Parameters.flavor1.name\":\"\u5355\u5B9E\u4F8B\",\"Parameters.flavor2.description\":\"\u9AD8\u53EF\u7528\u90E8\u7F72\",\"Parameters.flavor2.name\":\"\u9AD8\u53EF\u7528\",\"Parameters.flavor3.description\":\"\u81EA\u5B9A\u4E49\u8D44\u6E90\u89C4\u683C\u90E8\u7F72\",\"Parameters.flavor3.name\":\"\u81EA\u5B9A\u4E49\"},\"key\":{\"Parameters.custom.cosignPub\":\"\u9A8C\u7B7E\u516C\u94A5\",\"Parameters.custom.glob\":\"\u9A8C\u7B7E\u955C\u50CF\u5339\u914D\u6B63\u5219\",\"Parameters.custom.hashAlgorithm\":\"\u9A8C\u7B7E\u7B97\u6CD5\u7C7B\u578B\"}}},\"supportVersions\":[{\"clusterType\":\"VirtualMachine\",\"clusterVersion\":[\"v1.(23|25|27|28|29).*\"]},{\"clusterType\":\"ARM64\",\"clusterVersion\":[\"v1.(23|25|27|28|29).*\"]}],\"creationTimestamp\":\"2024-08-06T11:50:25Z\",\"updateTimestamp\":\"2024-08-06T11:50:25Z\"},{\"version\":\"1.0.40\",\"input\":{\"basic\":{\"swr_addr\":\"swr.cn-north-7.myhuaweicloud.com\",\"swr_cosign_image_version\":\"1.0.40\",\"swr_user\":\"hwofficial\"},\"parameters\":{\"custom\":{\"cosignPub\":\"\",\"globs\":[],\"hashAlgorithm\":\"\",\"kmsAlias\":\"\"},\"flavor1\":{\"description\":\"Has
+        only one instance\",\"name\":\"Single\",\"replicas\":1,\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"replicas\":1,\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}],\"size\":\"small\"},\"flavor2\":{\"description\":\"High
+        cosign\",\"name\":\"HA\",\"replicas\":2,\"resources\":[{\"limitsCpu\":\"1000m\",\"limitsMem\":\"1000Mi\",\"name\":\"swr-cosign\",\"replicas\":2,\"requestsCpu\":\"500m\",\"requestsMem\":\"500Mi\"}],\"size\":\"large\"},\"flavor3\":{\"description\":\"custom
+        resources\",\"name\":\"custom-resources\",\"replicas\":2,\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"replicas\":2,\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}],\"size\":\"custom\"}}},\"stable\":true,\"translate\":{\"en_US\":{\"addon\":{\"changeLog\":\"Support
+        check for signed images\",\"components\":{\"swr-cosign\":{\"description\":\"Used
+        to verify the signature of SWR enterprise repository images. When a CCE workload
+        (deployment) is deployed, the validity of images defined by the workload is
+        verified.\",\"kind\":\"Deployment\"}},\"description\":\"Image signature verification
+        plug-in, which supports the SWR enterprise repository.\"},\"description\":{\"Parameters\":{\"flavor1\":{\"description\":\"Applies
+        to a cluster where the number of different images that are concurrently downloaded
+        is less than 50.\",\"name\":\"Small\"},\"flavor2\":{\"description\":\"Applies
+        to a cluster with less than 300 concurrent downloads of different images.\",\"name\":\"Large\"},\"flavor3\":{\"description\":\"Customized
+        specifications\",\"name\":\"Customized\"}},\"Parameters.flavor1.description\":\"Deploy
+        one instance.\",\"Parameters.flavor1.name\":\"Single\",\"Parameters.flavor2.description\":\"Deploy
+        multi instances.\",\"Parameters.flavor2.name\":\"HA\",\"Parameters.flavor3.description\":\"Deploy
+        a custom number of instances.\",\"Parameters.flavor3.name\":\"Custom\"}},\"zh_CN\":{\"addon\":{\"changeLog\":\"\u652F\u6301\u955C\u50CF\u9A8C\u7B7E\",\"components\":{\"swr-cosign\":{\"description\":\"\u7528\u4E8ESWR\u4F01\u4E1A\u4ED3\u5E93\u955C\u50CF\u7B7E\u540D\u9A8C\u8BC1\uFF0C\u90E8\u7F72CCE\u5DE5\u4F5C\u8D1F\u8F7D(Deployment)\u65F6\uFF0C\u9A8C\u8BC1\u5DE5\u4F5C\u8D1F\u8F7D\u5B9A\u4E49\u7684\u955C\u50CF\u7684\u5408\u6CD5\u6027\",\"kind\":\"Deployment\"}},\"description\":\"\u955C\u50CF\u9A8C\u7B7E\u63D2\u4EF6\uFF0C\u652F\u6301SWR\u4F01\u4E1A\u4ED3\u5E93\u3002\"},\"description\":{\"Parameters\":{\"flavor1\":{\"description\":\"\u9002\u7528\u4E8E\u5E76\u53D1\u4E0B\u8F7D\u4E0D\u540C\u955C\u50CF\u6570\u91CF\u5C0F\u4E8E50\u7684\u96C6\u7FA4\",\"name\":\"\u5C0F\u89C4\u683C\"},\"flavor2\":{\"description\":\"\u9002\u7528\u4E8E\u5E76\u53D1\u4E0B\u8F7D\u4E0D\u540C\u955C\u50CF\u6570\u91CF\u5C0F\u4E8E300\u7684\u96C6\u7FA4\",\"name\":\"\u5927\u89C4\u683C\"},\"flavor3\":{\"description\":\"\u81EA\u5B9A\u4E49\u89C4\u683C\",\"name\":\"\u81EA\u5B9A\u4E49\"}},\"Parameters.flavor1.description\":\"\u5355\u5B9E\u4F8B\u90E8\u7F72\",\"Parameters.flavor1.name\":\"\u5355\u5B9E\u4F8B\",\"Parameters.flavor2.description\":\"\u9AD8\u53EF\u7528\u90E8\u7F72\",\"Parameters.flavor2.name\":\"\u9AD8\u53EF\u7528\",\"Parameters.flavor3.description\":\"\u81EA\u5B9A\u4E49\u8D44\u6E90\u89C4\u683C\u90E8\u7F72\",\"Parameters.flavor3.name\":\"\u81EA\u5B9A\u4E49\"},\"key\":{\"Parameters.custom.cosignPub\":\"\u9A8C\u7B7E\u516C\u94A5\",\"Parameters.custom.glob\":\"\u9A8C\u7B7E\u955C\u50CF\u5339\u914D\u6B63\u5219\",\"Parameters.custom.hashAlgorithm\":\"\u9A8C\u7B7E\u7B97\u6CD5\u7C7B\u578B\",\"Parameters.custom.kmsAlias\":\"\u9A8C\u7B7E\u79D8\u94A5\u540D\u79F0\"}}},\"supportVersions\":[{\"clusterType\":\"VirtualMachine\",\"clusterVersion\":[\"v1.(23|25|27|28|29|30|31|32|33|34).*\"]},{\"clusterType\":\"ARM64\",\"clusterVersion\":[\"v1.(23|25|27|28|29|30|31|32|33|34).*\"]}],\"creationTimestamp\":\"2025-11-06T07:15:26Z\",\"updateTimestamp\":\"2025-11-06T07:15:26Z\"},{\"version\":\"1.0.46\",\"input\":{\"basic\":{\"swr_addr\":\"swr.cn-north-7.myhuaweicloud.com\",\"swr_cosign_image_version\":\"1.0.46\",\"swr_user\":\"hwofficial\"},\"parameters\":{\"custom\":{\"cosignPub\":\"\",\"globs\":[],\"hashAlgorithm\":\"\",\"kmsAlias\":\"\"},\"flavor1\":{\"description\":\"Has
+        only one instance\",\"name\":\"Single\",\"replicas\":1,\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"replicas\":1,\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}],\"size\":\"small\"},\"flavor2\":{\"description\":\"High
+        cosign\",\"name\":\"HA\",\"replicas\":2,\"resources\":[{\"limitsCpu\":\"1000m\",\"limitsMem\":\"1000Mi\",\"name\":\"swr-cosign\",\"replicas\":2,\"requestsCpu\":\"500m\",\"requestsMem\":\"500Mi\"}],\"size\":\"large\"},\"flavor3\":{\"description\":\"custom
+        resources\",\"name\":\"custom-resources\",\"replicas\":2,\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"replicas\":2,\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}],\"size\":\"custom\"}}},\"stable\":true,\"translate\":{\"en_US\":{\"addon\":{\"changeLog\":\"Support
+        check for signed images\",\"components\":{\"swr-cosign\":{\"description\":\"Used
+        to verify the signature of SWR enterprise repository images. When a CCE workload
+        (deployment) is deployed, the validity of images defined by the workload is
+        verified.\",\"kind\":\"Deployment\"}},\"description\":\"Image signature verification
+        plug-in, which supports the SWR enterprise repository.\"},\"description\":{\"Parameters\":{\"flavor1\":{\"description\":\"Applies
+        to a cluster where the number of different images that are concurrently downloaded
+        is less than 50.\",\"name\":\"Small\"},\"flavor2\":{\"description\":\"Applies
+        to a cluster with less than 300 concurrent downloads of different images.\",\"name\":\"Large\"},\"flavor3\":{\"description\":\"Customized
+        specifications\",\"name\":\"Customized\"}},\"Parameters.flavor1.description\":\"Deploy
+        one instance.\",\"Parameters.flavor1.name\":\"Single\",\"Parameters.flavor2.description\":\"Deploy
+        multi instances.\",\"Parameters.flavor2.name\":\"HA\",\"Parameters.flavor3.description\":\"Deploy
+        a custom number of instances.\",\"Parameters.flavor3.name\":\"Custom\"}},\"zh_CN\":{\"addon\":{\"changeLog\":\"\u652F\u6301\u955C\u50CF\u9A8C\u7B7E\",\"components\":{\"swr-cosign\":{\"description\":\"\u7528\u4E8ESWR\u4F01\u4E1A\u4ED3\u5E93\u955C\u50CF\u7B7E\u540D\u9A8C\u8BC1\uFF0C\u90E8\u7F72CCE\u5DE5\u4F5C\u8D1F\u8F7D(Deployment)\u65F6\uFF0C\u9A8C\u8BC1\u5DE5\u4F5C\u8D1F\u8F7D\u5B9A\u4E49\u7684\u955C\u50CF\u7684\u5408\u6CD5\u6027\",\"kind\":\"Deployment\"}},\"description\":\"\u955C\u50CF\u9A8C\u7B7E\u63D2\u4EF6\uFF0C\u652F\u6301SWR\u4F01\u4E1A\u4ED3\u5E93\u3002\"},\"description\":{\"Parameters\":{\"flavor1\":{\"description\":\"\u9002\u7528\u4E8E\u5E76\u53D1\u4E0B\u8F7D\u4E0D\u540C\u955C\u50CF\u6570\u91CF\u5C0F\u4E8E50\u7684\u96C6\u7FA4\",\"name\":\"\u5C0F\u89C4\u683C\"},\"flavor2\":{\"description\":\"\u9002\u7528\u4E8E\u5E76\u53D1\u4E0B\u8F7D\u4E0D\u540C\u955C\u50CF\u6570\u91CF\u5C0F\u4E8E300\u7684\u96C6\u7FA4\",\"name\":\"\u5927\u89C4\u683C\"},\"flavor3\":{\"description\":\"\u81EA\u5B9A\u4E49\u89C4\u683C\",\"name\":\"\u81EA\u5B9A\u4E49\"}},\"Parameters.flavor1.description\":\"\u5355\u5B9E\u4F8B\u90E8\u7F72\",\"Parameters.flavor1.name\":\"\u5355\u5B9E\u4F8B\",\"Parameters.flavor2.description\":\"\u9AD8\u53EF\u7528\u90E8\u7F72\",\"Parameters.flavor2.name\":\"\u9AD8\u53EF\u7528\",\"Parameters.flavor3.description\":\"\u81EA\u5B9A\u4E49\u8D44\u6E90\u89C4\u683C\u90E8\u7F72\",\"Parameters.flavor3.name\":\"\u81EA\u5B9A\u4E49\"},\"key\":{\"Parameters.custom.cosignPub\":\"\u9A8C\u7B7E\u516C\u94A5\",\"Parameters.custom.glob\":\"\u9A8C\u7B7E\u955C\u50CF\u5339\u914D\u6B63\u5219\",\"Parameters.custom.hashAlgorithm\":\"\u9A8C\u7B7E\u7B97\u6CD5\u7C7B\u578B\",\"Parameters.custom.kmsAlias\":\"\u9A8C\u7B7E\u79D8\u94A5\u540D\u79F0\"}}},\"supportVersions\":[{\"clusterType\":\"VirtualMachine\",\"clusterVersion\":[\"v1.(23|25|27|28|29|30|31|32|33|34|35).*\"]},{\"clusterType\":\"ARM64\",\"clusterVersion\":[\"v1.(23|25|27|28|29|30|31|32|33|34|35).*\"]}],\"creationTimestamp\":\"2025-12-30T12:45:56Z\",\"updateTimestamp\":\"2025-12-30T12:45:56Z\"}]}}]}"
+      headers:
+        Connection:
+          - keep-alive
+        Content-Type:
+          - application/json
+        Date:
+          - Mon, 19 Jan 2026 09:42:43 GMT
+        Server:
+          - api-gateway
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubdomains;
+        X-Content-Type-Options:
+          - nosniff
+        X-Download-Options:
+          - noopen
+        X-Frame-Options:
+          - SAMEORIGIN
+        X-Request-Id:
+          - d33e77f4a78730344603d8b63919b80c
+        X-XSS-Protection:
+          - 1; mode=block;
+      status:
+        code: 200
+        message: Ok
+  - request:
+      body: '{"kind": "Addon", "apiVersion": "v3", "metadata": {"annotations": {"addon.install/type":
+      "install"}}, "spec": {"version": "1.0.46", "clusterID": "cluster-awaken-test-id-789",
+      "values": {"basic": {"swr_addr": "swr.cn-north-7.myhuaweicloud.com", "swr_cosign_image_version":
+      "1.0.46", "swr_user": "hwofficial", "rbac_enabled": true, "cluster_version":
+      "v1.30"}, "flavor": {"description": "Has only one instance", "name": "Single",
+      "replicas": 1, "resources": [{"limitsCpu": "100m", "limitsMem": "256Mi", "name":
+      "swr-cosign", "replicas": 1, "requestsCpu": "100m", "requestsMem": "128Mi"}],
+      "size": "small"}, "custom": {"cosignPub": "", "globs": ["*"], "hashAlgorithm":
+      "", "kmsAlias": ""}}, "addonTemplateName": "swr-cosign"}}'
+      headers:
+        Accept:
+          - '*/*'
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        Content-Length:
+          - '723'
+        Content-Type:
+          - application/json
+        Host:
+          - cce.ap-southeast-1.myhuaweicloud.com
+        User-Agent:
+          - huaweicloud-usdk-python/3.0; os/Windows#10.0.26100#AMD64 python/3.11.8 impl/CPython;
+            app/25ca91b0-679a-4b3d-8d3a-448671137d92
+        X-Project-Id:
+          - ap-southeat-1
+        X-Sdk-Date:
+          - 20260119T094900Z
+      method: POST
+      uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons
+    response:
+      body:
+        string: "{\"kind\":\"Addon\",\"apiVersion\":\"v3\",\"metadata\":{\"uid\":\"26df8322-3536-4185-bfec-bc5ed8b7cb23\",\"name\":\"swr-cosign\",\"alias\":\"swr-cosign\",\"creationTimestamp\":\"2026-01-19T06:16:39Z\",\"updateTimestamp\":\"2026-01-19T06:16:39Z\"},\"spec\":{\"clusterID\":\"530179ce-e49f-11f0-b8aa-0255ac1000fd\",\"version\":\"1.0.46\",\"addonTemplateName\":\"swr-cosign\",\"addonTemplateType\":\"helm\",\"addonTemplateLogo\":\"\",\"addonTemplateLabels\":[\"Maintenance\"],\"description\":\"the policy-controller admission controller can be used to enforce policy on a Kubernetes cluster based on verifiable supply-chain metadata from cosign.\",\"values\":{\"basic\":{\"platform\":\"linux-amd64\",\"swr_addr\":\"swr.cn-north-7.myhuaweicloud.com\",\"swr_cosign_image_version\":\"1.0.46\",\"swr_user\":\"hwofficial\"},\"custom\":{\"cosignPub\":\"LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFMUJOVm5ObW4vSk55UmRnMkV2ZitDeEF4WUFBZgpMUmY0aWZGeU93VjBES2hIQkNYdlZyM0xMNEFVR1RnamI3bGtlZ0xyUC9yaXB5TkVoUktyNWVOMGZBPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==\",\"globs\":[\"*\"],\"hashAlgorithm\":\"\",\"kmsAlias\":\"\"},\"flavor\":{\"category\":[\"CCE\",\"Turbo\"],\"description\":\"Has only one instance\",\"name\":\"Single\",\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"replicas\":1,\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}],\"size\":\"small\"},\"systemAutoInject\":{\"cluster\":{\"clusterID\":\"530179ce-e49f-11f0-b8aa-0255ac1000fd\",\"clusterNetworkMode\":\"vpc-router\",\"clusterVersion\":\"v1.30.14-r10\"},\"user\":{\"projectID\":\"537e7a3bdfec45c99826c5657fd908ff\"}}}},\"status\":{\"status\":\"installing\",\"Reason\":\"\",\"message\":\"\",\"targetVersions\":null,\"isRollbackable\":false,\"currentVersion\":{\"version\":\"1.0.46\",\"input\":{\"basic\":{\"swr_addr\":\"swr.cn-north-7.myhuaweicloud.com\",\"swr_cosign_image_version\":\"1.0.46\",\"swr_user\":\"hwofficial\"},\"parameters\":{\"custom\":{\"cosignPub\":\"\",\"globs\":[],\"hashAlgorithm\":\"\",\"kmsAlias\":\"\"},\"flavor1\":{\"description\":\"Has only one instance\",\"name\":\"Single\",\"replicas\":1,\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"replicas\":1,\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}],\"size\":\"small\"},\"flavor2\":{\"description\":\"High cosign\",\"name\":\"HA\",\"replicas\":2,\"resources\":[{\"limitsCpu\":\"1000m\",\"limitsMem\":\"1000Mi\",\"name\":\"swr-cosign\",\"replicas\":2,\"requestsCpu\":\"500m\",\"requestsMem\":\"500Mi\"}],\"size\":\"large\"},\"flavor3\":{\"description\":\"custom resources\",\"name\":\"custom-resources\",\"replicas\":2,\"resources\":[{\"limitsCpu\":\"100m\",\"limitsMem\":\"256Mi\",\"name\":\"swr-cosign\",\"replicas\":2,\"requestsCpu\":\"100m\",\"requestsMem\":\"128Mi\"}],\"size\":\"custom\"}}},\"stable\":true,\"translate\":{\"en_US\":{\"addon\":{\"changeLog\":\"Support check for signed images\",\"components\":{\"swr-cosign\":{\"description\":\"Used to verify the signature of SWR enterprise repository images. When a CCE workload (deployment) is deployed, the validity of images defined by the workload is verified.\",\"kind\":\"Deployment\"}},\"description\":\"Image signature verification plug-in, which supports the SWR enterprise repository.\"},\"description\":{\"Parameters\":{\"flavor1\":{\"description\":\"Applies to a cluster where the number of different images that are concurrently downloaded is less than 50.\",\"name\":\"Small\"},\"flavor2\":{\"description\":\"Applies to a cluster with less than 300 concurrent downloads of different images.\",\"name\":\"Large\"},\"flavor3\":{\"description\":\"Customized specifications\",\"name\":\"Customized\"}},\"Parameters.flavor1.description\":\"Deploy one instance.\",\"Parameters.flavor1.name\":\"Single\",\"Parameters.flavor2.description\":\"Deploy multi instances.\",\"Parameters.flavor2.name\":\"HA\",\"Parameters.flavor3.description\":\"Deploy a custom number of instances.\",\"Parameters.flavor3.name\":\"Custom\"}},\"zh_CN\":{\"addon\":{\"changeLog\":\"\u652F\u6301\u955C\u50CF\u9A8C\u7B7E\",\"components\":{\"swr-cosign\":{\"description\":\"\u7528\u4E8ESWR\u4F01\u4E1A\u4ED3\u5E93\u955C\u50CF\u7B7E\u540D\u9A8C\u8BC1\uFF0C\u90E8\u7F72CCE\u5DE5\u4F5C\u8D1F\u8F7D(Deployment)\u65F6\uFF0C\u9A8C\u8BC1\u5DE5\u4F5C\u8D1F\u8F7D\u5B9A\u4E49\u7684\u955C\u50CF\u7684\u5408\u6CD5\u6027\",\"kind\":\"Deployment\"}},\"description\":\"\u955C\u50CF\u9A8C\u7B7E\u63D2\u4EF6\uFF0C\u652F\u6301SWR\u4F01\u4E1A\u4ED3\u5E93\u3002\"},\"description\":{\"Parameters\":{\"flavor1\":{\"description\":\"\u9002\u7528\u4E8E\u5E76\u53D1\u4E0B\u8F7D\u4E0D\u540C\u955C\u50CF\u6570\u91CF\u5C0F\u4E8E50\u7684\u96C6\u7FA4\",\"name\":\"\u5C0F\u89C4\u683C\"},\"flavor2\":{\"description\":\"\u9002\u7528\u4E8E\u5E76\u53D1\u4E0B\u8F7D\u4E0D\u540C\u955C\u50CF\u6570\u91CF\u5C0F\u4E8E300\u7684\u96C6\u7FA4\",\"name\":\"\u5927\u89C4\u683C\"},\"flavor3\":{\"description\":\"\u81EA\u5B9A\u4E49\u89C4\u683C\",\"name\":\"\u81EA\u5B9A\u4E49\"}},\"Parameters.flavor1.description\":\"\u5355\u5B9E\u4F8B\u90E8\u7F72\",\"Parameters.flavor1.name\":\"\u5355\u5B9E\u4F8B\",\"Parameters.flavor2.description\":\"\u9AD8\u53EF\u7528\u90E8\u7F72\",\"Parameters.flavor2.name\":\"\u9AD8\u53EF\u7528\",\"Parameters.flavor3.description\":\"\u81EA\u5B9A\u4E49\u8D44\u6E90\u89C4\u683C\u90E8\u7F72\",\"Parameters.flavor3.name\":\"\u81EA\u5B9A\u4E49\"},\"key\":{\"Parameters.custom.cosignPub\":\"\u9A8C\u7B7E\u516C\u94A5\",\"Parameters.custom.glob\":\"\u9A8C\u7B7E\u955C\u50CF\u5339\u914D\u6B63\u5219\",\"Parameters.custom.hashAlgorithm\":\"\u9A8C\u7B7E\u7B97\u6CD5\u7C7B\u578B\",\"Parameters.custom.kmsAlias\":\"\u9A8C\u7B7E\u79D8\u94A5\u540D\u79F0\"}}},\"supportVersions\":null,\"creationTimestamp\":\"2025-12-30T12:45:56Z\",\"updateTimestamp\":\"2025-12-30T12:45:56Z\"}}}"
+      headers:
+        Connection:
+          - keep-alive
+        Content-Type:
+          - application/json
+        Date:
+          - Mon, 19 Jan 2026 09:49:00 GMT
+        Server:
+          - api-gateway
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubdomains;
+        Transfer-Encoding:
+          - chunked
+        X-Content-Type-Options:
+          - nosniff
+        X-Download-Options:
+          - noopen
+        X-Frame-Options:
+          - SAMEORIGIN
+        X-Request-Id:
+          - a612242f3a946482b7c5500c17f56ca9
+        X-XSS-Protection:
+          - 1; mode=block;
+      status:
+        code: 201
+        message: Ok
+  - request:
+      body: null
+      headers:
+        Accept:
+          - '*/*'
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        Content-Type:
+          - application/json
+        Host:
+          - cce.ap-southeast-1.myhuaweicloud.com
+        User-Agent:
+          - huaweicloud-usdk-python/3.0; os/Windows#10.0.26100#AMD64 python/3.11.8 impl/CPython;
+            app/25ca91b0-679a-4b3d-8d3a-448671137d92
+        X-Project-Id:
+          - ap-southeat-1
+        X-Sdk-Date:
+          - 20260119T083624Z
+      method: GET
+      uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons?cluster_id=cluster-awaken-test-id-789
+    response:
+      body:
+        string: "{\"kind\":\"Addon\",\"apiVersion\":\"v3\",\"items\":[{\"kind\":\"Addon\",\"apiVersion\":\"v3\",\"metadata\":{\"uid\":\"ff83c653-b8ea-49ed-a58b-738d9a6aec03\",\"name\":\"swr-cosign\",\"alias\":\"swr-cosign\",\"creationTimestamp\":\"2026-01-19T07:06:13Z\",\"updateTimestamp\":\"2026-01-19T07:06:13Z\"},\"spec\":{\"clusterID\":\"530179ce-e49f-11f0-b8aa-0255ac1000fd\",\"version\":\"1.0.46\",\"addonTemplateName\":\"swr-cosign\",\"addonTemplateType\":\"helm\",\"addonTemplateLogo\":\"\",\"addonTemplateLabels\":[\"Maintenance\"],\"description\":\"the policy-controller admission controller can be used to enforce policy on a Kubernetes cluster based on verifiable supply-chain metadata from cosign.\"},\"status\":{\"status\":\"running\",\"Reason\":\"Install complete\",\"message\":\"\",\"targetVersions\":null,\"isRollbackable\":false}}]}"
+      headers:
+        Connection:
+          - keep-alive
+        Content-Type:
+          - application/json
+        Date:
+          - Mon, 19 Jan 2026 08:36:25 GMT
+        Server:
+          - api-gateway
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubdomains;
+        Transfer-Encoding:
+          - chunked
+        X-Content-Type-Options:
+          - nosniff
+        X-Download-Options:
+          - noopen
+        X-Frame-Options:
+          - SAMEORIGIN
+        X-Request-Id:
+          - 04bab2deca150828261888730f1d8534
+        X-XSS-Protection:
+          - 1; mode=block;
+      status:
+        code: 200
+        message: Ok
+version: 1

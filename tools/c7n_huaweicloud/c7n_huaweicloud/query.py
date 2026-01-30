@@ -232,33 +232,45 @@ class ResourceQuery:
         _dict_map(request, page_params)
         resources = []
         while 1:
-            response = self._invoke_client_enum(client, enum_op, request)
+            is_retry = False
+            try:
+                response = self._invoke_client_enum(client, enum_op, request)
+            except exceptions.ServiceResponseException as ex:
+                # retry when marker resource not found
+                if m.service.startswith("vpc") and ex.status_code and ex.status_code == 404:
+                    log.info("The marker resource in the pagination query is not found, "
+                             "retry with new marker.")
+                    is_retry = True
+                else:
+                    raise ex
+
             res = jmespath.search(path, safe_json_parse(response))
 
-            # replace id with the specified one
-            if res is None or len(res) == 0:
-                return resources
-            # re-set id
-            if "id" not in res[0]:
-                for data in res:
-                    data["id"] = data[m.id]
-            if res and getattr(m, "tag_resource_type", None):
-                for data in res:
-                    data["tag_resource_type"] = m.tag_resource_type
-            # merge result
-            resources = resources + res
+            if not is_retry:
+                # replace id with the specified one
+                if res is None or len(res) == 0:
+                    return resources
+                # re-set id
+                if "id" not in res[0]:
+                    for data in res:
+                        data["id"] = data[m.id]
+                if res and getattr(m, "tag_resource_type", None):
+                    for data in res:
+                        data["tag_resource_type"] = m.tag_resource_type
+                # merge result
+                resources = resources + res
 
             # get next page info
             if m.service.endswith("v2"):
                 next_page_params_by_id = marker_pagination.get_next_page_params_by_id(
-                    res
-                )
+                    res, is_retry)
                 if next_page_params_by_id:
                     _dict_map(request, next_page_params_by_id)
                 else:
                     return resources
             else:
-                next_page_params = marker_pagination.get_next_page_params(response)
+                next_page_params = marker_pagination.get_next_page_params(
+                    response, res, is_retry)
                 if next_page_params:
                     _dict_map(request, next_page_params)
                 else:
@@ -433,19 +445,26 @@ class DefaultMarkerPagination(MarkerPagination):
     def get_first_page_params(self):
         return {"limit": self.limit}
 
-    def get_next_page_params(self, response):
+    def get_next_page_params(self, response, res=None, is_retry=False):
         page_info = jmespath.search("page_info", safe_json_parse(response))
         if not page_info:
             return None
         next_marker = page_info.get("next_marker")
         if not next_marker:
             return None
+        if is_retry and res:
+            resource_id = res[-2].get("id")
+            if not resource_id:
+                return None
+            next_marker = resource_id
         return {"limit": self.limit, "marker": next_marker}
 
-    def get_next_page_params_by_id(self, res):
+    def get_next_page_params_by_id(self, res, is_retry=False):
         if len(res) < self.limit:
             return None
-        last_resource = res[-1]
+        # If retry, the last resource not found,
+        # marker to be the second to last resource id
+        last_resource = res[-2] if is_retry else res[-1]
         if not last_resource:
             return None
         resource_id = last_resource.get("id")
