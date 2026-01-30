@@ -67,8 +67,6 @@ class GeminiDB(QueryResourceManager):
         tag_resource_type = 'nosql'
 
     def get_resources(self, resource_ids):
-        self.log.info(f"Successfully get resource_ids"
-                      f"{resource_ids}")
         resources = self.augment_tags(self.source.get_resources(self.get_resource_query())) or []
         result = []
         for resource in resources:
@@ -76,12 +74,12 @@ class GeminiDB(QueryResourceManager):
                 result.append(resource)
         return result
 
+    def _fetch_resources(self, query):
+        return self.augment_tags(self.source.get_resources(self.get_resource_query())) or []
+
     def augment_tags(self, resources):
         if not resources:
             return resources
-
-        self.log.info(f"Successfully get GeminiDB instance to augment the tags"
-                      f"{resources}")
 
         resources_and_tag = self.get_resources_and_tag()
         instance_id_to_tags_map = {
@@ -95,8 +93,6 @@ class GeminiDB(QueryResourceManager):
                 tags_of_instance = instance_id_to_tags_map.get(instance_id, [])
                 resource["tags"] = tags_of_instance
 
-        self.log.info(f"Successfully get augmented resources"
-                      f"{resources}")
         return resources
 
     def get_resources_and_tag(self):
@@ -108,7 +104,7 @@ class GeminiDB(QueryResourceManager):
         count_rsp = client.list_instances_by_tags(count_req)
         total_count = count_rsp.total_count
 
-        LIMIT = 20
+        LIMIT = 100
         total_page = math.ceil(total_count / LIMIT)
         all_instances_with_tags = []
 
