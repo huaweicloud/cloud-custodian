@@ -21,8 +21,9 @@ from huaweicloudsdkrds.v3 import (
     UpdateInstanceConfigurationRequest, UpdateInstanceConfigurationRequestBody, BackupPolicy,
     SetAutoEnlargePolicyRequest, UpgradeDbVersionNewRequest,
     ListPostgresqlHbaInfoRequest, ModifyPostgresqlHbaConfRequest,
-    UpdateTdeStatusRequest, MigrateFollowerRequest, ListFlavorsRequest, DeletePostgresqlHbaConfRequest,
-    ListSmallVersionRequest, SetLogLtsConfigsRequest, AddLogConfigResponseBody, AddLogConfigs
+    UpdateTdeStatusRequest, MigrateFollowerRequest, ListFlavorsRequest,
+    DeletePostgresqlHbaConfRequest, ListSmallVersionRequest, SetLogLtsConfigsRequest,
+    AddLogConfigResponseBody, AddLogConfigs
 )
 from huaweicloudsdklts.v2 import ListLogGroupsRequest, ListLogStreamsRequest
 from huaweicloudsdkcore.exceptions import exceptions
@@ -838,7 +839,7 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
                     f"Already submitted database version upgrade delayed request for RDS instance "
                     f"{resource['name']} (ID: {instance_id})")
                 return
- 
+
             self.log.error(
                 f"Failed to upgrade database version for RDS instance "
                 f"{resource['name']} (ID: {instance_id}): {e}")
@@ -1568,7 +1569,7 @@ class PostgresqlSslFilter(Filter):
               - type: has_not_ssl_hba
                 hba_types:
                   - host
-                  - hostnossl 
+                  - hostnossl
     """
     schema = type_schema(
         'has_not_ssl_hba',
@@ -1606,7 +1607,7 @@ class PostgresqlSslFilter(Filter):
                                   'mask': config.mask, 'method': config.method,
                                   'priority': config.priority}
                         no_ssl_configs.append(config)
-                if no_ssl_configs:     
+                if no_ssl_configs:
                     math_resource = resource.copy()
                     math_resource['filter_hba_config'] = no_ssl_configs
                     matched_resources.append(math_resource)
