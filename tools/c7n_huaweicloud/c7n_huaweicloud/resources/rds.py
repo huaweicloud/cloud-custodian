@@ -23,7 +23,7 @@ from huaweicloudsdkrds.v3 import (
     ListPostgresqlHbaInfoRequest, ModifyPostgresqlHbaConfRequest,
     UpdateTdeStatusRequest, MigrateFollowerRequest, ListFlavorsRequest,
     DeletePostgresqlHbaConfRequest, ListSmallVersionRequest, SetLogLtsConfigsRequest,
-    AddLogConfigResponseBody, AddLogConfigs
+    AddLogConfigResponseBody, AddLogConfigs, ListLogLtsConfigsRequest
 )
 from huaweicloudsdklts.v2 import ListLogGroupsRequest, ListLogStreamsRequest
 from huaweicloudsdkcore.exceptions import exceptions
@@ -153,7 +153,7 @@ class DiskAutoExpansionFilter(Filter):
         return matched_resources
 
 
-@RDS.filter_registry.register('database-version')
+@RDS.filter_registry.register('db-version-upgrade-check')
 class DatabaseVersionFilter(Filter):
     """Filter RDS instances that are not the latest minor version
 
@@ -165,12 +165,12 @@ class DatabaseVersionFilter(Filter):
           - name: rds-outdated-version
             resource: huaweicloud.rds
             filters:
-              - type: database-version
+              - type: db-version-upgrade-check
                 database_name: mysql  # Optional, specify the database engine type
     """
     schema = type_schema(
-        'database-version',
-        database_name={'enum': ['mysql', 'postgresql', 'sqlserver'], 'default': 'mysql'}
+        'db-version-upgrade-check',
+        database_name={'enum': ['mysql', 'postgresql', 'sqlserver', 'mariadb'], 'default': 'mysql'}
     )
 
     def process(self, resources, event=None):
@@ -339,6 +339,21 @@ class AuditLogDisabledFilter(Filter):
                 # keep_days is 0, which means the audit log policy is disabled
                 if response.keep_days == 0:
                     matched_resources.append(resource)
+                    continue
+
+                request = ListLogLtsConfigsRequest()
+                request.engine = resource['datastore'].get("type").lower()
+                request.instance_id = instance_id
+                response = client.list_log_lts_configs(request)
+
+                filtered_configs = []
+                for instance_config in response["instance_lts_configs"]:
+                    for log_config in instance_config["lts_configs"]:
+                        if log_config["log_type"] == "audit_log" and log_config["enabled"] is True:
+                            filtered_configs.append(log_config)
+                if not filtered_configs:
+                    matched_resources.append(resource)
+
             except Exception as e:
                 self.log.error(
                     f"Get the audit log policy of RDS instance {resource['name']} "
@@ -756,7 +771,7 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
           - name: rds-upgrade-minor-version
             resource: huaweicloud.rds
             filters:
-              - type: database-version
+              - type: db-version-upgrade-check
                 version: 5.7.37
                 op: lt
             actions:
@@ -910,7 +925,7 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
                                     "creation is set to 'no'. Cannot enable logging.")
                 self.log.info(
                     f"[actions]- [SetAuditLogPolicyAction] log_group_id: {resp_log_group_id},"
-                    f" log_group_id: {resp_log_stream_id}")
+                    f" log_stream_id: {resp_log_stream_id}")
 
                 request_lts = SetLogLtsConfigsRequest()
                 request_lts.engine = resource.get('datastore', {}).get('type', '').lower()

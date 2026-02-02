@@ -89,7 +89,7 @@ class RDSTest(BaseTest):
         # as show_auto_enlarge_policy API is used to get auto-expansion status
 
     def test_rds_filter_db_version_lt(self):
-        """Test database-version filter - detect instances not on the latest minor version"""
+        # Test db-version-upgrade-check filter - detect instances not on the latest minor version
         factory = self.replay_flight_data("rds_filter_db_version")  # Reuse VCR
         # Validate VCR: rds_filter_db_version.yaml
         # should contain instances not on the latest minor version
@@ -97,7 +97,7 @@ class RDSTest(BaseTest):
             {
                 "name": "rds-filter-db-version-test",
                 "resource": "huaweicloud.rds",
-                "filters": [{"type": "database-version", "database_name": "mysql"}],
+                "filters": [{"type": "db-version-upgrade-check", "database_name": "mysql"}],
             },
             session_factory=factory,
         )
@@ -438,7 +438,7 @@ class RDSTest(BaseTest):
                 "filters": [
                     # {"id": target_instance_id},
                     # Filter instances with specific database versions
-                    # {"type": "database-version", "version": "5.7.37", "op": "lt"}
+                    # {"type": "db-version-upgrade-check", "version": "5.7.37", "op": "lt"}
                     {"type": "value", "key": "id", "value": target_instance_id}
                 ],
                 "actions": [{"type": "upgrade-db-version", "is_delayed": False}],
