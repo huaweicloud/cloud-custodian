@@ -40,7 +40,7 @@ class TagEntity:
 class GeminiDB(QueryResourceManager):
     """Huawei Cloud GeminiDB Resource Manager
 
-    Used to manage instances in the Huawei Cloud Relational Database Service.
+    Used to manage instances in the Huawei Cloud GeminiDB.
 
     :example:
 
@@ -125,6 +125,7 @@ class GeminiDB(QueryResourceManager):
                 log.error(
                     f"[query resources with tags failed, req: [{req}] "
                     f"cause:{e}")
+                raise
 
         self.log.info(f"Successfully get resources_with_tags"
                       f"{all_instances_with_tags}")
