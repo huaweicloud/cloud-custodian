@@ -6,6 +6,7 @@ import logging
 from c7n.filters import Filter
 from c7n.filters.core import OPERATORS, type_schema
 from c7n.utils import local_session
+from c7n.exceptions import PolicyExecutionError
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -20,8 +21,8 @@ from huaweicloudsdkrds.v3 import (
     UpdateInstanceConfigurationRequest, UpdateInstanceConfigurationRequestBody, BackupPolicy,
     SetAutoEnlargePolicyRequest, UpgradeDbVersionNewRequest,
     ListPostgresqlHbaInfoRequest, ModifyPostgresqlHbaConfRequest,
-    UpdateTdeStatusRequest, MigrateFollowerRequest, ListFlavorsRequest, PostgresqlHbaConf,
-    DeletePostgresqlHbaConfRequest, ListSmallVersionRequest, SetLogLtsConfigsRequest, AddLogConfigResponseBody, AddLogConfigs
+    UpdateTdeStatusRequest, MigrateFollowerRequest, ListFlavorsRequest, DeletePostgresqlHbaConfRequest,
+    ListSmallVersionRequest, SetLogLtsConfigsRequest, AddLogConfigResponseBody, AddLogConfigs
 )
 from huaweicloudsdklts.v2 import ListLogGroupsRequest, ListLogStreamsRequest
 from huaweicloudsdkcore.exceptions import exceptions
@@ -830,7 +831,7 @@ class UpgradeDBVersionAction(HuaweiCloudBaseAction):
                 f"Successfully submitted database version upgrade request for RDS instance "
                 f"{resource['name']} (ID: {instance_id})")
 
-            return ;
+            return response
         except exceptions.ClientRequestException as e:
             if e.error_code == "DBS.200971":
                 self.log.info(
@@ -906,7 +907,9 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
                 if not resp_log_group_id or not resp_log_stream_id:
                     raise Exception("Log group or log topic does not exist and "
                                     "creation is set to 'no'. Cannot enable logging.")
-                self.log.info(f"[actions]- [SetAuditLogPolicyAction] log_group_id: {resp_log_group_id}, log_group_id: {resp_log_stream_id}")
+                self.log.info(
+                    f"[actions]- [SetAuditLogPolicyAction] log_group_id: {resp_log_group_id},"
+                    f" log_group_id: {resp_log_stream_id}")
 
                 request_lts = SetLogLtsConfigsRequest()
                 request_lts.engine = resource.get('datastore', {}).get('type', '').lower()
@@ -1393,7 +1396,8 @@ class AZFilter(Filter):
                 self.log.info(f"[filters]- The filter:[AZFilter] RDS resource nodes"
                               f"{resource.get('nodes')} ")
                 nodes = resource.get('nodes')
-                if len(nodes) == 2 and nodes[0].get('availability_zone') == nodes[1].get('availability_zone'):
+                if len(nodes) == 2 and nodes[0].get('availability_zone')\
+                        == nodes[1].get('availability_zone'):
                     matched.append(resource)
         return matched
 
@@ -1503,27 +1507,31 @@ class MigrateFollowerAction(HuaweiCloudBaseAction):
 
         if master_az_code != slave_az_code:
             self.log.info(
-                    f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: {instance_id})] does not need to be migrated to the standby node.")
+                    f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']}"
+                    f" (ID: {instance_id})] does not need to be migrated to the standby node.")
             return
         try:
             # API: https://support.huaweicloud.com/api-rds/rds_06_0002.html
-            # GET /v3/{project_id}/flavors/{database_name}?version_name={version_name}&spec_code={spec_code}&is_serverless={is_serverless}
+            # GET /v3/{project_id}/flavors/{database_name}
             request_flavor = ListFlavorsRequest()
             request_flavor.database_name = resource.get('datastore', {}).get('type', '').lower()
             request_flavor.version_name = resource.get('datastore', {}).get('version', '')
             request_flavor.spec_code = resource.get('flavor_ref', '')
             response_flavor = client.list_flavors(request_flavor)
             az_status = response_flavor.flavors[0].az_status
-            self.log.info(f"[actions]- [MigrateFollowerAction] response_flavor :{response_flavor}, az_status:{az_status}")
+            self.log.info(f"[actions]- [MigrateFollowerAction] response_flavor"
+                          f" :{response_flavor}, az_status:{az_status}")
             new_slave_az_code = None
             for az, status in az_status.items():
                 if az != master_az_code and status == 'normal':
                     new_slave_az_code = az
             if new_slave_az_code is None:
                 self.log.error(
-                    f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: {instance_id})] failed, casued: no available availability zone to migration.")
+                    f"[actions]- [MigrateFollowerAction]- The resource:[{resource['name']} (ID: "
+                    f"{instance_id})] failed, casued: no available availability zone to migration.")
                 return
-            self.log.info(f"[actions]- [MigrateFollowerAction] new_slave_az_code :{new_slave_az_code}")
+            self.log.info(f"[actions]- [MigrateFollowerAction] new_slave_az_code :"
+                          f"{new_slave_az_code}")
             # API Document: https://support.huaweicloud.com/api-rds/rds_05_0015.html
             # POST /v3/{project_id}/instances/{instance_id}/migrateslave
             request = MigrateFollowerRequest()
@@ -1535,12 +1543,13 @@ class MigrateFollowerAction(HuaweiCloudBaseAction):
             request.instance_id = instance_id
             request.body = request_body
             response = client.migrate_follower(request)
-            self.log.info(f"[actions]- [MigrateFollowerAction] Successfully migrate follower for RDS instance "
-                          f"{resource['name']} (ID: {instance_id}) to {new_slave_az_code}")
-            return request_flavor
+            self.log.info(f"[actions]- [MigrateFollowerAction] Successfully migrate follower for"
+                          f" RDS instance {resource['name']} "
+                          f"(ID: {instance_id}) to {new_slave_az_code}")
+            return response
         except exceptions.ClientRequestException as e:
-            self.log.error(f"[actions]- [MigrateFollowerAction] Failed to migrate follower for RDS instance "
-                           f"{resource['name']} (ID: {instance_id}): {e}")
+            self.log.error(f"[actions]- [MigrateFollowerAction] Failed to migrate follower for"
+                           f" RDS instance {resource['name']} (ID: {instance_id}): {e}")
             raise
 
 
@@ -1559,7 +1568,7 @@ class PostgresqlSslFilter(Filter):
               - type: has_not_ssl_hba
                 hba_types:
                   - host
-                  - hostnossl    
+                  - hostnossl 
     """
     schema = type_schema(
         'has_not_ssl_hba',
@@ -1594,15 +1603,17 @@ class PostgresqlSslFilter(Filter):
                     if getattr(config, 'type', None) in hba_types:
                         config = {'type': config.type, 'database': config.database,
                                   'user': config.user, 'address': config.address,
-                                  'mask': config.mask, 'method': config.method, 'priority': config.priority}
-                        no_ssl_configs.append(config)                
-                if no_ssl_configs:
+                                  'mask': config.mask, 'method': config.method,
+                                  'priority': config.priority}
+                        no_ssl_configs.append(config)
+                if no_ssl_configs:     
                     math_resource = resource.copy()
-                    math_resource['filter_hba_config'] = no_ssl_configs 
+                    math_resource['filter_hba_config'] = no_ssl_configs
                     matched_resources.append(math_resource)
             except Exception as e:
                 self.log.error(
-                    f"[filter]- [PostgresqlSslFilter] Failed to get the pg_hba.conf configuration for RDS PostgreSQL instance "
+                    f"[filter]- [PostgresqlSslFilter] Failed to get the pg_hba.conf"
+                    f" configuration for RDS PostgreSQL instance "
                     f"{resource['name']} (ID: {instance_id}): {e}")
         return matched_resources
 
@@ -1665,11 +1676,14 @@ class DeletePgHbaConfAction(HuaweiCloudBaseAction):
             request.body = configs
 
             response = client.delete_postgresql_hba_conf(request)
-            self.log.info(f"[actions]- [DeletePgHbaConfAction] Successfully delete RDS PostgreSQL instance {resource['name']}"
-                          f" (ID: {instance_id})'s pg_hba.conf configuration")
+            self.log.info(
+                f"[actions]- [DeletePgHbaConfAction] Successfully delete RDS PostgreSQL"
+                f" instance {resource['name']}"
+                f" (ID: {instance_id})'s pg_hba.conf configuration")
             return response
         except Exception as e:
-            self.log.error(f"[actions]- [DeletePgHbaConfAction] Failed to delete RDS PostgreSQL instance {resource['name']}"
-                           f" (ID: {instance_id})'s pg_hba.conf configuration: {e}")
+            self.log.error(
+                f"[actions]- [DeletePgHbaConfAction] Failed to delete RDS PostgreSQL"
+                f" instance {resource['name']}"
+                f" (ID: {instance_id})'s pg_hba.conf configuration: {e}")
             raise
-
