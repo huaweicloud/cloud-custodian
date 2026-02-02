@@ -3,10 +3,10 @@
 import base64
 import logging
 import re
-import functools
-import time
 import json
 import copy
+
+from retrying import retry
 
 from huaweicloudsdkkms.v2 import ShowPublicKeyRequest, OperateKeyRequestBody, ShowPublicKeyResponse
 
@@ -180,8 +180,8 @@ class DeleteCceCluster(HuaweiCloudBaseAction):
                 return None
             elif (cluster_status != "Available" and cluster_status != "Error" and
                   cluster_status != "Unavailable"):
-                wait_cluster_status_ready(client, cluster_id, "Available,Unavailable,Error", 20,
-                                          30, 600)
+                wait_cluster_status_ready(client, cluster_id, "Available,Unavailable,Error",
+                                          None, 20, 30000)
 
             # Build delete cluster request
             request = DeleteClusterRequest()
@@ -259,16 +259,16 @@ class HibernateCceCluster(HuaweiCloudBaseAction):
                 raise Exception("empty cluster id")
 
             cluster_status = resource.get("status", {}).get("phase", '')
-            if (cluster_status == "Hibernating" or cluster_status == "Hibernation"):
+            if cluster_status == "Hibernating" or cluster_status == "Hibernation":
                 log.info(
                     f"[actions]- [hibernate] The resource:[huaweicloud.cce-cluster] with id:["
                     f"{cluster_name}/{cluster_id}] hibernate cluster skipped. "
                     f"cause: already Hibernating.")
                 return None
             elif cluster_status == "Awaking":
-                wait_cluster_status_ready(client, cluster_id, "Available", 20, 30, 600)
+                wait_cluster_status_ready(client, cluster_id, "Available", None, 20, 30000)
             elif cluster_status == "Creating":
-                wait_cluster_status_ready(client, cluster_id, "Available", 20, 30, 600)
+                wait_cluster_status_ready(client, cluster_id, "Available", None, 20, 30000)
             elif cluster_status != "Available" and cluster_status != "Unavailable":
                 raise Exception(f"invalid cluster status {cluster_status}")
 
@@ -558,6 +558,7 @@ class UpdateClusterLogConfig(HuaweiCloudBaseAction):
 
     permissions = ('cce:updateClusterLogConfig',)
     components: set = {"audit", "kube-apiserver", "kube-controller-manager", "kube-scheduler"}
+    exempted_status = ("Deleting", "Error", "Hibernating", "Hibernation", "Freezing", "Frozen")
 
     def perform_action(self, resource):
         """Perform updateClusterLogConfig operation on a single CCE cluster"""
@@ -571,33 +572,55 @@ class UpdateClusterLogConfig(HuaweiCloudBaseAction):
             if not cluster_id:
                 raise Exception("empty cluster id")
 
-            if cluster_status == "Creating":
-                wait_cluster_status_ready(client, cluster_id, "Available", 20, 30, 600)
-            elif cluster_status == "Deleting" or cluster_status == "Error":
-                return None
+            if cluster_status in ["Creating", "Awaking"]:
+                wait_cluster_status_ready(client, cluster_id, "Available", self.exempted_status, 20,
+                                          30000)
+            elif cluster_status in self.exempted_status:
+                raise ExemptedStatus(cluster_status)
             elif cluster_status != "Available":
                 raise Exception(f"invalid cluster status {cluster_status}")
 
-            @retry(times=3, interval=30)
+            @retry(stop_max_attempt_number=3, wait_fixed=30000,
+                   retry_on_exception=self.action_retry_exception)
             def _retry():
+                status = get_cluster_status(client, cluster_id)
+                if status in self.exempted_status:
+                    raise ExemptedStatus(status)
                 self.update_cluster_log_config(cluster_id, cluster_name)
 
             _retry()
             log.info(
                 f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
                 f"id:[{cluster_name}/{cluster_id}] update cluster log config succeeded.")
-        except exceptions.ClientRequestException as e:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}/{cluster_id}] update cluster log config failed."
-                f" cause: {e.error_msg} (status code: {e.status_code})")
-            raise
         except Exception as e:
-            log.error(
+            self.handler_exception(client, cluster_id, cluster_name, e)
+
+    @staticmethod
+    def action_retry_exception(e):
+        return not isinstance(e, (ExemptedStatus, ClusterNotExists))
+
+    def handler_exception(self, client: CceClient, cluster_id: str, cluster_name: str,
+                          e: Exception):
+        try:
+            if isinstance(e, (ExemptedStatus, ClusterNotExists)):
+                raise e
+            status = get_cluster_status(client, cluster_id)
+            if self.exempted_status and status in self.exempted_status:
+                raise ExemptedStatus(status)
+        except (ExemptedStatus, ClusterNotExists) as e2:
+            log.info(
                 f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}/{cluster_id}] update cluster log config failed."
-                f" cause: {str(e)}")
-            raise
+                f"id:[{cluster_name}/{cluster_id}] update cluster log config "
+                f"skipped. cause: {str(e2)}")
+            return None
+        except Exception:
+            pass
+
+        log.error(
+            f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+            f"id:[{cluster_name}/{cluster_id}] update cluster log config failed."
+            f" cause: {str(e)}")
+        raise e
 
     def update_cluster_log_config(self, cluster_id: str, cluster_name: str):
         client = self.manager.get_client()
@@ -635,22 +658,13 @@ class ClusterLogEnabledFilter(Filter):
     def __call__(self, resource):
         excepted = self.data.get("enabled", False)
         cluster_id = resource["id"] if "id" in resource else None
-        cluster_status = resource.get("status", {}).get("phase", '')
-        if cluster_status != "Available":
-            return not excepted
 
         try:
             if not cluster_id:
                 raise Exception("empty cluster_id")
-
-            client: CceClient = self.manager.get_client()
-            request = ShowClusterConfigRequest()
-            request.cluster_id = cluster_id
-
-            response = client.show_cluster_config(request)
-            log.info(
-                f"[filters]- The filter:[{self.filter_name}] query cluster logs-config succeeded.")
-            return excepted == self.all_enabled(response)
+            audit = self.get_enabled_components(cluster_id, "audit")
+            control = self.get_enabled_components(cluster_id, "control")
+            return excepted == (audit.union(control) == self.components)
         except exceptions.ClientRequestException as e:
             log.error(
                 f"[filters]- the filter:[{self.filter_name}] query cluster logs-config failed."
@@ -663,9 +677,17 @@ class ClusterLogEnabledFilter(Filter):
                 f" cause: {str(e)}.")
             raise
 
-    def all_enabled(self, response: ShowClusterConfigResponse) -> bool:
-        enabled_components = set(d.name for d in response.log_configs if d.enable)
-        return enabled_components.issuperset(self.components)
+    def get_enabled_components(self, cluster_id: str, component_type: str | None) -> set[str]:
+        client: CceClient = self.manager.get_client()
+        request = ShowClusterConfigRequest()
+        request.cluster_id = cluster_id
+        if component_type:
+            request.type = component_type
+
+        response: ShowClusterConfigResponse = client.show_cluster_config(request)
+        log.info(
+            f"[filters]- The filter:[{self.filter_name}] query cluster logs-config succeeded.")
+        return set(d.name for d in response.log_configs if d.enable)
 
 
 @CceCluster.filter_registry.register("cluster-encrypted")
@@ -713,17 +735,23 @@ class ClusterSignatureEnabledFilter(Filter):
 
     def __call__(self, resource):
         excepted = self.data.get("enabled", False)
-        cluster_id = resource["id"] if "id" in resource else None
-        cluster_status = resource.get("status", {}).get("phase", '')
-        if cluster_status != "Available":
-            return not excepted
-
-        if not cluster_id:
-            return False
+        installed_plugins_str = resource.get("metadata", {}).get("annotations", {}).get(
+            "installedAddonInstances", "")
 
         try:
-            client: CceClient = self.manager.get_client()
-            plugin_status = get_plugin_status(client, cluster_id, self.plugin_name)
+            if not installed_plugins_str:
+                raise PluginNotInstalled(self.plugin_name)
+
+            installed_plugins = json.loads(installed_plugins_str)
+
+            plugin_status = ""
+            for _, plugin in enumerate(installed_plugins):
+                if plugin["addonTemplateName"] == self.plugin_name:
+                    plugin_status = plugin["status"]
+                    break
+            if not plugin_status:
+                raise PluginNotInstalled(self.plugin_name)
+
             installed = plugin_status not in ["deleting", "deleteFailed", "deleteSuccess"]
             log.error(
                 f"[filters]- the filter:[{self.filter_name}] query cluster addon instances "
@@ -734,12 +762,6 @@ class ClusterSignatureEnabledFilter(Filter):
                 f"[filters]- the filter:[{self.filter_name}] query cluster addon instances "
                 f"succeeded")
             return not excepted
-        except exceptions.ClientRequestException as e:
-            log.error(
-                f"[filters]- the filter:[{self.filter_name}] query cluster addon instances failed."
-                f" cause: request id:{e.request_id},"
-                f" status code:{e.status_code}, msg:{e.error_msg}")
-            raise
         except Exception as e:
             log.error(
                 f"[filters]- the filter:[{self.filter_name}] query cluster addon instances failed."
@@ -786,6 +808,7 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
                              }
                          })
     permissions = ('cce:enableClusterSignature',)
+    exempted_status = ("Deleting", "Error", "Hibernating", "Hibernation", "Freezing", "Frozen")
 
     def perform_action(self, resource):
         """Perform updateClusterLogConfig operation on a single CCE cluster"""
@@ -809,14 +832,11 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
             if not cluster_type:
                 raise Exception("unknown cluster type")
 
-            if cluster_status == "Creating":
-                wait_cluster_status_ready(client, cluster_id, "Available", 20, 30, 600)
-            elif cluster_status == "Deleting" or cluster_status == "Error":
-                log.info(
-                    f"[actions]- [{self.action_name}] The resource:[huaweicloud.cce-cluster] with "
-                    f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature "
-                    f"skipped. cause: invalid cluster status: {cluster_status}")
-                return None
+            if cluster_status in ["Creating", "Awaking"]:
+                wait_cluster_status_ready(client, cluster_id, "Available", self.exempted_status,
+                                          20, 30000)
+            elif cluster_status in self.exempted_status:
+                raise ExemptedStatus(cluster_status)
             elif cluster_status != "Available":
                 raise Exception(f"invalid cluster status {cluster_status}")
 
@@ -846,25 +866,34 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
                 f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature "
                 f"succeeded. ")
             return response
-        except exceptions.ClientRequestException as e:
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature failed."
-                f" cause: {e.error_msg} (status code: {e.status_code})")
-            raise
-        except PluginInstallFailed as e:
-            self.notify_install_failed_message(resource, str(e))
-            log.error(
-                f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature failed."
-                f" cause: {str(e)}")
-            raise
         except Exception as e:
-            log.error(
+            self.handler_exception(client, cluster_id, cluster_name, resource, e)
+
+    def handler_exception(self, client: CceClient, cluster_id: str, cluster_name: str,
+                          resource, e: Exception):
+        try:
+            if isinstance(e, (ExemptedStatus, ClusterNotExists)):
+                raise e
+            status = get_cluster_status(client, cluster_id)
+            if self.exempted_status and status in self.exempted_status:
+                raise ExemptedStatus(status)
+        except (ExemptedStatus, ClusterNotExists) as e2:
+            log.info(
                 f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
-                f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature failed."
-                f" cause: {str(e)}")
-            raise
+                f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature "
+                f"skipped. cause: {str(e2)}")
+            return None
+        except Exception:
+            pass
+
+        if isinstance(e, PluginInstallFailed):
+            self.notify_install_failed_message(resource, str(e))
+
+        log.error(
+            f"[actions]- [{self.action_name}]- The resource:[huaweicloud.cce-cluster] with "
+            f"id:[{cluster_name}/{cluster_id}] enable cluster container image signature failed."
+            f" cause: {str(e)}")
+        raise e
 
     def get_base64_decode_public_key(self) -> str:
         if self.data.get("public_key"):
@@ -932,7 +961,8 @@ class EnableClusterSignature(HuaweiCloudBaseAction):
 
     def wait_plugin_installing_ready(self, cluster_id: str, cluster_name: str):
         try:
-            @retry(times=5, interval=60, timeout=300)
+            @retry(stop_max_attempt_number=5, wait_fixed=60000,
+                   retry_on_exception=is_retryable_exception)
             def _wait():
                 client: CceClient = self.manager.get_client()
                 plugin_status = get_plugin_status(client, cluster_id, self.plugin_name)
@@ -1937,15 +1967,6 @@ class DeleteCceRelease(HuaweiCloudBaseAction):
             raise
 
 
-class NoRetry(Exception):
-    def __init__(self, reason):
-        super(NoRetry, self).__init__(reason)
-        self.reason = reason
-
-    def __str__(self):
-        return "NoRetry(reason=%s)" % self.reason
-
-
 class PluginNotInstalled(Exception):
     def __init__(self, name):
         super(PluginNotInstalled, self).__init__(name)
@@ -1964,45 +1985,22 @@ class PluginInstallFailed(Exception):
         return "Plugin (name=%s) Install Failed" % self.name
 
 
-def retry(times=-1, interval=5, timeout=-1):
-    """
-    :param times: 重试次数，times = 0，表示不重试；times < 0，表示无限重试
-    :param interval: 间隔多久时间重试，单位秒
-    :param timeout: timout < 0 无超时设置；
-                    timeout = 0，表示不重试；
-                    timeout > 0，表示超时上限（单位秒），如果发生错误时，用时超过timeout，不再重试
-    :return:: deco 实现重试功能的装饰器
-    """
+class ClusterNotExists(Exception):
+    def __init__(self, cluster_id):
+        super(ClusterNotExists, self).__init__(cluster_id)
+        self.cluster_id = cluster_id
 
-    # 防止无限重试
-    assert times >= 0 or timeout >= 0, 'times and timeout should be given'
+    def __str__(self):
+        return f"Cluster (id={self.cluster_id}) Not Exists"
 
-    def deco(func):
 
-        @functools.wraps(func)
-        def wrapped(*args, **kwargs):
-            n = 0
-            st = time.perf_counter()
-            while True:
-                n += 1
-                try:
-                    ret = func(*args, **kwargs)
-                    return ret
-                except Exception as e:
-                    if isinstance(e, NoRetry):
-                        raise
-                    if 0 <= times <= n - 1:
-                        raise
-                    if timeout == 0:
-                        raise
-                    if 0 < timeout <= time.perf_counter() - st:
-                        raise
-                    if interval > 0:
-                        time.sleep(interval)
+class ExemptedStatus(Exception):
+    def __init__(self, status):
+        super(ExemptedStatus, self).__init__(status)
+        self.status = status
 
-        return wrapped
-
-    return deco
+    def __str__(self):
+        return f"Exempted Cluster Status({self.status})"
 
 
 def if_version_support(cluster_version: str, cluster_type: str,
@@ -2034,19 +2032,38 @@ def get_matched_flavor(cluster_flavor, flavors):
 
 
 def get_cluster_status(client: CceClient, cluster_id: str) -> str:
-    request = ShowClusterRequest(cluster_id)
-    response = client.show_cluster(request)
-    return response.status.phase
+    try:
+        request = ShowClusterRequest(cluster_id)
+        response = client.show_cluster(request)
+        return response.status.phase
+    except (exceptions.ClientRequestException, exceptions.ServerResponseException) as e:
+        if e.status_code == 404:
+            raise ClusterNotExists(cluster_id)
+        raise
 
 
-def wait_cluster_status_ready(client: CceClient, cluster_id: str, cluster_status: str, times: int,
-                              interval: int, timeout: int):
-    @retry(times=times, interval=interval, timeout=timeout)
+def wait_cluster_status_ready(client: CceClient, cluster_id: str, cluster_status: str,
+                              exempted_status: None | tuple, times: int, interval: int):
+    @retry(stop_max_attempt_number=times, wait_fixed=interval,
+           retry_on_exception=is_retryable_exception)
     def _wait():
         curr_status = get_cluster_status(client, cluster_id)
+        if exempted_status and curr_status in exempted_status:
+            raise ExemptedStatus(curr_status)
         assert curr_status in cluster_status, "invalid status %s" % curr_status
 
     _wait()
+
+
+def is_retryable_exception(e):
+    if isinstance(e, AssertionError):
+        return True
+    # 429 too many requests
+    if isinstance(e, (exceptions.ClientRequestException,
+                      exceptions.ServerResponseException)) and e.status_code == 429:
+        return True
+
+    return False
 
 
 def get_plugin_status(client: CceClient, cluster_id: str, plugin_name: str) -> str:

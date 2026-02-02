@@ -20,7 +20,7 @@ interactions:
         X-Sdk-Date:
           - 20260119T094136Z
       method: GET
-      uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+      uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters?detail=true
     response:
       body:
         string: "{\"kind\":\"Cluster\",\"apiVersion\":\"v3\",\"items\":[{\"kind\":\"Cluster\",\"apiVersion\":\"v3\",\"metadata\":{\"name\":\"test-cluster-awaken\",\"uid\":\"cluster-awaken-test-id-789\",\"creationTimestamp\":\"2023-01-15T08:00:00Z\",\"updateTimestamp\":\"2023-01-16T10:30:00Z\"},\"spec\":{\"type\":\"VirtualMachine\",\"flavor\":\"cce.s1.small\",\"version\":\"v1.30\",\"platformVersion\":\"3.1.0\",\"description\":\"\u6D4B\u8BD5\u96C6\u7FA4\u5F00\u542Ftls\u65E5\u5FD7\",\"customSan\":[],\"enableMasterVolumeEncryption\":false},\"status\":{\"phase\":\"Available\",\"jobID\":\"\",\"reason\":\"\",\"message\":\"\",\"endpoints\":[]}}]}"

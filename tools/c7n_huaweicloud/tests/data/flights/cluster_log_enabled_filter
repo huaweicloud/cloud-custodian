@@ -20,7 +20,7 @@ interactions:
       X-Sdk-Date:
       - 20260119T082406Z
     method: GET
-    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters?detail=true
   response:
     body:
       string: '{"error_msg":"The API does not exist or has not been published in the
