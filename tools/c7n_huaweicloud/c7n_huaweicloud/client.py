@@ -112,7 +112,8 @@ from huaweicloudsdkram.v1 import (
     SearchSharedResourcesRequest, SearchSharedResourcesReqBody,
 )
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
-from huaweicloudsdkgaussdbfornosql.v3 import GaussDBforNoSQLClient, ListInstancesRequest as GeminiDBListInstancesRequest
+from huaweicloudsdkgaussdbfornosql.v3 import (
+    GaussDBforNoSQLClient, ListInstancesRequest as GeminiDBListInstancesRequest)
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
 from huaweicloudsdkgaussdbfornosql.v3.region.gaussdbfornosql_region import GaussDBforNoSQLRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion

@@ -6,7 +6,7 @@ from huaweicloud_common import BaseTest
 
 # Note: Actual testing requires corresponding VCR files
 # (e.g., geminidb_query.yaml, geminidb_filter_*.yaml, geminidb_action_*.yaml)
-# These files should contain the required GeminiDB instance data and API interaction recogeminidb for testing.
+# These files should contain the required GeminiDB instance data and API interaction for testing.
 
 class GeminiDBTest(BaseTest):
     """Test Huawei Cloud GeminiDB resources, filters, and actions"""
@@ -52,12 +52,14 @@ class GeminiDBTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        self.assertEqual(len(resources), 1,
-                           "Test VCR file should contain GeminiDB instances with backup policy disabled")
+        self.assertEqual(len(resources),
+                         1,
+                           "Test VCR file should contain 1 instance with backup policy disabled")
 
     def test_geminidb_filter_multi_availability_zone_deployment_disabled(self):
         """Test backup-policy-disabled filter"""
-        factory = self.replay_flight_data("geminidb_filter_multi_availability_zone_deployment_disabled")
+        factory = self.replay_flight_data(
+            "geminidb_filter_multi_availability_zone_deployment_disabled")
         # Validate VCR: geminidb_filter_multi_availability_zone_deployment_disabled.yaml should
         # contain at least one instance with multi-availability zone deployment disabled
         p = self.load_policy(
@@ -69,8 +71,9 @@ class GeminiDBTest(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        self.assertEqual(len(resources), 1,
-                           "Test VCR file should contain GeminiDB instances with multi-availability zone deployment disabled")
+        self.assertEqual(len(resources),
+                         1,
+                           "Test VCR file should contain 1 instance with multi-az disabled")
 
     # =========================
     # Action Tests
@@ -101,4 +104,3 @@ class GeminiDBTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["id"], target_instance_id)
-

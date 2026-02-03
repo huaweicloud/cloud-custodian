@@ -15,7 +15,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from huaweicloudsdkgaussdbfornosql.v3 import (
     ShowBackupPoliciesRequest, SetBackupPolicyRequest,
     SetBackupPolicyRequestBody, BackupPolicy,
-    ListInstancesByTagsRequest, ListInstancesByTagsResponse
+    ListInstancesByTagsRequest
 )
 from huaweicloudsdkcore.exceptions import exceptions
 
@@ -131,6 +131,7 @@ class GeminiDB(QueryResourceManager):
                       f"{all_instances_with_tags}")
         return all_instances_with_tags
 
+
 @GeminiDB.filter_registry.register('geminidb-list')
 class GeminiDBListFilter(Filter):
     """Filter GeminiDB instances by specific instance IDs
@@ -155,6 +156,7 @@ class GeminiDBListFilter(Filter):
         if not ids:
             return resources
         return [r for r in resources if r['id'] in ids]
+
 
 @GeminiDB.filter_registry.register('backup-policy-disabled')
 class BackupPolicyDisabledFilter(Filter):
@@ -183,7 +185,8 @@ class BackupPolicyDisabledFilter(Filter):
             instance_status = resource['status']
             instance_actions = resource['actions']
 
-            if instance_status in ['creating', 'createfail', 'abnormal'] or len(instance_actions) > 0:
+            if (instance_status in ['creating', 'createfail', 'abnormal']
+                    or len(instance_actions) > 0):
                 continue
 
             try:
@@ -201,7 +204,8 @@ class BackupPolicyDisabledFilter(Filter):
                 if keep_days == 0:
                     matched_resources.append(resource)
 
-                # When API invocation count reaches batch size, reset invocation count to 0 and sleep 30 seconds to avoid API throttling
+                # When API invocation count reaches batch size,
+                # reset invocation count to 0 and sleep 30 seconds to avoid API throttling
                 if invoke_count >= invoke_count_batch:
                     invoke_count = 0
                     sleep(30)
