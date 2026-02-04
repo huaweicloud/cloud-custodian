@@ -677,7 +677,7 @@ class ClusterLogEnabledFilter(Filter):
                 f" cause: {str(e)}.")
             raise
 
-    def get_enabled_components(self, cluster_id: str, component_type: str | None) -> set[str]:
+    def get_enabled_components(self, cluster_id: str, component_type: str):
         client: CceClient = self.manager.get_client()
         request = ShowClusterConfigRequest()
         request.cluster_id = cluster_id
@@ -2043,7 +2043,7 @@ def get_cluster_status(client: CceClient, cluster_id: str) -> str:
 
 
 def wait_cluster_status_ready(client: CceClient, cluster_id: str, cluster_status: str,
-                              exempted_status: None | tuple, times: int, interval: int):
+                              exempted_status, times: int, interval: int):
     @retry(stop_max_attempt_number=times, wait_fixed=interval,
            retry_on_exception=is_retryable_exception)
     def _wait():
