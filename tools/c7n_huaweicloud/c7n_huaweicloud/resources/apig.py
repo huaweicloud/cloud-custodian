@@ -205,7 +205,6 @@ class LtsUnableFilter(Filter):
         return matched_resources
 
 
-# 新增CustomLogEnableFilter类
 @ApigInstanceResource.filter_registry.register('custom-log-enable')
 class CustomLogEnableFilter(Filter):
     """Filter APIG instances where custom_log feature is enabled
@@ -263,12 +262,13 @@ class CustomLogEnableFilter(Filter):
                 if custom_log_feature and custom_log_feature.enable:
                     matched_resources.append(resource)
                     log.debug(
-                        f"[filters]-[custom-log-enable] Instance {instance_name} (ID: {instance_id}) "
-                        f"has custom_log feature enabled")
+                        f"[filters]-[custom-log-enable] Instance {instance_name} "
+                        f"(ID: {instance_id}) has custom_log feature enabled")
                 else:
                     log.debug(
-                        f"[filters]-[custom-log-enable] Instance {instance_name} (ID: {instance_id}) "
-                        f"does not have custom_log feature enabled or feature not found")
+                        f"[filters]-[custom-log-enable] Instance {instance_name} "
+                        f"(ID: {instance_id}) does not have custom_log feature enabled "
+                        f"or feature not found")
 
             except exceptions.ClientRequestException as e:
                 log.error(
@@ -1057,7 +1057,8 @@ class DeleteApiInDefaultGroupFromEvent(HuaweiCloudBaseAction):
                 )
                 client.create_or_delete_publish_record_for_api_v2(offline_request)
                 self.log.info(
-                    "[actions]-[delete-api-in-default-group-from-event] Successfully offlined API %s (ID: %s)",
+                    "[actions]-[delete-api-in-default-group-from-event] Successfully offlined "
+                    "API %s (ID: %s)",
                     response.get('name', 'Unknown'), api_id)
 
             # Delete the API
@@ -1067,22 +1068,25 @@ class DeleteApiInDefaultGroupFromEvent(HuaweiCloudBaseAction):
             )
             client.delete_api_v2(delete_request)
             self.log.info(
-                "[actions]-[delete-api-in-default-group-from-event] Successfully deleted API %s (ID: %s)",
+                "[actions]-[delete-api-in-default-group-from-event] Successfully deleted "
+                "API %s (ID: %s)",
                 response.get('name', 'Unknown'), api_id)
 
             return self.process_result([{'id': api_id, 'name': response.get('name', 'Unknown')}])
 
         except exceptions.ClientRequestException as e:
             self.log.error(
-                "[actions]-[delete-api-in-default-group-from-event] Failed to process API %s (ID: %s): "
+                "[actions]-[delete-api-in-default-group-from-event] Failed to process "
+                "API %s (ID: %s): "
                 "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                 response.get('name', 'Unknown'), api_id, e.status_code, e.request_id,
                 e.error_code, e.error_msg, exc_info=True)
             raise
         except Exception as e:
             self.log.error(
-                "[actions]-[delete-api-in-default-group-from-event] Unexpected error while processing "
-                "API %s (ID: %s): %s", response.get('name', 'Unknown'), api_id, str(e),
+                "[actions]-[delete-api-in-default-group-from-event] Unexpected error "
+                "while processing API %s (ID: %s): %s", response.get('name', 'Unknown'),
+                api_id, str(e),
                 exc_info=True)
             raise
 
@@ -1596,13 +1600,15 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
         min_ssl_version = response.get('min_ssl_version')
         if min_ssl_version != 'TLSv1.1':
             self.log.info(
-                "[actions]-[update-to-tls-v1.2-from-event] Domain %s (ID: %s) min_ssl_version is %s, "
-                "no update needed", response.get('url_domain', 'Unknown'), domain_id, min_ssl_version)
+                "[actions]-[update-to-tls-v1.2-from-event] Domain %s (ID: %s) min_ssl_version is "
+                "%s, no update needed", response.get('url_domain', 'Unknown'), domain_id,
+                min_ssl_version)
             return self.process_result([])
 
         self.log.info(
             "[actions]-[update-to-tls-v1.2-from-event] Updating domain %s (ID: %s) "
-            "min_ssl_version from %s to TLSv1.2", response.get('url_domain', 'Unknown'), domain_id, min_ssl_version)
+            "min_ssl_version from %s to TLSv1.2", response.get('url_domain', 'Unknown'),
+            domain_id, min_ssl_version)
 
         try:
             client = self.manager.get_client()
@@ -1648,7 +1654,8 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
                 "(ID: %s) min_ssl_version to TLSv1.2",
                 response.get('url_domain', 'Unknown'), domain_id)
 
-            return self.process_result([{'id': domain_id, 'url_domain': response.get('url_domain', 'Unknown')}])
+            return self.process_result([{'id': domain_id, 'url_domain':
+                response.get('url_domain', 'Unknown')}])
 
         except exceptions.ClientRequestException as e:
             self.log.error(
@@ -1859,7 +1866,8 @@ class LogRequestOrResponseEnableFilter(Filter):
     """Filter APIG plugins where any of the log request/response fields are enabled
 
     This filter checks if any of the following fields in the plugin's call_data are true:
-    log_request_header, log_request_query_string, log_request_body, log_response_header, log_response_body.
+    log_request_header, log_request_query_string, log_request_body, log_response_header,
+    log_response_body.
 
     :example:
 
@@ -1888,7 +1896,8 @@ class LogRequestOrResponseEnableFilter(Filter):
             plugin_content = resource.get('plugin_content')
             if not plugin_content:
                 log.debug(
-                    "[filters]-[log-request-or-response-enable] Plugin content is empty or not found")
+                    "[filters]-[log-request-or-response-enable] Plugin content is empty "
+                    "or not found")
                 continue
 
             try:
@@ -1908,15 +1917,15 @@ class LogRequestOrResponseEnableFilter(Filter):
                         log_request_body or log_response_header or log_response_body):
                     matched_resources.append(resource)
                     log.debug(
-                        "[filters]-[log-request-or-response-enable] Plugin %s has log fields enabled",
-                        resource.get('plugin_name', 'Unknown'))
+                        "[filters]-[log-request-or-response-enable] Plugin %s has log fields "
+                        "enabled", resource.get('plugin_name', 'Unknown'))
             except json.JSONDecodeError as e:
                 log.warning(
-                    "[filters]-[log-request-or-response-enable] Failed to parse plugin_content for plugin %s: %s",
-                    resource.get('plugin_name', 'Unknown'), str(e))
+                    "[filters]-[log-request-or-response-enable] Failed to parse plugin_content "
+                    "for plugin %s: %s", resource.get('plugin_name', 'Unknown'), str(e))
             except Exception as e:
                 log.error(
-                    "[filters]-[log-request-or-response-enable] Unexpected error while processing plugin %s: %s",
-                    resource.get('plugin_name', 'Unknown'), str(e), exc_info=True)
+                    "[filters]-[log-request-or-response-enable] Unexpected error while processing "
+                    "plugin %s: %s", resource.get('plugin_name', 'Unknown'), str(e), exc_info=True)
 
         return matched_resources
