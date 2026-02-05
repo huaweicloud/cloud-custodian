@@ -247,7 +247,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
     )
 
     # action名称与yaml中action的type并非一致，添加请注意！
-    actions_without_resources = ["notifymessagefromevent"]
+    actions_without_resources = ["notifymessagefromevent", "updatetohttpsfromevent",
+                                 "updatetotlsv12fromevent", "deleteapiindefaultgroupfromevent"]
 
     def validate(self):
         super(FunctionGraphMode, self).validate()

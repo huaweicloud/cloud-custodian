@@ -124,6 +124,7 @@ from huaweicloudsdkapig.v2 import (
     ListEnvironmentsV2Request,
     ListApiGroupsV2Request,
     ListInstancesV2Request,
+    ListPluginsRequest,
 )
 from huaweicloudsdkapig.v2.region.apig_region import ApigRegion
 from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
@@ -512,7 +513,7 @@ class Session:
                 .build()
             )
         elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
-                                              'apig-instance']:
+                                              'apig-instance', 'apig-plugin',]:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)
@@ -779,6 +780,8 @@ class Session:
             request = ListApiGroupsV2Request()
         elif service == 'apig-instance':
             request = ListInstancesV2Request()
+        elif service == 'apig-plugin':
+            request = ListPluginsRequest()
         elif service == 'swr':
             request = ListReposDetailsRequest()
         elif service == 'swr-image':

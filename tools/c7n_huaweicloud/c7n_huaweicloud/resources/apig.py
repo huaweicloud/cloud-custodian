@@ -2,12 +2,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import json
+import jmespath
 from huaweicloudsdkcore.exceptions import exceptions
 from huaweicloudsdkapig.v2 import (
     # API interface related
     DeleteApiV2Request,
     UpdateApiV2Request,
     ListApisV2Request,
+    ShowDetailsOfApiV2Request,
+    CreateOrDeletePublishRecordForApiV2Request,
 
     # Environment related
     UpdateEnvironmentV2Request,
@@ -16,14 +20,22 @@ from huaweicloudsdkapig.v2 import (
 
     # Domain related
     UpdateDomainV2Request,
+    UpdateSlDomainSettingV2Request,
+    SlDomainAccessSetting,
 
     # Group related
     ListApiGroupsV2Request,
+    ShowDetailsOfApiGroupV2Request,
 
     # Instance related
     ListInstancesV2Request,
+    ListFeaturesV2Request,
+
+    # Plugin related
+    ListPluginsRequest,
 )
 
+from c7n.filters import Filter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
@@ -32,9 +44,364 @@ from c7n_huaweicloud.utils.json_parse import safe_json_parse
 
 log = logging.getLogger('custodian.huaweicloud.apig')
 
+
+# Instance Resource Management
+@resources.register('apig-instance')
+class ApigInstanceResource(QueryResourceManager):
+    """
+    Huawei Cloud API Gateway Instance Resource Management
+    """
+
+    class resource_type(TypeInfo):
+        service = 'apig-instance'
+        enum_spec = ('list_instances_v2', 'instances', 'offset')
+        id = 'id'
+        name = 'instance_name'
+        filter_name = 'instance_name'
+        filter_type = 'scalar'
+        taggable = False
+
+    def get_resources(self, query):
+        return self.get_instance_resources(query)
+
+    def _fetch_resources(self, query):
+        return self.get_instance_resources(query)
+
+    def get_instance_resources(self, query):
+        """Override resource retrieval method to query APIG instances"""
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+
+        # Create new request object with pagination parameters
+        request = ListInstancesV2Request(limit=500)
+        # Call client method to process request
+        try:
+            response = client.list_instances_v2(request)
+            resource = safe_json_parse(response.instances)
+            return resource
+        except Exception as e:
+            log.error(
+                "[filters]-{get-instance-resources} The resource:[apig-instance] "
+                "query instance list is failed, cause: %s", str(e), exc_info=True)
+            return []
+
+
+@ApigInstanceResource.filter_registry.register('lts-unable')
+class LtsUnableFilter(Filter):
+    """Filter APIG instances where does not open Log Analysis
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-instance-lts-unable
+            resource: huaweicloud.apig-instance
+            filters:
+              - type: lts-unable
+    """
+
+    schema = type_schema('lts-unable')
+
+    def process(self, resources, event=None):
+        """
+        Process resources to filter APIG instances where does not open Log Analysis
+
+        :param resources: List of APIG instance resources
+        :param event: Optional event data
+        :return: Filtered list of resources matching the criteria
+        """
+        client = local_session(self.manager.session_factory).client("apig-instance")
+        matched_resources = []
+
+        for resource in resources:
+            instance_id = resource.get('id')
+            instance_name = resource.get('instance_name', 'Unknown')
+
+            if not instance_id:
+                log.warning(
+                    f"[filters]-[lts-unable] Skipping resource without instance ID: "
+                    f"{instance_name}")
+                continue
+
+            try:
+                # Query instance features list
+                request = ListFeaturesV2Request(instance_id=instance_id, limit=500)
+                response = client.list_features_v2(request)
+
+                # Find LTS feature in the features list
+                lts_feature = None
+                if response.features:
+                    for feature in response.features:
+                        if feature.name == 'lts':
+                            lts_feature = feature
+                            break
+
+                # If LTS feature is not found, skip this instance
+                if lts_feature is None:
+                    log.debug(
+                        f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                        f"does not have LTS feature configured")
+                    continue
+
+                # Parse config field (it's a JSON string)
+                config_str = lts_feature.config
+                if not config_str:
+                    # If config is empty, it doesn't contain log_group
+                    matched_resources.append(resource)
+                    log.debug(
+                        f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                        f"LTS feature config is empty")
+                    continue
+
+                try:
+                    # Parse JSON config string
+                    config_dict = json.loads(config_str)
+                    # Check if log_group key exists in the config dictionary
+                    # The config is a JSON object, we check if it has 'log_group' as a key
+                    has_log_group = False
+                    if isinstance(config_dict, dict):
+                        # Check if 'log_group' key exists in the config dict
+                        has_log_group = 'log_group' in config_dict
+                        # Also check nested structures if container_lts_cfg is a dict
+                        if not has_log_group and 'container_lts_cfg' in config_dict:
+                            container_cfg = config_dict['container_lts_cfg']
+                            if isinstance(container_cfg, dict) and 'log_group' in container_cfg:
+                                has_log_group = True
+
+                    if not has_log_group:
+                        matched_resources.append(resource)
+                        log.debug(
+                            f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                            f"LTS feature config does not contain log_group. Config: {config_str}")
+                except json.JSONDecodeError as e:
+                    # If config is not valid JSON, check if it's a plain string
+                    if 'log_group' not in config_str:
+                        matched_resources.append(resource)
+                        log.debug(
+                            f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                            f"LTS feature config is not valid JSON and does not contain log_group. "
+                            f"Config: {config_str}")
+                    else:
+                        log.warning(
+                            f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                            f"LTS feature config is not valid JSON: {e}")
+
+            except exceptions.ClientRequestException as e:
+                log.error(
+                    f"[filters]-[lts-unable] Failed to query features for APIG instance "
+                    f"{instance_name} (ID: {instance_id}): {e.error_msg} "
+                    f"(status code: {e.status_code})")
+                # On error, we skip this instance rather than including it
+                continue
+            except Exception as e:
+                log.error(
+                    f"[filters]-[lts-unable] Unexpected error while querying features for "
+                    f"APIG instance {instance_name} (ID: {instance_id}): {str(e)}",
+                    exc_info=True)
+                # On error, we skip this instance rather than including it
+                continue
+
+        return matched_resources
+
+
+# 新增CustomLogEnableFilter类
+@ApigInstanceResource.filter_registry.register('custom-log-enable')
+class CustomLogEnableFilter(Filter):
+    """Filter APIG instances where custom_log feature is enabled
+
+    This filter checks if the custom_log feature is enabled in the instance's features.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-instance-custom-log-enable
+            resource: huaweicloud.apig-instance
+            filters:
+              - type: custom-log-enable
+    """
+
+    schema = type_schema('custom-log-enable')
+
+    def process(self, resources, event=None):
+        """
+        Process resources to filter APIG instances where custom_log feature is enabled
+
+        :param resources: List of APIG instance resources
+        :param event: Optional event data
+        :return: Filtered list of resources matching the criteria
+        """
+        client = local_session(self.manager.session_factory).client("apig-instance")
+        matched_resources = []
+
+        for resource in resources:
+            instance_id = resource.get('id')
+            instance_name = resource.get('instance_name', 'Unknown')
+
+            if not instance_id:
+                log.warning(
+                    f"[filters]-[custom-log-enable] Skipping resource without instance ID: "
+                    f"{instance_name}")
+                continue
+
+            try:
+                # Query instance features list
+                request = ListFeaturesV2Request(instance_id=instance_id, limit=500)
+                response = client.list_features_v2(request)
+
+                # Find custom_log feature in the features list
+                custom_log_feature = None
+                if response.features:
+                    for feature in response.features:
+                        if feature.name == 'custom_log':
+                            custom_log_feature = feature
+                            break
+
+                # If custom_log feature is found and enabled, add to matched resources
+                if custom_log_feature and custom_log_feature.enable:
+                    matched_resources.append(resource)
+                    log.debug(
+                        f"[filters]-[custom-log-enable] Instance {instance_name} (ID: {instance_id}) "
+                        f"has custom_log feature enabled")
+                else:
+                    log.debug(
+                        f"[filters]-[custom-log-enable] Instance {instance_name} (ID: {instance_id}) "
+                        f"does not have custom_log feature enabled or feature not found")
+
+            except exceptions.ClientRequestException as e:
+                log.error(
+                    f"[filters]-[custom-log-enable] Failed to query features for APIG instance "
+                    f"{instance_name} (ID: {instance_id}): {e.error_msg} "
+                    f"(status code: {e.status_code})")
+                # On error, we skip this instance rather than including it
+                continue
+            except Exception as e:
+                log.error(
+                    f"[filters]-[custom-log-enable] Unexpected error while querying features for "
+                    f"APIG instance {instance_name} (ID: {instance_id}): {str(e)}",
+                    exc_info=True)
+                # On error, we skip this instance rather than including it
+                continue
+
+        return matched_resources
+
+
+@ApigInstanceResource.filter_registry.register('backend-client-certificate-unable')
+class BackendClientCertificateUnableFilter(Filter):
+    """Filter APIG instances where backend client certificate is disabled
+
+    This filter identifies APIG instances where the backend client certificate
+    feature is configured but disabled (enable field in config is "off").
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-instance-backend-client-certificate-unable
+            resource: huaweicloud.apig-instance
+            filters:
+              - type: backend-client-certificate-unable
+    """
+
+    schema = type_schema('backend-client-certificate-unable')
+
+    def process(self, resources, event=None):
+        """
+        Process resources to filter APIG instances where backend client certificate is disabled
+
+        :param resources: List of APIG instance resources
+        :param event: Optional event data
+        :return: Filtered list of resources matching the criteria
+        """
+        client = local_session(self.manager.session_factory).client("apig-instance")
+        matched_resources = []
+
+        for resource in resources:
+            instance_id = resource.get('id')
+            instance_name = resource.get('instance_name', 'Unknown')
+
+            if not instance_id:
+                log.warning(
+                    f"[filters]-[backend-client-certificate-unable] Skipping resource without "
+                    f"instance ID: {instance_name}")
+                continue
+
+            try:
+                # Query instance features list
+                request = ListFeaturesV2Request(instance_id=instance_id, limit=500)
+                response = client.list_features_v2(request)
+
+                # Find backend_client_certificate feature in the features list
+                backend_cert_feature = None
+                if response.features:
+                    for feature in response.features:
+                        if feature.name == 'backend_client_certificate':
+                            backend_cert_feature = feature
+                            break
+
+                # If backend_client_certificate feature is not found, skip this instance
+                if backend_cert_feature is None:
+                    log.debug(
+                        f"[filters]-[backend-client-certificate-unable] Instance "
+                        f"{instance_name} (ID: {instance_id}) does not have "
+                        f"backend_client_certificate feature configured")
+                    continue
+
+                # Parse config field (it's a JSON string)
+                config_str = backend_cert_feature.config
+                if not config_str:
+                    # If config is empty, skip this instance
+                    log.debug(
+                        f"[filters]-[backend-client-certificate-unable] Instance "
+                        f"{instance_name} (ID: {instance_id}) backend_client_certificate "
+                        f"feature config is empty")
+                    continue
+
+                try:
+                    # Parse JSON config string
+                    config_dict = json.loads(config_str)
+                    # Check if enable field in config is "off"
+                    if isinstance(config_dict, dict):
+                        enable_value = config_dict.get('enable', '')
+                        if enable_value == 'off':
+                            matched_resources.append(resource)
+                            log.debug(
+                                f"[filters]-[backend-client-certificate-unable] Instance "
+                                f"{instance_name} (ID: {instance_id}) backend_client_certificate "
+                                f"feature is disabled. Config: {config_str}")
+                    else:
+                        log.debug(
+                            f"[filters]-[backend-client-certificate-unable] Instance "
+                            f"{instance_name} (ID: {instance_id}) backend_client_certificate "
+                            f"feature config is not a dictionary. Config: {config_str}")
+                except json.JSONDecodeError as e:
+                    log.warning(
+                        f"[filters]-[backend-client-certificate-unable] Instance "
+                        f"{instance_name} (ID: {instance_id}) backend_client_certificate "
+                        f"feature config is not valid JSON: {e}. Config: {config_str}")
+
+            except exceptions.ClientRequestException as e:
+                log.error(
+                    f"[filters]-[backend-client-certificate-unable] Failed to query features "
+                    f"for APIG instance {instance_name} (ID: {instance_id}): {e.error_msg} "
+                    f"(status code: {e.status_code})")
+                # On error, we skip this instance rather than including it
+                continue
+            except Exception as e:
+                log.error(
+                    f"[filters]-[backend-client-certificate-unable] Unexpected error while "
+                    f"querying features for APIG instance {instance_name} (ID: {instance_id}): "
+                    f"{str(e)}", exc_info=True)
+                # On error, we skip this instance rather than including it
+                continue
+
+        return matched_resources
+
+
 # API Resource Management
-
-
 @resources.register('apig-api')
 class ApiResource(QueryResourceManager):
     """
@@ -398,9 +765,337 @@ class UpdateApiAction(HuaweiCloudBaseAction):
                 exc_info=True)
             raise
 
+
+@ApiResource.action_registry.register('update-to-https-from-event')
+class UpdateToHttpsFromEvent(HuaweiCloudBaseAction):
+    """Update API request protocol to HTTPS from event
+
+    This action reads API information from event's cts.response field and updates
+    the API's req_protocol to HTTPS if it's currently HTTP or BOTH.
+
+    :example:
+    Define a policy to update API protocol to HTTPS when triggered by an event:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-api-update-to-https-from-event
+            resource: huaweicloud.apig-api
+            mode:
+              type: cloudtrace
+              xrole: admin
+              events:
+                - source: "APIG.Api"
+                  event: "createApi"
+                  code: 201
+                  ids: "resource_id"
+                - source: "APIG.Api"
+                  event: "updateApi"
+                  code: 200
+                  ids: "resource_id"
+            actions:
+              - type: update-to-https-from-event
+    """
+
+    schema = type_schema('update-to-https-from-event')
+
+    def process(self, event):
+        """
+        Process event to update API protocol to HTTPS
+
+        :param event: Event data containing cts.response with API information
+        :return: Result of the update operation
+        """
+        self.log.debug("Processing event: %s", event)
+
+        # Extract response from event
+        response = jmespath.search('cts.response', event)
+        if not response:
+            self.log.warning(
+                "[actions]-[update-to-https-from-event] No cts.response found in event")
+            return self.process_result([])
+
+        # Parse response if it's a string
+        if isinstance(response, str):
+            try:
+                response = json.loads(response)
+            except json.JSONDecodeError as e:
+                self.log.error(
+                    "[actions]-[update-to-https-from-event] Failed to parse "
+                    "cts.response as JSON: %s", str(e))
+                return self.process_result([])
+
+        # Check if response is a dict
+        if not isinstance(response, dict):
+            self.log.error(
+                "[actions]-[update-to-https-from-event] cts.response is not a dict: %s",
+                type(response))
+            return self.process_result([])
+
+        # Get API ID and instance ID from response
+        api_id = response.get('id')
+        instance_id = jmespath.search('cts.resource_id', event)
+
+        if not api_id:
+            self.log.error(
+                "[actions]-[update-to-https-from-event] No API ID found in response")
+            return self.process_result([])
+
+        if not instance_id:
+            self.log.error(
+                "[actions]-[update-to-https-from-event] No instance_id available")
+            return self.process_result([])
+
+        # Check current req_protocol
+        req_protocol = response.get('req_protocol')
+        if req_protocol not in ('HTTP', 'BOTH'):
+            self.log.info(
+                "[actions]-[update-to-https-from-event] API %s (ID: %s) req_protocol is %s, "
+                "no update needed", response.get('name', 'Unknown'), api_id, req_protocol)
+            return self.process_result([])
+
+        self.log.info(
+            "[actions]-[update-to-https-from-event] Updating API %s (ID: %s) "
+            "req_protocol from %s to HTTPS", response.get('name', 'Unknown'), api_id, req_protocol)
+
+        try:
+            client = self.manager.get_client()
+            from huaweicloudsdkapig.v2.model.api_create import ApiCreate
+
+            # Build update body from response, only including fields that ApiCreate accepts
+            # Get all valid field names from ApiCreate.openapi_types
+            valid_fields = set(ApiCreate.openapi_types.keys())
+
+            update_info = {}
+            # Only copy fields that are valid for ApiCreate
+            for key, value in response.items():
+                if key in valid_fields:
+                    update_info[key] = value
+
+            # Ensure required fields are present
+            if 'name' not in update_info:
+                self.log.warning(
+                    "[actions]-[update-to-https-from-event] 'name' field not found in response, "
+                    "this may cause update to fail")
+            if 'type' not in update_info:
+                self.log.warning(
+                    "[actions]-[update-to-https-from-event] 'type' field not found in response, "
+                    "this may cause update to fail")
+
+            # Override req_protocol to HTTPS
+            update_info['req_protocol'] = 'HTTPS'
+
+            # Build API create request body
+            update_body = ApiCreate(**update_info)
+
+            # Create update request
+            request = UpdateApiV2Request(
+                instance_id=instance_id,
+                api_id=api_id,
+                body=update_body
+            )
+
+            self.log.debug("Update request: instance_id=%s, api_id=%s", instance_id, api_id)
+
+            # Send update request
+            client.update_api_v2(request)
+            self.log.info(
+                "[actions]-[update-to-https-from-event] Successfully updated API %s "
+                "(ID: %s) req_protocol to HTTPS", response.get('name', 'Unknown'), api_id)
+
+            return self.process_result([{'id': api_id, 'name': response.get('name', 'Unknown')}])
+
+        except exceptions.ClientRequestException as e:
+            self.log.error(
+                "[actions]-[update-to-https-from-event] Failed to update API %s (ID: %s): "
+                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                response.get('name', 'Unknown'), api_id, e.status_code, e.request_id,
+                e.error_code, e.error_msg, exc_info=True)
+            raise
+        except Exception as e:
+            self.log.error(
+                "[actions]-[update-to-https-from-event] Unexpected error while updating "
+                "API %s (ID: %s): %s", response.get('name', 'Unknown'), api_id, str(e),
+                exc_info=True)
+            raise
+
+    def perform_action(self, resource):
+        """
+        This method is required by HuaweiCloudBaseAction but not used in event-based actions
+
+        :param resource: Resource (not used)
+        """
+        pass
+
+
+@ApiResource.action_registry.register('delete-api-in-default-group-from-event')
+class DeleteApiInDefaultGroupFromEvent(HuaweiCloudBaseAction):
+    """Delete API in default group from event
+
+    This action reads API information from event's cts.response field and deletes
+    the API if it belongs to the default group.
+
+    :example:
+    Define a policy to delete APIs in default group when triggered by an event:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-api-delete-in-default-group-from-event
+            resource: huaweicloud.apig-api
+            mode:
+              type: cloudtrace
+              xrole: admin
+              events:
+                - source: "APIG.Api"
+                  event: "createApi"
+                  code: 201
+                  ids: "resource_id"
+            actions:
+              - type: delete-api-in-default-group-from-event
+    """
+
+    schema = type_schema('delete-api-in-default-group-from-event')
+
+    def process(self, event):
+        """
+        Process event to delete API if it belongs to default group
+
+        :param event: Event data containing cts.response with API information
+        :return: Result of the deletion operation
+        """
+        self.log.debug("Processing event: %s", event)
+
+        # Extract response from event
+        response = jmespath.search('cts.response', event)
+        if not response:
+            self.log.warning(
+                "[actions]-[delete-api-in-default-group-from-event] No cts.response found in event")
+            return self.process_result([])
+
+        # Parse response if it's a string
+        if isinstance(response, str):
+            try:
+                response = json.loads(response)
+            except json.JSONDecodeError as e:
+                self.log.error(
+                    "[actions]-[delete-api-in-default-group-from-event] Failed to parse "
+                    "cts.response as JSON: %s", str(e))
+                return self.process_result([])
+
+        # Check if response is a dict
+        if not isinstance(response, dict):
+            self.log.error(
+                "[actions]-[delete-api-in-default-group-from-event] cts.response is not a dict: %s",
+                type(response))
+            return self.process_result([])
+
+        # Get API ID, group_id, and instance_id from response and event
+        api_id = response.get('id')
+        group_id = response.get('group_id')
+        instance_id = jmespath.search('cts.resource_id', event)
+
+        if not api_id:
+            self.log.error(
+                "[actions]-[delete-api-in-default-group-from-event] No API ID found in response")
+            return self.process_result([])
+
+        if not group_id:
+            self.log.error(
+                "[actions]-[delete-api-in-default-group-from-event] No group_id found in response")
+            return self.process_result([])
+
+        if not instance_id:
+            self.log.error(
+                "[actions]-[delete-api-in-default-group-from-event] No instance_id available")
+            return self.process_result([])
+
+        self.log.info(
+            "[actions]-[delete-api-in-default-group-from-event] Checking API %s (ID: %s) "
+            "belonging to default group (ID: %s)", response.get('name', 'Unknown'), api_id,
+            group_id)
+
+        try:
+            client = self.manager.get_client()
+
+            # Query group details to check if it's the default group
+            request = ShowDetailsOfApiGroupV2Request(
+                instance_id=instance_id,
+                group_id=group_id
+            )
+            group_response = client.show_details_of_api_group_v2(request)
+            group_details = safe_json_parse(group_response)
+
+            if not group_details or group_details.get('is_default') != 1:
+                self.log.info(
+                    "[actions]-[delete-api-in-default-group-from-event] API %s (ID: %s) "
+                    "does not belong to default group, skipping deletion",
+                    response.get('name', 'Unknown'), api_id)
+                return self.process_result([])
+
+            self.log.info(
+                "[actions]-[delete-api-in-default-group-from-event] API %s (ID: %s) "
+                "belongs to default group, proceeding with deletion",
+                response.get('name', 'Unknown'), api_id)
+
+            # Query api details to check if it's published
+            request = ShowDetailsOfApiV2Request(
+                instance_id=instance_id,
+                api_id=api_id
+            )
+            api_response = client.show_details_of_api_v2(request)
+            api_details = safe_json_parse(api_response)
+
+            run_env_id = api_details.get('run_env_id')
+            if run_env_id != "":
+                # Offline the API
+                from huaweicloudsdkapig.v2.model.api_action_info import ApiActionInfo
+
+                offline_request = CreateOrDeletePublishRecordForApiV2Request(
+                    instance_id=instance_id,
+                    body=ApiActionInfo(api_id=api_id, env_id=run_env_id, action='offline')
+                )
+                client.create_or_delete_publish_record_for_api_v2(offline_request)
+                self.log.info(
+                    "[actions]-[delete-api-in-default-group-from-event] Successfully offlined API %s (ID: %s)",
+                    response.get('name', 'Unknown'), api_id)
+
+            # Delete the API
+            delete_request = DeleteApiV2Request(
+                instance_id=instance_id,
+                api_id=api_id
+            )
+            client.delete_api_v2(delete_request)
+            self.log.info(
+                "[actions]-[delete-api-in-default-group-from-event] Successfully deleted API %s (ID: %s)",
+                response.get('name', 'Unknown'), api_id)
+
+            return self.process_result([{'id': api_id, 'name': response.get('name', 'Unknown')}])
+
+        except exceptions.ClientRequestException as e:
+            self.log.error(
+                "[actions]-[delete-api-in-default-group-from-event] Failed to process API %s (ID: %s): "
+                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                response.get('name', 'Unknown'), api_id, e.status_code, e.request_id,
+                e.error_code, e.error_msg, exc_info=True)
+            raise
+        except Exception as e:
+            self.log.error(
+                "[actions]-[delete-api-in-default-group-from-event] Unexpected error while processing "
+                "API %s (ID: %s): %s", response.get('name', 'Unknown'), api_id, str(e),
+                exc_info=True)
+            raise
+
+    def perform_action(self, resource):
+        """
+        This method is required by HuaweiCloudBaseAction but not used in event-based actions
+
+        :param resource: Resource (not used)
+        """
+        pass
+
+
 # Environment Resource Management
-
-
 @resources.register('apig-stage')
 class StageResource(QueryResourceManager):
     """
@@ -491,8 +1186,6 @@ class StageResource(QueryResourceManager):
 
 
 # Update Environment Resource
-
-
 @StageResource.action_registry.register('update')
 class UpdateStageAction(HuaweiCloudBaseAction):
     """Update environment action
@@ -625,9 +1318,8 @@ class DeleteStageAction(HuaweiCloudBaseAction):
                 exc_info=True)
             raise
 
+
 # API Group Resource Management
-
-
 @resources.register('apig-api-groups')
 class ApiGroupResource(QueryResourceManager):
     """
@@ -724,8 +1416,6 @@ class ApiGroupResource(QueryResourceManager):
 
 
 # Update Security
-
-
 @ApiGroupResource.action_registry.register('update-domain')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
     """Update domain security policy action
@@ -811,3 +1501,422 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
                 f"(ID: {group_id}), Domain ID: {domain_id}: {e}",
                 exc_info=True)
             raise
+
+
+@ApiGroupResource.action_registry.register('update-to-tls-v1.2-from-event')
+class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
+    """Update domain min_ssl_version to TLSv1.2 from event
+
+    This action reads domain information from event's cts.response field and updates
+    the domain's min_ssl_version to TLSv1.2 if it's currently TLSv1.1.
+
+    :example:
+    Define a policy to update domain SSL version to TLSv1.2 when triggered by an event:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-api-groups-update-to-tls-v1.2-from-event
+            resource: huaweicloud.apig-api-groups
+            mode:
+              type: cloudtrace
+              xrole: admin
+              events:
+                - source: "APIG.ApiGroup"
+                  event: "createDomainBinding"
+                  code: 201
+                  ids: "resource_id"
+                - source: "APIG.ApiGroup"
+                  event: "modifySecureTransmission"
+                  code: 200
+                  ids: "resource_id"
+            actions:
+              - type: update-to-tls-v1.2-from-event
+    """
+
+    schema = type_schema('update-to-tls-v1.2-from-event')
+
+    def process(self, event):
+        """
+        Process event to update domain min_ssl_version to TLSv1.2
+
+        :param event: Event data containing cts.response with domain information
+        :return: Result of the update operation
+        """
+        self.log.debug("Processing event: %s", event)
+
+        # Extract response from event
+        response = jmespath.search('cts.response', event)
+        if not response:
+            self.log.warning(
+                "[actions]-[update-to-tls-v1.2-from-event] No cts.response found in event")
+            return self.process_result([])
+
+        # Parse response if it's a string
+        if isinstance(response, str):
+            try:
+                response = json.loads(response)
+            except json.JSONDecodeError as e:
+                self.log.error(
+                    "[actions]-[update-to-tls-v1.2-from-event] Failed to parse "
+                    "cts.response as JSON: %s", str(e))
+                return self.process_result([])
+
+        # Check if response is a dict
+        if not isinstance(response, dict):
+            self.log.error(
+                "[actions]-[update-to-tls-v1.2-from-event] cts.response is not a dict: %s",
+                type(response))
+            return self.process_result([])
+
+        # Get domain ID from response (response.id is the domain_id)
+        domain_id = response.get('id')
+        if not domain_id:
+            self.log.error(
+                "[actions]-[update-to-tls-v1.2-from-event] No domain ID found in response")
+            return self.process_result([])
+
+        # Get instance_id and group_id from event
+        instance_id = jmespath.search('cts.resource_id', event)
+
+        url_parts = jmespath.search('cts.message', event).split('/')
+        group_id = url_parts[url_parts.index('api-groups') + 1]
+
+        if not instance_id:
+            self.log.error(
+                "[actions]-[update-to-tls-v1.2-from-event] No instance_id available")
+            return self.process_result([])
+
+        if not group_id:
+            self.log.error(
+                "[actions]-[update-to-tls-v1.2-from-event] No group_id available")
+            return self.process_result([])
+
+        # Check current min_ssl_version
+        min_ssl_version = response.get('min_ssl_version')
+        if min_ssl_version != 'TLSv1.1':
+            self.log.info(
+                "[actions]-[update-to-tls-v1.2-from-event] Domain %s (ID: %s) min_ssl_version is %s, "
+                "no update needed", response.get('url_domain', 'Unknown'), domain_id, min_ssl_version)
+            return self.process_result([])
+
+        self.log.info(
+            "[actions]-[update-to-tls-v1.2-from-event] Updating domain %s (ID: %s) "
+            "min_ssl_version from %s to TLSv1.2", response.get('url_domain', 'Unknown'), domain_id, min_ssl_version)
+
+        try:
+            client = self.manager.get_client()
+            from huaweicloudsdkapig.v2.model.url_domain_modify import UrlDomainModify
+
+            # Build update body - only update min_ssl_version, keep other parameters unchanged
+            # Get current values from response to preserve them
+            update_info = {
+                'min_ssl_version': 'TLSv1.2'
+            }
+
+            # Preserve other optional parameters if they exist in response
+            optional_fields = [
+                'is_http_redirect_to_https',
+                'verified_client_certificate_enabled',
+                'ingress_http_port',
+                'ingress_https_port'
+            ]
+
+            for field in optional_fields:
+                if field in response:
+                    update_info[field] = response[field]
+
+            # Build domain modify request body
+            update_body = UrlDomainModify(**update_info)
+
+            # Create update request
+            request = UpdateDomainV2Request(
+                instance_id=instance_id,
+                group_id=group_id,
+                domain_id=domain_id,
+                body=update_body
+            )
+
+            self.log.debug(
+                "Update request: instance_id=%s, group_id=%s, domain_id=%s",
+                instance_id, group_id, domain_id)
+
+            # Send update request
+            client.update_domain_v2(request)
+            self.log.info(
+                "[actions]-[update-to-tls-v1.2-from-event] Successfully updated domain %s "
+                "(ID: %s) min_ssl_version to TLSv1.2",
+                response.get('url_domain', 'Unknown'), domain_id)
+
+            return self.process_result([{'id': domain_id, 'url_domain': response.get('url_domain', 'Unknown')}])
+
+        except exceptions.ClientRequestException as e:
+            self.log.error(
+                "[actions]-[update-to-tls-v1.2-from-event] Failed to update domain %s (ID: %s): "
+                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                response.get('url_domain', 'Unknown'), domain_id, e.status_code, e.request_id,
+                e.error_code, e.error_msg, exc_info=True)
+            raise
+        except Exception as e:
+            self.log.error(
+                "[actions]-[update-to-tls-v1.2-from-event] Unexpected error while updating "
+                "domain %s (ID: %s): %s", response.get('url_domain', 'Unknown'), domain_id, str(e),
+                exc_info=True)
+            raise
+
+    def perform_action(self, resource):
+        """
+        This method is required by HuaweiCloudBaseAction but not used in event-based actions
+
+        :param resource: Resource (not used)
+        """
+        pass
+
+
+# Update SLDomain Setting
+@ApiGroupResource.action_registry.register('update-sl-domain-setting')
+class UpdateSLDomainSettingAction(HuaweiCloudBaseAction):
+    """Update SLDomain setting action for API Gateway groups
+
+    This action allows updating the debug domain access settings for API Gateway groups,
+    controlling whether debug domains can be accessed.
+
+    :example:
+    Define a policy to update SLDomain settings for an API Gateway group:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-group-update-sl-domain-setting
+            resource: huaweicloud.apig-api-groups
+            filters:
+              - type: value
+                key: sl_domain_access_enabled
+                value: true
+            actions:
+              - type: update-sl-domain-setting
+                sl_domain_access_enabled: false
+    """
+
+    schema = type_schema(
+        'update-sl-domain-setting',
+        sl_domain_access_enabled={'type': 'boolean', 'required': True}
+    )
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        group_id = resource['id']
+        instance_id = resource.get('instance_id')
+
+        if not instance_id:
+            group_name = resource.get('name', 'unknown')
+            log.error(
+                "[actions]-{update-sl-domain-setting} The resource:[apig-api-groups] "
+                "with id:[%s] name:[%s] update SL domain setting is failed, "
+                "cause: No available instance found", group_id, group_name)
+            return
+
+        try:
+            # Build domain access setting object from policy data
+            domain_setting = SlDomainAccessSetting(
+                sl_domain_access_enabled=self.data['sl_domain_access_enabled']
+            )
+
+            # Create update request
+            request = UpdateSlDomainSettingV2Request(
+                instance_id=instance_id,
+                group_id=group_id,
+                body=domain_setting
+            )
+
+            # Send request
+            response = client.update_sl_domain_setting_v2(request)
+            group_name = resource.get('name')
+            access_status = "enabled" if self.data['sl_domain_access_enabled'] else "disabled"
+            log.info(
+                "[actions]-{update-sl-domain-setting} "
+                "The resource:[apig-api-groups] "
+                "with id:[%s] name:[%s] update SL domain setting "
+                "(debug domain access %s) is success.",
+                group_id, group_name, access_status)
+            return response
+        except exceptions.ClientRequestException as e:
+            group_name = resource.get('name')
+            access_status = (
+                "enable" if self.data.get('sl_domain_access_enabled', False)
+                else "disable")
+            log.error(
+                "[actions]-{update-sl-domain-setting} The resource:[apig-api-groups] "
+                "with id:[%s] name:[%s] %s debug domain access is failed, cause: "
+                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                group_id, group_name, access_status,
+                e.status_code, e.request_id, e.error_code, e.error_msg)
+            raise
+
+
+# Plugin Resource Management
+@resources.register('apig-plugin')
+class ApigPluginResource(QueryResourceManager):
+    """
+    Huawei Cloud API Gateway Plugin Resource Management
+    """
+
+    class resource_type(TypeInfo):
+        service = 'apig-plugin'
+        enum_spec = ('list_plugins', 'plugins', 'offset')
+        id = 'plugin_id'
+        name = 'plugin_name'
+        filter_name = 'plugin_name'
+        filter_type = 'scalar'
+        taggable = False
+
+    def get_instance_id(self):
+        """
+        Query and get API Gateway instance ID
+        """
+        session = local_session(self.session_factory)
+
+        # If instance_id is specified in the policy, use it directly
+        if hasattr(self, 'data') and isinstance(self.data, dict) and 'instance_id' in self.data:
+            instance_id = self.data['instance_id']
+            log.info(
+                "[filters]-{get-instance-id} The resource:[apig-plugin] "
+                "using instance_id from policy configuration: %s", instance_id)
+            return [instance_id]
+
+        # Query APIG instance list
+        try:
+            # Use apig-instance service client
+            client = session.client('apig-instance')
+            instances_request = ListInstancesV2Request(limit=500)
+            response = client.list_instances_v2(instances_request)
+
+            if hasattr(response, 'instances') and response.instances:
+                instance_ids = []
+                for instance in response.instances:
+                    instance_ids.append(instance.id)
+                return instance_ids
+        except Exception as e:
+            log.error(
+                "[filters]-{get-instance-id} The resource:[apig-plugin] "
+                "query APIG instance list is failed, cause: %s", str(e), exc_info=True)
+
+        return []
+
+    def get_resources(self, query):
+        return self.get_policy_resources(query)
+
+    def _fetch_resources(self, query):
+        return self.get_policy_resources(query)
+
+    def get_policy_resources(self, query):
+        """Override resource retrieval method to query APIG plugins"""
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+
+        # Get instance ID
+        instance_ids = self.get_instance_id()
+
+        # Ensure instance_id is properly set
+        if not instance_ids:
+            log.error(
+                "[filters]-{get-policy-resources} The resource:[apig-plugin] "
+                "query plugin list is failed, cause: Unable to get valid APIG instance ID")
+            return []
+
+        resources = []
+        for instance_id in instance_ids:
+            offset, limit = 0, 500
+            while True:
+                # Create new request object
+                request = ListPluginsRequest(offset=offset, limit=limit)
+                request.instance_id = instance_id
+
+                # Call client method to process request
+                try:
+                    response = client.list_plugins(request)
+                    resource = safe_json_parse(response.plugins)
+                    for item in resource:
+                        item["instance_id"] = instance_id
+                    resources = resources + resource
+                except exceptions.ClientRequestException as e:
+                    log.error(
+                        "[filters]-{get-policy-resources} The resource:[apig-plugin] "
+                        "query plugin list is failed, cause: "
+                        "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                        e.status_code, e.request_id, e.error_code, e.error_msg, exc_info=True)
+                    break
+
+                offset += limit
+                if not response.total or offset >= response.total:
+                    break
+
+        return resources
+
+
+@ApigPluginResource.filter_registry.register('log-request-or-response-enable')
+class LogRequestOrResponseEnableFilter(Filter):
+    """Filter APIG plugins where any of the log request/response fields are enabled
+
+    This filter checks if any of the following fields in the plugin's call_data are true:
+    log_request_header, log_request_query_string, log_request_body, log_response_header, log_response_body.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-plugin-log-enable
+            resource: huaweicloud.apig-plugin
+            filters:
+              - type: log-request-or-response-enable
+    """
+
+    schema = type_schema('log-request-or-response-enable')
+
+    def process(self, resources, event=None):
+        """
+        Process resources to filter plugins where any log request/response fields are enabled
+
+        :param resources: List of APIG plugin resources
+        :param event: Optional event data
+        :return: Filtered list of resources matching the criteria
+        """
+        matched_resources = []
+
+        for resource in resources:
+            plugin_content = resource.get('plugin_content')
+            if not plugin_content:
+                log.debug(
+                    "[filters]-[log-request-or-response-enable] Plugin content is empty or not found")
+                continue
+
+            try:
+                # Parse plugin_content as JSON
+                content_dict = json.loads(plugin_content)
+                meta_config = content_dict.get('meta_config', {})
+                call_data = meta_config.get('call_data', {})
+
+                # Check each log field
+                log_request_header = call_data.get('log_request_header', False)
+                log_request_query_string = call_data.get('log_request_query_string', False)
+                log_request_body = call_data.get('log_request_body', False)
+                log_response_header = call_data.get('log_response_header', False)
+                log_response_body = call_data.get('log_response_body', False)
+
+                if (log_request_header or log_request_query_string or
+                        log_request_body or log_response_header or log_response_body):
+                    matched_resources.append(resource)
+                    log.debug(
+                        "[filters]-[log-request-or-response-enable] Plugin %s has log fields enabled",
+                        resource.get('plugin_name', 'Unknown'))
+            except json.JSONDecodeError as e:
+                log.warning(
+                    "[filters]-[log-request-or-response-enable] Failed to parse plugin_content for plugin %s: %s",
+                    resource.get('plugin_name', 'Unknown'), str(e))
+            except Exception as e:
+                log.error(
+                    "[filters]-[log-request-or-response-enable] Unexpected error while processing plugin %s: %s",
+                    resource.get('plugin_name', 'Unknown'), str(e), exc_info=True)
+
+        return matched_resources
