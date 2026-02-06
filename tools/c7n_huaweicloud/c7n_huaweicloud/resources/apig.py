@@ -727,10 +727,8 @@ class InDefaultGroupFilter(Filter):
 class DeleteApiAction(HuaweiCloudBaseAction):
     """Delete API action
 
-    This action first checks if the API is published, if yes, it will unpublish
-    the API before deletion.
-
     :example:
+    Define a policy to delete API Gateway APIs with name 'test-api':
 
     .. code-block:: yaml
 
@@ -744,8 +742,67 @@ class DeleteApiAction(HuaweiCloudBaseAction):
             actions:
               - delete
     """
-
     schema = type_schema('delete')
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        api_id = resource['id']
+        instance_id = resource.get('instance_id')
+
+        if not instance_id:
+            api_name = resource.get('name', 'unknown')
+            log.error(
+                "[actions]-{delete} The resource:[apig-api] "
+                "with id:[%s] name:[%s] delete API is failed, "
+                "cause: No available instance found", api_id, api_name)
+            return
+
+        try:
+            # Ensure instance_id is string type
+            request = DeleteApiV2Request(
+                instance_id=instance_id,
+                api_id=api_id
+            )
+
+            client.delete_api_v2(request)
+            api_name = resource.get('name')
+            log.info(
+                "[actions]-{delete} The resource:[apig-api] "
+                "with id:[%s] name:[%s] delete API is success.",
+                api_id, api_name)
+        except exceptions.ClientRequestException as e:
+            api_name = resource.get('name')
+            log.error(
+                "[actions]-{delete} The resource:[apig-api] "
+                "with id:[%s] name:[%s] delete API is failed, cause: "
+                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                api_id, api_name, e.status_code, e.request_id, e.error_code, e.error_msg)
+            raise
+
+
+@ApiResource.action_registry.register('offline-and-delete')
+class OfflineAndDeleteApiAction(HuaweiCloudBaseAction):
+    """Offline and delete API action
+
+    This action first checks if the API is published, if yes, it will unpublish
+    the API before deletion.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-api-offline-and-delete
+            resource: huaweicloud.apig-api
+            filters:
+              - type: value
+                key: name
+                value: test-api
+            actions:
+              - offline-and-delete
+    """
+
+    schema = type_schema('offline-and-delete')
 
     def perform_action(self, resource):
         client = self.manager.get_client()
