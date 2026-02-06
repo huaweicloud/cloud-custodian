@@ -30,11 +30,15 @@ from huaweicloudsdkapig.v2 import (
     # Instance related
     ListInstancesV2Request,
     ListFeaturesV2Request,
+    CreateFeatureV2Request,
+    FeatureToggle,
 
     # Plugin related
     ListPluginsRequest,
 )
+from huaweicloudsdklts.v2 import ListLogGroupsRequest, ListLogStreamsRequest
 
+from c7n.exceptions import PolicyExecutionError
 from c7n.filters import Filter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.provider import resources
@@ -86,8 +90,8 @@ class ApigInstanceResource(QueryResourceManager):
             return []
 
 
-@ApigInstanceResource.filter_registry.register('lts-unable')
-class LtsUnableFilter(Filter):
+@ApigInstanceResource.filter_registry.register('log-analysis-unable')
+class LogAnalysisUnableFilter(Filter):
     """Filter APIG instances where does not open Log Analysis
 
     :example:
@@ -95,13 +99,13 @@ class LtsUnableFilter(Filter):
     .. code-block:: yaml
 
         policies:
-          - name: apig-instance-lts-unable
+          - name: apig-instance-log-analysis-unable
             resource: huaweicloud.apig-instance
             filters:
-              - type: lts-unable
+              - type: log-analysis-unable
     """
 
-    schema = type_schema('lts-unable')
+    schema = type_schema('log-analysis-unable')
 
     def process(self, resources, event=None):
         """
@@ -120,7 +124,7 @@ class LtsUnableFilter(Filter):
 
             if not instance_id:
                 log.warning(
-                    f"[filters]-[lts-unable] Skipping resource without instance ID: "
+                    f"[filters]-[log-analysis-unable] Skipping resource without instance ID: "
                     f"{instance_name}")
                 continue
 
@@ -140,7 +144,7 @@ class LtsUnableFilter(Filter):
                 # If LTS feature is not found, skip this instance
                 if lts_feature is None:
                     log.debug(
-                        f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                        f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
                         f"does not have LTS feature configured")
                     continue
 
@@ -150,7 +154,7 @@ class LtsUnableFilter(Filter):
                     # If config is empty, it doesn't contain log_group
                     matched_resources.append(resource)
                     log.debug(
-                        f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                        f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
                         f"LTS feature config is empty")
                     continue
 
@@ -172,31 +176,31 @@ class LtsUnableFilter(Filter):
                     if not has_log_group:
                         matched_resources.append(resource)
                         log.debug(
-                            f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                            f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
                             f"LTS feature config does not contain log_group. Config: {config_str}")
                 except json.JSONDecodeError as e:
                     # If config is not valid JSON, check if it's a plain string
                     if 'log_group' not in config_str:
                         matched_resources.append(resource)
                         log.debug(
-                            f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                            f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
                             f"LTS feature config is not valid JSON and does not contain log_group. "
                             f"Config: {config_str}")
                     else:
                         log.warning(
-                            f"[filters]-[lts-unable] Instance {instance_name} (ID: {instance_id}) "
+                            f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
                             f"LTS feature config is not valid JSON: {e}")
 
             except exceptions.ClientRequestException as e:
                 log.error(
-                    f"[filters]-[lts-unable] Failed to query features for APIG instance "
+                    f"[filters]-[log-analysis-unable] Failed to query features for APIG instance "
                     f"{instance_name} (ID: {instance_id}): {e.error_msg} "
                     f"(status code: {e.status_code})")
                 # On error, we skip this instance rather than including it
                 continue
             except Exception as e:
                 log.error(
-                    f"[filters]-[lts-unable] Unexpected error while querying features for "
+                    f"[filters]-[log-analysis-unable] Unexpected error while querying features for "
                     f"APIG instance {instance_name} (ID: {instance_id}): {str(e)}",
                     exc_info=True)
                 # On error, we skip this instance rather than including it
@@ -401,6 +405,134 @@ class BackendClientCertificateUnableFilter(Filter):
         return matched_resources
 
 
+@ApigInstanceResource.action_registry.register('enable-log-analysis')
+class EnableLogAnalysisAction(HuaweiCloudBaseAction):
+    """Enable log analysis feature for APIG instance
+
+    This action enables the log analysis feature for an APIG instance by setting
+    the log group and topic names.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-instance-enable-log-analysis
+            resource: huaweicloud.apig-instance
+            actions:
+              - type: enable-log-analysis
+                log_group_name: lts-group-ps8e
+                log_topic_name: lts-topic-q0vz
+    """
+
+    schema = type_schema(
+        'enable-log-analysis',
+        log_group_name={'type': 'string', 'required': True},
+        log_topic_name={'type': 'string', 'required': True}
+    )
+
+    def perform_action(self, resource):
+        client = self.manager.get_client()
+        instance_id = resource['id']
+
+        if not instance_id:
+            instance_name = resource.get('instance_name', 'unknown')
+            log.error(
+                "[actions]-{enable-log-analysis} The resource:[apig-instance] "
+                "with id:[%s] name:[%s] enable log analysis is failed, "
+                "cause: No available instance found", instance_id, instance_name)
+            return
+
+        try:
+            # Build feature toggle object with log analysis configuration
+            feature_toggle = FeatureToggle(
+                name='lts',
+                enable=True
+            )
+
+            # Construct config JSON string
+            log_group_name = self.data['log_group_name']
+            log_topic_name = self.data['log_topic_name']
+            log_group_id, log_stream_id = self.get_group_and_stream_id_by_name(
+                log_group_name, log_topic_name
+            )
+            config = {
+                "log_group": log_group_name,
+                "log_stream": log_topic_name,
+                "group_id": log_group_id,
+                "topic_id": log_stream_id,
+            }
+            feature_toggle.config = json.dumps(config)
+
+            # Create request
+            request = CreateFeatureV2Request(
+                instance_id=instance_id,
+                body=feature_toggle
+            )
+
+            # Send request
+            response = client.create_feature_v2(request)
+            log.info(
+                "[actions]-{enable-log-analysis} The resource:[apig-instance] "
+                "with id:[%s] name:[%s] enable log analysis is success.",
+                instance_id, resource.get('instance_name'))
+
+            return response
+        except exceptions.ClientRequestException as e:
+            instance_name = resource.get('instance_name')
+            log.error(
+                "[actions]-{enable-log-analysis} The resource:[apig-instance] "
+                "with id:[%s] name:[%s] enable log analysis is failed, cause: "
+                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                instance_id, instance_name,
+                e.status_code, e.request_id, e.error_code, e.error_msg)
+            raise
+
+    def get_group_and_stream_id_by_name(self, group_name, stream_name):
+        lts_client_v2 = local_session(self.manager.session_factory).client("lts-stream")
+        list_groups_request = ListLogGroupsRequest()
+        try:
+            log_groups = lts_client_v2.list_log_groups(list_groups_request).log_groups
+        except exceptions.ClientRequestException as e:
+            log.error(f'Get group_id by group_name failed, '
+                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError("Get group_id by group_name failed")
+        group_id = ""
+        for log_group in log_groups:
+            if log_group.log_group_name == group_name or \
+                    log_group.log_group_name_alias == group_name:
+                group_id = log_group.log_group_id
+                break
+        if not group_id:
+            raise PolicyExecutionError(f'Get group_id by group_name[{group_name}] failed')
+
+        list_streams_request = ListLogStreamsRequest(
+            log_group_name=group_name,
+            log_stream_name=stream_name,
+        )
+        try:
+            log_streams = lts_client_v2.list_log_streams(list_streams_request).log_streams
+        except exceptions.ClientRequestException as e:
+            log.error(f'Get stream_id by stream_name failed, '
+                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
+                      f'request id:[{e.request_id}], '
+                      f'status code:[{e.status_code}], '
+                      f'error code:[{e.error_code}], '
+                      f'error message:[{e.error_msg}].')
+            raise PolicyExecutionError("Get stream_id by stream_name failed")
+        stream_id = ""
+        for log_stream in log_streams:
+            stream_id = log_stream.log_stream_id
+        if not stream_id:
+            raise PolicyExecutionError(f'Get stream_id by stream_name[{stream_name}] failed')
+
+        return group_id, stream_id
+
+
 # API Resource Management
 @resources.register('apig-api')
 class ApiResource(QueryResourceManager):
@@ -448,13 +580,18 @@ class ApiResource(QueryResourceManager):
 
         return []
 
-    def get_resources(self, query):
-        return self.get_api_resources(query)
+    def get_resources(self, resource_ids):
+        resources = self.get_api_resources()
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
 
     def _fetch_resources(self, query):
-        return self.get_api_resources(query)
+        return self.get_api_resources()
 
-    def get_api_resources(self, query):
+    def get_api_resources(self):
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
 
@@ -495,13 +632,104 @@ class ApiResource(QueryResourceManager):
         return resources
 
 
+@ApiResource.filter_registry.register('in-default-group')
+class InDefaultGroupFilter(Filter):
+    """Filter API resources that belong to the default group
+
+    This filter checks if an API belongs to the default group by querying the group details.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-api-in-default-group
+            resource: huaweicloud.apig-api
+            filters:
+              - type: in-default-group
+    """
+
+    schema = type_schema('in-default-group')
+
+    def process(self, resources, event=None):
+        """
+        Process resources to filter APIs belonging to the default group
+
+        :param resources: List of API resources
+        :param event: Optional event data
+        :return: Filtered list of resources matching the criteria
+        """
+        client = local_session(self.manager.session_factory).client("apig-api")
+        matched_resources = []
+
+        for resource in resources:
+            api_id = resource.get('id')
+            instance_id = resource.get('instance_id')
+            api_name = resource.get('name', 'Unknown')
+
+            if not api_id or not instance_id:
+                log.warning(
+                    f"[filters]-[in-default-group] Skipping API {api_name} "
+                    f"due to missing api_id or instance_id")
+                continue
+
+            try:
+                # Query API details to get group_id
+                request = ShowDetailsOfApiV2Request(
+                    instance_id=instance_id,
+                    api_id=api_id
+                )
+                api_response = client.show_details_of_api_v2(request)
+                api_details = safe_json_parse(api_response)
+
+                group_id = api_details.get('group_id')
+                if not group_id:
+                    log.debug(
+                        f"[filters]-[in-default-group] API {api_name} (ID: {api_id}) "
+                        f"does not have a group_id")
+                    continue
+
+                # Query group details to check if it's the default group
+                request = ShowDetailsOfApiGroupV2Request(
+                    instance_id=instance_id,
+                    group_id=group_id
+                )
+                group_response = client.show_details_of_api_group_v2(request)
+                group_details = safe_json_parse(group_response)
+
+                if group_details.get('is_default') == 1:
+                    matched_resources.append(resource)
+                    log.debug(
+                        f"[filters]-[in-default-group] API {api_name} (ID: {api_id}) "
+                        f"belongs to the default group (Group ID: {group_id})")
+                else:
+                    log.debug(
+                        f"[filters]-[in-default-group] API {api_name} (ID: {api_id}) "
+                        f"does not belong to the default group (Group ID: {group_id})")
+
+            except exceptions.ClientRequestException as e:
+                log.error(
+                    f"[filters]-[in-default-group] Failed to query details for API {api_name} "
+                    f"(ID: {api_id}): {e.error_msg} (status code: {e.status_code})")
+                continue
+            except Exception as e:
+                log.error(
+                    f"[filters]-[in-default-group] Unexpected error while processing API "
+                    f"{api_name} (ID: {api_id}): {str(e)}", exc_info=True)
+                continue
+
+        return matched_resources
+
+
 # API Resource Actions
 @ApiResource.action_registry.register('delete')
 class DeleteApiAction(HuaweiCloudBaseAction):
     """Delete API action
 
+    This action first checks if the API is published, if yes, it will unpublish
+    the API before deletion.
+
     :example:
-    Define a policy to delete API Gateway APIs with name 'test-api':
 
     .. code-block:: yaml
 
@@ -515,6 +743,7 @@ class DeleteApiAction(HuaweiCloudBaseAction):
             actions:
               - delete
     """
+
     schema = type_schema('delete')
 
     def perform_action(self, resource):
@@ -529,24 +758,41 @@ class DeleteApiAction(HuaweiCloudBaseAction):
             return
 
         try:
-            # Add more debug information
-            self.log.debug(f"Deleting API {api_id} (Instance: {instance_id})")
-
-            # Ensure instance_id is string type
-            request = DeleteApiV2Request(
+            # Query api details to check if it's published
+            request = ShowDetailsOfApiV2Request(
                 instance_id=instance_id,
                 api_id=api_id
             )
+            api_response = client.show_details_of_api_v2(request)
+            api_details = safe_json_parse(api_response)
 
-            # Print request object
-            self.log.debug(f"Request object: {request}")
+            run_env_id = api_details.get('run_env_id')
+            if run_env_id != "":
+                # Offline the API
+                from huaweicloudsdkapig.v2.model.api_action_info import ApiActionInfo
 
-            client.delete_api_v2(request)
+                offline_request = CreateOrDeletePublishRecordForApiV2Request(
+                    instance_id=instance_id,
+                    body=ApiActionInfo(api_id=api_id, env_id=run_env_id, action='offline')
+                )
+                client.create_or_delete_publish_record_for_api_v2(offline_request)
+                self.log.info(
+                    f"Successfully offlined API {api_details.get('name', 'Unknown')} "
+                    f"(ID: {api_id})")
+
+            # Delete the API
+            delete_request = DeleteApiV2Request(
+                instance_id=instance_id,
+                api_id=api_id
+            )
+            client.delete_api_v2(delete_request)
             self.log.info(
-                f"Successfully deleted API: {resource.get('name')} (ID: {api_id})")
+                f"Successfully deleted API {api_details.get('name', 'Unknown')} (ID: {api_id})")
+
         except exceptions.ClientRequestException as e:
             self.log.error(
-                f"Failed to delete API {resource.get('name')} (ID: {api_id}): {e}", exc_info=True)
+                f"Failed to delete API {resource.get('name')} (ID: {api_id}): {e}",
+                exc_info=True)
             raise
 
 
@@ -766,11 +1012,11 @@ class UpdateApiAction(HuaweiCloudBaseAction):
             raise
 
 
-@ApiResource.action_registry.register('update-to-https-from-event')
-class UpdateToHttpsFromEvent(HuaweiCloudBaseAction):
-    """Update API request protocol to HTTPS from event
+@ApiResource.action_registry.register('update-to-https')
+class UpdateToHttps(HuaweiCloudBaseAction):
+    """Update API request protocol to HTTPS
 
-    This action reads API information from event's cts.response field and updates
+    This action reads API id from event's cts.response field and updates
     the API's req_protocol to HTTPS if it's currently HTTP or BOTH.
 
     :example:
@@ -779,7 +1025,7 @@ class UpdateToHttpsFromEvent(HuaweiCloudBaseAction):
     .. code-block:: yaml
 
         policies:
-          - name: apig-api-update-to-https-from-event
+          - name: apig-api-update-to-https
             resource: huaweicloud.apig-api
             mode:
               type: cloudtrace
@@ -788,99 +1034,65 @@ class UpdateToHttpsFromEvent(HuaweiCloudBaseAction):
                 - source: "APIG.Api"
                   event: "createApi"
                   code: 201
-                  ids: "resource_id"
+                  ids: "response.id"
                 - source: "APIG.Api"
                   event: "updateApi"
                   code: 200
-                  ids: "resource_id"
+                  ids: "response.id"
             actions:
-              - type: update-to-https-from-event
+              - type: update-to-https
     """
 
-    schema = type_schema('update-to-https-from-event')
+    schema = type_schema('update-to-https')
 
-    def process(self, event):
-        """
-        Process event to update API protocol to HTTPS
-
-        :param event: Event data containing cts.response with API information
-        :return: Result of the update operation
-        """
-        self.log.debug("Processing event: %s", event)
-
-        # Extract response from event
-        response = jmespath.search('cts.response', event)
-        if not response:
-            self.log.warning(
-                "[actions]-[update-to-https-from-event] No cts.response found in event")
-            return self.process_result([])
-
-        # Parse response if it's a string
-        if isinstance(response, str):
-            try:
-                response = json.loads(response)
-            except json.JSONDecodeError as e:
-                self.log.error(
-                    "[actions]-[update-to-https-from-event] Failed to parse "
-                    "cts.response as JSON: %s", str(e))
-                return self.process_result([])
-
-        # Check if response is a dict
-        if not isinstance(response, dict):
-            self.log.error(
-                "[actions]-[update-to-https-from-event] cts.response is not a dict: %s",
-                type(response))
-            return self.process_result([])
-
-        # Get API ID and instance ID from response
-        api_id = response.get('id')
-        instance_id = jmespath.search('cts.resource_id', event)
+    def perform_action(self, resource):
+        api_id = resource['id']
+        instance_id = resource.get('instance_id')
 
         if not api_id:
             self.log.error(
-                "[actions]-[update-to-https-from-event] No API ID found in response")
+                "[actions]-[update-to-https] No API ID found in resource")
             return self.process_result([])
 
         if not instance_id:
             self.log.error(
-                "[actions]-[update-to-https-from-event] No instance_id available")
+                "[actions]-[update-to-https] No instance_id available")
             return self.process_result([])
-
-        # Check current req_protocol
-        req_protocol = response.get('req_protocol')
-        if req_protocol not in ('HTTP', 'BOTH'):
-            self.log.info(
-                "[actions]-[update-to-https-from-event] API %s (ID: %s) req_protocol is %s, "
-                "no update needed", response.get('name', 'Unknown'), api_id, req_protocol)
-            return self.process_result([])
-
-        self.log.info(
-            "[actions]-[update-to-https-from-event] Updating API %s (ID: %s) "
-            "req_protocol from %s to HTTPS", response.get('name', 'Unknown'), api_id, req_protocol)
 
         try:
             client = self.manager.get_client()
+
+            # Query api details to check if it's published
+            request = ShowDetailsOfApiV2Request(
+                instance_id=instance_id,
+                api_id=api_id
+            )
+            api_response = client.show_details_of_api_v2(request)
+            api_details = safe_json_parse(api_response)
+
+            # Check current req_protocol
+            req_protocol = api_details.get('req_protocol')
+            if req_protocol not in ('HTTP', 'BOTH'):
+                self.log.info(
+                    "[actions]-[update-to-https] API %s (ID: %s) req_protocol is %s, "
+                    "no update needed", api_details.get('name', 'Unknown'), api_id, req_protocol)
+                return self.process_result([])
+
+            self.log.info(
+                "[actions]-[update-to-https] Updating API %s (ID: %s) req_protocol from %s "
+                "to HTTPS", api_details.get('name', 'Unknown'), api_id, req_protocol)
+
             from huaweicloudsdkapig.v2.model.api_create import ApiCreate
 
-            # Build update body from response, only including fields that ApiCreate accepts
+            # Build update body from api_details, only including fields that ApiCreate accepts
             # Get all valid field names from ApiCreate.openapi_types
             valid_fields = set(ApiCreate.openapi_types.keys())
 
             update_info = {}
             # Only copy fields that are valid for ApiCreate
-            for key, value in response.items():
+            for key, value in api_details.items():
                 if key in valid_fields:
                     update_info[key] = value
-
-            # Ensure required fields are present
-            if 'name' not in update_info:
-                self.log.warning(
-                    "[actions]-[update-to-https-from-event] 'name' field not found in response, "
-                    "this may cause update to fail")
-            if 'type' not in update_info:
-                self.log.warning(
-                    "[actions]-[update-to-https-from-event] 'type' field not found in response, "
-                    "this may cause update to fail")
 
             # Override req_protocol to HTTPS
             update_info['req_protocol'] = 'HTTPS'
@@ -900,203 +1112,24 @@ class UpdateToHttpsFromEvent(HuaweiCloudBaseAction):
             # Send update request
             client.update_api_v2(request)
             self.log.info(
-                "[actions]-[update-to-https-from-event] Successfully updated API %s "
-                "(ID: %s) req_protocol to HTTPS", response.get('name', 'Unknown'), api_id)
+                "[actions]-[update-to-https] Successfully updated API %s "
+                "(ID: %s) req_protocol to HTTPS", api_details.get('name', 'Unknown'), api_id)
 
-            return self.process_result([{'id': api_id, 'name': response.get('name', 'Unknown')}])
+            return self.process_result([{'id': api_id, 'name': api_details.get('name', 'Unknown')}])
 
         except exceptions.ClientRequestException as e:
             self.log.error(
-                "[actions]-[update-to-https-from-event] Failed to update API %s (ID: %s): "
+                "[actions]-[update-to-https] Failed to update API %s (ID: %s): "
                 "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                response.get('name', 'Unknown'), api_id, e.status_code, e.request_id,
+                api_details.get('name', 'Unknown'), api_id, e.status_code, e.request_id,
                 e.error_code, e.error_msg, exc_info=True)
             raise
         except Exception as e:
             self.log.error(
-                "[actions]-[update-to-https-from-event] Unexpected error while updating "
-                "API %s (ID: %s): %s", response.get('name', 'Unknown'), api_id, str(e),
+                "[actions]-[update-to-https] Unexpected error while updating "
+                "API %s (ID: %s): %s", api_details.get('name', 'Unknown'), api_id, str(e),
                 exc_info=True)
             raise
-
-    def perform_action(self, resource):
-        """
-        This method is required by HuaweiCloudBaseAction but not used in event-based actions
-
-        :param resource: Resource (not used)
-        """
-        pass
-
-
-@ApiResource.action_registry.register('delete-api-in-default-group-from-event')
-class DeleteApiInDefaultGroupFromEvent(HuaweiCloudBaseAction):
-    """Delete API in default group from event
-
-    This action reads API information from event's cts.response field and deletes
-    the API if it belongs to the default group.
-
-    :example:
-    Define a policy to delete APIs in default group when triggered by an event:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-api-delete-in-default-group-from-event
-            resource: huaweicloud.apig-api
-            mode:
-              type: cloudtrace
-              xrole: admin
-              events:
-                - source: "APIG.Api"
-                  event: "createApi"
-                  code: 201
-                  ids: "resource_id"
-            actions:
-              - type: delete-api-in-default-group-from-event
-    """
-
-    schema = type_schema('delete-api-in-default-group-from-event')
-
-    def process(self, event):
-        """
-        Process event to delete API if it belongs to default group
-
-        :param event: Event data containing cts.response with API information
-        :return: Result of the deletion operation
-        """
-        self.log.debug("Processing event: %s", event)
-
-        # Extract response from event
-        response = jmespath.search('cts.response', event)
-        if not response:
-            self.log.warning(
-                "[actions]-[delete-api-in-default-group-from-event] No cts.response found in event")
-            return self.process_result([])
-
-        # Parse response if it's a string
-        if isinstance(response, str):
-            try:
-                response = json.loads(response)
-            except json.JSONDecodeError as e:
-                self.log.error(
-                    "[actions]-[delete-api-in-default-group-from-event] Failed to parse "
-                    "cts.response as JSON: %s", str(e))
-                return self.process_result([])
-
-        # Check if response is a dict
-        if not isinstance(response, dict):
-            self.log.error(
-                "[actions]-[delete-api-in-default-group-from-event] cts.response is not a dict: %s",
-                type(response))
-            return self.process_result([])
-
-        # Get API ID, group_id, and instance_id from response and event
-        api_id = response.get('id')
-        group_id = response.get('group_id')
-        instance_id = jmespath.search('cts.resource_id', event)
-
-        if not api_id:
-            self.log.error(
-                "[actions]-[delete-api-in-default-group-from-event] No API ID found in response")
-            return self.process_result([])
-
-        if not group_id:
-            self.log.error(
-                "[actions]-[delete-api-in-default-group-from-event] No group_id found in response")
-            return self.process_result([])
-
-        if not instance_id:
-            self.log.error(
-                "[actions]-[delete-api-in-default-group-from-event] No instance_id available")
-            return self.process_result([])
-
-        self.log.info(
-            "[actions]-[delete-api-in-default-group-from-event] Checking API %s (ID: %s) "
-            "belonging to default group (ID: %s)", response.get('name', 'Unknown'), api_id,
-            group_id)
-
-        try:
-            client = self.manager.get_client()
-
-            # Query group details to check if it's the default group
-            request = ShowDetailsOfApiGroupV2Request(
-                instance_id=instance_id,
-                group_id=group_id
-            )
-            group_response = client.show_details_of_api_group_v2(request)
-            group_details = safe_json_parse(group_response)
-
-            if not group_details or group_details.get('is_default') != 1:
-                self.log.info(
-                    "[actions]-[delete-api-in-default-group-from-event] API %s (ID: %s) "
-                    "does not belong to default group, skipping deletion",
-                    response.get('name', 'Unknown'), api_id)
-                return self.process_result([])
-
-            self.log.info(
-                "[actions]-[delete-api-in-default-group-from-event] API %s (ID: %s) "
-                "belongs to default group, proceeding with deletion",
-                response.get('name', 'Unknown'), api_id)
-
-            # Query api details to check if it's published
-            request = ShowDetailsOfApiV2Request(
-                instance_id=instance_id,
-                api_id=api_id
-            )
-            api_response = client.show_details_of_api_v2(request)
-            api_details = safe_json_parse(api_response)
-
-            run_env_id = api_details.get('run_env_id')
-            if run_env_id != "":
-                # Offline the API
-                from huaweicloudsdkapig.v2.model.api_action_info import ApiActionInfo
-
-                offline_request = CreateOrDeletePublishRecordForApiV2Request(
-                    instance_id=instance_id,
-                    body=ApiActionInfo(api_id=api_id, env_id=run_env_id, action='offline')
-                )
-                client.create_or_delete_publish_record_for_api_v2(offline_request)
-                self.log.info(
-                    "[actions]-[delete-api-in-default-group-from-event] Successfully offlined "
-                    "API %s (ID: %s)",
-                    response.get('name', 'Unknown'), api_id)
-
-            # Delete the API
-            delete_request = DeleteApiV2Request(
-                instance_id=instance_id,
-                api_id=api_id
-            )
-            client.delete_api_v2(delete_request)
-            self.log.info(
-                "[actions]-[delete-api-in-default-group-from-event] Successfully deleted "
-                "API %s (ID: %s)",
-                response.get('name', 'Unknown'), api_id)
-
-            return self.process_result([{'id': api_id, 'name': response.get('name', 'Unknown')}])
-
-        except exceptions.ClientRequestException as e:
-            self.log.error(
-                "[actions]-[delete-api-in-default-group-from-event] Failed to process "
-                "API %s (ID: %s): "
-                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                response.get('name', 'Unknown'), api_id, e.status_code, e.request_id,
-                e.error_code, e.error_msg, exc_info=True)
-            raise
-        except Exception as e:
-            self.log.error(
-                "[actions]-[delete-api-in-default-group-from-event] Unexpected error "
-                "while processing API %s (ID: %s): %s", response.get('name', 'Unknown'),
-                api_id, str(e),
-                exc_info=True)
-            raise
-
-    def perform_action(self, resource):
-        """
-        This method is required by HuaweiCloudBaseAction but not used in event-based actions
-
-        :param resource: Resource (not used)
-        """
-        pass
 
 
 # Environment Resource Management
@@ -1612,25 +1645,35 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
 
         try:
             client = self.manager.get_client()
+
+            # Query group details to check if it's the default group
+            request = ShowDetailsOfApiGroupV2Request(
+                instance_id=instance_id,
+                group_id=group_id
+            )
+            group_response = client.show_details_of_api_group_v2(request)
+            group_details = safe_json_parse(group_response)
+            url_domains = group_details.get("url_domains")
+            url_domain = {}
+            for i in range(len(url_domains)):
+                if url_domains[i].get("id") == domain_id:
+                    url_domain = url_domains[i]
+                    break
+
             from huaweicloudsdkapig.v2.model.url_domain_modify import UrlDomainModify
 
-            # Build update body - only update min_ssl_version, keep other parameters unchanged
-            # Get current values from response to preserve them
-            update_info = {
-                'min_ssl_version': 'TLSv1.2'
-            }
+            # Build update body from url_domain, only including fields that UrlDomainModify accepts
+            # Get all valid field names from UrlDomainModify.openapi_types
+            valid_fields = set(UrlDomainModify.openapi_types.keys())
 
-            # Preserve other optional parameters if they exist in response
-            optional_fields = [
-                'is_http_redirect_to_https',
-                'verified_client_certificate_enabled',
-                'ingress_http_port',
-                'ingress_https_port'
-            ]
+            update_info = {}
+            # Only copy fields that are valid for UrlDomainModify
+            for key, value in url_domain.items():
+                if key in valid_fields:
+                    update_info[key] = value
 
-            for field in optional_fields:
-                if field in response:
-                    update_info[field] = response[field]
+            # Override req_protocol to HTTPS
+            update_info['min_ssl_version'] = 'TLSv1.2'
 
             # Build domain modify request body
             update_body = UrlDomainModify(**update_info)
