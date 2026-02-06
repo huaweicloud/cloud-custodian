@@ -144,8 +144,8 @@ class LogAnalysisUnableFilter(Filter):
                 # If LTS feature is not found, skip this instance
                 if lts_feature is None:
                     log.debug(
-                        f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
-                        f"does not have LTS feature configured")
+                        f"[filters]-[log-analysis-unable] Instance {instance_name} "
+                        f"(ID: {instance_id}) does not have LTS feature configured")
                     continue
 
                 # Parse config field (it's a JSON string)
@@ -154,8 +154,8 @@ class LogAnalysisUnableFilter(Filter):
                     # If config is empty, it doesn't contain log_group
                     matched_resources.append(resource)
                     log.debug(
-                        f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
-                        f"LTS feature config is empty")
+                        f"[filters]-[log-analysis-unable] Instance {instance_name} "
+                        f"(ID: {instance_id}) LTS feature config is empty")
                     continue
 
                 try:
@@ -176,20 +176,21 @@ class LogAnalysisUnableFilter(Filter):
                     if not has_log_group:
                         matched_resources.append(resource)
                         log.debug(
-                            f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
-                            f"LTS feature config does not contain log_group. Config: {config_str}")
+                            f"[filters]-[log-analysis-unable] Instance {instance_name} "
+                            f"(ID: {instance_id}) LTS feature config does not contain log_group. "
+                            f"Config: {config_str}")
                 except json.JSONDecodeError as e:
                     # If config is not valid JSON, check if it's a plain string
                     if 'log_group' not in config_str:
                         matched_resources.append(resource)
                         log.debug(
-                            f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
-                            f"LTS feature config is not valid JSON and does not contain log_group. "
-                            f"Config: {config_str}")
+                            f"[filters]-[log-analysis-unable] Instance {instance_name} "
+                            f"(ID: {instance_id}) LTS feature config is not valid JSON and "
+                            f"does not contain log_group. Config: {config_str}")
                     else:
                         log.warning(
-                            f"[filters]-[log-analysis-unable] Instance {instance_name} (ID: {instance_id}) "
-                            f"LTS feature config is not valid JSON: {e}")
+                            f"[filters]-[log-analysis-unable] Instance {instance_name} "
+                            f"(ID: {instance_id}) LTS feature config is not valid JSON: {e}")
 
             except exceptions.ClientRequestException as e:
                 log.error(
