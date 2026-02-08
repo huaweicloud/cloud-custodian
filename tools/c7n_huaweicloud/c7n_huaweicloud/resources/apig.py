@@ -65,13 +65,18 @@ class ApigInstanceResource(QueryResourceManager):
         filter_type = 'scalar'
         taggable = False
 
-    def get_resources(self, query):
-        return self.get_instance_resources(query)
+    def get_resources(self, resource_ids):
+        resources = self.get_instance_resources()
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
 
     def _fetch_resources(self, query):
-        return self.get_instance_resources(query)
+        return self.get_instance_resources()
 
-    def get_instance_resources(self, query):
+    def get_instance_resources(self):
         """Override resource retrieval method to query APIG instances"""
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
@@ -1307,13 +1312,18 @@ class StageResource(QueryResourceManager):
 
         return []
 
-    def get_resources(self, query):
-        return self.get_stage_resources(query)
+    def get_resources(self, resource_ids):
+        resources = self.get_stage_resources()
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
 
     def _fetch_resources(self, query):
-        return self.get_stage_resources(query)
+        return self.get_stage_resources()
 
-    def get_stage_resources(self, query):
+    def get_stage_resources(self):
         """Override resource retrieval method to ensure
            instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
@@ -1556,13 +1566,18 @@ class ApiGroupResource(QueryResourceManager):
 
         return []
 
-    def get_resources(self, query):
-        return self.get_api_groups_resources(query)
+    def get_resources(self, resource_ids):
+        resources = self.get_api_groups_resources()
+        result = []
+        for resource in resources:
+            if resource["id"] in resource_ids:
+                result.append(resource)
+        return result
 
     def _fetch_resources(self, query):
-        return self.get_api_groups_resources(query)
+        return self.get_api_groups_resources()
 
-    def get_api_groups_resources(self, query):
+    def get_api_groups_resources(self):
         """Override resource retrieval method to ensure
            instance_id parameter is included in the request"""
         session = local_session(self.session_factory)
@@ -2036,13 +2051,19 @@ class ApigPluginResource(QueryResourceManager):
 
         return []
 
-    def get_resources(self, query):
-        return self.get_policy_resources(query)
+    def get_resources(self, resource_ids):
+        resources = self.get_policy_resources()
+        result = []
+        for resource in resources:
+            if resource["plugin_id"] in resource_ids:
+                resource["id"] = resource["plugin_id"]
+                result.append(resource)
+        return result
 
     def _fetch_resources(self, query):
-        return self.get_policy_resources(query)
+        return self.get_policy_resources()
 
-    def get_policy_resources(self, query):
+    def get_policy_resources(self):
         """Override resource retrieval method to query APIG plugins"""
         session = local_session(self.session_factory)
         client = session.client(self.resource_type.service)
