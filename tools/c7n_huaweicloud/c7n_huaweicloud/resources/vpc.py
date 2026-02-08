@@ -48,6 +48,7 @@ from c7n.filters import Filter, ValueFilter
 from c7n.utils import type_schema, local_session
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.actions.smn import NotifyMessageAction
+from c7n_huaweicloud.filters.exempted import ExemptedFilter
 from c7n_huaweicloud.provider import resources
 from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 
@@ -69,43 +70,6 @@ class Port(QueryResourceManager):
         enum_spec = ('list_ports', 'ports', 'marker')
         id = 'id'
         tag_resource_type = ''
-
-    def get_resources(self, resource_ids):
-        resources = self.get_api_resources()
-        result = []
-        for resource in resources:
-            if resource["id"] in resource_ids:
-                result.append(resource)
-        return result
-
-    def _fetch_resources(self, query):
-        return self.get_api_resources(query)
-
-    def get_api_resources(self, query=None):
-        ecs_list = []
-        resourceTagDict = {}
-        try:
-            ecs_list = self.get_resource_manager("huaweicloud.ecs").resources()
-        except exceptions.ServiceResponseException as ex:
-            log.error(f"Failed to query ecs tags, "
-                      f"cause: error_code[{ex.error_code}], error_msg[{ex.error_msg}]")
-            raise ex
-        for ecs in ecs_list:
-            tag = ecs.get("tags", [])
-            if tag:
-                resourceTagDict[ecs.get("id")] = tag
-
-        resource_ids_with_tag = resourceTagDict.keys()
-        q = query or self.get_resource_query()
-        resources = (
-            self.augment(self.source.get_resources(q)) or []
-        )
-        for resource in resources:
-            resource_id = resource.get("device_id", "")
-            resource_tag = resourceTagDict.get(resource_id) \
-                if resource_id in resource_ids_with_tag else []
-            resource["tags"] = resource_tag
-        return resources
 
 
 @Port.filter_registry.register("port-forwarding")
@@ -165,6 +129,9 @@ class ENIIpNotTrust(Filter):
              trust_ip_num_limit={'type': 'integer'},
              risk_ports_path={'type': 'string'},
              trust_ip_path={'type': 'string'},
+             exempted_values={'type': 'array'},
+             exempted_obs_url={'type': 'string'},
+             exempted_group_key={'type': 'string'},
              required=['direction', 'risk_ports_path', 'trust_ip_path'])
 
     def process(self, resources, event=None):
@@ -174,19 +141,35 @@ class ENIIpNotTrust(Filter):
         new_data = copy.deepcopy(self.data)
         new_data.pop('type', None)
         rule_filter = SecurityGroupRuleAllowRiskPort(new_data, self.manager)
+        if not rule_filter._init_config() or not rule_filter.risk_ports_obj:
+            return []
 
-        remote_sgs = []
+        remote_sg_ids = []
         valid_ports = []
         for port in resources:
             device_owner = port['device_owner']
             if device_owner and not device_owner.startswith('compute'):
                 continue
             valid_ports.append(port)
-            remote_sgs += port['security_groups']
+            remote_sg_ids += port['security_groups']
 
-        remote_sgs = list(set(remote_sgs))
+        remote_sg_ids = list(set(remote_sg_ids))
+        # exempt sgs
+        exempted_sg_ids = remote_sg_ids
+        exempted_values = self.data.get('exempted_values', [])
+        exempted_obs_url = self.data.get('exempted_obs_url', None)
+        if exempted_values or exempted_obs_url:
+            exempted_data = {
+                'field': 'tags',
+                'exempted_values': exempted_values,
+                'obs_url': exempted_obs_url,
+                'group_key': self.data.get('exempted_group_key', 'exempted')
+            }
+            exempted_filter = ExemptedFilter(exempted_data, self.manager)
+            exempted_sg_ids = self._handle_exempted_sgs(client, remote_sg_ids, exempted_filter)
+
         try:
-            request = ListSecurityGroupRulesRequest(remote_group_id=remote_sgs,
+            request = ListSecurityGroupRulesRequest(remote_group_id=exempted_sg_ids,
                                                     direction=direction)
             response = client.list_security_group_rules(request)
             log.debug("[filters]-[eni-ip-not-trust] query the service:"
@@ -215,6 +198,26 @@ class ENIIpNotTrust(Filter):
                 res_ports.append(port)
         return res_ports
 
+    def _handle_exempted_sgs(self, client, remote_sg_ids, exempted_filter):
+        try:
+            request = ListSecurityGroupsRequest(id=remote_sg_ids)
+            response = client.list_security_groups(request)
+            log.debug("[filters]-[eni-ip-not-trust] query the service:"
+                      "[VPC:list_security_groups] succeed.")
+        except exceptions.ServiceResponseException as ex:
+            log.error("[filters]-[eni-ip-not-trust]-The resource:[vpc-port] "
+                      "filter security groups failed, "
+                      "cause: query security groups associated to "
+                      f"network interfaces failed, "
+                      f"error_code[{ex.error_code}], error_msg[{ex.error_msg}].")
+            raise ex
+        sgs_object = response.security_groups
+        if not sgs_object:
+            return remote_sg_ids
+        sgs = [sg.to_dict() for sg in sgs_object]
+        exempted_sgs = exempted_filter.process(sgs)
+        return [sg.get('id') for sg in exempted_sgs]
+
     def _get_port_ip(self, port):
         port_ip = ""
         fixed_ips = port.get("fixed_ips", [])
@@ -228,8 +231,6 @@ class ENIIpNotTrust(Filter):
         return port_ip
 
     def _filter_risk_rules(self, rule_filter, rules, ip):
-        if not rule_filter._init_config() or not rule_filter.risk_ports_obj:
-            return []
         results = []
         for rule in rules:
             protocol = rule.get('protocol')
@@ -1512,6 +1513,9 @@ class SecurityGroupRuleAllowRiskPort(Filter):
 
                 if risk_rule_ports:
                     results.append(rule)
+        self.risk_ports_obj = {}
+        self.extend_trust_sg_obj = {}
+        self.extend_trust_ip_obj = {}
 
         return results
 
