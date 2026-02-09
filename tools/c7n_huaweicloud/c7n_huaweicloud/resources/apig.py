@@ -149,7 +149,7 @@ class LogAnalysisUnableFilter(Filter):
 
                 # If LTS feature is not found, skip this instance
                 if lts_feature is None:
-                    log.debug(
+                    log.warning(
                         "[filters]- The filter:[log-analysis-unable] "
                         "query the service:[list_features_v2] instance %s "
                         "(ID: %s) does not have LTS feature configured",
@@ -161,7 +161,7 @@ class LogAnalysisUnableFilter(Filter):
                 if not config_str:
                     # If config is empty, it doesn't contain log_group
                     matched_resources.append(resource)
-                    log.debug(
+                    log.warning(
                         "[filters]- The filter:[log-analysis-unable] "
                         "query the service:[list_features_v2] instance %s "
                         "(ID: %s) LTS feature config is empty",
@@ -185,7 +185,7 @@ class LogAnalysisUnableFilter(Filter):
 
                     if not has_log_group:
                         matched_resources.append(resource)
-                        log.debug(
+                        log.info(
                             "[filters]- The filter:[log-analysis-unable] "
                             "query the service:[list_features_v2] instance %s "
                             "(ID: %s) LTS feature config does not contain log_group. "
@@ -194,18 +194,20 @@ class LogAnalysisUnableFilter(Filter):
                     # If config is not valid JSON, check if it's a plain string
                     if 'log_group' not in config_str:
                         matched_resources.append(resource)
-                        log.debug(
+                        log.error(
                             "[filters]- The filter:[log-analysis-unable] "
                             "query the service:[list_features_v2] instance %s "
                             "(ID: %s) LTS feature config is not valid JSON and "
                             "does not contain log_group. Config: %s",
                             instance_name, instance_id, config_str)
+                        raise
                     else:
-                        log.warning(
+                        log.error(
                             "[filters]- The filter:[log-analysis-unable] "
                             "query the service:[list_features_v2] instance %s "
                             "(ID: %s) LTS feature config is not valid JSON: %s",
                             instance_name, instance_id, e)
+                        raise
 
             except exceptions.ClientRequestException as e:
                 log.error(
@@ -282,13 +284,13 @@ class CustomLogEnableFilter(Filter):
                 # If custom_log feature is found and enabled, add to matched resources
                 if custom_log_feature and custom_log_feature.enable:
                     matched_resources.append(resource)
-                    log.debug(
+                    log.info(
                         "[filters]- The filter:[custom-log-enable] "
                         "query the service:[list_features_v2] instance %s "
                         "(ID: %s) has custom_log feature enabled",
                         instance_name, instance_id)
                 else:
-                    log.debug(
+                    log.info(
                         "[filters]- The filter:[custom-log-enable] "
                         "query the service:[list_features_v2] instance %s "
                         "(ID: %s) does not have custom_log feature enabled or feature not found",
@@ -369,7 +371,7 @@ class BackendClientCertificateUnableFilter(Filter):
 
                 # If backend_client_certificate feature is not found, skip this instance
                 if backend_cert_feature is None:
-                    log.debug(
+                    log.warning(
                         "[filters]- The filter:[backend-client-certificate-unable] "
                         "query the service:[list_features_v2] instance %s "
                         "(ID: %s) does not have backend_client_certificate feature configured",
@@ -380,7 +382,7 @@ class BackendClientCertificateUnableFilter(Filter):
                 config_str = backend_cert_feature.config
                 if not config_str:
                     # If config is empty, skip this instance
-                    log.debug(
+                    log.warning(
                         "[filters]- The filter:[backend-client-certificate-unable] "
                         "query the service:[list_features_v2] instance %s "
                         "(ID: %s) backend_client_certificate feature config is empty",
@@ -395,23 +397,24 @@ class BackendClientCertificateUnableFilter(Filter):
                         enable_value = config_dict.get('enable', '')
                         if enable_value == 'off':
                             matched_resources.append(resource)
-                            log.debug(
+                            log.info(
                                 "[filters]- The filter:[backend-client-certificate-unable] "
                                 "query the service:[list_features_v2] instance %s "
                                 "(ID: %s) backend_client_certificate feature is disabled. "
                                 "Config: %s", instance_name, instance_id, config_str)
                     else:
-                        log.debug(
+                        log.error(
                             "[filters]- The filter:[backend-client-certificate-unable] "
                             "query the service:[list_features_v2] instance %s "
                             "(ID: %s) backend_client_certificate feature config is not a "
                             "dictionary. Config: %s", instance_name, instance_id, config_str)
                 except json.JSONDecodeError as e:
-                    log.warning(
+                    log.error(
                         "[filters]- The filter:[backend-client-certificate-unable] "
                         "query the service:[list_features_v2] instance %s "
                         "(ID: %s) backend_client_certificate feature config is not valid JSON: "
                         "%s. Config: %s", instance_name, instance_id, e, config_str)
+                    raise
 
             except exceptions.ClientRequestException as e:
                 log.error(
@@ -463,7 +466,7 @@ class EnableLogAnalysisAction(HuaweiCloudBaseAction):
 
         if not instance_id:
             instance_name = resource.get('instance_name', 'unknown')
-            log.error(
+            log.warning(
                 "[actions]- [enable-log-analysis] The resource:[apig-instance] "
                 "with key:[%s/%s] enable log analysis is failed, "
                 "cause: No available instance found",
@@ -717,7 +720,7 @@ class InDefaultGroupFilter(Filter):
 
                 group_id = api_details.get('group_id')
                 if not group_id:
-                    log.debug(
+                    log.warning(
                         "[filters]- The filter:[in-default-group] "
                         "query the service:[show_details_of_api_v2] API %s "
                         "(ID: %s) does not have a group_id", api_name, api_id)
@@ -733,13 +736,13 @@ class InDefaultGroupFilter(Filter):
 
                 if group_details.get('is_default') == 1:
                     matched_resources.append(resource)
-                    log.debug(
+                    log.info(
                         "[filters]- The filter:[in-default-group] "
                         "query the service:[show_details_of_api_group_v2] API %s "
                         "(ID: %s) belongs to the default group (Group ID: %s)",
                         api_name, api_id, group_id)
                 else:
-                    log.debug(
+                    log.info(
                         "[filters]- The filter:[in-default-group] "
                         "query the service:[show_details_of_api_group_v2] API %s "
                         "(ID: %s) does not belong to the default group (Group ID: %s)",
@@ -851,9 +854,11 @@ class OfflineAndDeleteApiAction(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not instance_id:
-            self.log.error(
-                f"No available instance found, using default instance ID from configuration: "
-                f"{instance_id}")
+            api_name = resource.get('name', 'unknown')
+            log.error(
+                "[actions]- [offline-and-delete] The resource:[apig-api] "
+                "with key:[%s/%s] offline-and-delete API is failed, "
+                "cause: No available instance found", api_name, api_id)
             return
 
         try:
@@ -876,7 +881,7 @@ class OfflineAndDeleteApiAction(HuaweiCloudBaseAction):
                 )
                 client.create_or_delete_publish_record_for_api_v2(offline_request)
                 api_name = api_details.get('name', api_id)
-                self.log.info(
+                log.info(
                     "[actions]- [offline-and-delete] The resource:[apig-api] "
                     "with key:[%s/%s] offline API is success.",
                     api_name, api_id)
@@ -888,14 +893,14 @@ class OfflineAndDeleteApiAction(HuaweiCloudBaseAction):
             )
             client.delete_api_v2(delete_request)
             api_name = api_details.get('name', api_id)
-            self.log.info(
+            log.info(
                 "[actions]- [offline-and-delete] The resource:[apig-api] "
                 "with key:[%s/%s] delete API is success.",
                 api_name, api_id)
 
         except exceptions.ClientRequestException as e:
             api_name = resource.get('name', api_id)
-            self.log.error(
+            log.error(
                 "[actions]- [offline-and-delete] The resource:[apig-api] "
                 "with key:[%s/%s] offline and delete API is failed, cause: %s",
                 api_name, api_id, e, exc_info=True)
@@ -1077,16 +1082,15 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
         if not instance_id:
             api_name = resource.get('name', 'unknown')
-            self.log.error(
+            log.error(
                 "[actions]- [update] The resource:[apig-api] "
                 "with key:[%s/%s] update API is failed, "
                 "cause: No available instance found", api_name, api_id)
             return
 
         try:
-            # Add more debug information
             api_name = resource.get('name', api_id)
-            self.log.debug(
+            log.info(
                 "[actions]- [update] The resource:[apig-api] "
                 "with key:[%s/%s] updating API (Instance: %s)",
                 api_name, api_id, instance_id)
@@ -1096,7 +1100,7 @@ class UpdateApiAction(HuaweiCloudBaseAction):
 
             if not update_body:
                 api_name = resource.get('name', api_id)
-                self.log.error(
+                log.error(
                     "[actions]- [update] The resource:[apig-api] "
                     "with key:[%s/%s] update API is failed, "
                     "cause: No update parameters provided", api_name, api_id)
@@ -1110,20 +1114,20 @@ class UpdateApiAction(HuaweiCloudBaseAction):
             )
 
             # Print request object
-            self.log.debug(
+            log.debug(
                 "[actions]- [update] The resource:[apig-api] request object: %s", request)
 
             # Send request
             response = client.update_api_v2(request)
             api_name = resource.get('name', api_id)
-            self.log.info(
+            log.info(
                 "[actions]- [update] The resource:[apig-api] "
                 "with key:[%s/%s] update API is success.",
                 api_name, api_id)
             return response
         except exceptions.ClientRequestException as e:
             api_name = resource.get('name', api_id)
-            self.log.error(
+            log.error(
                 "[actions]- [update] The resource:[apig-api] "
                 "with key:[%s/%s] update API is failed, cause: %s",
                 api_name, api_id, e, exc_info=True)
@@ -1168,13 +1172,13 @@ class UpdateToHttps(HuaweiCloudBaseAction):
         instance_id = resource.get('instance_id')
 
         if not api_id:
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-https] The resource:[apig-api] "
                 "update API to HTTPS is failed, cause: No API ID found in resource")
             return self.process_result([])
 
         if not instance_id:
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-https] The resource:[apig-api] "
                 "update API to HTTPS is failed, cause: No instance_id available")
             return self.process_result([])
@@ -1194,13 +1198,13 @@ class UpdateToHttps(HuaweiCloudBaseAction):
             req_protocol = api_details.get('req_protocol')
             api_name = api_details.get('name', api_id)
             if req_protocol not in ('HTTP', 'BOTH'):
-                self.log.info(
+                log.info(
                     "[actions]- [update-to-https] The resource:[apig-api] "
                     "with key:[%s/%s] req_protocol is %s, no update needed",
                     api_name, api_id, req_protocol)
                 return self.process_result([])
 
-            self.log.info(
+            log.info(
                 "[actions]- [update-to-https] The resource:[apig-api] "
                 "with key:[%s/%s] updating req_protocol from %s to HTTPS",
                 api_name, api_id, req_protocol)
@@ -1230,14 +1234,14 @@ class UpdateToHttps(HuaweiCloudBaseAction):
                 body=update_body
             )
 
-            self.log.debug(
+            log.info(
                 "[actions]- [update-to-https] The resource:[apig-api] "
                 "update request: instance_id=%s, api_id=%s", instance_id, api_id)
 
             # Send update request
             client.update_api_v2(request)
             api_name = api_details.get('name', api_id)
-            self.log.info(
+            log.info(
                 "[actions]- [update-to-https] The resource:[apig-api] "
                 "with key:[%s/%s] update req_protocol to HTTPS is success.",
                 api_name, api_id)
@@ -1246,7 +1250,7 @@ class UpdateToHttps(HuaweiCloudBaseAction):
 
         except exceptions.ClientRequestException as e:
             api_name = api_details.get('name', api_id)
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-https] The resource:[apig-api] "
                 "with key:[%s/%s] update API to HTTPS is failed, cause: "
                 "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
@@ -1255,7 +1259,7 @@ class UpdateToHttps(HuaweiCloudBaseAction):
             raise
         except Exception as e:
             api_name = api_details.get('name', api_id)
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-https] The resource:[apig-api] "
                 "with key:[%s/%s] update API to HTTPS is failed, cause: %s",
                 api_name, api_id, str(e), exc_info=True)
@@ -1398,16 +1402,15 @@ class UpdateStageAction(HuaweiCloudBaseAction):
 
         if not instance_id:
             env_name = resource.get('name', 'unknown')
-            self.log.error(
+            log.error(
                 "[actions]- [update] The resource:[apig-stage] "
                 "with key:[%s/%s] update environment is failed, "
                 "cause: No available instance found", env_name, env_id)
             return
 
         try:
-            # Add more debug information
             env_name = resource.get('name', env_id)
-            self.log.debug(
+            log.info(
                 "[actions]- [update] The resource:[apig-stage] "
                 "with key:[%s/%s] updating environment (Instance: %s)",
                 env_name, env_id, instance_id)
@@ -1428,20 +1431,20 @@ class UpdateStageAction(HuaweiCloudBaseAction):
             )
 
             # Print request object
-            self.log.debug(
+            log.debug(
                 "[actions]- [update] The resource:[apig-stage] request object: %s", request)
 
             # Send request
             response = client.update_environment_v2(request)
             env_name = resource.get('name', env_id)
-            self.log.info(
+            log.info(
                 "[actions]- [update] The resource:[apig-stage] "
                 "with key:[%s/%s] update environment is success.",
                 env_name, env_id)
             return response
         except exceptions.ClientRequestException as e:
             env_name = resource.get('name', env_id)
-            self.log.error(
+            log.error(
                 "[actions]- [update] The resource:[apig-stage] "
                 "with key:[%s/%s] update environment is failed, cause: %s",
                 env_name, env_id, e, exc_info=True)
@@ -1477,16 +1480,15 @@ class DeleteStageAction(HuaweiCloudBaseAction):
 
         if not instance_id:
             env_name = resource.get('name', 'unknown')
-            self.log.error(
+            log.error(
                 "[actions]- [delete] The resource:[apig-stage] "
                 "with key:[%s/%s] delete environment is failed, "
                 "cause: No available instance found", env_name, env_id)
             return
 
         try:
-            # Add more debug information
             env_name = resource.get('name', env_id)
-            self.log.debug(
+            log.info(
                 "[actions]- [delete] The resource:[apig-stage] "
                 "with key:[%s/%s] deleting environment (Instance: %s)",
                 env_name, env_id, instance_id)
@@ -1498,18 +1500,18 @@ class DeleteStageAction(HuaweiCloudBaseAction):
             )
 
             # Print request object
-            self.log.debug(
+            log.debug(
                 "[actions]- [delete] The resource:[apig-stage] request object: %s", request)
 
             client.delete_environment_v2(request)
             env_name = resource.get('name', env_id)
-            self.log.info(
+            log.info(
                 "[actions]- [delete] The resource:[apig-stage] "
                 "with key:[%s/%s] delete environment is success.",
                 env_name, env_id)
         except exceptions.ClientRequestException as e:
             env_name = resource.get('name', env_id)
-            self.log.error(
+            log.error(
                 "[actions]- [delete] The resource:[apig-stage] "
                 "with key:[%s/%s] delete environment is failed, cause: %s",
                 env_name, env_id, e, exc_info=True)
@@ -1665,16 +1667,15 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
 
         if not domain_id:
             group_name = resource.get('name', 'unknown')
-            self.log.error(
+            log.error(
                 "[actions]- [update-domain] The resource:[apig-api-groups] "
                 "with key:[%s/%s] update domain security policy is failed, "
                 "cause: No domain_id specified", group_name, group_id)
             return
 
         try:
-            # Add more debug information
             group_name = resource.get('name', group_id)
-            self.log.debug(
+            log.info(
                 "[actions]- [update-domain] The resource:[apig-api-groups] "
                 "with key:[%s/%s] updating domain security policy "
                 "(Domain ID: %s, Instance: %s)",
@@ -1697,21 +1698,21 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
             )
 
             # Print request object
-            self.log.debug(
+            log.debug(
                 "[actions]- [update-domain] The resource:[apig-api-groups] "
                 "request object: %s", request)
 
             # Send request
             response = client.update_domain_v2(request)
             group_name = resource.get('name', group_id)
-            self.log.info(
+            log.info(
                 "[actions]- [update-domain] The resource:[apig-api-groups] "
                 "with key:[%s/%s] update domain security policy is success "
                 "(Domain ID: %s).", group_name, group_id, domain_id)
             return response
         except exceptions.ClientRequestException as e:
             group_name = resource.get('name', group_id)
-            self.log.error(
+            log.error(
                 "[actions]- [update-domain] The resource:[apig-api-groups] "
                 "with key:[%s/%s] update domain security policy is failed "
                 "(Domain ID: %s), cause: %s",
@@ -1759,14 +1760,14 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
         :param event: Event data containing cts.response with domain information
         :return: Result of the update operation
         """
-        self.log.debug(
+        log.debug(
             "[actions]- [update-to-tls-v1.2-from-event] "
             "The resource:[apig-api-groups] processing event: %s", event)
 
         # Extract response from event
         response = jmespath.search('cts.response', event)
         if not response:
-            self.log.warning(
+            log.warning(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] no cts.response found in event")
             return self.process_result([])
@@ -1776,7 +1777,7 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
             try:
                 response = json.loads(response)
             except json.JSONDecodeError as e:
-                self.log.error(
+                log.error(
                     "[actions]- [update-to-tls-v1.2-from-event] "
                     "The resource:[apig-api-groups] failed to parse "
                     "cts.response as JSON: %s", str(e))
@@ -1784,7 +1785,7 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
 
         # Check if response is a dict
         if not isinstance(response, dict):
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] cts.response is not a dict: %s",
                 type(response))
@@ -1793,7 +1794,7 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
         # Get domain ID from response (response.id is the domain_id)
         domain_id = response.get('id')
         if not domain_id:
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] no domain ID found in response")
             return self.process_result([])
@@ -1805,13 +1806,13 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
         group_id = url_parts[url_parts.index('api-groups') + 1]
 
         if not instance_id:
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] no instance_id available")
             return self.process_result([])
 
         if not group_id:
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] no group_id available")
             return self.process_result([])
@@ -1820,14 +1821,14 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
         min_ssl_version = response.get('min_ssl_version')
         domain_name = response.get('url_domain', domain_id)
         if min_ssl_version != 'TLSv1.1':
-            self.log.info(
+            log.info(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] with key:[%s/%s] "
                 "min_ssl_version is %s, no update needed",
                 domain_name, domain_id, min_ssl_version)
             return self.process_result([])
 
-        self.log.info(
+        log.info(
             "[actions]- [update-to-tls-v1.2-from-event] "
             "The resource:[apig-api-groups] with key:[%s/%s] "
             "updating min_ssl_version from %s to TLSv1.2",
@@ -1876,7 +1877,7 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
                 body=update_body
             )
 
-            self.log.debug(
+            log.info(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] update request: "
                 "instance_id=%s, group_id=%s, domain_id=%s",
@@ -1885,7 +1886,7 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
             # Send update request
             client.update_domain_v2(request)
             domain_name = response.get('url_domain', domain_id)
-            self.log.info(
+            log.info(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] with key:[%s/%s] "
                 "update min_ssl_version to TLSv1.2 is success.",
@@ -1895,7 +1896,7 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
 
         except exceptions.ClientRequestException as e:
             domain_name = response.get('url_domain', domain_id)
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] with key:[%s/%s] "
                 "update domain is failed, cause: status_code[%s] request_id[%s] "
@@ -1905,7 +1906,7 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
             raise
         except Exception as e:
             domain_name = response.get('url_domain', domain_id)
-            self.log.error(
+            log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] with key:[%s/%s] "
                 "update domain is failed, cause: %s",
@@ -2142,7 +2143,7 @@ class LogRequestOrResponseEnableFilter(Filter):
         for resource in resources:
             plugin_content = resource.get('plugin_content')
             if not plugin_content:
-                log.debug(
+                log.warning(
                     "[filters]- The filter:[log-request-or-response-enable] "
                     "query the service:[plugin_content] plugin content is empty or not found")
                 continue
@@ -2163,7 +2164,7 @@ class LogRequestOrResponseEnableFilter(Filter):
                 if (log_request_header or log_request_query_string or
                         log_request_body or log_response_header or log_response_body):
                     matched_resources.append(resource)
-                    log.debug(
+                    log.info(
                         "[filters]- The filter:[log-request-or-response-enable] "
                         "query the service:[plugin_content] plugin %s has log fields enabled",
                         resource.get('plugin_name', 'Unknown'))
