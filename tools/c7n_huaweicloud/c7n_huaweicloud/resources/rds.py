@@ -346,11 +346,14 @@ class AuditLogDisabledFilter(Filter):
                 request.instance_id = instance_id
                 response = client.list_log_lts_configs(request)
 
-                filtered_configs = []
-                for instance_config in response["instance_lts_configs"]:
-                    for log_config in instance_config["lts_configs"]:
-                        if log_config["log_type"] == "audit_log" and log_config["enabled"] is True:
-                            filtered_configs.append(log_config)
+                if not hasattr(response, 'instance_lts_configs') or not response.instance_lts_configs:
+                    filtered_configs = []
+                else:
+                    filtered_configs = []
+                    for instance_config in response.instance_lts_configs:
+                        for log_config in instance_config.lts_configs:
+                            if log_config.log_type == "audit_log" and log_config.enabled is True:
+                                filtered_configs.append(log_config)
                 if not filtered_configs:
                     matched_resources.append(resource)
 
@@ -1535,8 +1538,6 @@ class MigrateFollowerAction(HuaweiCloudBaseAction):
             request_flavor.spec_code = resource.get('flavor_ref', '')
             response_flavor = client.list_flavors(request_flavor)
             az_status = response_flavor.flavors[0].az_status
-            self.log.info(f"[actions]- [MigrateFollowerAction] response_flavor"
-                          f" :{response_flavor}, az_status:{az_status}")
             new_slave_az_code = None
             for az, status in az_status.items():
                 if az != master_az_code and status == 'normal':
