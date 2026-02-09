@@ -163,7 +163,7 @@ class ENIIpNotTrust(Filter):
                 'field': 'tags',
                 'exempted_values': exempted_values,
                 'obs_url': exempted_obs_url,
-                'group_key': self.data.get('exempted_group_key', 'exempted')
+                'group_key': self.data.get('exempted_group_key', 'nsg_exempted_tags')
             }
             exempted_filter = ExemptedFilter(exempted_data, self.manager)
             exempted_sg_ids = self._handle_exempted_sgs(client, remote_sg_ids, exempted_filter)
