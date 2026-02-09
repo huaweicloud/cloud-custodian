@@ -346,14 +346,11 @@ class AuditLogDisabledFilter(Filter):
                 request.instance_id = instance_id
                 response = client.list_log_lts_configs(request)
 
-                if not hasattr(response, 'instance_lts_configs') or not response.instance_lts_configs:
-                    filtered_configs = []
-                else:
-                    filtered_configs = []
-                    for instance_config in response.instance_lts_configs:
-                        for log_config in instance_config.lts_configs:
-                            if log_config.log_type == "audit_log" and log_config.enabled is True:
-                                filtered_configs.append(log_config)
+                filtered_configs = []
+                for instance_config in response.instance_lts_configs:
+                    for log_config in instance_config.lts_configs:
+                        if log_config.log_type == "audit_log" and log_config.enabled is True:
+                            filtered_configs.append(log_config)
                 if not filtered_configs:
                     matched_resources.append(resource)
 
