@@ -127,13 +127,6 @@ class LogAnalysisUnableFilter(Filter):
             instance_id = resource.get('id')
             instance_name = resource.get('instance_name', 'Unknown')
 
-            if not instance_id:
-                log.warning(
-                    "[filters]- The filter:[log-analysis-unable] "
-                    "query the service:[list_features_v2] skipping resource "
-                    "without instance ID: %s", instance_name)
-                continue
-
             try:
                 # Query instance features list
                 request = ListFeaturesV2Request(instance_id=instance_id, limit=500)
@@ -171,17 +164,13 @@ class LogAnalysisUnableFilter(Filter):
                 try:
                     # Parse JSON config string
                     config_dict = json.loads(config_str)
-                    # Check if log_group key exists in the config dictionary
-                    # The config is a JSON object, we check if it has 'log_group' as a key
-                    has_log_group = False
-                    if isinstance(config_dict, dict):
-                        # Check if 'log_group' key exists in the config dict
-                        has_log_group = 'log_group' in config_dict
-                        # Also check nested structures if container_lts_cfg is a dict
-                        if not has_log_group and 'container_lts_cfg' in config_dict:
-                            container_cfg = config_dict['container_lts_cfg']
-                            if isinstance(container_cfg, dict) and 'log_group' in container_cfg:
-                                has_log_group = True
+                    # Check if 'log_group' key exists in the config dict
+                    has_log_group = 'log_group' in config_dict
+                    # Also check nested structures if container_lts_cfg is a dict
+                    if not has_log_group and 'container_lts_cfg' in config_dict:
+                        container_cfg = config_dict['container_lts_cfg']
+                        if isinstance(container_cfg, dict) and 'log_group' in container_cfg:
+                            has_log_group = True
 
                     if not has_log_group:
                         matched_resources.append(resource)
@@ -260,13 +249,6 @@ class CustomLogEnableFilter(Filter):
         for resource in resources:
             instance_id = resource.get('id')
             instance_name = resource.get('instance_name', 'Unknown')
-
-            if not instance_id:
-                log.warning(
-                    "[filters]- The filter:[custom-log-enable] "
-                    "query the service:[list_features_v2] skipping resource "
-                    "without instance ID: %s", instance_name)
-                continue
 
             try:
                 # Query instance features list
@@ -349,13 +331,6 @@ class BackendClientCertificateUnableFilter(Filter):
             instance_id = resource.get('id')
             instance_name = resource.get('instance_name', 'Unknown')
 
-            if not instance_id:
-                log.warning(
-                    "[filters]- The filter:[backend-client-certificate-unable] "
-                    "query the service:[list_features_v2] skipping resource "
-                    "without instance ID: %s", instance_name)
-                continue
-
             try:
                 # Query instance features list
                 request = ListFeaturesV2Request(instance_id=instance_id, limit=500)
@@ -393,21 +368,14 @@ class BackendClientCertificateUnableFilter(Filter):
                     # Parse JSON config string
                     config_dict = json.loads(config_str)
                     # Check if enable field in config is "off"
-                    if isinstance(config_dict, dict):
-                        enable_value = config_dict.get('enable', '')
-                        if enable_value == 'off':
-                            matched_resources.append(resource)
-                            log.info(
-                                "[filters]- The filter:[backend-client-certificate-unable] "
-                                "query the service:[list_features_v2] instance %s "
-                                "(ID: %s) backend_client_certificate feature is disabled. "
-                                "Config: %s", instance_name, instance_id, config_str)
-                    else:
-                        log.error(
+                    enable_value = config_dict.get('enable', '')
+                    if enable_value == 'off':
+                        matched_resources.append(resource)
+                        log.info(
                             "[filters]- The filter:[backend-client-certificate-unable] "
                             "query the service:[list_features_v2] instance %s "
-                            "(ID: %s) backend_client_certificate feature config is not a "
-                            "dictionary. Config: %s", instance_name, instance_id, config_str)
+                            "(ID: %s) backend_client_certificate feature is disabled. "
+                            "Config: %s", instance_name, instance_id, config_str)
                 except json.JSONDecodeError as e:
                     log.error(
                         "[filters]- The filter:[backend-client-certificate-unable] "
@@ -463,15 +431,6 @@ class EnableLogAnalysisAction(HuaweiCloudBaseAction):
     def perform_action(self, resource):
         client = self.manager.get_client()
         instance_id = resource['id']
-
-        if not instance_id:
-            instance_name = resource.get('instance_name', 'unknown')
-            log.warning(
-                "[actions]- [enable-log-analysis] The resource:[apig-instance] "
-                "with key:[%s/%s] enable log analysis is failed, "
-                "cause: No available instance found",
-                instance_name, instance_id)
-            return
 
         try:
             # Build feature toggle object with log analysis configuration
@@ -631,13 +590,6 @@ class ApiResource(QueryResourceManager):
 
         # Get instance ID
         instance_ids = self.get_instance_id()
-
-        # Ensure instance_id is properly set
-        if not instance_ids:
-            log.error(
-                "The resource:[apig-api] unable to get valid APIG instance ID, "
-                "cannot continue querying API list")
-            return []
 
         resources = []
         for instance_id in instance_ids:
@@ -1080,14 +1032,6 @@ class UpdateApiAction(HuaweiCloudBaseAction):
         api_id = resource['id']
         instance_id = resource.get('instance_id')
 
-        if not instance_id:
-            api_name = resource.get('name', 'unknown')
-            log.error(
-                "[actions]- [update] The resource:[apig-api] "
-                "with key:[%s/%s] update API is failed, "
-                "cause: No available instance found", api_name, api_id)
-            return
-
         try:
             api_name = resource.get('name', api_id)
             log.info(
@@ -1336,13 +1280,6 @@ class StageResource(QueryResourceManager):
         # Get instance ID
         instance_ids = self.get_instance_id()
 
-        # Ensure instance_id is properly set
-        if not instance_ids:
-            log.error(
-                "The resource:[apig-stage] unable to get valid APIG instance ID, "
-                "cannot continue querying environment list")
-            return []
-
         resources = []
         for instance_id in instance_ids:
             # Create new request object instead of modifying the incoming query
@@ -1587,13 +1524,6 @@ class ApiGroupResource(QueryResourceManager):
 
         # Get instance ID
         instance_ids = self.get_instance_id()
-
-        # Ensure instance_id is properly set
-        if not instance_ids:
-            log.error(
-                "The resource:[apig-api-groups] unable to get valid APIG instance ID, "
-                "cannot continue querying API group list")
-            return []
 
         resources = []
         for instance_id in instance_ids:
@@ -2071,13 +2001,6 @@ class ApigPluginResource(QueryResourceManager):
 
         # Get instance ID
         instance_ids = self.get_instance_id()
-
-        # Ensure instance_id is properly set
-        if not instance_ids:
-            log.error(
-                "The resource:[apig-plugin] query plugin list is failed, "
-                "cause: Unable to get valid APIG instance ID")
-            return []
 
         resources = []
         for instance_id in instance_ids:
