@@ -753,12 +753,12 @@ class ClusterSignatureEnabledFilter(Filter):
                 raise PluginNotInstalled(self.plugin_name)
 
             installed = plugin_status not in ["deleting", "deleteFailed", "deleteSuccess"]
-            log.error(
+            log.info(
                 f"[filters]- the filter:[{self.filter_name}] query cluster addon instances "
                 f"succeeded")
             return excepted == installed
         except PluginNotInstalled:
-            log.error(
+            log.info(
                 f"[filters]- the filter:[{self.filter_name}] query cluster addon instances "
                 f"succeeded")
             return not excepted
