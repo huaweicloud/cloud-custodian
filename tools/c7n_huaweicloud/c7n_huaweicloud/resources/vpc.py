@@ -148,10 +148,14 @@ class ENIIpNotTrust(Filter):
         valid_ports = []
         for port in resources:
             device_owner = port['device_owner']
-            if device_owner and not device_owner.startswith('compute'):
+            if not device_owner or not device_owner.startswith('compute'):
                 continue
             valid_ports.append(port)
             remote_sg_ids += port['security_groups']
+
+        if not valid_ports:
+            log.info("[filters]-[eni-ip-not-trust] no network interfaces found.")
+            return []
 
         remote_sg_ids = list(set(remote_sg_ids))
         # exempt sgs
@@ -168,6 +172,11 @@ class ENIIpNotTrust(Filter):
             exempted_filter = ExemptedFilter(exempted_data, self.manager)
             exempted_sg_ids = self._handle_exempted_sgs(client, remote_sg_ids, exempted_filter)
 
+        # if all security groups are exempted, no need to list sg rules
+        if not exempted_sg_ids:
+            log.info("[filters]-[eni-ip-not-trust] all security groups are exempted, "
+                     "no network interfaces need to be processed.")
+            return []
         try:
             request = ListSecurityGroupRulesRequest(remote_group_id=exempted_sg_ids,
                                                     direction=direction)
