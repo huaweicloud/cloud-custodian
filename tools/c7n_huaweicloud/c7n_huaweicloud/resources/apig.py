@@ -607,6 +607,14 @@ class ApiResource(QueryResourceManager):
                         item["instance_id"] = instance_id
                     resources = resources + resource
                 except exceptions.ClientRequestException as e:
+                    # If the instance does not exist, ignore the exception
+                    if e.error_code == "APIG.3030":
+                        log.warning(
+                            "The resource:[apig-api] query api list for "
+                            "instance [%s] is skipped, cause: status_code[%s] request_id[%s] "
+                            "error_code[%s] error_msg[%s]", instance_id, e.status_code,
+                            e.request_id, e.error_code, e.error_msg, exc_info=True)
+                        break
                     log.error(
                         "The resource:[apig-api] query API list is failed, "
                         "cause: %s", str(e), exc_info=True)
@@ -1541,6 +1549,14 @@ class ApiGroupResource(QueryResourceManager):
                         item["instance_id"] = instance_id
                     resources = resources + resource
                 except exceptions.ClientRequestException as e:
+                    # If the instance does not exist, ignore the exception
+                    if e.error_code == "APIG.3030":
+                        log.warning(
+                            "The resource:[apig-api-groups] query api groups list for "
+                            "instance [%s] is skipped, cause: status_code[%s] request_id[%s] "
+                            "error_code[%s] error_msg[%s]", instance_id, e.status_code,
+                            e.request_id, e.error_code, e.error_msg, exc_info=True)
+                        break
                     log.error(
                         "The resource:[apig-api-groups] query API Group list is failed, "
                         "cause: %s", str(e), exc_info=True)
@@ -2018,6 +2034,14 @@ class ApigPluginResource(QueryResourceManager):
                         item["instance_id"] = instance_id
                     resources = resources + resource
                 except exceptions.ClientRequestException as e:
+                    # If the instance does not exist, ignore the exception
+                    if e.error_code == "APIG.3030":
+                        log.warning(
+                            "The resource:[apig-plugin] query plugin list for instance [%s] "
+                            "is skipped, cause: status_code[%s] request_id[%s] error_code[%s] "
+                            "error_msg[%s]", instance_id, e.status_code, e.request_id, e.error_code,
+                            e.error_msg, exc_info=True)
+                        break
                     log.error(
                         "The resource:[apig-plugin] query plugin list is failed, "
                         "cause: status_code[%s] request_id[%s] error_code[%s] "
