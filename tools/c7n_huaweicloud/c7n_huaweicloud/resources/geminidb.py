@@ -127,8 +127,6 @@ class GeminiDB(QueryResourceManager):
                     f"cause:{e}")
                 raise
 
-        self.log.info(f"Successfully get resources_with_tags"
-                      f"{all_instances_with_tags}")
         return all_instances_with_tags
 
 
