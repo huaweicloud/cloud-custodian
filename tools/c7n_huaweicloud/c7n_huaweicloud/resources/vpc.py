@@ -93,6 +93,9 @@ class PortForwarding(Filter):
     def process(self, resources, event=None):
         enabled_ports = []
         for r in resources:
+            # skip ports whose instance type is not empty
+            if r.get('instance_type'):
+                continue
             pairs = r.get('allowed_address_pairs')
             if pairs:
                 for pair in pairs:
@@ -149,6 +152,9 @@ class ENIIpNotTrust(Filter):
         for port in resources:
             device_owner = port['device_owner']
             if not device_owner or not device_owner.startswith('compute'):
+                continue
+            # skip ports whose instance type is not empty
+            if port.get('instance_type'):
                 continue
             valid_ports.append(port)
             remote_sg_ids += port['security_groups']
