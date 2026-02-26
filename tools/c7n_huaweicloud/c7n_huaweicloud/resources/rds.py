@@ -380,8 +380,6 @@ class AuditLogDisabledFilter(Filter):
                 self.log.error(
                     f"Get the audit log policy of RDS instance {resource['name']} "
                     f"(ID: {instance_id}) failed: {e}")
-                # If the audit log policy cannot be obtained, assume it is not enabled
-                matched_resources.append(resource)
                 raise
 
         return matched_resources
