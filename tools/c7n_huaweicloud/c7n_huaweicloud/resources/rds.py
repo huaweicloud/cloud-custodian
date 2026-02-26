@@ -322,6 +322,9 @@ class AuditLogDisabledFilter(Filter):
             resource: huaweicloud.rds
             filters:
               - type: audit-log-disabled
+                log_group_name: log_group_name
+                log_topic_name: log_topic_name
+                keep_days: 365
     """
     schema = type_schema(
         'audit-log-disabled',
@@ -894,9 +897,12 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
             resource: huaweicloud.rds
             filters:
               - type: audit-log-disabled
+                log_group_name: log_group_name
+                log_topic_name: log_topic_name
+                keep_days: 365
             actions:
               - type: set-audit-log-policy
-                keep_days: 7
+                keep_days: 365
                 audit_types:
                   - SELECT
                   - INSERT
