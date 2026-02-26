@@ -140,9 +140,9 @@ interactions:
     uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-auto-expansion-off-id/auditlog-policy
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"c19232d806c18fb9a4b6cbdce77281df"}
-
-        '
+      string: '{ "keep_days":0, "audit_types":["CREATE_USER"], "all_audit_log_action":
+        {"DCL":"CREATE_USER,DROP_USER,RENAME_USER,GRANT,REVOKE,ALTER_USER,ALTER_USER_DEFAULT_ROLE","DDL":"CREATE,ALTER,DROP,RENAME,TRUNCATE,REPAIR,OPTIMIZE","DML":"INSERT,DELETE,UPDATE,REPLACE,SELECT","OTHER":"BEGIN/COMMIT/ROLLBACK,PREPARED_STATEMENT,CALL_PROCEDURE,KILL,SET_OPTION,CHANGE_DB,UNINSTALL_PLUGIN,UNINSTALL_PLUGIN,INSTALL_PLUGIN,SHUTDOWN,SLAVE_START,SLAVE_STOP,LOCK_TABLES,UNLOCK_TABLES,FLUSH,XA"}
+        } '
     headers:
       Connection:
       - keep-alive
@@ -167,6 +167,62 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: success
+- request:
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/mysql/instances/logs/lts-configs?instance_id=rds-auto-expansion-on-id
+    body: null
+    headers: {}
+  response:
+    status:
+      code: 200
+      message: success
+    headers:
+      Content-Type:
+      - application/json
+    body:
+      string: '{
+                "total_count": 1,
+                "instance_lts_configs": [
+                  {
+                    "lts_configs": [
+                      {
+                        "log_type": "audit_log",
+                        "lts_group_id": "7598ae98-d2de-4bed-b1e8-26b380b3fc37",
+                        "lts_stream_id": "8eec64c0-bd23-4ada-8147-76e57b10e63b",
+                        "enabled": true
+                      }
+                    ]
+                  }
+                ]
+              }'
+- request:
+    method: GET
+    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/mysql/instances/logs/lts-configs?instance_id=rds-auto-expansion-off-id
+    body: null
+    headers: {}
+  response:
+    status:
+      code: 200
+      message: success
+    headers:
+      Content-Type:
+      - application/json
+    body:
+      string: '{
+                "total_count": 1,
+                "instance_lts_configs": [
+                  {
+                    "lts_configs": [
+                      {
+                        "log_type": "audit_log",
+                        "lts_group_id": "7598ae98-d2de-4bed-b1e8-26b380b3fc37",
+                        "lts_stream_id": "8eec64c0-bd23-4ada-8147-76e57b10e63b",
+                        "enabled": false
+                      }
+                    ]
+                  }
+                ]
+              }'
 version: 1
