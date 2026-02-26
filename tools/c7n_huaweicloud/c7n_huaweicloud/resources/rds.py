@@ -205,7 +205,7 @@ class DatabaseVersionFilter(Filter):
         except Exception as e:
             self.log.error(f"Failed to get the version list of the "
                            f"database engine {database_name}: {e}")
-            return []
+            raise
 
         # Filter out instances that are not the latest minor version
         outdated_resources = []
@@ -323,11 +323,25 @@ class AuditLogDisabledFilter(Filter):
             filters:
               - type: audit-log-disabled
     """
-    schema = type_schema('audit-log-disabled')
+    schema = type_schema(
+        'audit-log-disabled',
+        log_group_name={'type': 'string'},
+        log_topic_name={'type': 'string'},
+        keep_days={'type': 'integer', 'minimum': 1, 'maximum': 3660})
 
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client("rds")
         matched_resources = []
+        log_group_name = self.data.get('log_group_name')
+        log_topic_name = self.data.get('log_topic_name')
+        keep_days = self.data.get('keep_days')
+        resp_log_group_id = None
+        resp_log_stream_id = None
+        if log_group_name and log_topic_name:
+            resp_log_group_id, resp_log_stream_id = SetAuditLogPolicyAction \
+                .get_group_and_stream_id_by_name(self.manager.session_factory,
+                                                 log_group_name, log_topic_name
+                                                 )
 
         for resource in resources:
             instance_id = resource['id']
@@ -337,7 +351,8 @@ class AuditLogDisabledFilter(Filter):
                 response = client.show_auditlog_policy(request)
 
                 # keep_days is 0, which means the audit log policy is disabled
-                if response.keep_days == 0:
+                if response.keep_days == 0 or (keep_days is not None
+                                               and response.keep_days != keep_days): 
                     matched_resources.append(resource)
                     continue
 
@@ -349,8 +364,12 @@ class AuditLogDisabledFilter(Filter):
                 filtered_configs = []
                 for instance_config in response.instance_lts_configs:
                     for log_config in instance_config.lts_configs:
-                        if log_config.log_type == "audit_log" and log_config.enabled is True:
-                            filtered_configs.append(log_config)
+                        if log_config.log_type == "audit_log" and log_config.enabled is True \
+                                and (log_group_name is None or
+                                     log_config.lts_group_id == resp_log_group_id) \
+                                and (log_topic_name is None or
+                                     log_config.lts_stream_id == resp_log_stream_id):
+                            filtered_configs.append(log_config)            
                 if not filtered_configs:
                     matched_resources.append(resource)
 
@@ -360,6 +379,7 @@ class AuditLogDisabledFilter(Filter):
                     f"(ID: {instance_id}) failed: {e}")
                 # If the audit log policy cannot be obtained, assume it is not enabled
                 matched_resources.append(resource)
+                raise
 
         return matched_resources
 
@@ -917,7 +937,8 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
                 request.body['audit_types'] = audit_types
 
             if log_group_name and log_topic_name:
-                resp_log_group_id, resp_log_stream_id = self.get_group_and_stream_id_by_name(
+                resp_log_group_id, resp_log_stream_id = SetAuditLogPolicyAction.get_group_and_stream_id_by_name(
+                    self.manager.session_factory,
                     log_group_name, log_topic_name
                 )
                 if not resp_log_group_id or not resp_log_stream_id:
@@ -957,14 +978,14 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
                 f"{resource['name']} (ID: {instance_id}): {e}")
             raise
 
-    def get_group_and_stream_id_by_name(self, group_name, stream_name):
-        lts_client_v2 = local_session(self.manager.session_factory).client("lts-stream")
+    @staticmethod
+    def get_group_and_stream_id_by_name(session_factory, group_name, stream_name):
+        lts_client_v2 = local_session(session_factory).client("lts-stream")
         list_groups_request = ListLogGroupsRequest()
         try:
             log_groups = lts_client_v2.list_log_groups(list_groups_request).log_groups
         except exceptions.ClientRequestException as e:
             log.error(f'Get group_id by group_name failed, '
-                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
@@ -987,7 +1008,6 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
             log_streams = lts_client_v2.list_log_streams(list_streams_request).log_streams
         except exceptions.ClientRequestException as e:
             log.error(f'Get stream_id by stream_name failed, '
-                      f'account:[{self.session.domain_name}/{self.session.domain_id}], '
                       f'request id:[{e.request_id}], '
                       f'status code:[{e.status_code}], '
                       f'error code:[{e.error_code}], '
@@ -1409,8 +1429,6 @@ class AZFilter(Filter):
         matched = []
         for resource in resources:
             if resource.get('type') == 'Ha':
-                self.log.info(f"[filters]- The filter:[AZFilter] RDS resource nodes"
-                              f"{resource.get('nodes')} ")
                 nodes = resource.get('nodes')
                 if len(nodes) == 2 and nodes[0].get('availability_zone')\
                         == nodes[1].get('availability_zone'):
@@ -1418,9 +1436,9 @@ class AZFilter(Filter):
         return matched
 
 
-@RDS.filter_registry.register('need_upgrade')
+@RDS.filter_registry.register('pg_need_upgrade')
 class DbVersionFilter(Filter):
-    """Filter RDS instances need to upgrade.
+    """Filter RDS-PG instances need to upgrade.
     :example:
 
     .. code-block:: yaml
@@ -1429,10 +1447,10 @@ class DbVersionFilter(Filter):
           - name: rds-need-upgrade
             resource: huaweicloud.rds
             filters:
-                  - type: need_upgrade
+                  - type: pg_need_upgrade
     """
     schema = type_schema(
-        'need_upgrade'
+        'pg_need_upgrade'
     )
 
     def process(self, resources, event=None):
@@ -1484,6 +1502,7 @@ class DbVersionFilter(Filter):
                 self.log.error(
                     f"[filters]- The filter:[dbVersionFilter] Failed for RDS instance "
                     f"{resource['name']} (ID: {instance_id}): {e}")
+                raise
         return matched
 
 
@@ -1629,6 +1648,7 @@ class PostgresqlSslFilter(Filter):
                     f"[filter]- [PostgresqlSslFilter] Failed to get the pg_hba.conf"
                     f" configuration for RDS PostgreSQL instance "
                     f"{resource['name']} (ID: {instance_id}): {e}")
+                raise
         return matched_resources
 
 
