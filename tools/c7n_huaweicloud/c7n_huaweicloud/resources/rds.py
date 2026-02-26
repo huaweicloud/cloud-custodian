@@ -355,7 +355,7 @@ class AuditLogDisabledFilter(Filter):
 
                 # keep_days is 0, which means the audit log policy is disabled
                 if response.keep_days == 0 or (keep_days is not None
-                                               and response.keep_days != keep_days): 
+                                               and response.keep_days != keep_days):
                     matched_resources.append(resource)
                     continue
 
@@ -372,7 +372,7 @@ class AuditLogDisabledFilter(Filter):
                                      log_config.lts_group_id == resp_log_group_id) \
                                 and (log_topic_name is None or
                                      log_config.lts_stream_id == resp_log_stream_id):
-                            filtered_configs.append(log_config)            
+                            filtered_configs.append(log_config)
                 if not filtered_configs:
                     matched_resources.append(resource)
 
@@ -941,10 +941,10 @@ class SetAuditLogPolicyAction(HuaweiCloudBaseAction):
                 request.body['audit_types'] = audit_types
 
             if log_group_name and log_topic_name:
-                resp_log_group_id, resp_log_stream_id = SetAuditLogPolicyAction.get_group_and_stream_id_by_name(
-                    self.manager.session_factory,
-                    log_group_name, log_topic_name
-                )
+                resp_log_group_id, resp_log_stream_id = SetAuditLogPolicyAction\
+                    .get_group_and_stream_id_by_name(self.manager.session_factory,
+                                                     log_group_name, log_topic_name
+                                                     )
                 if not resp_log_group_id or not resp_log_stream_id:
                     raise Exception("Log group or log topic does not exist and "
                                     "creation is set to 'no'. Cannot enable logging.")
