@@ -88,7 +88,7 @@ from huaweicloudsdkcts.v3.region.cts_region import CtsRegion
 from huaweicloudsdkcbr.v1 import ListBackupsRequest, ListVaultRequest, ListProtectableRequest
 from huaweicloudsdksfsturbo.v1 import SFSTurboClient, ListSharesRequest
 from huaweicloudsdksfsturbo.v1.region.sfsturbo_region import SFSTurboRegion
-from huaweicloudsdkcoc.v1 import CocClient, ListInstanceCompliantRequest
+from huaweicloudsdkcoc.v1 import CocClient, ListInstanceCompliantRequest, ListScriptsRequest
 from huaweicloudsdkcoc.v1.region.coc_region import CocRegion
 from huaweicloudsdkorganizations.v1 import (
     OrganizationsClient,
@@ -473,11 +473,11 @@ class Session:
                 .with_region(CbrRegion.value_of(self.region))
                 .build()
             )
-        elif service == "coc":
+        elif service == "coc" or service in ['coc-patch', 'coc-script_v2']:
             client = (
                 CocClient.new_builder()
                 .with_credentials(globalCredentials)
-                .with_region(CocRegion.value_of("cn-north-4"))
+                .with_region(CocRegion.AP_SOUTHEAST_3)
                 .build()
             )
         elif service in ["org-policy", "org-unit", "org-account"]:
@@ -767,8 +767,10 @@ class Session:
             request.protectable_type = "server"
         elif service == "sfsturbo":
             request = ListSharesRequest()
-        elif service == "coc":
+        elif service == "coc-patch":
             request = ListInstanceCompliantRequest()
+        elif service == "coc-script_v2":
+            request = ListScriptsRequest()
         elif service == "ram":
             request = SearchResourceShareAssociationsRequest()
             request.body = SearchResourceShareAssociationsReqBody(
