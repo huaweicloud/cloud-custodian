@@ -1,0 +1,33 @@
+policies:
+  - name: HW-CTS-01-filter-resources-member
+    resource: huaweicloud.cts-tracker
+    description: |
+      动态获取追踪器的is_lts_enabled状态并应用配置
+
+    filters:
+      # 筛选名称为"system"的追踪器
+      - type: value
+        key: tracker_name
+        value: "system"
+      # 筛选非组织追踪器
+      - type: value
+        key: is_organization_tracker
+        value: false
+
+    actions:
+      - type: set-trace-file-validation-with-lts-preservation
+        tracker_name: "system"
+        tracker_type: "system"
+        agency_name: "cts_admin_trust"
+        status: "enabled"
+        is_organization_tracker: false
+
+        is_support_validate: true
+        kms_id: "7d11203a-c426-49a3-a8c8-25e4e6f1fba1"
+        is_support_trace_files_encryption: true
+        obs_info:
+          bucket_name: "bj4-guazhou1"
+          file_prefix_name: ""
+          is_obs_created: false
+          compress_type: "gzip"
+          is_sort_by_service: true

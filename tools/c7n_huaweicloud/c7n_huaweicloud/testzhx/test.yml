@@ -1,0 +1,10 @@
+policies:
+  - name: query-cts-trackers
+    resource: huaweicloud.cts-tracker
+    filters:
+      - type: value
+        key: tracker_name
+        value: "system"
+      - type: value
+        key: is_organization_tracker
+        value: false
