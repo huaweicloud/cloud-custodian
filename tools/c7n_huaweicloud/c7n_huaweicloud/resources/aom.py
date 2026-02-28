@@ -788,6 +788,7 @@ class EnableAlarmRule(HuaweiCloudBaseAction):
     def process(self, resources):
         client = self.manager.get_client()
         results = []
+        failed_records = []
 
         for resource in resources:
             try:
@@ -816,14 +817,22 @@ class EnableAlarmRule(HuaweiCloudBaseAction):
                          f"The resource:[{resource['alarm_rule_name']}],"
                          f" enable AOM alarm rule success")
 
-            except Exception as e:
+            except exceptions.ClientRequestException as e:
                 log.error(
                     f"[actions]-[enable-alarm-rule]- The resource:[{resource['alarm_rule_name']}],"
-                    f" enable AOM alarm rule fail : {str(e)}")
+                    f" enable AOM alarm rule fail, error: {e.error_msg}")
+
+                error_detail = f"{e.status_code}:{e.error_code}:{e.error_msg}"
                 results.append({
                     'alarm_rule_name': resource['alarm_rule_name'],
-                    'error': str(e)
+                    'error': error_detail
                 })
+                failed_records.append(f"[{resource['alarm_rule_name']}]: {error_detail}")
+                continue
+
+        if failed_records:
+            error_summary = " | ".join(failed_records)
+            raise Exception(f"Failed to enable the following alarm rules: {error_summary}")
 
         return results
 
