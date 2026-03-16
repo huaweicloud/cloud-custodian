@@ -341,3 +341,35 @@ class AomTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["alarm_rule_name"], "new-event-alarm")
+
+    def test_enable_aom_alarm_rule(self):
+        """测试启用 AOM 告警规则操作 (enable-alarm-rule)"""
+        factory = self.replay_flight_data("aom_enable_alarm_rule")
+
+        p = self.load_policy(
+            {
+                "name": "enable_aom_alarm_policy",
+                "resource": "huaweicloud.aom-alarm",
+                "filters": [
+                    {
+                        "type": "value",
+                        "key": "alarm_rule_enable",
+                        "op": "eq",
+                        "value": False
+                    }
+                ],
+                "actions": [
+                    {
+                        "type": "enable-alarm-rule",
+                        "alarm_rule_enable": True
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+
+        resources = p.run()
+
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]["alarm_rule_name"], "new-metric-alarm")
+        self.assertTrue(resources[0]["alarm_rule_enable"] is False)

@@ -53,6 +53,8 @@ ResourceMap = {
     "huaweicloud.apig-api": "c7n_huaweicloud.resources.apig.ApiResource",
     "huaweicloud.apig-stage": "c7n_huaweicloud.resources.apig.StageResource",
     "huaweicloud.apig-api-groups": "c7n_huaweicloud.resources.apig.ApiGroupResource",
+    "huaweicloud.apig-instance": "c7n_huaweicloud.resources.apig.ApigInstanceResource",
+    "huaweicloud.apig-plugin": "c7n_huaweicloud.resources.apig.ApigPluginResource",
     "huaweicloud.dms-rocketmq": "c7n_huaweicloud.resources.rocketmq.RocketMQ",
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
     "huaweicloud.dc-vif": "c7n_huaweicloud.resources.dc.Vif",
@@ -69,6 +71,10 @@ ResourceMap = {
     "huaweicloud.aom-alarm": "c7n_huaweicloud.resources.aom.AomAlarm",
     "huaweicloud.eg-subscription": "c7n_huaweicloud.resources.eg.Subscription",
     "huaweicloud.workspace-desktop": "c7n_huaweicloud.resources.workspace.Workspace",
+    "huaweicloud.workspace-user-event-lts-status":
+        "c7n_huaweicloud.resources.workspace.WorkspaceUserEventLtsStatus",
+    "huaweicloud.workspace-policy-group":
+        "c7n_huaweicloud.resources.workspace.WorkspacePolicyGroup",
     "huaweicloud.ccm-private-ca": "c7n_huaweicloud.resources.ccm.CertificateAuthority",
     "huaweicloud.ccm-private-certificate": "c7n_huaweicloud.resources.ccm.PrivateCertificate",
     "huaweicloud.vpcep-ep": "c7n_huaweicloud.resources.vpcep.VpcEndpoint",
@@ -93,5 +99,6 @@ ResourceMap = {
     "huaweicloud.codeartsrepo-project":
         "c7n_huaweicloud.resources.codeartsrepo.CodeArtsRepoProject",
     "huaweicloud.dns-publiczone": "c7n_huaweicloud.resources.dns.PublicZone",
-    "huaweicloud.rfs-stack": "c7n_huaweicloud.resources.rfs.Stack"
+    "huaweicloud.rfs-stack": "c7n_huaweicloud.resources.rfs.Stack",
+    "huaweicloud.geminidb": "c7n_huaweicloud.resources.geminidb.GeminiDB"
 }

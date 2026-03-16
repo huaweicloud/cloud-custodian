@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import json
 
 from huaweicloudsdkcore.exceptions import exceptions
 # Note: Although SDK provides v4 version, AOM alarm rule related APIs only exist in v2 version
@@ -747,6 +748,162 @@ class AddAlarmRule(HuaweiCloudBaseAction):
             event_spec.trigger_conditions = conditions
 
         return event_spec
+
+    def perform_action(self, resource):
+        pass
+
+
+@AomAlarm.action_registry.register('enable-alarm-rule')
+class EnableAlarmRule(HuaweiCloudBaseAction):
+    """
+    Enable AOM metric or event alarm rules.
+
+    :example:
+        policies:
+          - name: aom-alarm-baseline-002
+            resource: huaweicloud.aom-alarm
+            filters:
+              - or:
+                  - type: value
+                    key: alarm_rule_enable
+                    op: eq
+                    value: false
+                  - type: value
+                    key: alarm_notifications.bind_notification_rule_id
+                    op: eq
+                    value: ""
+                  - type: value
+                    key: alarm_notifications.bind_notification_rule_id
+                    op: eq
+                    value: null
+            actions:
+              - type: enable-alarm-rule
+                alarm_rule_enable: true
+    """
+    schema = type_schema(
+        'enable-alarm-rule',
+        alarm_rule_enable={'type': 'boolean'},
+    )
+
+    def process(self, resources):
+        client = self.manager.get_client()
+        results = []
+        failed_records = []
+
+        for resource in resources:
+            try:
+                body = self._build_body_from_resource(resource)
+
+                if 'alarm_rule_enable' in self.data:
+                    body.alarm_rule_enable = self.data['alarm_rule_enable']
+
+                final_spec = getattr(body, 'metric_alarm_spec', 'N/A')
+                log.debug(f"[actions]-[enable-alarm-rule]- "
+                          f"The resource:[{resource['alarm_rule_name']}],"
+                          f"Final Body Spec: {final_spec}")
+
+                request = AddOrUpdateMetricOrEventAlarmRuleRequest(
+                    action_id="update-alarm-action",
+                    enterprise_project_id=resource.get('enterprise_project_id', "0"),
+                    body=body
+                )
+
+                response = client.add_or_update_metric_or_event_alarm_rule(request)
+                results.append({
+                    'alarm_rule_name': resource['alarm_rule_name'],
+                    'status_code': response.status_code
+                })
+                log.info(f"[actions]-[enable-alarm-rule]- "
+                         f"The resource:[{resource['alarm_rule_name']}],"
+                         f" enable AOM alarm rule success")
+
+            except exceptions.ClientRequestException as e:
+                log.error(
+                    f"[actions]-[enable-alarm-rule]- The resource:[{resource['alarm_rule_name']}],"
+                    f" enable AOM alarm rule fail, error: {e.error_msg}")
+
+                error_detail = f"{e.status_code}:{e.error_code}:{e.error_msg}"
+                results.append({
+                    'alarm_rule_name': resource['alarm_rule_name'],
+                    'error': error_detail
+                })
+                failed_records.append(f"[{resource['alarm_rule_name']}]: {error_detail}")
+                continue
+
+        if failed_records:
+            error_summary = " | ".join(failed_records)
+            raise Exception(f"Failed to enable the following alarm rules: {error_summary}")
+
+        return results
+
+    def _normalize_promql(self, raw_expr):
+        curr_data = raw_expr
+
+        while True:
+            prev_data = curr_data
+            try:
+                if isinstance(curr_data, list):
+                    curr_data = curr_data[0] if curr_data else ""
+
+                elif isinstance(curr_data, str):
+                    stripped = curr_data.strip()
+                    if stripped.startswith('[') or stripped.startswith('"'):
+                        loaded = json.loads(curr_data)
+                        if loaded != curr_data:
+                            curr_data = loaded
+
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+            if curr_data == prev_data:
+                if isinstance(curr_data, str):
+                    return curr_data
+                else:
+                    return str(curr_data)
+
+    def _build_body_from_resource(self, resource):
+        body = AddOrUpdateAlarmRuleV4RequestBody(
+            alarm_rule_name=resource.get('alarm_rule_name'),
+            alarm_rule_type=resource.get('alarm_rule_type')
+        )
+
+        optional_fields = {
+            'alarm_rule_description': resource.get('alarm_rule_description'),
+            'alarm_rule_enable': resource.get('alarm_rule_enable'),
+            'prom_instance_id': resource.get('prom_instance_id'),
+            'alias': resource.get('alias')
+        }
+
+        for field, value in optional_fields.items():
+            if hasattr(body, field) and value is not None:
+                setattr(body, field, value)
+
+        n_data = resource.get('alarm_notifications')
+        if n_data:
+            notification = AlarmNotification()
+            for k, v in n_data.items():
+                if hasattr(notification, k):
+                    setattr(notification, k, v)
+            body.alarm_notifications = notification
+
+        if resource.get('alarm_rule_type') == 'metric':
+            spec = (
+                resource.get('metric_alarm_spec', {}).copy()
+                if resource.get('metric_alarm_spec') else {}
+            )
+            conditions = spec.get('trigger_conditions', [])
+            if isinstance(conditions, list):
+                for idx, condition in enumerate(conditions):
+                    if 'promql_expr' in condition:
+                        raw_val = condition['promql_expr']
+                        clean_expr = self._normalize_promql(raw_val)
+                        condition['promql_expr'] = clean_expr
+            body.metric_alarm_spec = spec
+
+        elif resource.get('alarm_rule_type') == 'event':
+            body.event_alarm_spec = resource.get('event_alarm_spec')
+
+        return body
 
     def perform_action(self, resource):
         pass

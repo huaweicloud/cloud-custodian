@@ -112,7 +112,10 @@ from huaweicloudsdkram.v1 import (
     SearchSharedResourcesRequest, SearchSharedResourcesReqBody,
 )
 from huaweicloudsdkrds.v3 import RdsClient, ListInstancesRequest as RdsListInstancesRequest
+from huaweicloudsdkgaussdbfornosql.v3 import (
+    GaussDBforNoSQLClient, ListInstancesRequest as GeminiDBListInstancesRequest)
 from huaweicloudsdkrds.v3.region.rds_region import RdsRegion
+from huaweicloudsdkgaussdbfornosql.v3.region.gaussdbfornosql_region import GaussDBforNoSQLRegion
 from huaweicloudsdkram.v1.region.ram_region import RamRegion
 from huaweicloudsdkrocketmq.v2 import (
     RocketMQClient, ListInstancesRequest as RocketMQListInstancesRequest
@@ -124,6 +127,7 @@ from huaweicloudsdkapig.v2 import (
     ListEnvironmentsV2Request,
     ListApiGroupsV2Request,
     ListInstancesV2Request,
+    ListPluginsRequest,
 )
 from huaweicloudsdkapig.v2.region.apig_region import ApigRegion
 from huaweicloudsdkswr.v2 import SwrClient, ListReposDetailsRequest, ListRepositoryTagsRequest
@@ -512,7 +516,7 @@ class Session:
                 .build()
             )
         elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
-                                              'apig-instance']:
+                                              'apig-instance', 'apig-plugin',]:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)
@@ -566,6 +570,13 @@ class Session:
                 RdsClient.new_builder()
                 .with_credentials(credentials)
                 .with_region(RdsRegion.value_of(self.region))
+                .build()
+            )
+        elif service == "geminidb":
+            client = (
+                GaussDBforNoSQLClient.new_builder()
+                .with_credentials(credentials)
+                .with_region(GaussDBforNoSQLRegion.value_of(self.region))
                 .build()
             )
         elif service == 'aom':
@@ -779,6 +790,8 @@ class Session:
             request = ListApiGroupsV2Request()
         elif service == 'apig-instance':
             request = ListInstancesV2Request()
+        elif service == 'apig-plugin':
+            request = ListPluginsRequest()
         elif service == 'swr':
             request = ListReposDetailsRequest()
         elif service == 'swr-image':
@@ -792,6 +805,8 @@ class Session:
             request = ListBareMetalServerDetailsRequest()
         elif service == 'rds':
             request = RdsListInstancesRequest()
+        elif service == 'geminidb':
+            request = GeminiDBListInstancesRequest()
         elif service == 'eg':
             request = ListSubscriptionsRequest()
         elif service == 'aom':
@@ -809,7 +824,7 @@ class Session:
         elif service == 'vpcep-eps':
             request = ListEndpointServiceRequest()
         elif service == "cce-cluster":
-            request = ListClustersRequest()
+            request = ListClustersRequest(detail="true")
         elif service == "cce-nodepool":
             request = ListNodePoolsRequest()
         elif service == "cce-node":

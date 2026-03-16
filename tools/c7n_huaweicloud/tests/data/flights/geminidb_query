@@ -1,0 +1,121 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - gaussdb-nosql.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250429T103925Z
+    method: GET
+    uri: https://gaussdb-nosql.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"instances":[{"id":"8436a91546294036b75931e879882200in06","name":"nosql-efa6","status":"normal",
+        "port":"8635","mode":"Cluster","region":"aaa","datastore":{"type":"Cassandra","version":"3.11",
+        "whole_version":"3.11.3.11204","patch_available":false},"engine":"rocksDB","created":"2019-01-17T07:05:52",
+        "updated":"2019-01-17T07:05:47","db_user_name":"rwuser","vpc_id":"674e9b42-cd8d-4d25-a2e6-5abcc565b961",
+        "subnet_id":"f1df08c5-71d1-406a-aff0-de435a51007b","security_group_id":"7aa51dbf-5b63-40db-9724-dad3c4828b58",
+        "backup_strategy":{"start_time":"16:00-17:00","keep_days":7},"pay_mode":0,"maintenance_window":"02:00-06:00",
+        "groups":[{"id":"0b0ff12541794e1084f6827e424be2d6gr06","status":"creating","volume":{"size":10,"used":0.33},
+        "nodes":[{"id":"233eaac9c6f245c0bb9c2d21eea12d1bno06","name":"nosql-efa6_priam_node_1","status":"normal",
+        "subnet_id":"f1df08c5-71d1-406a-aff0-de435a51007b","private_ip":"192.168.0.174","spec_code":"geminidb.redis.xlarge.4",
+        "availability_zone":"cn-north-4a"},{"id":"d57d76d6320a4a7b86db82c317550c4ano06","name":"nosql-efa6_priam_node_2","status":"normal",
+        "subnet_id":"f1df08c5-71d1-406a-aff0-de435a51007b","private_ip":"192.168.0.175","spec_code":"geminidb.redis.xlarge.4","availability_zone":"cn-north-4b"},
+        {"id":"f46b0a1cf4d9400e9fd7af17f8742d37no06","name":"nosql-efa6_priam_node_3","status":"normal","subnet_id":"f1df08c5-71d1-406a-aff0-de435a51007b",
+        "private_ip":"192.168.0.176","spec_code":"geminidb.redis.xlarge.4","availability_zone":"cn-north-4c"}]}],"enterprise_project_id":"0",
+        "availability_zone":"cn-north-4a,cn-north-4b,cn-north-4c","time_zone":"","actions":["CREATE"],"lb_ip_address":"192.168.11.145",
+        "lb_port":"8635"}],"total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 29 Apr 2025 10:39:25 GMT
+      Server:
+      - CloudWAF
+      Set-Cookie:
+      - HWWAFSESID=63d3d790c57e6fac46; path=/
+      - HWWAFSESTIME=1745923162736; path=/
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 636c688304ce2b34e99d4fcc52c4ab7b
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+- request:
+    body: '{"limit":100, "offset":0, "action": "filter"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '19'
+      Content-Type:
+      - application/json
+      Host:
+      - gaussdb-nosql.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0; os/Windows#10.0.20348#AMD64 python/3.12.0 impl/CPython;
+        app/ca032393-4c51-4d8d-b401-939ba2509360
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260203T061137Z
+    method: POST
+    uri: https://gaussdb-nosql.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/resource_instances/action
+  response:
+    body:
+      string: '{"instances":[{"instance_id":"8436a91546294036b75931e879882200in06", "instance_name":"nosql-efa6",
+       "tags":[{"key":"key1", "value":"value1"}]}], "total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Feb 2026 06:11:38 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7e4cc751e96ada22aa8f63f85c29bf41
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
+version: 1

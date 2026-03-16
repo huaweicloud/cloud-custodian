@@ -19,7 +19,7 @@ interactions:
       X-Sdk-Date:
       - 20250619T085722Z
     method: GET
-    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters?detail=true
   response:
     body:
       string: "{\"kind\": \"Cluster\", \"apiVersion\": \"v3\", \"items\": [{\"kind\":

@@ -11,36 +11,39 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - cce.ap-southeast-1.myhuaweicloud.com
+      - gaussdb-nosql.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250620T032231Z
+      - 20250430T060241Z
     method: GET
-    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters
+    uri: https://gaussdb-nosql.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
   response:
     body:
-      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"Cluster","apiVersion":"v3",
-        "metadata":{"uid":"4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6","name":"test-cluster",
-        "creationTimestamp":"2025-06-18T08:02:29Z","updateTimestamp":"2025-06-18T08:02:29Z"},
-        "spec":{"type":"VirtualMachine","flavor":"cce.s1.small","version":"v1.19.8-r0",
-        "hostNetwork":{"vpc":"2a0a0c6d-a3f2-4b9c-9c31-8317a9e8b5b6","subnet": "3a8a0c6d-a3f2-4b9c-9c31-8317a9e8b5b7"},"containerNetwork":{"mode":"overlay_l2"}},
-        "status":{"phase":"Available","endpoints":{"internal":"192.168.0.68:5443",
-        "external":"49.0.0.1:5443"}}}]}'
+      string: '{"instances": [ {"id": "geminidb-instance-backup-disabled-1", "actions":[],
+        "name": "geminidb-instance-no-backup-1", "status": "ACTIVE", "port": 3306,
+        "type": "Single", "region": "ap-southeast-1", "datastore": {"type": "Cassandra",
+        "version": "5.7"}, "created": "2023-01-15T08:00:00+0000", "updated": "2023-01-16T10:30:00+0000",
+        "private_ips": ["192.168.0.10"]}, {"id": "geminidb-instance-backup-enabled-1",
+        "actions":[], "name": "geminidb-instance-backup-1", "status": "ACTIVE", "port":
+        3306, "type": "Single", "region": "ap-southeast-1", "datastore": {"type":
+        "Cassandra", "version": "5.7"}, "created": "2023-01-16T08:00:00+0000", "updated":
+        "2023-01-17T10:30:00+0000", "private_ips": ["192.168.0.11"]} ], "total_count":
+        2}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 03:22:31 GMT
+      - Wed, 30 Apr 2025 06:02:41 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESTIME=1750389751907; path=/
-      - HWWAFSESID=ec2bc73799639f1d2d; path=/
+      - HWWAFSESID=08c777357e6a5dbb1f; path=/
+      - HWWAFSESTIME=1745992961309; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       X-Content-Type-Options:
@@ -50,12 +53,12 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 34cc817cd4536c1a5abf2bd8ff5d725a
+      - 05a9aa6a2507affecf82f74332dcd7ef
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
-      message: OK
+      message: success
 - request:
     body: null
     headers:
@@ -68,87 +71,30 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - cce.ap-southeast-1.myhuaweicloud.com
+      - gaussdb-nosql.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250620T032411Z
+      - 20250430T060242Z
     method: GET
-    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons?cluster_id=4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6
+    uri: https://gaussdb-nosql.ap-southeast-1.myhuaweicloud.com/v3.1/ap-southeat-1/instances/geminidb-instance-backup-disabled-1/backups/policy
   response:
     body:
-      string: '{"kind":"List","apiVersion":"v3","items":[{"kind":"Addon","apiVersion":"v3",
-        "metadata":{"uid":"test-addon","name":"test-addon-instance", "creationTimestamp":"2025-06-18T08:02:30Z","updateTimestamp":"2025-06-18T08:02:30Z"},
-        "spec":{"version":"1.0.0","clusterID":"4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6",
-        "addonTemplateName":"test-addon-template","values":{"basic":{}}}, "status":{"status":"running","Reason":"","message":"","targetVersions":null,
-        "currentVersion":"1.0.0"}}]}'
+      string: '{"backup_policy": {"keep_days": 0, "start_time": "", "period": ""}}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 03:24:11 GMT
+      - Wed, 30 Apr 2025 06:02:42 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESTIME=1750389851816; path=/
-      - HWWAFSESID=c27c6733c762021e83; path=/
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - 395276de99da258a8220619a5b223f4f
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '0'
-      Content-Type:
-      - application/json
-      Host:
-      - cce.ap-southeast-1.myhuaweicloud.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
-      X-Sdk-Date:
-      - 20250620T013204Z
-    method: DELETE
-    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons/test-addon
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Fri, 20 Jun 2025 01:32:04 GMT
-      Server:
-      - CloudWAF
-      Set-Cookie:
-      - HWWAFSESID=d941e73190da64c548; path=/
-      - HWWAFSESTIME=1750383124699; path=/
+      - HWWAFSESTIME=1745992962310; path=/
+      - HWWAFSESID=12c889357f7a5dcc20; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -160,12 +106,12 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - fdb88fd6d8edff66696fb73e4c506f51
+      - 16a9bb7b3618b00fd093085443ded8f0
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
-      message: OK
+      message: success
 - request:
     body: null
     headers:
@@ -175,35 +121,34 @@ interactions:
       - gzip, deflate
       Connection:
       - keep-alive
-      Content-Length:
-      - '0'
       Content-Type:
       - application/json
       Host:
-      - cce.ap-southeast-1.myhuaweicloud.com
+      - gaussdb-nosql.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250620T033734Z
-    method: DELETE
-    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons/test-addon?cluster_id=4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6
+      - 20250430T060243Z
+    method: GET
+    uri: https://gaussdb-nosql.ap-southeast-1.myhuaweicloud.com/v3.1/ap-southeat-1/instances/geminidb-instance-backup-enabled-1/backups/policy
   response:
     body:
-      string: ''
+      string: '{"backup_policy": {"keep_days": 7, "start_time": "01:00-02:00", "period":
+        "1,2,3,4,5"}}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 03:37:34 GMT
+      - Wed, 30 Apr 2025 06:02:43 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=2dc5373f5dd35b3e21; path=/
-      - HWWAFSESTIME=1750390654198; path=/
+      - HWWAFSESTIME=1745992963311; path=/
+      - HWWAFSESID=13d889358f7a6dcc21; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       Transfer-Encoding:
@@ -215,10 +160,64 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - 8565ce9ca521897f6a02cd43dfc9a95e
+      - 27bac08c472ac11fe1a4195554efe9g1
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
-      message: Ok
+      message: success
+- request:
+    body: '{"limit":100, "offset":0, "action": "filter"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '19'
+      Content-Type:
+      - application/json
+      Host:
+      - gaussdb-nosql.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0; os/Windows#10.0.20348#AMD64 python/3.12.0 impl/CPython;
+        app/ca032393-4c51-4d8d-b401-939ba2509360
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260203T061137Z
+    method: POST
+    uri: https://gaussdb-nosql.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/resource_instances/action
+  response:
+    body:
+      string: '{"instances":[{"instance_id":"8436a91546294036b75931e879882200in06", "instance_name":"nosql-efa6",
+       "tags":[{"key":"key1", "value":"value1"}]}], "total_count":1}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Feb 2026 06:11:38 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 7e4cc751e96ada22aa8f63f85c29bf41
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: success
 version: 1

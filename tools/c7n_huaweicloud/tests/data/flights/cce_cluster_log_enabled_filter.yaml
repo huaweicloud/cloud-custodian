@@ -11,35 +11,30 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - rds.ap-southeast-1.myhuaweicloud.com
+      - cce.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250430T022523Z
+      - 20250619T085722Z
     method: GET
-    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances?limit=100&offset=0
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/clusters?detail=true
   response:
     body:
-      string: '{"instances": [{"id": "rds-instance-for-audit-log-enable", "name":
-        "rds-audit-enable", "status": "ACTIVE", "port": 3306, "type": "Single", "region":
-        "ap-southeast-1", "datastore": {"type": "MySQL", "version": "5.7"}, "created":
-        "2023-05-15T08:00:00+0000", "updated": "2023-05-16T10:30:00+0000", "private_ips":
-        ["192.168.1.20"], "public_ips": [], "vpc_id": "vpc-test-id", "subnet_id":
-        "subnet-test-id", "security_group_id": "sg-test-id"}], "total_count": 1}'
+      string: "{\"kind\":\"Cluster\",\"apiVersion\":\"v3\",\"items\":[{\"kind\":\"Cluster\",\"apiVersion\":\"v3\",\"metadata\":{\"name\":\"test-cluster-awaken\",\"uid\":\"cluster-awaken-test-id-789\",\"creationTimestamp\":\"2023-01-15T08:00:00Z\",\"updateTimestamp\":\"2023-01-16T10:30:00Z\"},\"spec\":{\"type\":\"VirtualMachine\",\"flavor\":\"cce.s1.small\",\"version\":\"v1.21.5-r0\",\"platformVersion\":\"3.1.0\",\"description\":\"\u6D4B\u8BD5\u96C6\u7FA4\u5F00\u542Ftls\u65E5\u5FD7\",\"customSan\":[],\"enableMasterVolumeEncryption\":false},\"status\":{\"phase\":\"Available\",\"jobID\":\"\",\"reason\":\"\",\"message\":\"\",\"endpoints\":[]}}]}"
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Apr 2025 02:25:23 GMT
+      - Thu, 19 Jun 2025 08:57:22 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESID=47aa6765d1666f4776; path=/
-      - HWWAFSESTIME=1745979921521; path=/
+      - HWWAFSESTIME=1750323442513; path=/
+      - HWWAFSESID=a5ccd732336fc772c9; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       X-Content-Type-Options:
@@ -49,58 +44,7 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - a34d3033ba760a5fe8145370ef0b4742
-      X-XSS-Protection:
-      - 1; mode=block;
-    status:
-      code: 200
-      message: success
-- request:
-    body: '{"audit_log_policy": {"keep_days": 7, "reserve_auditlogs": true}}'
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Host:
-      - rds.ap-southeast-1.myhuaweicloud.com
-      User-Agent:
-      - huaweicloud-usdk-python/3.0
-      X-Project-Id:
-      - ap-southeat-1
-      X-Sdk-Date:
-      - 20250430T022524Z
-    method: PUT
-    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-for-audit-log-enable/auditlog-policy
-  response:
-    body:
-      string: '{}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Wed, 30 Apr 2025 02:25:24 GMT
-      Server:
-      - CloudWAF
-      Set-Cookie:
-      - HWWAFSESID=47aa6785d1666f4777; path=/
-      - HWWAFSESTIME=1745979922521; path=/
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubdomains;
-      X-Content-Type-Options:
-      - nosniff
-      X-Download-Options:
-      - noopen
-      X-Frame-Options:
-      - SAMEORIGIN
-      X-Request-Id:
-      - b34d3033ba760a5fe8145370ef0b4744
+      - 4fee1a4d3660d2e2bef966bf2462684c
       X-XSS-Protection:
       - 1; mode=block;
     status:
@@ -118,32 +62,30 @@ interactions:
       Content-Type:
       - application/json
       Host:
-      - rds.ap-southeast-1.myhuaweicloud.com
+      - cce.ap-southeast-1.myhuaweicloud.com
       User-Agent:
       - huaweicloud-usdk-python/3.0
       X-Project-Id:
       - ap-southeat-1
       X-Sdk-Date:
-      - 20250430T081258Z
+      - 20250619T085722Z
     method: GET
-    uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-for-audit-log-enable/auditlog-policy
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/cluster/cluster-awaken-test-id-789/log-configs?type=control
   response:
     body:
-      string: '{ "keep_days":0, "audit_types":["CREATE_USER"], "all_audit_log_action":
-        {"DCL":"CREATE_USER,DROP_USER,RENAME_USER,GRANT,REVOKE,ALTER_USER,ALTER_USER_DEFAULT_ROLE","DDL":"CREATE,ALTER,DROP,RENAME,TRUNCATE,REPAIR,OPTIMIZE","DML":"INSERT,DELETE,UPDATE,REPLACE,SELECT","OTHER":"BEGIN/COMMIT/ROLLBACK,PREPARED_STATEMENT,CALL_PROCEDURE,KILL,SET_OPTION,CHANGE_DB,UNINSTALL_PLUGIN,UNINSTALL_PLUGIN,INSTALL_PLUGIN,SHUTDOWN,SLAVE_START,SLAVE_STOP,LOCK_TABLES,UNLOCK_TABLES,FLUSH,XA"}
-        } '
+      string: '{"ttl_in_days":0,"log_configs":[{"name":"audit","enable":true},{"name":"kube-apiserver","enable":true},{"name":"kube-controller-manager","enable":true},{"name":"kube-scheduler","enable":true}]}'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Apr 2025 08:12:58 GMT
+      - Thu, 19 Jun 2025 08:57:22 GMT
       Server:
       - CloudWAF
       Set-Cookie:
-      - HWWAFSESTIME=1746000778659; path=/
-      - HWWAFSESID=dbd9a73edc51638e51; path=/
+      - HWWAFSESTIME=1750323442513; path=/
+      - HWWAFSESID=a5ccd732336fc772c9; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
       X-Content-Type-Options:
@@ -153,10 +95,61 @@ interactions:
       X-Frame-Options:
       - SAMEORIGIN
       X-Request-Id:
-      - be78cbe5bd9bf37a3d938222705195b6
+      - 4fee1a4d3660d2e2bef966bf2462684c
       X-XSS-Protection:
       - 1; mode=block;
     status:
       code: 200
       message: success
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - cce.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0; os/Windows#10.0.26100#AMD64 python/3.11.8 impl/CPython;
+        app/25ca91b0-679a-4b3d-8d3a-448671137d92
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260202T125854Z
+    method: GET
+    uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/projects/ap-southeat-1/cluster/cluster-awaken-test-id-789/log-configs?type=audit
+  response:
+    body:
+      string: '{"ttl_in_days":0,"log_configs":[{"name":"audit","enable":true},{"name":"kube-apiserver","enable":true},{"name":"kube-controller-manager","enable":true},{"name":"kube-scheduler","enable":true}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 02 Feb 2026 12:58:55 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - f9d537f1020e5554fc96bb5a8d8785b3
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Ok
 version: 1
