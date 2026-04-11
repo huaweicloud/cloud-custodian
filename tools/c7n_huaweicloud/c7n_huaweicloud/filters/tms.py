@@ -62,12 +62,15 @@ class TagCountFilter(Filter):
                         key, value = list(item.items())[0]
                         result[key] = value
                     return result
-                elif all(isinstance(item, str) and '=' in item for item in tags):
+                elif all(isinstance(item, str) for item in tags):
                     # ["k1=v1", "k2=v2"]
                     result = {}
                     for item in tags:
-                        key, value = item.split('=', 1)
-                        result[key] = value
+                        if "=" in item:
+                            key, value = item.split('=', 1)
+                            result[key] = value
+                        else:
+                            result[item] = ""
                     return result
                 elif all(isinstance(item, dict) and 'key' in item and 'value' in item for item in
                          tags):
@@ -206,12 +209,15 @@ class TagActionFilter(Filter):
                         key, value = list(item.items())[0]
                         result[key] = value
                     return result
-                elif all(isinstance(item, str) and '=' in item for item in tags):
+                elif all(isinstance(item, str) for item in tags):
                     # ["k1=v1", "k2=v2"]
                     result = {}
                     for item in tags:
-                        key, value = item.split('=', 1)
-                        result[key] = value
+                        if "=" in item:
+                            key, value = item.split('=', 1)
+                            result[key] = value
+                        else:
+                            result[item] = ""
                     return result
                 elif all(isinstance(item, dict) and 'key' in item and 'value' in item for item in
                          tags):

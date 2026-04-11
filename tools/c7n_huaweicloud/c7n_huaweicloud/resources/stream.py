@@ -48,6 +48,8 @@ class Stream(QueryResourceManager):
                         streamDict["log_stream_name"] = stream.log_stream_name
                         streamDict["id"] = stream.log_stream_id
                         streamDict["tags"] = stream.tag
+                        streamDict["id"] = stream.log_stream_id
+                        streamDict["tag_resource_type"] = "topics"
                         streams.append(streamDict)
                         should_break = True
                         break
@@ -96,6 +98,7 @@ class LtsStreamStorageEnabledFilterForSchedule(Filter):
                         streamDict["log_stream_id"] = stream.log_stream_id
                         streamDict["log_stream_name"] = stream.log_stream_name
                         streamDict["id"] = stream.log_stream_id
+                        streamDict["tag_resource_type"] = "topics"
                         streamDict["tags"] = stream.tag
                         streams.append(streamDict)
             except Exception as e:

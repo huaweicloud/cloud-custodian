@@ -4,12 +4,10 @@ import json
 import logging
 
 from huaweicloudsdksmn.v2 import DeleteTopicRequest, \
-    CreateLogtankRequest, CreateLogtankRequestBody, ListLogtankRequest, DeleteLogtankRequest, \
-    UpdateTopicAttributeRequest, UpdateTopicAttributeRequestBody, DeleteTopicAttributesRequest, \
-    ListTopicAttributesRequest, ListResourceTagsRequest
+    CreateLogtankRequest, CreateLogtankRequestBody, DeleteLogtankRequest, \
+    UpdateTopicAttributeRequest, UpdateTopicAttributeRequestBody, DeleteTopicAttributesRequest
 
 from c7n.filters import Filter
-from c7n.utils import local_session
 from c7n.utils import type_schema
 from c7n_huaweicloud.actions.base import HuaweiCloudBaseAction
 from c7n_huaweicloud.provider import resources
@@ -22,7 +20,7 @@ log = logging.getLogger("custodian.huaweicloud.resources.smn")
 class Topic(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'smn'
-        enum_spec = ('list_topics', 'topics', 'offset')
+        enum_spec = ('list_topics_with_associated_resources', 'topics', 'offset')
         id = 'topic_id'
         tag = True
         tag_resource_type = 'smn_topic'
@@ -38,28 +36,10 @@ class Topic(QueryResourceManager):
     def augment(self, resources):
         if not resources:
             return resources
-
-        client = local_session(self.session_factory).client('smn')
-        resource_type = 'smn_topic'
         for resource in resources:
-            resource_id = resource["id"]
-            try:
-                tags = resource.get('tags')
-                if tags is None:
-                    request = ListResourceTagsRequest(resource_type=resource_type,
-                                                      resource_id=resource_id)
-                    response = client.list_resource_tags(request)
-                    log.debug(
-                        f"[resource]-[smn-topic] query the service:[GET /v2/{{project_id}}"
-                        f"/{resource_type}/{resource_id}/tags] is success.")
-                    tags = response.to_dict().get('tags')
-                    if tags is not None:
-                        resource['tags'] = {item['key']: item['value'] for item in tags}
-            except Exception as e:
-                log.error(
-                    f"[resource]-[smn-topic] query tags resource:[{resource_id}] is failed, "
-                    f"cause:{e}")
-                raise e
+            tags = resource.get('tags', [])
+            if tags is not None:
+                resource['tags'] = {item['key']: item['value'] for item in tags}
         return resources
 
 
@@ -97,29 +77,14 @@ class TopicLtsFilter(Filter):
     FetchThreshold = 10
 
     def process(self, resources, event=None):
-        client = self.manager.get_client()
         enabled = self.data.get('enabled')
         resources_valid = []
         for resource in resources:
-            resource_id = resource["id"]
-            topic_urn = resource["topic_urn"]
-            try:
-                lts = resource.get('lts')
-                if lts is None:
-                    request = ListLogtankRequest(topic_urn=resource["topic_urn"])
-                    response = client.list_logtank(request)
-                    log.debug(
-                        f"[filters]-[topic-lts] query the service:[GET /v2/{{project_id}}"
-                        f"/notifications/topics/{topic_urn}/logtanks] is success.")
-                    lts = response.to_dict().get('logtanks')
-                    resource['lts'] = lts
-                if self.check(enabled, lts) is False:
-                    continue
-                resources_valid.append(resource)
-            except Exception as e:
-                log.error(
-                    f"[filters]-[topic-lts] get lts resource:[{resource_id}] is failed, cause:{e}")
-                raise e
+            lts = resource.get('logtanks', [])
+            resource['lts'] = lts
+            if self.check(enabled, lts) is False:
+                continue
+            resources_valid.append(resource)
         return resources_valid
 
     def check(self, enabled, lts):
@@ -186,29 +151,16 @@ class TopicAccessFilter(Filter):
     FetchThreshold = 10
 
     def process(self, resources, event=None):
-        client = self.manager.get_client()
         resources_valid = []
         for resource in resources:
-            resource_id = resource["id"]
-            topic_urn = resource["topic_urn"]
-            try:
-                access_policy = resource.get('access_policy')
-                if access_policy is None:
-                    request = ListTopicAttributesRequest(topic_urn=topic_urn,
-                                                         name='access_policy')
-                    response = client.list_topic_attributes(request)
-                    log.debug(
-                        f"[filters]-[topic-access] query the service:[GET /v2/{{project_id}}"
-                        f"/notifications/topics/{topic_urn}/attributes] is success.")
-                    access_policy = response.attributes.access_policy
-                    resource['access_policy'] = access_policy
-                if self.check(access_policy) is False:
-                    continue
-                resources_valid.append(resource)
-            except Exception as e:
-                log.error(
-                    f"[filters]-[topic-access] resource:[{resource_id}] is failed, cause:{e}")
-                raise e
+            attributes = resource.get('attributes')
+            if attributes is None or len(attributes) == 0:
+                continue
+            access_policy = attributes.get('access_policy')
+            resource['access_policy'] = access_policy
+            if self.check(access_policy) is False:
+                continue
+            resources_valid.append(resource)
         return resources_valid
 
     def check(self, access_policy):
@@ -424,12 +376,7 @@ class TopicDeleteLts(HuaweiCloudBaseAction):
         try:
             lts = resource.get('lts')
             if lts is None:
-                request = ListLogtankRequest(topic_urn=topic_urn)
-                response = client.list_logtank(request)
-                log.debug(
-                    f"[actions]-[delete-lts] query the service:[GET /v2/{{project_id}}"
-                    f"/notifications/topics/{topic_urn}/logtanks] is success.")
-                lts = response.to_dict().get('logtanks')
+                lts = resource.get('logtanks', [])
             for logtanks in lts:
                 logtanks_id = logtanks["id"]
                 request = DeleteLogtankRequest(topic_urn=topic_urn,
@@ -558,13 +505,10 @@ class TopicDeleteAllowAllUserAccessPolicy(HuaweiCloudBaseAction):
         try:
             access_policy = resource.get('access_policy')
             if access_policy is None:
-                request = ListTopicAttributesRequest(topic_urn=topic_urn,
-                                                     name='access_policy')
-                response = client.list_topic_attributes(request)
-                log.debug(
-                    f"[actions]-[delete-allow-all-user-access] query the service:[GET /v2/"
-                    f"{{project_id}}/notifications/topics/{topic_urn}/attributes] is success.")
-                access_policy = response.attributes.access_policy
+                attributes = resource.get('attributes')
+                if attributes is None or len(attributes) == 0:
+                    return response
+                access_policy = attributes.get('access_policy')
                 resource['access_policy'] = access_policy
             if access_policy is None or len(access_policy) == 0:
                 return response

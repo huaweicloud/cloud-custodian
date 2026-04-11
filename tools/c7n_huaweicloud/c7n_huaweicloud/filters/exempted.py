@@ -49,6 +49,9 @@ def get_values_from_resource(resource, field):
 
 
 def get_tags_from_resource(resource):
+    def process_value(val):
+        return val if val is not None else ""
+
     if "tags" not in resource:
         raise KeyError(f"tags is required in resource [{resource['id']}]")
     try:
@@ -56,24 +59,27 @@ def get_tags_from_resource(resource):
         if isinstance(tags, dict):
             return tags
         elif isinstance(tags, list):
-            if all(isinstance(item, dict) and len(item) == 1 for item in tags):
-                # [{k1: v1}, {k2: v2}]
-                result = {}
-                for item in tags:
-                    key, value = list(item.items())[0]
-                    result[key] = value
-                return result
-            elif all(isinstance(item, str) and '=' in item for item in tags):
-                # ["k1=v1", "k2=v2"]
-                result = {}
-                for item in tags:
-                    key, value = item.split('=', 1)
-                    result[key] = value
-                return result
-            elif all(isinstance(item, dict) and 'key' in item and 'value' in item for item in
-                     tags):
-                # [{"key": k1, "value": v1}, {"key": k2, "value": v2}]
-                return {item['key']: item['value'] for item in tags}
+            result = {}
+            for item in tags:
+                if isinstance(item, dict):
+                    if "key" in item:
+                        key = item["key"]
+                        value = item.get("value")
+                        result[key] = process_value(value)
+                    else:
+                        if len(item) == 1:
+                            k, v = next(iter(item.items()))
+                            result[k] = process_value(v)
+                elif isinstance(item, str):
+                    if "=" in item:
+                        k, v = item.split("=", 1)
+                        result[k] = process_value(v)
+                    else:
+                        result[item] = ""
+                else:
+                    log.warning(f"{item} type not support "
+                                f"in resource [{resource['id']}]")
+            return result
         raise PolicyExecutionError(f"tags:{tags} type not support "
                                     f"in resource {resource['id']}")
     except Exception:
@@ -144,9 +150,15 @@ class ExemptedFilter(Filter):
             exempted_values.extend(self.get_exempted_values_from_obs(obs_url, group_key))
 
         results = []
+        exempted_ids = []
         for resource in resources:
             if self.filter_single_resource(resource, field, exempted_values):
                 results.append(resource)
+            else:
+                exempted_ids.append(resource['id'])
+        log.info(f"[event/period]-Among them, "
+                 f"the exempted IDs are: #[exempted_ids@{exempted_ids}]#")
+
         return results
 
     def filter_single_resource(self, i, field, exempted_values):

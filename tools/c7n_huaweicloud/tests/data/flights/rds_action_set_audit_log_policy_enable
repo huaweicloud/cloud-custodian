@@ -129,9 +129,9 @@ interactions:
     uri: https://rds.ap-southeast-1.myhuaweicloud.com/v3/ap-southeat-1/instances/rds-instance-for-audit-log-enable/auditlog-policy
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"be78cbe5bd9bf37a3d938222705195b6"}
-
-        '
+      string: '{ "keep_days":0, "audit_types":["CREATE_USER"], "all_audit_log_action":
+        {"DCL":"CREATE_USER,DROP_USER,RENAME_USER,GRANT,REVOKE,ALTER_USER,ALTER_USER_DEFAULT_ROLE","DDL":"CREATE,ALTER,DROP,RENAME,TRUNCATE,REPAIR,OPTIMIZE","DML":"INSERT,DELETE,UPDATE,REPLACE,SELECT","OTHER":"BEGIN/COMMIT/ROLLBACK,PREPARED_STATEMENT,CALL_PROCEDURE,KILL,SET_OPTION,CHANGE_DB,UNINSTALL_PLUGIN,UNINSTALL_PLUGIN,INSTALL_PLUGIN,SHUTDOWN,SLAVE_START,SLAVE_STOP,LOCK_TABLES,UNLOCK_TABLES,FLUSH,XA"}
+        } '
     headers:
       Connection:
       - keep-alive
@@ -146,8 +146,6 @@ interactions:
       - HWWAFSESID=dbd9a73edc51638e51; path=/
       Strict-Transport-Security:
       - max-age=31536000; includeSubdomains;
-      Transfer-Encoding:
-      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Download-Options:
@@ -159,6 +157,6 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: success
 version: 1

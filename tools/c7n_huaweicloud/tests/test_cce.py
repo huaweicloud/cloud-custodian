@@ -145,6 +145,92 @@ class CceClusterTest(BaseTest):
         self.assertEqual(resources[0]['metadata']
                          ['name'], 'test-cluster-to-update')
 
+    def test_cluster_log_enabled_filter(self):
+        """Test CCE cluster log enabled filtering functionality"""
+        factory = self.replay_flight_data('cce_cluster_log_enabled_filter.yaml')
+        p = self.load_policy({
+            'name': 'cluster_log_enabled_filter',
+            'resource': 'huaweicloud.cce-cluster',
+            'filters': [
+                {
+                    'type': 'cluster-log-enabled',
+                    'enabled': True
+                }
+            ]
+        }, session_factory=factory)
+        resources = p.run()
+        # Verify that resources were found and have the expected structure
+        self.assertEqual(len(resources), 1)
+
+    def test_cluster_encrypted_filter(self):
+        """Test CCE cluster encrypted filtering functionality"""
+        factory = self.replay_flight_data('cce_cluster_encrypted_filter.yaml')
+        p = self.load_policy({
+            'name': 'cce_cluster_log_enabled_filter',
+            'resource': 'huaweicloud.cce-cluster',
+            'filters': [
+                {
+                    'type': 'cluster-encrypted',
+                    'encrypted': True
+                }
+            ]
+        }, session_factory=factory)
+        resources = p.run()
+        # Verify that resources were found and have the expected structure
+        self.assertEqual(len(resources), 1)
+
+    def test_cluster_signature_enabled_filter(self):
+        """Test CCE cluster signature enabled filtering functionality"""
+        factory = self.replay_flight_data('cce_cluster_signature_enabled_filter.yaml')
+        p = self.load_policy({
+            'name': 'cce_cluster_signature_enabled_filter',
+            'resource': 'huaweicloud.cce-cluster',
+            'filters': [
+                {
+                    'type': 'cluster-signature-enabled',
+                    'enabled': True
+                }
+            ]
+        }, session_factory=factory)
+        resources = p.run()
+        # Verify that resources were found and have the expected structure
+        self.assertEqual(len(resources), 1)
+
+    def test_cluster_update_cluster_log_config_action(self):
+        """Test CCE enable cluster log action functionality"""
+        factory = self.replay_flight_data('cce_cluster_enable_log_action.yaml')
+        p = self.load_policy({
+            'name': 'cce_cluster_enable_log_action',
+            'resource': 'huaweicloud.cce-cluster',
+            'actions': [
+                {
+                    'type': 'update-cluster-log-config',
+                    'ttl_in_days': 30,
+                    'enable': True
+                }
+            ]
+        }, session_factory=factory)
+        resources = p.run()
+        # Verify that resources were found and have the expected structure
+        self.assertEqual(len(resources), 1)
+
+    def test_cluster_enable_signature_action(self):
+        """Test CCE enable cluster log action functionality"""
+        factory = self.replay_flight_data('cce_cluster_enable_signature_action.yaml')
+        p = self.load_policy({
+            'name': 'cce_cluster_enable_signature_action',
+            'resource': 'huaweicloud.cce-cluster',
+            'actions': [
+                {
+                    'type': 'enable-cluster-signature',
+                    'public_key': "xxx",
+                }
+            ]
+        }, session_factory=factory)
+        resources = p.run()
+        # Verify that resources were found and have the expected structure
+        self.assertEqual(len(resources), 1)
+
 
 class CceNodePoolTest(BaseTest):
     """Test CCE node pool resource query and operations"""

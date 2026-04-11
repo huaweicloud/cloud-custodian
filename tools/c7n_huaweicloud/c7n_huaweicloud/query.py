@@ -18,8 +18,11 @@ from c7n_huaweicloud.actions.smn2 import register_smn2_actions
 from c7n_huaweicloud.actions.tms import register_tms_actions
 from c7n_huaweicloud.filters.tms import register_tms_filters
 from c7n_huaweicloud.filters.exempted import register_exempted_filters
+from c7n_huaweicloud.filters.missing_tag import register_missing_tag_filters
+from c7n_huaweicloud.filters.time import register_time_filters
 
 from c7n_huaweicloud.utils.marker_pagination import MarkerPagination
+from c7n_huaweicloud.utils.json_parse import safe_json_parse
 
 from huaweicloudsdkcore.exceptions import exceptions
 
@@ -115,15 +118,7 @@ class ResourceQuery:
             request.limit = limit
             request.offset = offset
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, safe_json_parse(response))
 
             if path == "*":
                 data_json = json.loads(str(response))
@@ -161,15 +156,7 @@ class ResourceQuery:
             request.limit = limit
             request.start_number = start_number
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, safe_json_parse(response))
 
             if path == "*":
                 data_json = json.loads(str(response))
@@ -218,15 +205,7 @@ class ResourceQuery:
                 return resources
             count = response.count
             next_marker = response.next_marker
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, safe_json_parse(response))
 
             # replace id with the specified one
             if res is not None:
@@ -253,39 +232,45 @@ class ResourceQuery:
         _dict_map(request, page_params)
         resources = []
         while 1:
-            response = self._invoke_client_enum(client, enum_op, request)
-            response = eval(
-                str(response)
-                .replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            )
-            res = jmespath.search(path, response)
+            is_retry = False
+            try:
+                response = self._invoke_client_enum(client, enum_op, request)
+            except exceptions.ServiceResponseException as ex:
+                # retry when marker resource not found
+                if m.service.startswith("vpc") and ex.status_code and ex.status_code == 404:
+                    log.info("The marker resource in the pagination query is not found, "
+                             "retry with new marker.")
+                    is_retry = True
+                else:
+                    raise ex
 
-            # replace id with the specified one
-            if res is None or len(res) == 0:
-                return resources
-            # re-set id
-            if "id" not in res[0]:
-                for data in res:
-                    data["id"] = data[m.id]
-            if res and getattr(m, "tag_resource_type", None):
-                for data in res:
-                    data["tag_resource_type"] = m.tag_resource_type
-            # merge result
-            resources = resources + res
+            res = jmespath.search(path, safe_json_parse(response))
+
+            if not is_retry:
+                # replace id with the specified one
+                if res is None or len(res) == 0:
+                    return resources
+                # re-set id
+                if "id" not in res[0]:
+                    for data in res:
+                        data["id"] = data[m.id]
+                if res and getattr(m, "tag_resource_type", None):
+                    for data in res:
+                        data["tag_resource_type"] = m.tag_resource_type
+                # merge result
+                resources = resources + res
 
             # get next page info
             if m.service.endswith("v2"):
                 next_page_params_by_id = marker_pagination.get_next_page_params_by_id(
-                    res
-                )
+                    res, is_retry)
                 if next_page_params_by_id:
                     _dict_map(request, next_page_params_by_id)
                 else:
                     return resources
             else:
-                next_page_params = marker_pagination.get_next_page_params(response)
+                next_page_params = marker_pagination.get_next_page_params(
+                    response, res, is_retry)
                 if next_page_params:
                     _dict_map(request, next_page_params)
                 else:
@@ -297,15 +282,7 @@ class ResourceQuery:
         request = session.request(manager.service)
 
         response = getattr(client, enum_op)(request)
-        resources = jmespath.search(
-            path,
-            eval(
-                str(response)
-                .replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            ),
-        )
+        resources = jmespath.search(path, safe_json_parse(response))
 
         # replace id with the specified one
         if resources is None or len(resources) == 0:
@@ -349,15 +326,7 @@ class ResourceQuery:
             request.limit = limit
             request.offset = page
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, safe_json_parse(response))
 
             if path == "*":
                 resources.append(json.loads(str(response)))
@@ -401,15 +370,7 @@ class ResourceQuery:
             request.marker = marker
             request.owner = project_id
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, safe_json_parse(response))
             if not res:
                 return resources
             for data in res:
@@ -436,15 +397,7 @@ class ResourceQuery:
             request = session.request(m.service)
             request.page_number = page
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, safe_json_parse(response))
 
             if not res:
                 return resources
@@ -469,15 +422,7 @@ class ResourceQuery:
             request.page_index = page
             request.page_size = m.page_size
             response = self._invoke_client_enum(client, enum_op, request)
-            res = jmespath.search(
-                path,
-                eval(
-                    str(response)
-                    .replace("null", "None")
-                    .replace("false", "False")
-                    .replace("true", "True")
-                ),
-            )
+            res = jmespath.search(path, safe_json_parse(response))
 
             if not res:
                 return resources
@@ -500,19 +445,26 @@ class DefaultMarkerPagination(MarkerPagination):
     def get_first_page_params(self):
         return {"limit": self.limit}
 
-    def get_next_page_params(self, response):
-        page_info = jmespath.search("page_info", response)
+    def get_next_page_params(self, response, res=None, is_retry=False):
+        page_info = jmespath.search("page_info", safe_json_parse(response))
         if not page_info:
             return None
         next_marker = page_info.get("next_marker")
         if not next_marker:
             return None
+        if is_retry and res:
+            resource_id = res[-2].get("id")
+            if not resource_id:
+                return None
+            next_marker = resource_id
         return {"limit": self.limit, "marker": next_marker}
 
-    def get_next_page_params_by_id(self, res):
+    def get_next_page_params_by_id(self, res, is_retry=False):
         if len(res) < self.limit:
             return None
-        last_resource = res[-1]
+        # If retry, the last resource not found,
+        # marker to be the second to last resource id
+        last_resource = res[-2] if is_retry else res[-1]
         if not last_resource:
             return None
         resource_id = last_resource.get("id")
@@ -555,10 +507,12 @@ class QueryMeta(type):
         if getattr(m, "tag_resource_type", None):
             register_tms_actions(attrs["action_registry"])
             register_tms_filters(attrs["filter_registry"])
+            register_missing_tag_filters(attrs["filter_registry"])
 
         register_smn_actions(attrs["action_registry"])
         register_smn2_actions(attrs["action_registry"])
         register_exempted_filters(attrs["filter_registry"])
+        register_time_filters(attrs["filter_registry"])
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
 

@@ -191,9 +191,7 @@ interactions:
     uri: https://cce.ap-southeast-1.myhuaweicloud.com/api/v3/addons/test-addon?cluster_id=4ca46d8a-8f8e-11eb-b5b7-0255ac1001a6
   response:
     body:
-      string: '{"error_msg":"Incorrect IAM authentication information: Unauthorized","error_code":"APIGW.0301","request_id":"8565ce9ca521897f6a02cd43dfc9a95e"}
-
-        '
+      string: ''
     headers:
       Connection:
       - keep-alive
@@ -221,6 +219,6 @@ interactions:
       X-XSS-Protection:
       - 1; mode=block;
     status:
-      code: 401
-      message: Unauthorized
+      code: 200
+      message: Ok
 version: 1

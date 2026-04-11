@@ -1,0 +1,64 @@
+interactions:
+- request:
+    method: GET
+    uri: https://aom.ap-southeast-1.myhuaweicloud.com/v4/ap-southeat-1/alarm-rules?limit=100&offset=0
+    body: null
+    headers: {}
+  response:
+    status:
+      code: 200
+      message: success
+    headers:
+      Content-Type:
+      - application/json
+    body:
+      string: '{
+        "alarm_rules": [
+          {
+            "alarm_rule_id": 1,
+            "alarm_rule_name": "new-metric-alarm",
+            "alarm_rule_enable": false,
+            "alarm_rule_type": "metric",
+            "enterprise_project_id": "0",
+            "alarm_notifications": {
+              "bind_notification_rule_id": "",
+              "notification_enable": false
+            },
+            "metric_alarm_spec": {
+              "monitor_type": "all_metric",
+              "trigger_conditions": [{
+                "metric_name": "container_memory_rss",
+                "promql_expr": "container_memory_rss > 100"
+              }]
+            }
+          }
+        ],
+        "count": 1
+      }'
+
+- request:
+    method: POST
+    uri: https://aom.ap-southeast-1.myhuaweicloud.com/v4/ap-southeat-1/alarm-rules?action_id=update-alarm-action
+    body: null
+    headers:
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: success
+    headers:
+      Content-Type:
+      - application/json
+    body:
+      string: '{
+        "alarm_rules": [
+          {
+            "alarm_rule_name": "new-metric-alarm",
+            "result": "success"
+          }
+        ],
+        "error_code": "200",
+        "error_message": "success"
+      }'
+version: 1

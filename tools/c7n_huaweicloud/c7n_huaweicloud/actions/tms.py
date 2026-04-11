@@ -357,9 +357,9 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
 
     def process_resource(self, resource, old_key, new_key, value):
         try:
-            if not value:
+            if value is None:
                 value = self.get_value_by_key(resource, old_key)
-            if not value:
+            if value is None:
                 self.log.warning(
                     f"[actions]-rename-tag The resource:{self.manager.ctx.policy.resource_type} "
                     f"with id:[{resource['id']} rename tag is failed. "
@@ -447,10 +447,13 @@ class RenameResourceTagAction(HuaweiCloudBaseAction):
                         for item in tags:
                             if key in item:
                                 return item[key]
-                    elif all(isinstance(item, str) and '=' in item for item in tags):
+                    elif all(isinstance(item, str) for item in tags):
                         # 格式为 ["k1=v1", "k2=v2"]
                         for item in tags:
-                            k, v = item.split('=', 1)
+                            if "=" in item:
+                                k, v = item.split('=', 1)
+                            else:
+                                k, v = item, ""
                             if k == key:
                                 return v
                     elif all(
@@ -592,11 +595,11 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
     def process_resource(self, resource):
         try:
-            if not self.old_value:
+            if self.old_value is None:
                 old_value = self.get_value_by_key(resource, self.key)
             else:
                 old_value = self.old_value
-            if not self.old_value and not old_value:
+            if self.old_value is None and old_value is None:
                 self.log.warning(
                     f"[actions]-normalize-tag The resource:{self.manager.ctx.policy.resource_type} "
                     f"with id:[{resource['id']} normalize tag is failed. "
@@ -606,7 +609,7 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
 
             new_value = self.get_new_value(old_value, self.action, self.old_sub_str,
                                                 self.new_sub_str)
-            if not new_value:
+            if new_value is None:
                 self.log.warning(
                     f"[actions]-normalize-tag The resource:{self.manager.ctx.policy.resource_type} "
                     f"with id:[{resource['id']} normalize tag is failed. "
@@ -707,10 +710,13 @@ class NormalizeResourceTagAction(HuaweiCloudBaseAction):
                         for item in tags:
                             if key in item:
                                 return item[key]
-                    elif all(isinstance(item, str) and '=' in item for item in tags):
+                    elif all(isinstance(item, str) for item in tags):
                         # 格式为 ["k1=v1", "k2=v2"]
                         for item in tags:
-                            k, v = item.split('=', 1)
+                            if "=" in item:
+                                k, v = item.split('=', 1)
+                            else:
+                                k, v = item, ""
                             if k == key:
                                 return v
                     elif all(
@@ -911,12 +917,15 @@ class TrimResourceTagAction(HuaweiCloudBaseAction):
                         key, value = list(item.items())[0]
                         result[key] = value
                     return result
-                elif all(isinstance(item, str) and '=' in item for item in tags):
+                elif all(isinstance(item, str) for item in tags):
                     # ["k1=v1", "k2=v2"]
                     result = {}
                     for item in tags:
-                        key, value = item.split('=', 1)
-                        result[key] = value
+                        if "=" in item:
+                            key, value = item.split('=', 1)
+                            result[key] = value
+                        else:
+                            result[item] = ""
                     return result
                 elif all(isinstance(item, dict) and 'key' in item and 'value' in item for item in
                          tags):

@@ -1,0 +1,198 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - python-requests/2.29.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260105T060519Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances?limit=100&offset=0
+  response:
+    body:
+      string: '{"total":1,"instances":[{"id":"729c5ab5-826f-11f0-98fa-0255ac1001c4","name":"test-30013969a","description":"","vpc_id":"62e9e54c-21e2-4b2c-bc87-f23161f7f6c3","vpc_name":"vpc-7862","vpc_cidr":"192.168.0.0/16","subnet_id":"bda63294-d62b-4907-9ab6-0b31e8e86506","subnet_name":"subnet-7869","subnet_cidr":"192.168.0.0/24","project_id":"459f01a3f326432db5a72f8f56527926","order_id":"","product_id":"459f01a3f326432db5a72f8f56527926","project_name":"sa-brazil-1","spec":"swr.ee.professional","version":"25.6.7","obs_bucket_name":"swr-ee-729c5ab5-826f-11f0-98fa-0255ac1001c4-registry","obs_in_resaccount":false,"charge_mode":"postPaid","access_address":"test-30013969a-wzr35j.swr-pro.myhuaweicloud.com","mirror_address":"test-30013969a-wzr35j-mirror.swr-pro.myhuaweicloud.com","enterprise_project_id":"0","created_at":"2025-08-26T19:26:02.435223+08:00","updated_at":"2026-01-05T09:04:36.576508+08:00","expires_at":"0001-01-01T00:00:00Z","status":"Running","user_def_obs":false,"vpcep_service_id":"11f82a14-2a70-4173-8b04-5586afbfde71"}]} '
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 05 Jan 2026 06:05:19 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - e17410e367a88ae681eeca276464df6f
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Ok
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - python-requests/2.29.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260105T060929Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances/729c5ab5-826f-11f0-98fa-0255ac1001c4/namespaces?limit=100&offset=0
+  response:
+    body:
+      string: '{"total":1,"namespaces":[{"metadata":{"public":"false"},"name":"iii","repo_count":0,"namespace_id":16,"created_at":"2025-08-27T02:28:31.771Z","updated_at":"2025-08-27T02:28:31.771Z"}]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 05 Jan 2026 06:09:29 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 21e105193acff09f7571c5d048d28b24
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Ok
+- request:
+    body: '{}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2'
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - python-requests/2.29.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260105T061228Z
+    method: POST
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances/729c5ab5-826f-11f0-98fa-0255ac1001c4/namespaces/resource-instances/filter?limit=100&offset=0
+  response:
+    body:
+      string: '{"resources":[], "total_count": 0}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 05 Jan 2026 06:12:28 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 177868462f336446ad491fb57eef00c8
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Ok
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - swr-api.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - python-requests/2.29.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20260105T062059Z
+    method: GET
+    uri: https://swr-api.ap-southeast-1.myhuaweicloud.com/v2/ap-southeat-1/instances/729c5ab5-826f-11f0-98fa-0255ac1001c4/signature/policies?limit=100&offset=0
+  response:
+    body:
+      string: '{"total":0,"policies":[]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 05 Jan 2026 06:20:59 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 2a12a5f88b014bbb38636d6c85d79365
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: Ok
+version: 1

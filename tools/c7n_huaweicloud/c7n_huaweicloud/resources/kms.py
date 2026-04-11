@@ -4,13 +4,14 @@ import json
 import logging
 import uuid
 import time
+from time import sleep
 
 from huaweicloudsdkkms.v2 import (EnableKeyRotationRequest, OperateKeyRequestBody,
                                   DisableKeyRotationRequest, EnableKeyRequest,
                                   DisableKeyRequest, CreateKeyRequest, CreateKeyRequestBody,
                                   ListAliasesRequest, CreateAliasRequest,
                                   CreateAliasRequestBody, ListKeysRequest, ListKmsByTagsRequest,
-                                  ListKmsByTagsRequestBody)
+                                  ListKmsByTagsRequestBody, ListKeyDetailRequest)
 
 from c7n import exceptions
 from c7n.filters import ValueFilter
@@ -168,12 +169,44 @@ policies:
                 key_id=resource["key_id"],
                 sequence=uuid.uuid4().hex
             )
+
+            requestDetail = ListKeyDetailRequest()
+            requestDetail.body = OperateKeyRequestBody(
+                key_id=resourceId,
+                sequence=uuid.uuid4().hex
+            )
+
+            max_iterations = 5
+            count = 0
+            flag = False
             try:
                 client.enable_key_rotation(request)
                 log.info("[action]-enable_key_rotation the resource:resourceType:KMS "
                          "with resourceId={},"
                          "success"
                          .format(resourceId))
+                sleep(1)
+                while count < max_iterations:
+                    response = client.list_key_detail(requestDetail)
+                    keyInfo = response.key_info
+                    if keyInfo.key_rotation_enabled == "true":
+                        flag = True
+                        break
+
+                    log.info(
+                        "[action]-enable_key_rotation the resource:resourceType:KMS with "
+                        "resourceId={} list_key_detail the key is disable,retry {} times"
+                        .format(resourceId, count))
+                    sleep(1)
+                    count += 1
+                if not flag:
+                    log.info(
+                        "[action]-enable_key_rotation the resource:resourceType:KMS "
+                        "with resourceId={} "
+                        "is failed, cause list_key_details 5 times,always disabled!"
+                        .format(resourceId))
+                    client.enable_key_rotation(request)
+
             except Exception as e:
                 if e.status_code == 400:
                     log.info(

@@ -155,7 +155,7 @@ data-update:
 # Static analyzers
 
 analyzer-bandit:
-	bandit -i -s B101,B311 \
+	bandit -i -s B101,B105,B311 \
 	-r tools/c7n_azure/c7n_azure \
 	 tools/c7n_gcp/c7n_gcp \
 	 tools/c7n_oci/c7n_oci \

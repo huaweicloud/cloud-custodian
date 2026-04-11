@@ -7,7 +7,7 @@ import re
 import pytz
 
 from c7n import utils
-from c7n.exceptions import PolicyValidationError
+from c7n.exceptions import PolicyValidationError, PolicyExecutionError
 from c7n.policy import execution, ServerlessExecutionMode, PullMode
 from c7n.utils import type_schema, local_session
 from c7n.version import version
@@ -247,7 +247,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
     )
 
     # action名称与yaml中action的type并非一致，添加请注意！
-    actions_without_resources = ["notifymessagefromevent"]
+    actions_without_resources = ["notifymessagefromevent", "updatetotlsv12fromevent"]
 
     def validate(self):
         super(FunctionGraphMode, self).validate()
@@ -271,7 +271,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
         if not resource_ids:
             log.warning("Could not find resource ids")
             return []
-        log.info(f'[{self.policy.execution_mode}]-The resources ID list is: {resource_ids}')
+        log.info(f'[{self.policy.execution_mode}]-The resources ID list are: '
+                 f'#[resource_ids@{resource_ids}]#')
         resources = self.policy.resource_manager.get_resources(resource_ids)
         if 'debug' in event:
             log.info("Resources %s", resources)
@@ -289,7 +290,7 @@ class FunctionGraphMode(ServerlessExecutionMode):
             return
         actions = self.policy.resource_manager.actions
         # 判断actions，若只包含非资源类action无需查询资源
-        if self.only_actions_without_resources(actions):
+        if actions and self.only_actions_without_resources(actions):
             with self.policy.ctx as ctx:
                 if 'debug' in event:
                     self.policy.log.info(
@@ -318,8 +319,8 @@ class FunctionGraphMode(ServerlessExecutionMode):
         resources_list = []
         for resource in resources:
             resources_list.append(resource['id'])
-        log.info(f'[{self.policy.execution_mode}]-The filtered resources ID list is: '
-                 f'{resources_list}')
+        log.info(f'[{self.policy.execution_mode}]-The filtered resources ID list are: '
+                 f'#[filtered_ids@{resources_list}]#')
 
         return self.run_resource_set(event, resources)
 
@@ -339,28 +340,52 @@ class FunctionGraphMode(ServerlessExecutionMode):
             ctx.metrics.put_metric(
                 'ResourceCount', len(resources), 'Count', Scope="Policy", buffer=False
             )
-
-            if 'debug' in event:
-                self.policy.log.info(
-                    "Invoking actions %s", self.policy.resource_manager.actions
-                )
+            action_name_list = []
+            for action in self.policy.resource_manager.actions:
+                action_name_list.append(action.name)
+            self.policy.log.info(
+                "[%s]-Then the resources will be remediation by #[actions@%s]#",
+                self.policy.execution_mode,
+                action_name_list,
+            )
 
             ctx.output.write_file('resources.json', utils.dumps(resources, indent=2))
 
-            for action in self.policy.resource_manager.actions:
-                self.policy.log.info(
-                    "policy:%s invoking action:%s resources:%d",
-                    self.policy.name,
-                    action.name,
-                    len(resources),
+            try:
+                for action in self.policy.resource_manager.actions:
+                    self.policy.log.info(
+                        "policy:%s invoking action:%s resources:%d",
+                        self.policy.name,
+                        action.name,
+                        len(resources),
+                    )
+                    if isinstance(action, EventAction):
+                        results = action.process(resources, event)
+                    elif action.name in self.actions_without_resources:
+                        results = action.process(event)
+                    else:
+                        results = action.process(resources)
+
+                    ctx.output.write_file("action-%s" % action.name, utils.dumps(results))
+            except PolicyExecutionError as e:
+                log.error(
+                    "[%s]-The policy has executed, policy execution error:{%s} #[result@failed]#",
+                    self.policy.execution_mode,
+                    str(e),
                 )
-                if isinstance(action, EventAction):
-                    results = action.process(resources, event)
-                elif action.name in self.actions_without_resources:
-                    results = action.process(event)
-                else:
-                    results = action.process(resources)
-                ctx.output.write_file("action-%s" % action.name, utils.dumps(results))
+                raise
+            except BaseException as e:
+                log.error(
+                    "[%s]-The policy has executed, unknown error:{%s} #[result@failed]#",
+                    self.policy.execution_mode,
+                    str(e),
+                )
+                raise
+            else:
+                log.info(
+                    "[%s]-The policy has executed: #[result@success]#",
+                    self.policy.execution_mode,
+                )
         return resources
 
     @property
@@ -445,6 +470,11 @@ class PeriodicMode(FunctionGraphMode, PullMode):
         trigger_name={'type': 'string'},
         status={'type': 'string', 'enum': ['ACTIVE', 'DISABLED']},
         cron_tz={'type': 'string'},
+        random_offset_time={'oneOf': [
+            {'type': 'array', 'items': {'type': 'integer', 'minimum': 0}},
+            {'type': 'integer', 'minimum': 0},
+            {'type': 'string'},
+        ]},
         required=['schedule', 'schedule_type'],
     )
 
@@ -460,6 +490,42 @@ class PeriodicMode(FunctionGraphMode, PullMode):
                 "Custodian FunctionGraph policies[%s] has a invalid schedule_type [%s]." % (
                     self.policy.name,
                     schedule_type,
+                )
+            )
+
+        random_offset_time = mode.get('random_offset_time', [])
+        if random_offset_time and schedule_type != 'Cron':
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] random_offset_time only support in Cron." % (
+                    self.policy.name,
+                )
+            )
+        if isinstance(random_offset_time, list):
+            if random_offset_time and len(random_offset_time) != 2:
+                raise PolicyValidationError(
+                    "Custodian FunctionGraph policies[%s] has a invalid random_offset_time %s." % (
+                        self.policy.name,
+                        random_offset_time,
+                    )
+                )
+        elif isinstance(random_offset_time, str):
+            try:
+                random_offset_time = int(random_offset_time)
+            except ValueError as e:
+                raise PolicyValidationError(
+                    "Custodian FunctionGraph policies[%s] has a invalid random_offset_time, "
+                    "error: %s." % (
+                        self.policy.name,
+                        e,
+                    )
+                )
+        elif isinstance(random_offset_time, int):
+            pass
+        else:
+            raise PolicyValidationError(
+                "Custodian FunctionGraph policies[%s] has a invalid random_offset_time %s." % (
+                    self.policy.name,
+                    random_offset_time,
                 )
             )
 
