@@ -682,7 +682,6 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
     """
     schema = type_schema(
         'policy-principal-wildcards',
-        required=['default_policies_obs_url'],
         default_policies_obs_url={'type': 'string'}
     )
 
@@ -703,39 +702,53 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
 
     def _check_policy_document(self, policy_document):
         default_policies_obs_url = self.data.get('default_policies_obs_url')
-        ep_util = VpcEndpointUtils(self.manager)
-        try:
-            default_policy = ep_util.get_file_content(default_policies_obs_url)
-            if not default_policy:
+        if default_policies_obs_url:
+            ep_util = VpcEndpointUtils(self.manager)
+            try:
+                default_policy = ep_util.get_file_content(default_policies_obs_url)
+                if not default_policy:
+                    log.error("[filters]-[policy-principal-wildcards]-"
+                              "the content of default_policies_obs_url is empty")
+                    raise ValueError("default_policies_obs_url content cannot be empty")
+            except json.JSONDecodeError as e:
+                log.error('[filters]-[policy-principal-wildcards]-'
+                          'the content of default_policies_obs_url is invalid, '
+                          'please check format: the content should be a valid JSON object '
+                          'with Version and Statement fields, and ${org_id} will be replaced '
+                          'with actual organization ID')
+                raise e
+            except (HTTPError, exceptions.ClientRequestException) as e:
+                log.error(f'[filters]-[policy-principal-wildcards]-'
+                          f'failed to get file from {default_policies_obs_url}, cause: {e}')
+                raise e
+
+            # Check if ${org_id} exists in the policy
+            default_policy_str = json.dumps(default_policy)
+            if '${org_id}' not in default_policy_str:
                 log.error("[filters]-[policy-principal-wildcards]-"
-                          "the content of default_policies_obs_url is empty")
-                raise ValueError("default_policies_obs_url content cannot be empty")
-        except json.JSONDecodeError as e:
-            log.error('[filters]-[policy-principal-wildcards]-'
-                      'the content of default_policies_obs_url is invalid, '
-                      'please check format: the content should be a valid JSON object '
-                      'with Version and Statement fields, and ${org_id} will be replaced '
-                      'with actual organization ID')
-            raise e
-        except (HTTPError, exceptions.ClientRequestException) as e:
-            log.error(f'[filters]-[policy-principal-wildcards]-'
-                      f'failed to get file from {default_policies_obs_url}, cause: {e}')
-            raise e
+                          "the content of default_policies_obs_url must contain ${org_id} placeholder")
+                raise ValueError("default_policies_obs_url content must contain ${org_id} placeholder")
 
-        # Check if ${org_id} exists in the policy
-        default_policy_str = json.dumps(default_policy)
-        if '${org_id}' not in default_policy_str:
-            log.error("[filters]-[policy-principal-wildcards]-"
-                      "the content of default_policies_obs_url must contain ${org_id} placeholder")
-            raise ValueError("default_policies_obs_url content must contain ${org_id} placeholder")
+            # Replace ${org_id} with actual org_id
+            org_id = self._get_org_id()
+            default_policy_str = default_policy_str.replace('${org_id}', org_id)
+            target_policy = json.loads(default_policy_str)
 
-        # Replace ${org_id} with actual org_id
-        org_id = self._get_org_id()
-        default_policy_str = default_policy_str.replace('${org_id}', org_id)
-        target_policy = json.loads(default_policy_str)
-
-        # Compare target policy with current policy, ignoring order
-        return self._deep_compare(policy_document, target_policy)
+            # Compare target policy with current policy, ignoring order
+            return self._deep_compare(policy_document, target_policy)
+        else:
+            # Original logic when default_policies_obs_url is not provided
+            statement = policy_document.get('Statement', [])
+            if not statement:
+                return False
+            if len(statement) != 1:
+                return False
+            for item in statement:
+                if _is_principal_wildcards(item) and \
+                        (not item.get('Condition')
+                         or not isSameOrgId(item.get('Condition'), self._get_org_id())):
+                    return False
+            return True
 
     def _deep_compare(self, obj1, obj2):
         """Deep compare two objects, ignoring array element order"""
@@ -830,7 +843,6 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
     """
 
     schema = type_schema('update-policy-document',
-                         required=['default_policies_obs_url'],
                          default_policies_obs_url={'type': 'string'}
                          )
 
@@ -839,39 +851,46 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
             return []
         ep_util = VpcEndpointUtils(self.manager)
         default_policies_obs_url = self.data.get('default_policies_obs_url')
-        try:
-            default_policy = ep_util.get_file_content(default_policies_obs_url)
-            if not default_policy:
+        if default_policies_obs_url:
+            try:
+                default_policy = ep_util.get_file_content(default_policies_obs_url)
+                if not default_policy:
+                    log.error("[actions]-[update-policy-document]-"
+                              "the content of default_policies_obs_url is empty")
+                    raise ValueError("default_policies_obs_url content cannot be empty")
+            except json.JSONDecodeError as e:
+                log.error('[actions]-[update-policy-document]-'
+                          'the content of default_policies_obs_url is invalid, '
+                          'please check format: the content should be a valid JSON object '
+                          'with Version and Statement fields, and ${org_id} will be replaced '
+                          'with actual organization ID')
+                raise e
+            except (HTTPError, exceptions.ClientRequestException) as e:
+                log.error(f'[actions]-[update-policy-document]-'
+                          f'failed to get file from {default_policies_obs_url}, cause: {e}')
+                raise e
+
+            # Check if ${org_id} exists in the policy
+            default_policy_str = json.dumps(default_policy)
+            if '${org_id}' not in default_policy_str:
                 log.error("[actions]-[update-policy-document]-"
-                          "the content of default_policies_obs_url is empty")
-                raise ValueError("default_policies_obs_url content cannot be empty")
-        except json.JSONDecodeError as e:
-            log.error('[actions]-[update-policy-document]-'
-                      'the content of default_policies_obs_url is invalid, '
-                      'please check format: the content should be a valid JSON object '
-                      'with Version and Statement fields, and ${org_id} will be replaced '
-                      'with actual organization ID')
-            raise e
-        except (HTTPError, exceptions.ClientRequestException) as e:
-            log.error(f'[actions]-[update-policy-document]-'
-                      f'failed to get file from {default_policies_obs_url}, cause: {e}')
-            raise e
+                          "the content of default_policies_obs_url must contain ${org_id} placeholder")
+                raise ValueError("default_policies_obs_url content must contain ${org_id} placeholder")
 
-        # Check if ${org_id} exists in the policy
-        default_policy_str = json.dumps(default_policy)
-        if '${org_id}' not in default_policy_str:
-            log.error("[actions]-[update-policy-document]-"
-                      "the content of default_policies_obs_url must contain ${org_id} placeholder")
-            raise ValueError("default_policies_obs_url content must contain ${org_id} placeholder")
+            # Replace ${org_id} with actual org_id
+            org_id = self._get_org_id()
+            default_policy_str = default_policy_str.replace('${org_id}', org_id)
+            target_policy = json.loads(default_policy_str)
 
-        # Replace ${org_id} with actual org_id
-        org_id = self._get_org_id()
-        default_policy_str = default_policy_str.replace('${org_id}', org_id)
-        target_policy = json.loads(default_policy_str)
-
-        for resource in resources:
-            if ep_util.wait_ep_can_processed(resource):
-                self.process_resource(resource, target_policy)
+            for resource in resources:
+                if ep_util.wait_ep_can_processed(resource):
+                    self.process_resource(resource, target_policy)
+        else:
+            # Original logic when default_policies_obs_url is not provided
+            expect_condition = self._get_expect_condition()
+            for resource in resources:
+                if ep_util.wait_ep_can_processed(resource):
+                    self.process_resource_with_condition(resource, expect_condition)
 
         return resources
 
@@ -883,8 +902,37 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
                  f"cur: {policy_document}, expect: {target_policy}")
         self._update_policy(ep_id, target_policy)
 
+    def process_resource_with_condition(self, resource, expect_condition):
+        expect_statements = []
+        ep_id = resource.get("id", "")
+        policy_document = resource.get('policy_document', {})
+        statements = policy_document.get('Statement', [])
+        expect_statements.append(
+            {
+                "Action": ["*"],
+                "Condition": expect_condition,
+                "Effect": "Allow", "Principal": "*", "Resource": ["*"]
+            })
+
+        expect_policy_document = {
+            "Statement": expect_statements,
+            "Version": "5.0"
+        }
+        log.info(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
+                 f"with id:[{ep_id}] policy is invalid, "
+                 f"cur: {statements}, expect: {expect_statements}")
+        self._update_policy(ep_id, expect_policy_document)
+
     def perform_action(self, resource):
         return None
+
+    def _get_expect_condition(self):
+        org_id = self._get_org_id()
+        expect_condition = {"StringEquals": {"g:PrincipalOrgID": org_id},
+                            "StringEqualsIfExists": {"g:ResourceOrgID": org_id}
+                            }
+        log.info(f"[actions]-[update-policy-document]-Get org is: {org_id}")
+        return expect_condition
 
     def _get_org_id(self):
         client = local_session(self.manager.session_factory).client("org-account")
