@@ -678,9 +678,12 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
             resource: huaweicloud.vpcep-ep
             filters:
               - type: policy-principal-wildcards
+                default_policies_obs_url: "https://bucket.obs.region.myhuaweicloud.com/policy.json"
     """
     schema = type_schema(
         'policy-principal-wildcards',
+        required=['default_policies_obs_url'],
+        default_policies_obs_url={'type': 'string'}
     )
 
     def process(self, resources, event=None):
@@ -699,17 +702,73 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
         return result
 
     def _check_policy_document(self, policy_document):
-        statement = policy_document.get('Statement', [])
-        if not statement:
+        default_policies_obs_url = self.data.get('default_policies_obs_url')
+        ep_util = VpcEndpointUtils(self.manager)
+        try:
+            default_policy = ep_util.get_file_content(default_policies_obs_url)
+            if not default_policy:
+                log.error("[filters]-[policy-principal-wildcards]-"
+                          "the content of default_policies_obs_url is empty")
+                raise ValueError("default_policies_obs_url content cannot be empty")
+        except json.JSONDecodeError as e:
+            log.error('[filters]-[policy-principal-wildcards]-'
+                      'the content of default_policies_obs_url is invalid, '
+                      'please check format: the content should be a valid JSON object '
+                      'with Version and Statement fields, and ${org_id} will be replaced '
+                      'with actual organization ID')
+            raise e
+        except (HTTPError, exceptions.ClientRequestException) as e:
+            log.error(f'[filters]-[policy-principal-wildcards]-'
+                      f'failed to get file from {default_policies_obs_url}, cause: {e}')
+            raise e
+
+        # Check if ${org_id} exists in the policy
+        default_policy_str = json.dumps(default_policy)
+        if '${org_id}' not in default_policy_str:
+            log.error("[filters]-[policy-principal-wildcards]-"
+                      "the content of default_policies_obs_url must contain ${org_id} placeholder")
+            raise ValueError("default_policies_obs_url content must contain ${org_id} placeholder")
+
+        # Replace ${org_id} with actual org_id
+        org_id = self._get_org_id()
+        default_policy_str = default_policy_str.replace('${org_id}', org_id)
+        target_policy = json.loads(default_policy_str)
+
+        # Compare target policy with current policy, ignoring order
+        return self._deep_compare(policy_document, target_policy)
+
+    def _deep_compare(self, obj1, obj2):
+        """Deep compare two objects, ignoring array element order"""
+        if type(obj1) != type(obj2):
             return False
-        if len(statement) != 1:
-            return False
-        for item in statement:
-            if _is_principal_wildcards(item) and \
-                    (not item.get('Condition')
-                     or not isSameOrgId(item.get('Condition'), self._get_org_id())):
+
+        if isinstance(obj1, dict):
+            if set(obj1.keys()) != set(obj2.keys()):
                 return False
-        return True
+            for key in obj1:
+                if not self._deep_compare(obj1[key], obj2[key]):
+                    return False
+            return True
+        elif isinstance(obj1, list):
+            if len(obj1) != len(obj2):
+                return False
+            # For arrays, we need to handle order-insensitive comparison
+            # Try to find a matching element for each item in obj1
+            used_indices = set()
+            for item1 in obj1:
+                found = False
+                for i, item2 in enumerate(obj2):
+                    if i in used_indices:
+                        continue
+                    if self._deep_compare(item1, item2):
+                        found = True
+                        used_indices.add(i)
+                        break
+                if not found:
+                    return False
+            return True
+        else:
+            return obj1 == obj2
 
     def _get_org_id(self):
         client = local_session(self.manager.session_factory).client("org-account")
@@ -766,53 +825,66 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
           - name: update-policy-document
             resource: huaweicloud.vpcep-ep
             actions:
-              - type: update-interface-policy
+              - type: update-policy-document
+                default_policies_obs_url: "https://bucket.obs.region.myhuaweicloud.com/policy.json"
     """
 
-    schema = type_schema('update-policy-document')
+    schema = type_schema('update-policy-document',
+                         required=['default_policies_obs_url'],
+                         default_policies_obs_url={'type': 'string'}
+                         )
 
     def process(self, resources):
         if not resources:
             return []
         ep_util = VpcEndpointUtils(self.manager)
-        expect_condition = self._get_expect_condition()
+        default_policies_obs_url = self.data.get('default_policies_obs_url')
+        try:
+            default_policy = ep_util.get_file_content(default_policies_obs_url)
+            if not default_policy:
+                log.error("[actions]-[update-policy-document]-"
+                          "the content of default_policies_obs_url is empty")
+                raise ValueError("default_policies_obs_url content cannot be empty")
+        except json.JSONDecodeError as e:
+            log.error('[actions]-[update-policy-document]-'
+                      'the content of default_policies_obs_url is invalid, '
+                      'please check format: the content should be a valid JSON object '
+                      'with Version and Statement fields, and ${org_id} will be replaced '
+                      'with actual organization ID')
+            raise e
+        except (HTTPError, exceptions.ClientRequestException) as e:
+            log.error(f'[actions]-[update-policy-document]-'
+                      f'failed to get file from {default_policies_obs_url}, cause: {e}')
+            raise e
+
+        # Check if ${org_id} exists in the policy
+        default_policy_str = json.dumps(default_policy)
+        if '${org_id}' not in default_policy_str:
+            log.error("[actions]-[update-policy-document]-"
+                      "the content of default_policies_obs_url must contain ${org_id} placeholder")
+            raise ValueError("default_policies_obs_url content must contain ${org_id} placeholder")
+
+        # Replace ${org_id} with actual org_id
+        org_id = self._get_org_id()
+        default_policy_str = default_policy_str.replace('${org_id}', org_id)
+        target_policy = json.loads(default_policy_str)
+
         for resource in resources:
             if ep_util.wait_ep_can_processed(resource):
-                self.process_resource(resource, expect_condition)
+                self.process_resource(resource, target_policy)
 
         return resources
 
-    def process_resource(self, resource, expect_condition):
-        expect_statements = []
+    def process_resource(self, resource, target_policy):
         ep_id = resource.get("id", "")
         policy_document = resource.get('policy_document', {})
-        statements = policy_document.get('Statement', [])
-        expect_statements.append(
-            {
-                "Action": ["*"],
-                "Condition": expect_condition,
-                "Effect": "Allow", "Principal": "*", "Resource": ["*"]
-            })
-
-        expect_policy_document = {
-            "Statement": expect_statements,
-            "Version": "5.0"
-        }
         log.info(f"[actions]-[update-policy-document]-The resource:[vpcep-ep] "
                  f"with id:[{ep_id}] policy is invalid, "
-                 f"cur: {statements}, expect: {expect_statements}")
-        self._update_policy(ep_id, expect_policy_document)
+                 f"cur: {policy_document}, expect: {target_policy}")
+        self._update_policy(ep_id, target_policy)
 
     def perform_action(self, resource):
         return None
-
-    def _get_expect_condition(self):
-        org_id = self._get_org_id()
-        expect_condition = {"StringEquals": {"g:PrincipalOrgID": org_id},
-                            "StringEqualsIfExists": {"g:ResourceOrgID": org_id}
-                            }
-        log.info(f"[actions]-[update-policy-document]-Get org is: {org_id}")
-        return expect_condition
 
     def _get_org_id(self):
         client = local_session(self.manager.session_factory).client("org-account")
