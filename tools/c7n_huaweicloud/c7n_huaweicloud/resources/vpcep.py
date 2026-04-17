@@ -688,67 +688,113 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
     def process(self, resources, event=None):
         result = []
         eps_ids = self._get_need_check_policy_eps_ids(resources)
+
+        # Load additional policies from OBS if default_policies_obs_url is provided
+        additional_policies_map = None
+        default_policies_obs_url = self.data.get('default_policies_obs_url')
+        if default_policies_obs_url:
+            additional_policies_map = self._load_additional_policies_map(default_policies_obs_url)
+
         for resource in resources:
             if not resource.get('service_type', '') == 'interface':
                 continue
             if resource.get('endpoint_service_id') not in eps_ids:
                 continue
-            if not self._check_policy_document(resource.get('policy_document', {})):
+            if not self._check_policy_document(resource.get('policy_document', {}),
+                                               resource.get('endpoint_service_name'),
+                                               additional_policies_map):
                 result.append(resource)
         ids = [r.get('id') for r in result]
         log.info(f"[filters]-[policy-principal-wildcards]-The resource:[vpcep-ep] "
                  f"invalid policy list:{ids}")
         return result
 
-    def _check_policy_document(self, policy_document):
-        default_policies_obs_url = self.data.get('default_policies_obs_url')
-        if default_policies_obs_url:
-            ep_util = VpcEndpointUtils(self.manager)
-            try:
-                default_policy = ep_util.get_file_content(default_policies_obs_url)
-                if not default_policy:
-                    log.error("[filters]-[policy-principal-wildcards]-"
-                              "the content of default_policies_obs_url is empty")
-                    raise ValueError("default_policies_obs_url content cannot be empty")
-            except json.JSONDecodeError as e:
-                log.error('[filters]-[policy-principal-wildcards]-'
-                          'the content of default_policies_obs_url is invalid, '
-                          'please check format: the content should be a valid JSON object '
-                          'with Version and Statement fields, and ${org_id} will be replaced '
-                          'with actual organization ID')
-                raise e
-            except (HTTPError, exceptions.ClientRequestException) as e:
-                log.error(f'[filters]-[policy-principal-wildcards]-'
-                          f'failed to get file from {default_policies_obs_url}, cause: {e}')
-                raise e
-
-            # Check if ${org_id} exists in the policy
-            default_policy_str = json.dumps(default_policy)
-            if '${org_id}' not in default_policy_str:
+    def _load_additional_policies_map(self, obs_url):
+        """Load additional policies from OBS file"""
+        ep_util = VpcEndpointUtils(self.manager)
+        try:
+            policies_map = ep_util.get_file_content(obs_url)
+            if not policies_map:
                 log.error("[filters]-[policy-principal-wildcards]-"
-                          "the content of default_policies_obs_url must contain ${org_id} placeholder")
-                raise ValueError("default_policies_obs_url content must contain ${org_id} placeholder")
+                          "the content of default_policies_obs_url is empty")
+                raise ValueError("default_policies_obs_url content cannot be empty")
+            return policies_map
+        except json.JSONDecodeError as e:
+            log.error('[filters]-[policy-principal-wildcards]-'
+                      'the content of default_policies_obs_url is invalid, '
+                      'please check format: the content should be a valid JSON object '
+                      'with eps_name keys and additional policy values')
+            raise e
+        except (HTTPError, exceptions.ClientRequestException) as e:
+            log.error(f'[filters]-[policy-principal-wildcards]-'
+                      f'failed to get file from {obs_url}, cause: {e}')
+            raise e
 
-            # Replace ${org_id} with actual org_id
-            org_id = self._get_org_id()
-            default_policy_str = default_policy_str.replace('${org_id}', org_id)
-            target_policy = json.loads(default_policy_str)
+    def _check_policy_document(self, policy_document, eps_name, additional_policies_map):
+        if additional_policies_map:
+            # Find matching additional policies for this eps_name
+            additional_statements = self._get_additional_statements(eps_name, additional_policies_map)
 
-            # Compare target policy with current policy, ignoring order
-            return self._deep_compare(policy_document, target_policy)
+            if additional_statements is not None:
+                # Matched: use default policy + additional policies
+                target_policy = self._build_target_policy(additional_statements)
+                return self._deep_compare(policy_document, target_policy)
+            else:
+                # Not matched: use original logic
+                return self._check_policy_original(policy_document)
         else:
             # Original logic when default_policies_obs_url is not provided
-            statement = policy_document.get('Statement', [])
-            if not statement:
+            return self._check_policy_original(policy_document)
+
+    def _get_additional_statements(self, eps_name, policies_map):
+        """Find additional statements for the given eps_name"""
+        for key, statements in policies_map.items():
+            # key is comma-separated eps_name list
+            eps_names = [name.strip() for name in key.split(',')]
+            if eps_name in eps_names:
+                return statements
+        return None
+
+    def _build_target_policy(self, additional_statements):
+        """Build target policy with default statement + additional statements"""
+        org_id = self._get_org_id()
+        default_statement = {
+            "Sid": "allow-requests-by-orgs-identities-to-orgs-resources",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Condition": {
+                "StringEquals": {
+                    "g:PrincipalOrgID": org_id
+                },
+                "StringEqualsIfExists": {
+                    "g:ResourceOrgID": org_id
+                }
+            },
+            "Action": ["*"],
+            "Resource": ["*"]
+        }
+
+        # Combine default statement with additional statements
+        all_statements = [default_statement] + additional_statements
+
+        return {
+            "Version": "5.0",
+            "Statement": all_statements
+        }
+
+    def _check_policy_original(self, policy_document):
+        """Original logic for checking policy document"""
+        statement = policy_document.get('Statement', [])
+        if not statement:
+            return False
+        if len(statement) != 1:
+            return False
+        for item in statement:
+            if _is_principal_wildcards(item) and \
+                    (not item.get('Condition')
+                     or not isSameOrgId(item.get('Condition'), self._get_org_id())):
                 return False
-            if len(statement) != 1:
-                return False
-            for item in statement:
-                if _is_principal_wildcards(item) and \
-                        (not item.get('Condition')
-                         or not isSameOrgId(item.get('Condition'), self._get_org_id())):
-                    return False
-            return True
+        return True
 
     def _deep_compare(self, obj1, obj2):
         """Deep compare two objects, ignoring array element order"""
@@ -851,39 +897,16 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
             return []
         ep_util = VpcEndpointUtils(self.manager)
         default_policies_obs_url = self.data.get('default_policies_obs_url')
+
         if default_policies_obs_url:
-            try:
-                default_policy = ep_util.get_file_content(default_policies_obs_url)
-                if not default_policy:
-                    log.error("[actions]-[update-policy-document]-"
-                              "the content of default_policies_obs_url is empty")
-                    raise ValueError("default_policies_obs_url content cannot be empty")
-            except json.JSONDecodeError as e:
-                log.error('[actions]-[update-policy-document]-'
-                          'the content of default_policies_obs_url is invalid, '
-                          'please check format: the content should be a valid JSON object '
-                          'with Version and Statement fields, and ${org_id} will be replaced '
-                          'with actual organization ID')
-                raise e
-            except (HTTPError, exceptions.ClientRequestException) as e:
-                log.error(f'[actions]-[update-policy-document]-'
-                          f'failed to get file from {default_policies_obs_url}, cause: {e}')
-                raise e
+            # Load additional policies map from OBS
+            additional_policies_map = self._load_additional_policies_map(default_policies_obs_url)
 
-            # Check if ${org_id} exists in the policy
-            default_policy_str = json.dumps(default_policy)
-            if '${org_id}' not in default_policy_str:
-                log.error("[actions]-[update-policy-document]-"
-                          "the content of default_policies_obs_url must contain ${org_id} placeholder")
-                raise ValueError("default_policies_obs_url content must contain ${org_id} placeholder")
-
-            # Replace ${org_id} with actual org_id
-            org_id = self._get_org_id()
-            default_policy_str = default_policy_str.replace('${org_id}', org_id)
-            target_policy = json.loads(default_policy_str)
-
+            # Process each resource with its specific target policy
             for resource in resources:
                 if ep_util.wait_ep_can_processed(resource):
+                    eps_name = resource.get('endpoint_service_name')
+                    target_policy = self._get_target_policy(eps_name, additional_policies_map)
                     self.process_resource(resource, target_policy)
         else:
             # Original logic when default_policies_obs_url is not provided
@@ -893,6 +916,99 @@ class VpcEndpointUpdatePolicyDocument(HuaweiCloudBaseAction):
                     self.process_resource_with_condition(resource, expect_condition)
 
         return resources
+
+    def _load_additional_policies_map(self, obs_url):
+        """Load additional policies from OBS file"""
+        ep_util = VpcEndpointUtils(self.manager)
+        try:
+            policies_map = ep_util.get_file_content(obs_url)
+            if not policies_map:
+                log.error("[actions]-[update-policy-document]-"
+                          "the content of default_policies_obs_url is empty")
+                raise ValueError("default_policies_obs_url content cannot be empty")
+            return policies_map
+        except json.JSONDecodeError as e:
+            log.error('[actions]-[update-policy-document]-'
+                      'the content of default_policies_obs_url is invalid, '
+                      'please check format: the content should be a valid JSON object '
+                      'with eps_name keys and additional policy values')
+            raise e
+        except (HTTPError, exceptions.ClientRequestException) as e:
+            log.error(f'[actions]-[update-policy-document]-'
+                      f'failed to get file from {obs_url}, cause: {e}')
+            raise e
+
+    def _get_target_policy(self, eps_name, additional_policies_map):
+        """Get target policy for the given eps_name"""
+        # Find matching additional policies for this eps_name
+        additional_statements = self._get_additional_statements(eps_name, additional_policies_map)
+
+        if additional_statements is not None:
+            # Matched: use default policy + additional policies
+            return self._build_target_policy(additional_statements)
+        else:
+            # Not matched: use original logic with single statement
+            return self._build_single_statement_policy()
+
+    def _get_additional_statements(self, eps_name, policies_map):
+        """Find additional statements for the given eps_name"""
+        for key, statements in policies_map.items():
+            # key is comma-separated eps_name list
+            eps_names = [name.strip() for name in key.split(',')]
+            if eps_name in eps_names:
+                return statements
+        return None
+
+    def _build_target_policy(self, additional_statements):
+        """Build target policy with default statement + additional statements"""
+        org_id = self._get_org_id()
+        default_statement = {
+            "Sid": "allow-requests-by-orgs-identities-to-orgs-resources",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Condition": {
+                "StringEquals": {
+                    "g:PrincipalOrgID": org_id
+                },
+                "StringEqualsIfExists": {
+                    "g:ResourceOrgID": org_id
+                }
+            },
+            "Action": ["*"],
+            "Resource": ["*"]
+        }
+
+        # Combine default statement with additional statements
+        all_statements = [default_statement] + additional_statements
+
+        return {
+            "Version": "5.0",
+            "Statement": all_statements
+        }
+
+    def _build_single_statement_policy(self):
+        """Build policy with single statement for original logic"""
+        org_id = self._get_org_id()
+        default_statement = {
+            "Sid": "allow-requests-by-orgs-identities-to-orgs-resources",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Condition": {
+                "StringEquals": {
+                    "g:PrincipalOrgID": org_id
+                },
+                "StringEqualsIfExists": {
+                    "g:ResourceOrgID": org_id
+                }
+            },
+            "Action": ["*"],
+            "Resource": ["*"]
+        }
+
+        return {
+            "Statement": [default_statement],
+            "Version": "5.0"
+        }
 
     def process_resource(self, resource, target_policy):
         ep_id = resource.get("id", "")
