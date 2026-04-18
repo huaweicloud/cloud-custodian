@@ -733,7 +733,7 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
     def _check_policy_document(self, policy_document, eps_name, additional_policies_map):
         if additional_policies_map:
             # Find matching additional policies for this eps_name
-            additional_statements = self._get_additional_statements(eps_name, 
+            additional_statements = self._get_additional_statements(eps_name,
                                                                     additional_policies_map)
 
             if additional_statements is not None:
