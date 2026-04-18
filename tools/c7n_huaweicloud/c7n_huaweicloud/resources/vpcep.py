@@ -733,7 +733,8 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
     def _check_policy_document(self, policy_document, eps_name, additional_policies_map):
         if additional_policies_map:
             # Find matching additional policies for this eps_name
-            additional_statements = self._get_additional_statements(eps_name, additional_policies_map)
+            additional_statements = self._get_additional_statements(eps_name, 
+                                                                    additional_policies_map)
 
             if additional_statements is not None:
                 # Matched: use default policy + additional policies
@@ -798,7 +799,7 @@ class VpcEndpointPolicyPrincipalWildcardsFilter(Filter):
 
     def _deep_compare(self, obj1, obj2):
         """Deep compare two objects, ignoring array element order"""
-        if type(obj1) != type(obj2):
+        if type(obj1) is not type(obj2):
             return False
 
         if isinstance(obj1, dict):
