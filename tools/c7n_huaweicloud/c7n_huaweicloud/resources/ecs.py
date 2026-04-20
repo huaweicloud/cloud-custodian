@@ -443,7 +443,7 @@ class EcsTerminate(HuaweiCloudBaseAction):
         for r in resources:
             # 包周期场景需要走退订流程，删除暂时不做处理
             if r["metadata"]["charging_mode"] == "1":
-                log.error("[actions]-[instance-terminate] server[%s] "
+                log.warning("[actions]-[instance-terminate] server[%s] "
                           "is pre-paid order and not be deleted.", r["id"])
                 continue
             serverIds.append(ServerId(id=r["id"]))
