@@ -67,7 +67,7 @@ from c7n_huaweicloud.query import QueryResourceManager, TypeInfo
 from c7n.filters import AgeFilter, ValueFilter, Filter, OPERATORS
 from dateutil.parser import parse
 from requests.exceptions import HTTPError
-from c7n.exceptions import PolicyValidationError
+from c7n.exceptions import PolicyValidationError, PolicyExecutionError
 
 log = logging.getLogger("custodian.huaweicloud.resources.ecs")
 
@@ -98,6 +98,109 @@ class Ecs(QueryResourceManager):
         return resources
 
 
+def waiting_job_status(client, response):
+    if response is None:
+        log.warning("waiting_job_status: response could not be None.")
+        raise PolicyExecutionError('waiting_job_status: response could not be None.')
+
+    job_id = getattr(response, 'job_id', None)
+    if job_id is None:
+        log.warning("waiting_job_status: job_id could not be None.")
+        raise PolicyExecutionError('waiting_job_status: job_id could not be None.')
+
+    # 轮询参数配置
+    max_retry_time = 20 * 60  # 最大轮询时间20分钟
+    initial_delay = 10  # 初始等待时间10秒
+    base = 2  # 指数基数
+    max_delay = 60  # 最大等待时间60秒
+
+    retry_count = 0
+    start_time = time.time()
+
+    log.info("Start waiting for job:[%s] status, max waiting time: %d seconds",
+            job_id, max_retry_time)
+
+    while (time.time() - start_time) < max_retry_time:
+        try:
+            job_resp = fetch_job_status(job_id, client)
+            if job_resp is None:
+                log.warning("Get job:[%s] status response is None, retry count: %d",
+                        job_id, retry_count)
+                # 计算退避延迟
+                delay = min(initial_delay * (base ** retry_count), max_delay)
+                time.sleep(delay)
+                retry_count += 1
+                continue
+
+            job_status = getattr(job_resp, "status", None)
+            if job_status is None:
+                log.warning("Job:[%s] status is None, retry count: %d",
+                        job_id, retry_count)
+                # 计算退避延迟
+                delay = min(initial_delay * (base ** retry_count), max_delay)
+                time.sleep(delay)
+                retry_count += 1
+                continue
+
+            # 根据作业状态进行处理
+            if job_status == 'SUCCESS':
+                elapsed_time = time.time() - start_time
+                log.info("Job:[%s] completed successfully, elapsed time: %.2f seconds",
+                        job_id, elapsed_time)
+                return True
+            elif job_status == 'FAIL':
+                log.error("Job:[%s] failed", job_id)
+                raise PolicyExecutionError('waiting_job_status: job:[%s] failed, '
+                                            'cause:[%s]', job_id, job_resp)
+            else:
+                # 作业仍在进行中
+                elapsed_time = time.time() - start_time
+                # 计算当前退避延迟
+                delay = min(initial_delay * (base ** retry_count), max_delay)
+                log.info("Job:[%s] is still running, status: %s, "
+                            "elapsed time: %.2f seconds, retry "
+                            "count: %d, current delay: %d seconds",
+                        job_id, job_status, elapsed_time, retry_count, delay)
+
+        except exceptions.ClientRequestException as e:
+            log.warning("Get job:[%s] status failed with exception: %s, retry count: %d",
+                    job_id, str(e), retry_count)
+
+        # 计算退避延迟
+        delay = min(initial_delay * (base ** retry_count), max_delay)
+
+        # 检查延迟后是否会超过最大轮询时间
+        if (time.time() + delay - start_time) >= max_retry_time:
+            break
+
+        # 等待下次轮询
+        time.sleep(delay)
+        retry_count += 1
+
+    # 超时处理
+    elapsed_time = time.time() - start_time
+    log.error("Job:[%s] waiting timeout after %.2f seconds, max retry time: %d seconds reached",
+            job_id, elapsed_time, max_retry_time)
+    raise PolicyExecutionError('Job:[%s] waiting timeout after %.2f seconds, '
+                                'max retry time: %d seconds reached',
+                            job_id, elapsed_time, max_retry_time)
+
+
+def fetch_job_status(job_id, client):
+    request = ShowJobRequest(job_id=job_id)
+    try:
+        response = client.show_job(request)
+        log.info("[actions]-[fetch-job-status] The resource:[ecs] with job id:[%s] "
+                    "fetch job status is success.", job_id)
+    except exceptions.ClientRequestException as e:
+        log.error("[actions]-[fetch-job-status] The resource:[ecs] with job id:[%s] "
+                    "fetch job status is failed, cause: "
+                    "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                    job_id, e.status_code, e.request_id, e.error_code, e.error_msg)
+        raise
+    return response
+
+
 @Ecs.action_registry.register("fetch-job-status")
 class FetchJobStatus(HuaweiCloudBaseAction):
     """Fetch An Asyn Job Status.
@@ -121,18 +224,7 @@ class FetchJobStatus(HuaweiCloudBaseAction):
     def process(self, resources):
         job_id = self.data.get("job_id")
         client = self.manager.get_client()
-        request = ShowJobRequest(job_id=job_id)
-        try:
-            response = client.show_job(request)
-            log.info("[actions]-[fetch-job-status] The resource:[ecs] with job id:[%s] "
-                     "fetch job status is success.", job_id)
-        except exceptions.ClientRequestException as e:
-            log.error("[actions]-[fetch-job-status] The resource:[ecs] with job id:[%s] "
-                      "fetch job status is failed, cause: "
-                      "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                      job_id, e.status_code, e.request_id, e.error_code, e.error_msg)
-            raise
-        return json.dumps(response.to_dict())
+        return json.dumps(fetch_job_status(job_id, client).to_dict())
 
     def perform_action(self, resource):
         return super().perform_action(resource)
@@ -184,7 +276,11 @@ class EcsStart(HuaweiCloudBaseAction):
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       ids, names, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
-        return json.dumps(response.to_dict())
+
+        try:
+            return waiting_job_status(client, response)
+        except PolicyExecutionError:
+            raise
 
     def init_request(self, instances):
         serverIds: List[ServerId] = []
@@ -246,7 +342,11 @@ class EcsStop(HuaweiCloudBaseAction):
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       ids, names, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
-        return json.dumps(response.to_dict())
+
+        try:
+            return waiting_job_status(client, response)
+        except PolicyExecutionError:
+            raise
 
     def init_request(self, resources):
         serverIds: List[ServerId] = []
@@ -308,7 +408,11 @@ class EcsReboot(HuaweiCloudBaseAction):
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       ids, names, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
-        return json.dumps(response.to_dict())
+
+        try:
+            return waiting_job_status(client, response)
+        except PolicyExecutionError:
+            raise
 
     def init_request(self, resources):
         serverIds: List[ServerId] = []
@@ -351,7 +455,15 @@ class EcsTerminate(HuaweiCloudBaseAction):
         client = self.manager.get_client()
         serverIds: List[ServerId] = []
         for r in resources:
+            # 包周期场景需要走退订流程，删除暂时不做处理
+            if r["metadata"]["charging_mode"] == "1":
+                log.warning("[actions]-[instance-terminate] server[%s] "
+                          "is pre-paid order and not be deleted.", r["id"])
+                continue
             serverIds.append(ServerId(id=r["id"]))
+        if not serverIds:
+            log.warning("[actions]-[instance-terminate] No resource need terminate.")
+            return
         delete_publicip = self.data.get('delete_publicip', False)
         delete_volume = self.data.get('delete_volume', False)
         requestBody = DeleteServersRequestBody(delete_publicip=delete_publicip,
@@ -369,7 +481,11 @@ class EcsTerminate(HuaweiCloudBaseAction):
                       "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                       ids, names, e.status_code, e.request_id, e.error_code, e.error_msg)
             raise
-        return json.dumps(response.to_dict())
+
+        try:
+            return waiting_job_status(client, response)
+        except PolicyExecutionError:
+            raise
 
     def perform_action(self, resource):
         pass

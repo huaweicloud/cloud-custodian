@@ -109,4 +109,58 @@ interactions:
     status:
       code: 200
       message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Host:
+      - ecs.ap-southeast-1.myhuaweicloud.com
+      User-Agent:
+      - huaweicloud-usdk-python/3.0
+      X-Project-Id:
+      - ap-southeat-1
+      X-Sdk-Date:
+      - 20250323T073947Z
+    method: GET
+    uri: https://ecs.ap-southeast-1.myhuaweicloud.com/v1/ap-southeat-1/jobs/ff8080829585af7f0195c1e776d9475c
+  response:
+    body:
+      string: '{"job_id":"ff8080829585af7f0195c1e776d9475c","job_type":"serversAction","begin_time":"2025-03-23T07:28:46.807Z","end_time":"2025-03-23T07:29:27.897Z","status":"SUCCESS","error_code":null,"fail_reason":null,"entities":{"sub_jobs_total":1,"sub_jobs":[{"job_id":"ff8080829585af7f0195c1e7772e475f","job_type":"serverActions","begin_time":"2025-03-23T07:28:46.894Z","end_time":"2025-03-23T07:29:19.585Z","status":"SUCCESS","error_code":null,"fail_reason":null,"entities":{"server_id":"bac642b0-a9ca-4a13-b6b9-9e41b35905b6"}}]}}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 23 Mar 2025 07:39:48 GMT
+      Server:
+      - api-gateway
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains;
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Charset, Accept-Encoding, Accept-Language, Accept
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 61c4343953e5bd092622429fa82d9936
+      X-XSS-Protection:
+      - 1; mode=block;
+    status:
+      code: 200
+      message: ''
 version: 1
