@@ -109,9 +109,10 @@ def waiting_job_status(client, response):
         raise PolicyExecutionError('waiting_job_status: job_id could not be None.')
 
     # 轮询参数配置
-    max_retry_time = 10 * 60  # 最大轮询时间10分钟
-    retry_interval = 10  # 轮询间隔10秒
-    max_retry_count = max_retry_time // retry_interval
+    max_retry_time = 20 * 60  # 最大轮询时间20分钟
+    initial_delay = 10  # 初始等待时间10秒
+    base = 2  # 指数基数
+    max_delay = 60  # 最大等待时间60秒
 
     retry_count = 0
     start_time = time.time()
@@ -119,13 +120,15 @@ def waiting_job_status(client, response):
     log.info("Start waiting for job:[%s] status, max waiting time: %d seconds",
             job_id, max_retry_time)
 
-    while retry_count < max_retry_count:
+    while (time.time() - start_time) < max_retry_time:
         try:
             job_resp = fetch_job_status(job_id, client)
             if job_resp is None:
                 log.warning("Get job:[%s] status response is None, retry count: %d",
                         job_id, retry_count)
-                time.sleep(retry_interval)
+                # 计算退避延迟
+                delay = min(initial_delay * (base ** retry_count), max_delay)
+                time.sleep(delay)
                 retry_count += 1
                 continue
 
@@ -133,7 +136,9 @@ def waiting_job_status(client, response):
             if job_status is None:
                 log.warning("Job:[%s] status is None, retry count: %d",
                         job_id, retry_count)
-                time.sleep(retry_interval)
+                # 计算退避延迟
+                delay = min(initial_delay * (base ** retry_count), max_delay)
+                time.sleep(delay)
                 retry_count += 1
                 continue
 
@@ -148,28 +153,36 @@ def waiting_job_status(client, response):
                 raise PolicyExecutionError('waiting_job_status: job:[%s] failed, '
                                             'cause:[%s]', job_id, job_resp)
             else:
-                # 作业仍在进行中, 每分钟记录一次日志
-                if retry_count % 6 == 0:
-                    elapsed_time = time.time() - start_time
-                    log.info("Job:[%s] is still running, status: %s, "
-                                "elapsed time: %.2f seconds, retry count: %d",
-                            job_id, job_status, elapsed_time, retry_count)
+                # 作业仍在进行中
+                elapsed_time = time.time() - start_time
+                # 计算当前退避延迟
+                delay = min(initial_delay * (base ** retry_count), max_delay)
+                log.info("Job:[%s] is still running, status: %s, "
+                            "elapsed time: %.2f seconds, retry count: %d, current delay: %d seconds",
+                        job_id, job_status, elapsed_time, retry_count, delay)
 
         except exceptions.ClientRequestException as e:
             log.warning("Get job:[%s] status failed with exception: %s, retry count: %d",
                     job_id, str(e), retry_count)
 
+        # 计算退避延迟
+        delay = min(initial_delay * (base ** retry_count), max_delay)
+        
+        # 检查延迟后是否会超过最大轮询时间
+        if (time.time() + delay - start_time) >= max_retry_time:
+            break
+            
         # 等待下次轮询
-        time.sleep(retry_interval)
+        time.sleep(delay)
         retry_count += 1
 
     # 超时处理
     elapsed_time = time.time() - start_time
-    log.error("Job:[%s] waiting timeout after %d seconds, max retry count: %d reached",
-            job_id, elapsed_time, max_retry_count)
-    raise PolicyExecutionError('Job:[%s] waiting timeout after %d seconds, '
-                                'max retry count: %d reached',
-                            job_id, elapsed_time, max_retry_count)
+    log.error("Job:[%s] waiting timeout after %.2f seconds, max retry time: %d seconds reached",
+            job_id, elapsed_time, max_retry_time)
+    raise PolicyExecutionError('Job:[%s] waiting timeout after %.2f seconds, '
+                                'max retry time: %d seconds reached',
+                            job_id, elapsed_time, max_retry_time)
 
 
 def fetch_job_status(job_id, client):
