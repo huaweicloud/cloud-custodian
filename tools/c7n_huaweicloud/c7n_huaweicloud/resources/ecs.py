@@ -158,7 +158,8 @@ def waiting_job_status(client, response):
                 # 计算当前退避延迟
                 delay = min(initial_delay * (base ** retry_count), max_delay)
                 log.info("Job:[%s] is still running, status: %s, "
-                            "elapsed time: %.2f seconds, retry count: %d, current delay: %d seconds",
+                            "elapsed time: %.2f seconds, retry "
+                            "count: %d, current delay: %d seconds",
                         job_id, job_status, elapsed_time, retry_count, delay)
 
         except exceptions.ClientRequestException as e:
@@ -167,11 +168,11 @@ def waiting_job_status(client, response):
 
         # 计算退避延迟
         delay = min(initial_delay * (base ** retry_count), max_delay)
-        
+
         # 检查延迟后是否会超过最大轮询时间
         if (time.time() + delay - start_time) >= max_retry_time:
             break
-            
+
         # 等待下次轮询
         time.sleep(delay)
         retry_count += 1
