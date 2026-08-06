@@ -1569,6 +1569,102 @@ class ApiGroupResource(QueryResourceManager):
         return resources
 
 
+@ApiGroupResource.filter_registry.register('min-ssl-version-not-tls-v1.2')
+class MinSslVersionNotTlsV12Filter(Filter):
+    """Filter API groups that contain domains with min_ssl_version not TLSv1.2
+
+    This filter checks each API group's url_domains and matches groups
+    where at least one domain has min_ssl_version that is not TLSv1.2.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-api-groups-min-ssl-version-not-tls-v1.2
+            resource: huaweicloud.apig-api-groups
+            filters:
+              - type: min-ssl-version-not-tls-v1.2
+    """
+
+    schema = type_schema('min-ssl-version-not-tls-v1.2')
+
+    def process(self, resources, event=None):
+        """
+        Process resources to filter API groups containing domains
+        with min_ssl_version not equal to TLSv1.2
+
+        :param resources: List of API group resources
+        :param event: Optional event data
+        :return: Filtered list of resources matching the criteria
+        """
+        client = local_session(self.manager.session_factory).client("apig-api-groups")
+        matched_resources = []
+
+        for resource in resources:
+            group_id = resource.get('id')
+            instance_id = resource.get('instance_id')
+            group_name = resource.get('name', 'Unknown')
+
+            if not group_id or not instance_id:
+                log.warning(
+                    "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                    "query the service:[show_details_of_api_group_v2] skipping group %s "
+                    "due to missing group_id or instance_id", group_name)
+                continue
+
+            try:
+                # Query API group details to get url_domains
+                request = ShowDetailsOfApiGroupV2Request(
+                    instance_id=instance_id,
+                    group_id=group_id
+                )
+                group_response = client.show_details_of_api_group_v2(request)
+                group_details = safe_json_parse(group_response)
+
+                url_domains = group_details.get('url_domains')
+                if not url_domains:
+                    log.info(
+                        "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                        "query the service:[show_details_of_api_group_v2] group %s "
+                        "(ID: %s) has no url_domains", group_name, group_id)
+                    continue
+
+                # Check if any url_domain has min_ssl_version not TLSv1.2
+                matched = False
+                for url_domain in url_domains:
+                    min_ssl_version = url_domain.get('min_ssl_version')
+                    domain_name = url_domain.get('url_domain',
+                                                  url_domain.get('id', 'Unknown'))
+                    if min_ssl_version != 'TLSv1.2':
+                        matched = True
+                        log.info(
+                            "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                            "query the service:[show_details_of_api_group_v2] group %s "
+                            "(ID: %s) domain %s has min_ssl_version: %s",
+                            group_name, group_id, domain_name, min_ssl_version)
+
+                if matched:
+                    matched_resources.append(resource)
+
+            except exceptions.ClientRequestException as e:
+                log.error(
+                    "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                    "query the service:[show_details_of_api_group_v2] query details for "
+                    "API group %s (ID: %s) is failed, cause: %s (status code: %s)",
+                    group_name, group_id, e.error_msg, e.status_code)
+                raise
+            except Exception as e:
+                log.error(
+                    "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                    "query the service:[show_details_of_api_group_v2] unexpected error while "
+                    "processing API group %s (ID: %s): %s",
+                    group_name, group_id, str(e), exc_info=True)
+                raise
+
+        return matched_resources
+
+
 # Update Security
 @ApiGroupResource.action_registry.register('update-domain')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
@@ -1762,23 +1858,6 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] no group_id available")
             return self.process_result([])
-
-        # Check current min_ssl_version
-        min_ssl_version = response.get('min_ssl_version')
-        domain_name = response.get('url_domain', domain_id)
-        if min_ssl_version != 'TLSv1.1':
-            log.info(
-                "[actions]- [update-to-tls-v1.2-from-event] "
-                "The resource:[apig-api-groups] with key:[%s/%s] "
-                "min_ssl_version is %s, no update needed",
-                domain_name, domain_id, min_ssl_version)
-            return self.process_result([])
-
-        log.info(
-            "[actions]- [update-to-tls-v1.2-from-event] "
-            "The resource:[apig-api-groups] with key:[%s/%s] "
-            "updating min_ssl_version from %s to TLSv1.2",
-            domain_name, domain_id, min_ssl_version)
 
         try:
             client = self.manager.get_client()
