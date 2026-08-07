@@ -1519,6 +1519,15 @@ class ApiGroupResource(QueryResourceManager):
         for resource in resources:
             if resource["id"] in resource_ids:
                 result.append(resource)
+            else:
+                # For event mode: CTS events use domain_id (response.id) as
+                # resource ID, but resource["id"] is group_id. Match by
+                # url_domains[].id to find the group containing the domain.
+                url_domains = resource.get("url_domains", [])
+                for url_domain in url_domains:
+                    if url_domain.get("id") in resource_ids:
+                        result.append(resource)
+                        break
         return result
 
     def _fetch_resources(self, query):
@@ -1571,10 +1580,13 @@ class ApiGroupResource(QueryResourceManager):
 
 @ApiGroupResource.filter_registry.register('min-ssl-version-not-tls-v1.2')
 class MinSslVersionNotTlsV12Filter(Filter):
-    """Filter API groups that contain domains with min_ssl_version not TLSv1.2
+    """Filter API groups that contain domains where min_ssl_version is not TLSv1.2
 
-    This filter checks each API group's url_domains and matches groups
-    where at least one domain has min_ssl_version that is not TLSv1.2.
+    This filter checks if any domain (url_domain) in the API group has
+    min_ssl_version that is not TLSv1.2. In event mode (cloudtrace), it
+    extracts the group_id from the CTS event message URL (same approach
+    as the update-to-tls-v1.2-from-event action) and queries fresh group
+    details to get the latest url_domains.
 
     :example:
 
@@ -1592,29 +1604,25 @@ class MinSslVersionNotTlsV12Filter(Filter):
     def process(self, resources, event=None):
         """
         Process resources to filter API groups containing domains
-        with min_ssl_version not equal to TLSv1.2
+        where min_ssl_version is not TLSv1.2
 
         :param resources: List of API group resources
-        :param event: Optional event data
+        :param event: Optional event data (for cloudtrace mode)
         :return: Filtered list of resources matching the criteria
         """
         client = local_session(self.manager.session_factory).client("apig-api-groups")
         matched_resources = []
 
-        for resource in resources:
-            group_id = resource.get('id')
-            instance_id = resource.get('instance_id')
-            group_name = resource.get('name', 'Unknown')
-
+        # In event mode, extract group_id from event and query fresh group details
+        if event is not None:
+            group_id, instance_id = self._get_group_id_from_event(event)
             if not group_id or not instance_id:
                 log.warning(
                     "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
-                    "query the service:[show_details_of_api_group_v2] skipping group %s "
-                    "due to missing group_id or instance_id", group_name)
-                continue
+                    "could not extract group_id or instance_id from event")
+                return []
 
             try:
-                # Query API group details to get url_domains
                 request = ShowDetailsOfApiGroupV2Request(
                     instance_id=instance_id,
                     group_id=group_id
@@ -1622,47 +1630,85 @@ class MinSslVersionNotTlsV12Filter(Filter):
                 group_response = client.show_details_of_api_group_v2(request)
                 group_details = safe_json_parse(group_response)
 
-                url_domains = group_details.get('url_domains')
-                if not url_domains:
-                    log.info(
-                        "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
-                        "query the service:[show_details_of_api_group_v2] group %s "
-                        "(ID: %s) has no url_domains", group_name, group_id)
-                    continue
-
-                # Check if any url_domain has min_ssl_version not TLSv1.2
-                matched = False
-                for url_domain in url_domains:
-                    min_ssl_version = url_domain.get('min_ssl_version')
-                    domain_name = url_domain.get('url_domain',
-                                                  url_domain.get('id', 'Unknown'))
-                    if min_ssl_version != 'TLSv1.2':
-                        matched = True
-                        log.info(
-                            "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
-                            "query the service:[show_details_of_api_group_v2] group %s "
-                            "(ID: %s) domain %s has min_ssl_version: %s",
-                            group_name, group_id, domain_name, min_ssl_version)
-
-                if matched:
-                    matched_resources.append(resource)
+                if self._has_non_tls_v12_domain(group_details, group_id):
+                    group_details['instance_id'] = instance_id
+                    matched_resources.append(group_details)
 
             except exceptions.ClientRequestException as e:
                 log.error(
                     "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
-                    "query the service:[show_details_of_api_group_v2] query details for "
-                    "API group %s (ID: %s) is failed, cause: %s (status code: %s)",
-                    group_name, group_id, e.error_msg, e.status_code)
+                    "query the service:[show_details_of_api_group_v2] "
+                    "query group details for group %s (Instance: %s) is failed, "
+                    "cause: %s (status code: %s)",
+                    group_id, instance_id, e.error_msg, e.status_code)
                 raise
             except Exception as e:
                 log.error(
                     "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
-                    "query the service:[show_details_of_api_group_v2] unexpected error while "
-                    "processing API group %s (ID: %s): %s",
-                    group_name, group_id, str(e), exc_info=True)
+                    "query the service:[show_details_of_api_group_v2] "
+                    "unexpected error while querying group %s (Instance: %s): %s",
+                    group_id, instance_id, str(e), exc_info=True)
                 raise
+        else:
+            # Non-event mode: check each resource's url_domains
+            for resource in resources:
+                group_id = resource.get('id')
+                if self._has_non_tls_v12_domain(resource, group_id):
+                    matched_resources.append(resource)
 
         return matched_resources
+
+    def _has_non_tls_v12_domain(self, group_details, group_id):
+        """Check if the group has any domain with min_ssl_version != TLSv1.2
+
+        :param group_details: Group details dict (with url_domains field)
+        :param group_id: Group ID for logging
+        :return: True if any domain has min_ssl_version != TLSv1.2, False otherwise
+        """
+        url_domains = group_details.get("url_domains", [])
+        group_name = group_details.get("name", group_id)
+
+        for url_domain in url_domains:
+            min_ssl_version = url_domain.get("min_ssl_version")
+            domain_name = url_domain.get("domain", url_domain.get("id", "Unknown"))
+            if min_ssl_version != "TLSv1.2":
+                log.info(
+                    "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                    "query the service:[show_details_of_api_group_v2] "
+                    "group %s (ID: %s) has domain %s with "
+                    "min_ssl_version %s, needs update to TLSv1.2",
+                    group_name, group_id, domain_name, min_ssl_version)
+                return True
+        return False
+
+    def _get_group_id_from_event(self, event):
+        """Extract group_id and instance_id from CTS event
+
+        Uses the same approach as the update-to-tls-v1.2-from-event action:
+        - instance_id from cts.resource_id
+        - group_id by parsing cts.message URL
+
+        :param event: CTS event data
+        :return: Tuple of (group_id, instance_id)
+        """
+        instance_id = jmespath.search('cts.resource_id', event)
+        message = jmespath.search('cts.message', event)
+        if not message:
+            log.warning(
+                "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                "no cts.message found in event")
+            return None, None
+
+        url_parts = message.split('/')
+        try:
+            group_id = url_parts[url_parts.index('api-groups') + 1]
+        except (ValueError, IndexError):
+            log.warning(
+                "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                "could not extract group_id from cts.message: %s", message)
+            return None, None
+
+        return group_id, instance_id
 
 
 # Update Security
@@ -1764,10 +1810,16 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
 
 @ApiGroupResource.action_registry.register('update-to-tls-v1.2-from-event')
 class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
-    """Update domain min_ssl_version to TLSv1.2 from event
+    """Update domain min_ssl_version to TLSv1.2
 
-    This action reads domain information from event's cts.response field and updates
-    the domain's min_ssl_version to TLSv1.2 if it's currently TLSv1.1.
+    This action iterates over the filtered resources (API groups that contain
+    domains with min_ssl_version != TLSv1.2) and updates each non-TLSv1.2
+    domain to TLSv1.2. The filtering is handled by the
+    min-ssl-version-not-tls-v1.2 filter.
+
+    The action reads group_id, instance_id, and url_domains directly from
+    each resource (populated by the resource query or the filter in event
+    mode), so it does not need to parse the CTS event.
 
     :example:
     Define a policy to update domain SSL version to TLSv1.2 when triggered by an event:
@@ -1784,167 +1836,105 @@ class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
                 - source: "APIG.ApiGroup"
                   event: "createDomainBinding"
                   code: 201
-                  ids: "resource_id"
+                  ids: "response.id"
                 - source: "APIG.ApiGroup"
                   event: "modifySecureTransmission"
-                  code: 200
-                  ids: "resource_id"
+                  code: 201
+                  ids: "response.id"
+            filters:
+              - type: min-ssl-version-not-tls-v1.2
             actions:
               - type: update-to-tls-v1.2-from-event
     """
 
     schema = type_schema('update-to-tls-v1.2-from-event')
 
-    def process(self, event):
+    def perform_action(self, resource):
+        """Update each domain with min_ssl_version != TLSv1.2 to TLSv1.2
+
+        :param resource: API group resource with url_domains and instance_id
+        :return: List of updated domain IDs
         """
-        Process event to update domain min_ssl_version to TLSv1.2
-
-        :param event: Event data containing cts.response with domain information
-        :return: Result of the update operation
-        """
-        log.debug(
-            "[actions]- [update-to-tls-v1.2-from-event] "
-            "The resource:[apig-api-groups] processing event: %s", event)
-
-        # Extract response from event
-        response = jmespath.search('cts.response', event)
-        if not response:
-            log.warning(
-                "[actions]- [update-to-tls-v1.2-from-event] "
-                "The resource:[apig-api-groups] no cts.response found in event")
-            return self.process_result([])
-
-        # Parse response if it's a string
-        if isinstance(response, str):
-            try:
-                response = json.loads(response)
-            except json.JSONDecodeError as e:
-                log.error(
-                    "[actions]- [update-to-tls-v1.2-from-event] "
-                    "The resource:[apig-api-groups] failed to parse "
-                    "cts.response as JSON: %s", str(e))
-                return self.process_result([])
-
-        # Check if response is a dict
-        if not isinstance(response, dict):
-            log.error(
-                "[actions]- [update-to-tls-v1.2-from-event] "
-                "The resource:[apig-api-groups] cts.response is not a dict: %s",
-                type(response))
-            return self.process_result([])
-
-        # Get domain ID from response (response.id is the domain_id)
-        domain_id = response.get('id')
-        if not domain_id:
-            log.error(
-                "[actions]- [update-to-tls-v1.2-from-event] "
-                "The resource:[apig-api-groups] no domain ID found in response")
-            return self.process_result([])
-
-        # Get instance_id and group_id from event
-        instance_id = jmespath.search('cts.resource_id', event)
-
-        url_parts = jmespath.search('cts.message', event).split('/')
-        group_id = url_parts[url_parts.index('api-groups') + 1]
+        group_id = resource.get('id')
+        instance_id = resource.get('instance_id')
+        group_name = resource.get('name', group_id)
+        url_domains = resource.get('url_domains', [])
 
         if not instance_id:
             log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
-                "The resource:[apig-api-groups] no instance_id available")
-            return self.process_result([])
+                "The resource:[apig-api-groups] with key:[%s/%s] "
+                "no instance_id available on resource", group_name, group_id)
+            return []
 
-        if not group_id:
-            log.error(
-                "[actions]- [update-to-tls-v1.2-from-event] "
-                "The resource:[apig-api-groups] no group_id available")
-            return self.process_result([])
+        updated_domain_ids = []
 
         try:
             client = self.manager.get_client()
 
-            # Query group details to check if it's the default group
-            request = ShowDetailsOfApiGroupV2Request(
-                instance_id=instance_id,
-                group_id=group_id
-            )
-            group_response = client.show_details_of_api_group_v2(request)
-            group_details = safe_json_parse(group_response)
-            url_domains = group_details.get("url_domains")
-            url_domain = {}
-            for i in range(len(url_domains)):
-                if url_domains[i].get("id") == domain_id:
-                    url_domain = url_domains[i]
-                    break
-
             from huaweicloudsdkapig.v2.model.url_domain_modify import UrlDomainModify
 
-            # Build update body from url_domain, only including fields that UrlDomainModify accepts
-            # Get all valid field names from UrlDomainModify.openapi_types
             valid_fields = set(UrlDomainModify.openapi_types.keys())
 
-            update_info = {}
-            # Only copy fields that are valid for UrlDomainModify
-            for key, value in url_domain.items():
-                if key in valid_fields:
-                    update_info[key] = value
+            for url_domain in url_domains:
+                domain_id = url_domain.get('id')
+                min_ssl_version = url_domain.get('min_ssl_version')
+                domain_name = url_domain.get('domain', domain_id)
 
-            # Override req_protocol to HTTPS
-            update_info['min_ssl_version'] = 'TLSv1.2'
+                if min_ssl_version == 'TLSv1.2':
+                    continue
 
-            # Build domain modify request body
-            update_body = UrlDomainModify(**update_info)
+                log.info(
+                    "[actions]- [update-to-tls-v1.2-from-event] "
+                    "The resource:[apig-api-groups] with key:[%s/%s] "
+                    "updating domain %s (ID: %s) min_ssl_version %s -> TLSv1.2",
+                    group_name, group_id, domain_name, domain_id, min_ssl_version)
 
-            # Create update request
-            request = UpdateDomainV2Request(
-                instance_id=instance_id,
-                group_id=group_id,
-                domain_id=domain_id,
-                body=update_body
-            )
+                # Build update body from url_domain, only including fields
+                # that UrlDomainModify accepts
+                update_info = {}
+                for key, value in url_domain.items():
+                    if key in valid_fields:
+                        update_info[key] = value
 
-            log.info(
-                "[actions]- [update-to-tls-v1.2-from-event] "
-                "The resource:[apig-api-groups] update request: "
-                "instance_id=%s, group_id=%s, domain_id=%s",
-                instance_id, group_id, domain_id)
+                # Override min_ssl_version to TLSv1.2
+                update_info['min_ssl_version'] = 'TLSv1.2'
 
-            # Send update request
-            client.update_domain_v2(request)
-            domain_name = response.get('url_domain', domain_id)
-            log.info(
-                "[actions]- [update-to-tls-v1.2-from-event] "
-                "The resource:[apig-api-groups] with key:[%s/%s] "
-                "update min_ssl_version to TLSv1.2 is success.",
-                domain_name, domain_id)
+                update_body = UrlDomainModify(**update_info)
 
-            return self.process_result([{'id': domain_id, 'url_domain': domain_name}])
+                request = UpdateDomainV2Request(
+                    instance_id=instance_id,
+                    group_id=group_id,
+                    domain_id=domain_id,
+                    body=update_body
+                )
+
+                client.update_domain_v2(request)
+                updated_domain_ids.append(domain_id)
+                log.info(
+                    "[actions]- [update-to-tls-v1.2-from-event] "
+                    "The resource:[apig-api-groups] with key:[%s/%s] "
+                    "update domain %s (ID: %s) to TLSv1.2 is success.",
+                    group_name, group_id, domain_name, domain_id)
+
+            return updated_domain_ids
 
         except exceptions.ClientRequestException as e:
-            domain_name = response.get('url_domain', domain_id)
             log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] with key:[%s/%s] "
                 "update domain is failed, cause: status_code[%s] request_id[%s] "
                 "error_code[%s] error_msg[%s]",
-                domain_name, domain_id, e.status_code, e.request_id,
+                group_name, group_id, e.status_code, e.request_id,
                 e.error_code, e.error_msg, exc_info=True)
             raise
         except Exception as e:
-            domain_name = response.get('url_domain', domain_id)
             log.error(
                 "[actions]- [update-to-tls-v1.2-from-event] "
                 "The resource:[apig-api-groups] with key:[%s/%s] "
                 "update domain is failed, cause: %s",
-                domain_name, domain_id, str(e), exc_info=True)
+                group_name, group_id, str(e), exc_info=True)
             raise
-
-    def perform_action(self, resource):
-        """
-        This method is required by HuaweiCloudBaseAction but not used in event-based actions
-
-        :param resource: Resource (not used)
-        """
-        pass
 
 
 # Update SLDomain Setting
