@@ -55,6 +55,7 @@ ResourceMap = {
     "huaweicloud.apig-api-groups": "c7n_huaweicloud.resources.apig.ApiGroupResource",
     "huaweicloud.apig-instance": "c7n_huaweicloud.resources.apig.ApigInstanceResource",
     "huaweicloud.apig-plugin": "c7n_huaweicloud.resources.apig.ApigPluginResource",
+    "huaweicloud.apig-domain": "c7n_huaweicloud.resources.apig.ApiDomainResource",
     "huaweicloud.dms-rocketmq": "c7n_huaweicloud.resources.rocketmq.RocketMQ",
     "huaweicloud.dc": "c7n_huaweicloud.resources.dc.DC",
     "huaweicloud.dc-vif": "c7n_huaweicloud.resources.dc.Vif",
