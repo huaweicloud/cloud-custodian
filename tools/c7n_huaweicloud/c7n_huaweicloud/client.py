@@ -516,7 +516,7 @@ class Session:
                 .build()
             )
         elif service == 'apig' or service in ['apig-api', 'apig-stage', 'apig-api-groups',
-                                              'apig-instance', 'apig-plugin',]:
+                                              'apig-instance', 'apig-plugin', 'apig-domain',]:
             client = (
                 ApigClient.new_builder()
                 .with_credentials(credentials)
@@ -787,6 +787,8 @@ class Session:
         elif service == 'apig-stage':
             request = ListEnvironmentsV2Request()
         elif service == 'apig-api-groups':
+            request = ListApiGroupsV2Request()
+        elif service == 'apig-domain':
             request = ListApiGroupsV2Request()
         elif service == 'apig-instance':
             request = ListInstancesV2Request()

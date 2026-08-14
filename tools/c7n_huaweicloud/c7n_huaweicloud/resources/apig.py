@@ -1595,77 +1595,6 @@ class ApiGroupResource(QueryResourceManager):
         return resources
 
 
-@ApiGroupResource.filter_registry.register('min-ssl-version-not-tls-v1.2')
-class MinSslVersionNotTlsV12Filter(Filter):
-    """Filter API groups that have domains with min_ssl_version not TLSv1.2
-
-    This filter checks each API group's url_domains list for any domain
-    where min_ssl_version is not TLSv1.2. Groups with non-compliant domains
-    pass the filter; groups where all domains are TLSv1.2 are filtered out.
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-api-groups-min-ssl-version-not-tls-v1.2
-            resource: huaweicloud.apig-api-groups
-            filters:
-              - type: min-ssl-version-not-tls-v1.2
-    """
-
-    schema = type_schema('min-ssl-version-not-tls-v1.2')
-
-    def process(self, resources, event=None):
-        """
-        Process resources to filter API groups that have domains
-        with min_ssl_version not TLSv1.2
-
-        :param resources: List of API group resources (with url_domains)
-        :param event: Optional event data
-        :return: Filtered list of resources matching the criteria
-        """
-        matched_resources = []
-
-        for resource in resources:
-            group_id = resource.get('id')
-            group_name = resource.get('name', group_id)
-            url_domains = resource.get('url_domains', [])
-
-            if not url_domains:
-                log.info(
-                    "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
-                    "The resource:[apig-api-groups] group %s "
-                    "(ID: %s) has no url_domains, skipped",
-                    group_name, group_id)
-                continue
-
-            non_compliant_domains = [
-                d for d in url_domains
-                if d.get('min_ssl_version') != 'TLSv1.2'
-            ]
-
-            if non_compliant_domains:
-                matched_resources.append(resource)
-                for domain in non_compliant_domains:
-                    log.info(
-                        "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
-                        "The resource:[apig-api-groups] group %s "
-                        "(ID: %s) domain %s (ID: %s) has min_ssl_version=%s",
-                        group_name, group_id,
-                        domain.get('domain', domain.get('id')),
-                        domain.get('id'),
-                        domain.get('min_ssl_version'))
-            else:
-                log.info(
-                    "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
-                    "The resource:[apig-api-groups] group %s "
-                    "(ID: %s) all domains are TLSv1.2, filtered out",
-                    group_name, group_id)
-
-        return matched_resources
-
-
 # Update Security
 @ApiGroupResource.action_registry.register('update-domain')
 class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
@@ -1763,108 +1692,6 @@ class UpdateDomainSecurityAction(HuaweiCloudBaseAction):
             raise
 
 
-@ApiGroupResource.action_registry.register('update-to-tls-v1.2-from-event')
-class UpdateToTlsV12FromEvent(HuaweiCloudBaseAction):
-    """Update domain min_ssl_version to TLSv1.2
-
-    This action iterates the API group's url_domains and updates each domain
-    where min_ssl_version is not TLSv1.2 to TLSv1.2. The filter
-    min-ssl-version-not-tls-v1.2 should be used as the gate before this action.
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: apig-api-groups-update-to-tls-v1.2-from-event
-            resource: huaweicloud.apig-api-groups
-            mode:
-              type: cloudtrace
-              xrole: admin
-              events:
-                - source: "APIG.ApiGroup"
-                  event: "createDomainBinding"
-                  code: 201
-                  ids: "response.id"
-                - source: "APIG.ApiGroup"
-                  event: "modifySecureTransmission"
-                  code: 201
-                  ids: "response.id"
-            filters:
-              - type: min-ssl-version-not-tls-v1.2
-            actions:
-              - type: update-to-tls-v1.2-from-event
-    """
-
-    schema = type_schema('update-to-tls-v1.2-from-event')
-
-    def perform_action(self, resource):
-        """
-        Update each domain with min_ssl_version not TLSv1.2 to TLSv1.2
-
-        :param resource: API group resource (with url_domains from get_resources)
-        """
-        client = self.manager.get_client()
-        group_id = resource['id']
-        instance_id = resource.get('instance_id')
-        group_name = resource.get('name', group_id)
-        url_domains = resource.get('url_domains', [])
-
-        from huaweicloudsdkapig.v2.model.url_domain_modify import UrlDomainModify
-        valid_fields = set(UrlDomainModify.openapi_types.keys())
-
-        for domain in url_domains:
-            if domain.get('min_ssl_version') == 'TLSv1.2':
-                continue
-
-            domain_id = domain.get('id')
-            domain_name = domain.get('domain', domain_id)
-            old_version = domain.get('min_ssl_version')
-
-            try:
-                # Build update body from domain, only including valid fields
-                update_info = {}
-                for key, value in domain.items():
-                    if key in valid_fields:
-                        update_info[key] = value
-                update_info['min_ssl_version'] = 'TLSv1.2'
-                update_body = UrlDomainModify(**update_info)
-
-                request = UpdateDomainV2Request(
-                    instance_id=instance_id,
-                    group_id=group_id,
-                    domain_id=domain_id,
-                    body=update_body
-                )
-
-                client.update_domain_v2(request)
-                log.info(
-                    "[actions]- [update-to-tls-v1.2-from-event] "
-                    "The resource:[apig-api-groups] with key:[%s/%s] "
-                    "update domain %s (ID: %s) min_ssl_version "
-                    "from %s to TLSv1.2 is success.",
-                    group_name, group_id, domain_name, domain_id, old_version)
-
-            except exceptions.ClientRequestException as e:
-                log.error(
-                    "[actions]- [update-to-tls-v1.2-from-event] "
-                    "The resource:[apig-api-groups] with key:[%s/%s] "
-                    "update domain %s (ID: %s) is failed, cause: "
-                    "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
-                    group_name, group_id, domain_name, domain_id,
-                    e.status_code, e.request_id, e.error_code, e.error_msg,
-                    exc_info=True)
-                raise
-            except Exception as e:
-                log.error(
-                    "[actions]- [update-to-tls-v1.2-from-event] "
-                    "The resource:[apig-api-groups] with key:[%s/%s] "
-                    "update domain %s (ID: %s) is failed, cause: %s",
-                    group_name, group_id, domain_name, domain_id,
-                    str(e), exc_info=True)
-                raise
-
-
 # Update SLDomain Setting
 @ApiGroupResource.action_registry.register('update-sl-domain-setting')
 class UpdateSLDomainSettingAction(HuaweiCloudBaseAction):
@@ -1942,6 +1769,284 @@ class UpdateSLDomainSettingAction(HuaweiCloudBaseAction):
                 "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
                 group_name, group_id, access_status,
                 e.status_code, e.request_id, e.error_code, e.error_msg)
+            raise
+
+
+# Domain Resource Management
+@resources.register('apig-domain')
+class ApigDomainResource(QueryResourceManager):
+    """
+    Huawei Cloud API Gateway Domain Resource Management
+
+    This resource retrieves domain bindings from API Gateway by querying
+    API groups across all instances and extracting url_domains from each group.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-domain-list
+            resource: huaweicloud.apig-domain
+    """
+
+    class resource_type(TypeInfo):
+        service = 'apig-domain'
+        enum_spec = ('list_api_groups_v2', 'groups', 'offset')
+        id = 'id'
+        name = 'domain'
+        filter_name = 'domain'
+        filter_type = 'scalar'
+        taggable = False
+
+    def get_instance_id(self):
+        """
+        Query and get API Gateway instance ID
+        """
+        session = local_session(self.session_factory)
+
+        # If instance_id is specified in the policy, use it directly
+        if hasattr(self, 'data') and isinstance(self.data, dict) and 'instance_id' in self.data:
+            instance_id = self.data['instance_id']
+            log.info(
+                "The resource:[apig-domain] using instance_id from policy "
+                "configuration: %s", instance_id)
+            return [instance_id]
+
+        # Query APIG instance list
+        try:
+            client = session.client('apig-instance')
+            instances_request = ListInstancesV2Request(limit=500)
+            response = client.list_instances_v2(instances_request)
+
+            if hasattr(response, 'instances') and response.instances:
+                instance_ids = [instance.id for instance in response.instances]
+                return instance_ids
+        except Exception as e:
+            log.error(
+                "The resource:[apig-domain] query APIG instance list is failed, "
+                "cause: %s", str(e), exc_info=True)
+            raise
+
+        return []
+
+    def get_resources(self, resource_ids):
+        resources = self.get_domain_resources()
+        result = [r for r in resources if r.get('id') in resource_ids]
+        return result
+
+    def _fetch_resources(self, query):
+        return self.get_domain_resources()
+
+    def get_domain_resources(self):
+        """Fetch domain resources by querying API groups and extracting url_domains"""
+        session = local_session(self.session_factory)
+        client = session.client(self.resource_type.service)
+
+        instance_ids = self.get_instance_id()
+
+        domains = []
+        for instance_id in instance_ids:
+            offset, limit = 0, 500
+            while True:
+                request = ListApiGroupsV2Request(offset=offset, limit=limit)
+                request.instance_id = instance_id
+
+                try:
+                    response = client.list_api_groups_v2(request)
+                    groups = safe_json_parse(response.groups)
+
+                    for group in groups:
+                        group_id = group.get('id')
+                        group_name = group.get('name', group_id)
+
+                        # Try to get url_domains from list response first
+                        url_domains = group.get('url_domains', [])
+
+                        # If url_domains not in list response,
+                        # query group details via ShowDetailsOfApiGroupV2
+                        if not url_domains:
+                            try:
+                                detail_request = ShowDetailsOfApiGroupV2Request(
+                                    instance_id=instance_id,
+                                    group_id=group_id
+                                )
+                                detail_response = \
+                                    client.show_details_of_api_group_v2(detail_request)
+                                group_details = safe_json_parse(detail_response)
+                                url_domains = group_details.get('url_domains', [])
+                            except exceptions.ClientRequestException as e:
+                                log.error(
+                                    "The resource:[apig-domain] query group details for "
+                                    "group [%s] is failed, cause: status_code[%s] "
+                                    "request_id[%s] error_code[%s] error_msg[%s]",
+                                    group_id, e.status_code, e.request_id,
+                                    e.error_code, e.error_msg, exc_info=True)
+                                raise
+
+                        # Add instance_id and group_id to each domain resource
+                        for domain in url_domains:
+                            domain['instance_id'] = instance_id
+                            domain['group_id'] = group_id
+                            domains.append(domain)
+
+                        if url_domains:
+                            log.info(
+                                "The resource:[apig-domain] found %d domain(s) "
+                                "for group [%s] in instance [%s]",
+                                len(url_domains), group_name, instance_id)
+
+                except exceptions.ClientRequestException as e:
+                    # If the instance does not exist, ignore the exception
+                    if e.error_code == "APIG.3030":
+                        log.warning(
+                            "The resource:[apig-domain] query api groups list for "
+                            "instance [%s] is skipped, cause: status_code[%s] "
+                            "request_id[%s] error_code[%s] error_msg[%s]",
+                            instance_id, e.status_code, e.request_id,
+                            e.error_code, e.error_msg, exc_info=True)
+                        break
+                    log.error(
+                        "The resource:[apig-domain] query API Group list is failed, "
+                        "cause: %s", str(e), exc_info=True)
+                    raise
+
+                offset += limit
+                if not response.total or offset >= response.total:
+                    break
+
+        return domains
+
+
+@ApigDomainResource.filter_registry.register('min-ssl-version-not-tls-v1.2')
+class DomainMinSslVersionNotTlsV12Filter(Filter):
+    """Filter APIG domains where min_ssl_version is not TLSv1.2
+
+    Each resource is a single domain with a min_ssl_version field.
+    Domains where min_ssl_version != TLSv1.2 pass the filter.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-domain-min-ssl-version-not-tls-v1.2
+            resource: huaweicloud.apig-domain
+            filters:
+              - type: min-ssl-version-not-tls-v1.2
+    """
+
+    schema = type_schema('min-ssl-version-not-tls-v1.2')
+
+    def process(self, resources, event=None):
+        """
+        Filter domains where min_ssl_version is not TLSv1.2
+
+        :param resources: List of domain resources
+        :param event: Optional event data
+        :return: Filtered list of domains with non-compliant min_ssl_version
+        """
+        matched_resources = []
+
+        for resource in resources:
+            domain_id = resource.get('id')
+            domain_name = resource.get('domain', domain_id)
+            min_ssl_version = resource.get('min_ssl_version')
+
+            if min_ssl_version != 'TLSv1.2':
+                matched_resources.append(resource)
+                log.info(
+                    "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                    "The resource:[apig-domain] domain %s "
+                    "(ID: %s) has min_ssl_version=%s",
+                    domain_name, domain_id, min_ssl_version)
+            else:
+                log.info(
+                    "[filters]- The filter:[min-ssl-version-not-tls-v1.2] "
+                    "The resource:[apig-domain] domain %s "
+                    "(ID: %s) is TLSv1.2, filtered out",
+                    domain_name, domain_id)
+
+        return matched_resources
+
+
+@ApigDomainResource.action_registry.register('update-to-tls-v1.2')
+class DomainUpdateToTlsV12Action(HuaweiCloudBaseAction):
+    """Update domain min_ssl_version to TLSv1.2
+
+    Each resource is a single domain. This action updates the domain's
+    min_ssl_version to TLSv1.2 via UpdateDomainV2Request.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: apig-domain-update-to-tls-v1.2
+            resource: huaweicloud.apig-domain
+            filters:
+              - type: min-ssl-version-not-tls-v1.2
+            actions:
+              - type: update-to-tls-v1.2
+    """
+
+    schema = type_schema('update-to-tls-v1.2')
+
+    def perform_action(self, resource):
+        """
+        Update domain min_ssl_version to TLSv1.2
+
+        :param resource: A single domain resource
+        """
+        client = self.manager.get_client()
+        domain_id = resource.get('id')
+        domain_name = resource.get('domain', domain_id)
+        instance_id = resource.get('instance_id')
+        group_id = resource.get('group_id')
+        old_version = resource.get('min_ssl_version')
+
+        from huaweicloudsdkapig.v2.model.url_domain_modify import UrlDomainModify
+        valid_fields = set(UrlDomainModify.openapi_types.keys())
+
+        try:
+            # Build update body from domain, only including valid fields
+            update_info = {}
+            for key, value in resource.items():
+                if key in valid_fields:
+                    update_info[key] = value
+            update_info['min_ssl_version'] = 'TLSv1.2'
+            update_body = UrlDomainModify(**update_info)
+
+            request = UpdateDomainV2Request(
+                instance_id=instance_id,
+                group_id=group_id,
+                domain_id=domain_id,
+                body=update_body
+            )
+
+            client.update_domain_v2(request)
+            log.info(
+                "[actions]- [update-to-tls-v1.2] "
+                "The resource:[apig-domain] domain %s (ID: %s) "
+                "min_ssl_version updated from %s to TLSv1.2 is success.",
+                domain_name, domain_id, old_version)
+
+        except exceptions.ClientRequestException as e:
+            log.error(
+                "[actions]- [update-to-tls-v1.2] "
+                "The resource:[apig-domain] domain %s (ID: %s) "
+                "update is failed, cause: "
+                "status_code[%s] request_id[%s] error_code[%s] error_msg[%s]",
+                domain_name, domain_id,
+                e.status_code, e.request_id, e.error_code, e.error_msg,
+                exc_info=True)
+            raise
+        except Exception as e:
+            log.error(
+                "[actions]- [update-to-tls-v1.2] "
+                "The resource:[apig-domain] domain %s (ID: %s) "
+                "update is failed, cause: %s",
+                domain_name, domain_id, str(e), exc_info=True)
             raise
 
 
