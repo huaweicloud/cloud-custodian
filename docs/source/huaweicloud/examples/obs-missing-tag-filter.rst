@@ -42,3 +42,21 @@ OBS - Find Obs Bucket That missing Some Tags
             - key: key1
             - key: key2
             match: missing-all
+        actions:
+        - type: tag
+          tags:
+          - key: owner-team-email
+            value: value123
+          - key: key2
+
+
+  policies:
+    - name: missing-bucket-tags
+        resource: huaweicloud.obs
+        actions:
+        - type: tag
+          tags:
+          - key: owner-team-email
+            value: value123
+          - key: key2
+          operate: delete
